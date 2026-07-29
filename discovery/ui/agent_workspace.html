@@ -1,0 +1,4607 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discovery Agent Workspace — Enhanced</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Mermaid for diagrams -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<!-- Marked for markdown rendering -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<!-- Mammoth for DOCX preview -->
+<script src="https://cdn.jsdelivr.net/npm/mammoth/mammoth.browser.min.js"></script>
+<!-- PDF.js for PDF preview -->
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<!-- Endpoint Widget — canonical files served from gateway at /gateway/css|js/ -->
+<script>
+(function() {
+  if (!window.AwarenessEndpointWidget) return;
+  window.AwarenessEndpointWidget.init({
+    storageKey: 'jurisprudence.ep.config',
+    trafficKey: 'jurisprudence.ep.traffic',
+    gatewayUrl: (window.location.port === '8080' ? window.location.origin : window.location.protocol + '//' + window.location.hostname + ':8080'),
+    trafficCapture: true,
+    aiEnabled: true,
+    autoFetchCatalog: true
+  });
+})();
+</script>
+<style>
+:root {
+  --paper: #f6f1e8;
+  --paper-2: #efe6d8;
+  --paper-3: #e5d9c7;
+  --ink: #17120f;
+  --ink-soft: #5b4f45;
+  --ink-fade: #847766;
+  --panel: rgba(255, 251, 244, 0.82);
+  --panel-strong: rgba(255, 251, 244, 0.94);
+  --line: rgba(88, 68, 47, 0.14);
+  --line-strong: rgba(88, 68, 47, 0.22);
+  --green: #204c3d;
+  --green-2: #2f6b56;
+  --green-lo: rgba(32, 76, 61, 0.09);
+  --amber: #b55e2e;
+  --amber-lo: rgba(181, 94, 46, 0.1);
+  --blue: #225ea8;
+  --blue-lo: rgba(34, 94, 168, 0.08);
+  --red: #b53d2e;
+  --red-lo: rgba(181, 61, 46, 0.1);
+  --purple: #6b4c9a;
+  --purple-lo: rgba(107, 76, 154, 0.08);
+  --shadow: 0 16px 50px rgba(35, 26, 19, 0.12);
+  --shadow-sm: 0 4px 16px rgba(35, 26, 19, 0.08);
+  --radius: 18px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+  --display: 'Fraunces', Georgia, serif;
+  --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(181, 94, 46, 0.1), transparent 36%),
+    radial-gradient(circle at bottom right, rgba(32, 76, 61, 0.12), transparent 32%),
+    linear-gradient(180deg, #fbf7f0 0%, #f3ece0 100%);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.25;
+}
+
+/* ===== LAYOUT SHELL ===== */
+.workspace-shell {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== TOP BAR ===== */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(252, 248, 241, 0.82);
+  backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-kicker {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-fade);
+}
+
+.brand-title {
+  font-family: var(--display);
+  font-size: 24px;
+  line-height: 1.05;
+  color: var(--green);
+}
+
+.topbar-center {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.view-tab {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-family: var(--sans);
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.view-tab:hover {
+  background: rgba(255,255,255,0.5);
+}
+
+.view-tab.active {
+  background: var(--green);
+  color: #fff;
+  border-color: var(--green);
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.import-mode-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.import-mode-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-fade);
+  white-space: nowrap;
+}
+
+.import-mode-select {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.import-mode-select:focus {
+  outline: none;
+}
+
+.import-mode-select option {
+  background: #fff;
+  color: #17120f;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  appearance: none;
+  border: 1px solid var(--green);
+  background: var(--green);
+  color: #fff;
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-family: var(--sans);
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 11px;
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--green);
+}
+
+.btn-amber {
+  background: var(--amber);
+  border-color: var(--amber);
+}
+
+.ghost-btn {
+  appearance: none;
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.45);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-family: var(--sans);
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ghost-btn:hover {
+  background: rgba(255,255,255,0.7);
+}
+
+/* ===== BADGES ===== */
+.badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.66);
+  color: var(--ink-fade);
+  white-space: nowrap;
+}
+
+.badge-green { color: var(--green); border-color: rgba(32,76,61,0.22); background: var(--green-lo); }
+.badge-amber { color: var(--amber); border-color: rgba(181,94,46,0.18); background: var(--amber-lo); }
+.badge-blue { color: var(--blue); border-color: rgba(34,94,168,0.18); background: var(--blue-lo); }
+.badge-red { color: var(--red); border-color: rgba(181,61,46,0.18); background: var(--red-lo); }
+.badge-purple { color: var(--purple); border-color: rgba(107,76,154,0.18); background: var(--purple-lo); }
+
+/* ===== MAIN LAYOUT ===== */
+.main-grid {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr) 380px;
+  gap: 16px;
+  padding: 16px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ===== PANELS ===== */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255,255,255,0.4);
+  flex-shrink: 0;
+}
+
+.panel-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.panel-kicker {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-fade);
+}
+
+.panel-title {
+  font-family: var(--display);
+  font-size: 18px;
+  line-height: 1.1;
+  color: var(--green);
+}
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panel-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+  background: rgba(255,255,255,0.4);
+  flex-shrink: 0;
+}
+
+/* ===== EXPANDABLE SECTIONS ===== */
+.expandable-section {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.expandable-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.expandable-header:hover {
+  background: rgba(255,255,255,0.6);
+}
+
+.expandable-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.expandable-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.expandable-icon.green { background: var(--green-lo); color: var(--green); }
+.expandable-icon.amber { background: var(--amber-lo); color: var(--amber); }
+.expandable-icon.blue { background: var(--blue-lo); color: var(--blue); }
+.expandable-icon.red { background: var(--red-lo); color: var(--red); }
+.expandable-icon.purple { background: var(--purple-lo); color: var(--purple); }
+
+.expandable-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.expandable-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.expandable-subtitle {
+  font-size: 11px;
+  color: var(--ink-fade);
+}
+
+.expandable-chevron {
+  font-size: 10px;
+  color: var(--ink-fade);
+  transition: transform 0.2s;
+}
+
+.expandable-section.open .expandable-chevron {
+  transform: rotate(180deg);
+}
+
+.expandable-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease-out;
+}
+
+.expandable-section.open .expandable-content {
+  max-height: 800px;
+  overflow: auto;
+}
+
+.expandable-inner {
+  padding: 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ===== ARTIFACT ITEMS ===== */
+.artifact-item {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.55);
+  border-radius: var(--radius-xs);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.artifact-item:hover {
+  background: rgba(255,255,255,0.8);
+  border-color: var(--line-strong);
+}
+
+.artifact-item.selected {
+  border-color: rgba(32,76,61,0.4);
+  background: var(--green-lo);
+}
+
+.artifact-item-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.artifact-item-name {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--ink);
+  word-break: break-word;
+}
+
+.artifact-item-meta {
+  font-size: 11px;
+  color: var(--ink-fade);
+  margin-top: 4px;
+}
+
+.artifact-item-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.artifact-mini-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--blue);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.artifact-mini-btn:hover {
+  text-decoration: underline;
+}
+
+/* ===== VIOLATION ITEMS ===== */
+.violation-item {
+  border: 1px solid rgba(181,61,46,0.2);
+  background: var(--red-lo);
+  border-radius: var(--radius-xs);
+  padding: 12px 14px;
+  transition: box-shadow 0.15s ease;
+}
+
+.violation-item:hover {
+  box-shadow: 0 2px 8px rgba(181,61,46,0.12);
+}
+
+.violation-item.expanded {
+  border-color: rgba(181,61,46,0.4);
+}
+
+.violation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.violation-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--red);
+}
+
+.violation-desc {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.violation-law {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-fade);
+  margin-top: 6px;
+  background: rgba(181,61,46,0.06);
+  padding: 4px 8px;
+  border-radius: var(--radius-xs);
+  display: inline-block;
+}
+
+.violation-detail-section {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(181,61,46,0.12);
+}
+
+.violation-detail-section .detail-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ink-fade);
+  margin-bottom: 4px;
+}
+
+.violation-detail-section .detail-value {
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.violation-evidence {
+  background: rgba(23,18,15,0.03);
+  padding: 8px 10px;
+  border-radius: var(--radius-xs);
+  border-left: 3px solid rgba(181,61,46,0.3);
+  font-size: 11px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  margin-top: 6px;
+}
+
+.violation-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.violation-file-tag {
+  font-size: 10px;
+  background: rgba(23,18,15,0.06);
+  color: var(--ink-soft);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-family: var(--mono);
+}
+
+.violation-expand-toggle {
+  font-size: 10px;
+  color: var(--blue);
+  cursor: pointer;
+  margin-top: 6px;
+  display: inline-block;
+}
+
+.violation-expand-toggle:hover {
+  text-decoration: underline;
+}
+
+/* ===== TIMELINE ITEMS ===== */
+.timeline-list {
+  position: relative;
+  padding-left: 24px;
+}
+
+.timeline-list::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--line-strong);
+  border-radius: 2px;
+}
+
+.timeline-item {
+  position: relative;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.55);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+  margin-bottom: 8px;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 14px;
+  width: 10px;
+  height: 10px;
+  background: var(--green);
+  border-radius: 50%;
+  border: 2px solid var(--paper);
+}
+
+.timeline-date {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--green);
+  margin-bottom: 4px;
+}
+
+.timeline-title {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--ink);
+}
+
+.timeline-desc {
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+
+/* ===== GRAPH CONTAINER ===== */
+.graph-container {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.graph-container.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  border-radius: 0;
+  min-height: 100vh;
+  background: #fff;
+}
+
+.graph-toolbar {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(4px);
+  padding: 4px 6px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--line);
+}
+
+.graph-toolbar .ghost-btn.btn-sm {
+  min-width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.graph-zoom-label {
+  font-size: 10px;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  font-family: var(--mono);
+}
+
+.mermaid {
+  width: 100%;
+  padding: 20px;
+  transform-origin: center center;
+  transition: transform 0.15s ease;
+  cursor: grab;
+}
+
+.mermaid:active {
+  cursor: grabbing;
+}
+
+.mermaid svg {
+  max-width: none !important;
+  height: auto !important;
+}
+
+/* ===== FILE VIEWER ===== */
+.file-viewer {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.file-viewer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(23,18,15,0.04);
+  border-bottom: 1px solid var(--line);
+}
+
+.file-viewer-name {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-viewer-content {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+  min-height: 200px;
+  max-height: 600px;
+}
+
+.file-viewer-content.code {
+  background: rgba(23,18,15,0.96);
+  color: #f8f2e7;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  tab-size: 2;
+}
+
+.file-viewer-content.markdown {
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.file-viewer-content.markdown h1,
+.file-viewer-content.markdown h2,
+.file-viewer-content.markdown h3 {
+  font-family: var(--display);
+  color: var(--green);
+  margin: 0 0 12px;
+}
+
+.file-viewer-content.markdown h1 { font-size: 22px; }
+.file-viewer-content.markdown h2 { font-size: 18px; }
+.file-viewer-content.markdown h3 { font-size: 15px; }
+
+.file-viewer-content.pdf canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+.file-viewer-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--ink-fade);
+  text-align: center;
+  min-height: 200px;
+}
+
+.file-viewer-empty i {
+  font-size: 36px;
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+
+/* ===== SHARED DATA BROWSER ===== */
+.shared-data-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.4);
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.shared-data-tab {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-family: var(--sans);
+  font-size: 10px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.shared-data-tab:hover {
+  background: rgba(255,255,255,0.5);
+}
+
+.shared-data-tab.active {
+  background: var(--purple);
+  color: #fff;
+  border-color: var(--purple);
+}
+
+.shared-tree {
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.tree-node {
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.1s;
+}
+
+.tree-node:hover {
+  background: rgba(255,255,255,0.6);
+}
+
+.tree-node.selected {
+  background: var(--purple-lo);
+}
+
+.tree-node-icon {
+  width: 16px;
+  text-align: center;
+  color: var(--ink-fade);
+}
+
+.tree-node-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-children {
+  padding-left: 18px;
+}
+
+/* ===== WORKSPACE BUILDER ===== */
+.workspace-builder {
+  background: rgba(32,76,61,0.05);
+  border: 1px dashed var(--green);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+
+.workspace-builder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.workspace-builder-title {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.context-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.context-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+}
+
+.context-item-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.context-item-name span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.context-item-type {
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--line);
+  color: var(--ink-soft);
+  flex-shrink: 0;
+}
+
+.context-item-remove {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--ink-fade);
+  cursor: pointer;
+  padding: 0;
+  font-size: 12px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.context-item-remove:hover {
+  color: var(--red);
+}
+
+.context-empty {
+  text-align: center;
+  padding: 20px;
+  color: var(--ink-fade);
+  font-size: 12px;
+}
+
+/* ===== FOLDER PICKER MODAL ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(23,18,15,0.5);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-overlay.visible {
+  display: flex;
+}
+
+.modal-card {
+  background: var(--panel-strong);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.modal-title {
+  font-family: var(--display);
+  font-size: 20px;
+  color: var(--green);
+}
+
+.modal-close {
+  appearance: none;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--ink-fade);
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* ===== FOLDER TYPE SELECTOR ===== */
+.folder-type-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.folder-type-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.folder-type-option:hover {
+  background: rgba(255,255,255,0.5);
+}
+
+.folder-type-option.selected {
+  border-color: var(--green);
+  background: var(--green-lo);
+}
+
+.folder-type-radio {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--line-strong);
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.folder-type-option.selected .folder-type-radio {
+  border-color: var(--green);
+}
+
+.folder-type-option.selected .folder-type-radio::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--green);
+  border-radius: 50%;
+}
+
+.folder-type-content {
+  flex: 1;
+}
+
+.folder-type-title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.folder-type-desc {
+  font-size: 11px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+/* ===== CHAT SECTION ===== */
+.chat-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chat-log {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.msg {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  max-width: 95%;
+}
+
+.msg.user {
+  margin-left: auto;
+  flex-direction: row-reverse;
+}
+
+.msg-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.msg.user .msg-avatar {
+  color: var(--amber);
+}
+
+.msg-bubble {
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.66);
+  line-height: 1.6;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.msg.user .msg-bubble {
+  background: rgba(32,76,61,0.94);
+  color: #fff;
+  border-color: rgba(32,76,61,0.5);
+}
+
+.msg-bubble h1, .msg-bubble h2, .msg-bubble h3 {
+  font-family: var(--display);
+  margin: 0 0 8px;
+  color: var(--green);
+}
+
+.msg.trace .msg-bubble {
+  background: var(--blue-lo);
+  border-color: rgba(34,94,168,0.2);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--blue);
+}
+
+.composer {
+  padding: 12px 14px;
+  border-top: 1px solid var(--line);
+  background: rgba(255,255,255,0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.composer textarea {
+  width: 100%;
+  min-height: 70px;
+  resize: vertical;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.68);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 13px;
+  padding: 10px 12px;
+  outline: none;
+  line-height: 1.6;
+}
+
+.composer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.composer-hints {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.hint-chip {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.5);
+  color: var(--ink-soft);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.hint-chip:hover {
+  background: rgba(255,255,255,0.8);
+  color: var(--ink);
+}
+
+/* ===== RIGHT PANEL TABS ===== */
+.right-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255,255,255,0.4);
+}
+
+.right-tab {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+  border-radius: var(--radius-xs);
+  padding: 6px 12px;
+  font-family: var(--sans);
+  font-size: 11px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.right-tab:hover {
+  background: rgba(255,255,255,0.5);
+}
+
+.right-tab.active {
+  background: var(--green);
+  color: #fff;
+  border-color: var(--green);
+}
+
+.right-content {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+}
+
+.right-content > div {
+  display: none;
+}
+
+.right-content > div.active {
+  display: block;
+}
+
+/* ===== MEMORY NOTES ===== */
+.note-item {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.55);
+  border-radius: var(--radius-xs);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.note-item.active {
+  border-color: rgba(32,76,61,0.3);
+  background: var(--green-lo);
+}
+
+.note-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.note-item-title {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--ink);
+}
+
+.note-item-content {
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.note-item-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ===== SEARCH INPUT ===== */
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.6);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.search-box input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--ink);
+}
+
+.search-box i {
+  color: var(--ink-fade);
+  font-size: 12px;
+}
+
+/* ===== LAW CATALOGUE IN WORKSPACE ===== */
+.law-tree { display: flex; flex-direction: column; gap: 4px; }
+
+.jur-group { border: 1px solid var(--line); border-radius: var(--radius-xs); overflow: hidden; }
+.jur-group-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 8px 12px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--ink);
+  background: rgba(255,255,255,0.35); transition: background 0.15s;
+}
+.jur-group-header:hover { background: rgba(255,255,255,0.55); }
+.jur-group-header .jur-flag { font-size: 14px; }
+.jur-group-header .jur-count { font-family: var(--mono); font-size: 10px; color: var(--ink-fade); }
+.jur-group-header .jur-chevron { font-size: 9px; color: var(--ink-fade); transition: transform 0.2s; }
+.jur-group.open .jur-chevron { transform: rotate(90deg); }
+.jur-group-body { display: none; padding: 4px 8px 8px; }
+.jur-group.open .jur-group-body { display: block; }
+
+.law-item {
+  border: 1px solid var(--line); border-radius: var(--radius-xs); overflow: hidden; margin-bottom: 4px;
+}
+.law-item-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px;
+  padding: 7px 10px; cursor: pointer; font-size: 11px; color: var(--ink-soft);
+  transition: background 0.15s;
+}
+.law-item-header:hover { background: rgba(255,255,255,0.4); }
+.law-item-header .law-code { font-family: var(--mono); font-size: 10px; color: var(--green); font-weight: 600; }
+.law-item-header .law-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.law-item-header .law-art-count { font-family: var(--mono); font-size: 9px; color: var(--ink-fade); }
+.law-item-header .law-chevron { font-size: 8px; color: var(--ink-fade); transition: transform 0.2s; }
+.law-item.open .law-chevron { transform: rotate(90deg); }
+.law-item-body { display: none; padding: 4px 8px 6px; max-height: 300px; overflow-y: auto; }
+.law-item.open .law-item-body { display: block; }
+
+.article-row {
+  display: flex; align-items: flex-start; gap: 8px; padding: 6px 8px;
+  border: 1px solid transparent; border-radius: 4px; cursor: pointer;
+  transition: 0.12s; font-size: 11px;
+}
+.article-row:hover { background: rgba(255,255,255,0.45); border-color: var(--line); }
+.article-row.selected { background: var(--green-lo); border-color: rgba(32,76,61,0.25); }
+.article-row .art-num { font-family: var(--mono); font-size: 10px; color: var(--amber); font-weight: 600; white-space: nowrap; min-width: 44px; }
+.article-row .art-theme { flex: 1; color: var(--ink-soft); line-height: 1.4; }
+.article-row .art-norm { font-family: var(--mono); font-size: 9px; padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
+.art-norm.obligation { background: var(--blue-lo); color: var(--blue); }
+.art-norm.prohibition { background: var(--red-lo); color: var(--red); }
+.art-norm.right { background: var(--green-lo); color: var(--green); }
+.art-norm.penalty { background: rgba(181,94,46,0.1); color: var(--amber); }
+.article-row .art-add {
+  appearance: none; border: none; background: transparent; color: var(--green);
+  font-size: 11px; cursor: pointer; padding: 0; opacity: 0; transition: opacity 0.12s;
+}
+.article-row:hover .art-add { opacity: 1; }
+
+/* Granularity toggle */
+.granularity-bar {
+  display: flex; gap: 2px; padding: 4px; background: rgba(255,255,255,0.3);
+  border: 1px solid var(--line); border-radius: 999px; margin-bottom: 8px;
+}
+.granularity-btn {
+  appearance: none; border: none; background: transparent; padding: 4px 10px;
+  font-family: var(--sans); font-size: 10px; border-radius: 999px; cursor: pointer;
+  color: var(--ink-soft); transition: 0.12s;
+}
+.granularity-btn.active { background: var(--green); color: #fff; }
+.granularity-btn:hover:not(.active) { background: rgba(255,255,255,0.5); }
+
+/* ===== JURISPRUDENCE SCRAPER PANEL ===== */
+.scraper-config {
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.4); overflow: hidden;
+}
+.scraper-config-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 10px 12px; background: rgba(255,255,255,0.3); border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+.scraper-config-header .scraper-title {
+  font-weight: 600; font-size: 12px; color: var(--ink);
+  display: flex; align-items: center; gap: 6px;
+}
+.scraper-config-body { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.scraper-field label {
+  display: block; font-size: 10px; font-weight: 600; color: var(--ink-fade);
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;
+}
+.scraper-field input, .scraper-field select {
+  width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: var(--radius-xs);
+  background: rgba(255,255,255,0.6); font-family: var(--sans); font-size: 12px; color: var(--ink);
+  outline: none;
+}
+.scraper-field input:focus, .scraper-field select:focus { border-color: var(--green); }
+.scraper-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.juris-results { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.juris-item {
+  border: 1px solid var(--line); border-radius: var(--radius-xs);
+  background: rgba(255,255,255,0.5); padding: 8px 10px; font-size: 11px;
+}
+.juris-item-header { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.juris-item-num { font-family: var(--mono); font-size: 11px; color: var(--blue); font-weight: 600; }
+.juris-item-meta { color: var(--ink-fade); font-size: 10px; margin-top: 3px; }
+.juris-item-actions { display: flex; gap: 6px; margin-top: 6px; }
+
+/* ===== SELECTED ARTICLES BAR ===== */
+.selected-articles-bar {
+  display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 10px;
+  background: var(--green-lo); border: 1px solid rgba(32,76,61,0.2);
+  border-radius: var(--radius-xs); margin-bottom: 8px;
+}
+.selected-articles-bar .sel-chip {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
+  background: rgba(32,76,61,0.15); border-radius: 999px; font-family: var(--mono);
+  font-size: 9px; color: var(--green);
+}
+.selected-articles-bar .sel-chip .sel-remove {
+  cursor: pointer; opacity: 0.6; font-size: 10px;
+}
+.selected-articles-bar .sel-chip .sel-remove:hover { opacity: 1; color: var(--red); }
+
+/* ===== ARTICLE DETAIL TOOLTIP ===== */
+.article-tooltip {
+  position: fixed; z-index: 9999; max-width: 380px; padding: 14px 16px;
+  background: var(--panel-strong); border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow);
+  backdrop-filter: blur(14px); pointer-events: none; opacity: 0;
+  transition: opacity 0.15s;
+}
+.article-tooltip.visible { opacity: 1; pointer-events: auto; }
+.article-tooltip .att-code { font-family: var(--mono); font-size: 11px; color: var(--amber); font-weight: 600; margin-bottom: 4px; }
+.article-tooltip .att-theme { font-size: 12px; color: var(--ink); font-weight: 600; margin-bottom: 6px; }
+.article-tooltip .att-text { font-size: 11px; color: var(--ink-soft); line-height: 1.5; max-height: 120px; overflow-y: auto; margin-bottom: 8px; }
+.article-tooltip .att-meta { display: flex; flex-wrap: wrap; gap: 4px; }
+.article-tooltip .att-tag {
+  font-family: var(--mono); font-size: 9px; padding: 2px 6px; border-radius: 3px;
+  border: 1px solid var(--line); background: rgba(255,255,255,0.5); color: var(--ink-fade);
+}
+
+/* ===== HIDDEN ===== */
+.hidden { display: none !important; }
+
+/* ===== ANIMATIONS ===== */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.loading-spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(34,94,168,0.2);
+  border-top-color: var(--blue);
+  animation: spin 0.75s linear infinite;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1400px) {
+  .main-grid {
+    grid-template-columns: 300px minmax(0, 1fr) 340px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .main-grid {
+    grid-template-columns: 280px minmax(0, 1fr);
+  }
+  
+  .right-panel {
+    display: none;
+  }
+}
+
+@media (max-width: 800px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .left-panel {
+    display: none;
+  }
+  
+  .topbar-center {
+    display: none;
+  }
+}
+</style>
+  <link rel="icon" href="data:,">
+</head>
+<body>
+
+<div class="workspace-shell">
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-kicker">Discovery · Agent Workspace</span>
+      <div class="brand-title">Corpus Intelligence</div>
+    </div>
+    
+    <div class="topbar-center">
+      <button class="view-tab active" data-view="artifacts"><i class="fas fa-folder-tree"></i> Artefatos</button>
+      <button class="view-tab" data-view="graph"><i class="fas fa-diagram-project"></i> Grafo</button>
+      <button class="view-tab" data-view="timeline"><i class="fas fa-clock-rotate-left"></i> Timeline</button>
+      <button class="view-tab" data-view="violations"><i class="fas fa-exclamation-triangle"></i> Violações</button>
+      <button class="view-tab" data-view="shared"><i class="fas fa-database"></i> Dados Compartilhados</button>
+      <button class="view-tab" data-view="legislation"><i class="fas fa-scale-balanced"></i> Legislação</button>
+      <button class="view-tab" data-view="jurisprudence"><i class="fas fa-landmark"></i> Jurisprudência</button>
+    </div>
+    
+    <div class="topbar-actions">
+      <span class="badge badge-green" id="statusBadge">carregando</span>
+      <div class="import-mode-wrap" title="Define como tratar conflitos ao importar workspace exportado">
+        <label for="importModeSelect" class="import-mode-label">Importação</label>
+        <select id="importModeSelect" class="import-mode-select">
+          <option value="add">Adicionar (renomear conflitos)</option>
+          <option value="overwrite">Sobrescrever (substituir conflitos)</option>
+        </select>
+      </div>
+      <button class="ghost-btn" id="importWorkspaceBtn"><i class="fas fa-file-import"></i> Importar Workspace</button>
+      <button class="ghost-btn" id="addFolderBtn"><i class="fas fa-folder-plus"></i> Adicionar</button>
+      <button class="ghost-btn" id="refreshBtn"><i class="fas fa-rotate"></i></button>
+      <button class="btn" id="buildContextBtn"><i class="fas fa-wand-magic-sparkles"></i> Montar Contexto</button>
+    </div>
+  </header>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+    <!-- LEFT PANEL: Navigation & Artifacts -->
+    <aside class="panel left-panel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <span class="panel-kicker">Navegação</span>
+          <span class="panel-title">Explorer</span>
+        </div>
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="artifactSearchInput" placeholder="Buscar artefatos...">
+        </div>
+      </div>
+      
+      <div class="panel-body" id="leftPanelBody">
+        <!-- CATEGORIES SECTION -->
+        <div class="expandable-section open" data-section="categories">
+          <div class="expandable-header">
+            <div class="expandable-header-left">
+              <div class="expandable-icon green"><i class="fas fa-layer-group"></i></div>
+              <div class="expandable-title-wrap">
+                <span class="expandable-title">Categorias</span>
+                <span class="expandable-subtitle" id="categoriesCount">0 categorias</span>
+              </div>
+            </div>
+            <i class="fas fa-chevron-down expandable-chevron"></i>
+          </div>
+          <div class="expandable-content">
+            <div class="expandable-inner" id="categoriesList"></div>
+          </div>
+        </div>
+
+        <!-- FILES SECTION -->
+        <div class="expandable-section" data-section="files">
+          <div class="expandable-header">
+            <div class="expandable-header-left">
+              <div class="expandable-icon blue"><i class="fas fa-file-lines"></i></div>
+              <div class="expandable-title-wrap">
+                <span class="expandable-title">Arquivos</span>
+                <span class="expandable-subtitle" id="filesCount">0 arquivos</span>
+              </div>
+            </div>
+            <i class="fas fa-chevron-down expandable-chevron"></i>
+          </div>
+          <div class="expandable-content">
+            <div class="expandable-inner" id="filesList"></div>
+          </div>
+        </div>
+
+        <!-- ENTITIES SECTION -->
+        <div class="expandable-section" data-section="entities">
+          <div class="expandable-header">
+            <div class="expandable-header-left">
+              <div class="expandable-icon purple"><i class="fas fa-users"></i></div>
+              <div class="expandable-title-wrap">
+                <span class="expandable-title">Entidades</span>
+                <span class="expandable-subtitle" id="entitiesCount">0 entidades</span>
+              </div>
+            </div>
+            <i class="fas fa-chevron-down expandable-chevron"></i>
+          </div>
+          <div class="expandable-content">
+            <div class="expandable-inner" id="entitiesList"></div>
+          </div>
+        </div>
+
+        <!-- FINDINGS SECTION -->
+        <div class="expandable-section" data-section="findings">
+          <div class="expandable-header">
+            <div class="expandable-header-left">
+              <div class="expandable-icon amber"><i class="fas fa-lightbulb"></i></div>
+              <div class="expandable-title-wrap">
+                <span class="expandable-title">Achados</span>
+                <span class="expandable-subtitle" id="findingsCount">0 achados</span>
+              </div>
+            </div>
+            <i class="fas fa-chevron-down expandable-chevron"></i>
+          </div>
+          <div class="expandable-content">
+            <div class="expandable-inner" id="findingsList"></div>
+          </div>
+        </div>
+
+        <!-- VIOLATIONS SECTION -->
+        <div class="expandable-section" data-section="violations">
+          <div class="expandable-header">
+            <div class="expandable-header-left">
+              <div class="expandable-icon red"><i class="fas fa-gavel"></i></div>
+              <div class="expandable-title-wrap">
+                <span class="expandable-title">Violações</span>
+                <span class="expandable-subtitle" id="violationsCount">0 violações</span>
+              </div>
+            </div>
+            <i class="fas fa-chevron-down expandable-chevron"></i>
+          </div>
+          <div class="expandable-content">
+            <div class="expandable-inner" id="violationsList"></div>
+          </div>
+        </div>
+
+        <!-- LEGISLATION SECTION (selected articles quick-access) -->
+        <div class="expandable-section" data-section="legislation">
+          <div class="expandable-header">
+            <div class="expandable-header-left">
+              <div class="expandable-icon green"><i class="fas fa-scale-balanced"></i></div>
+              <div class="expandable-title-wrap">
+                <span class="expandable-title">Artigos Selecionados</span>
+                <span class="expandable-subtitle" id="selectedArticlesCount">0 artigos</span>
+              </div>
+            </div>
+            <i class="fas fa-chevron-down expandable-chevron"></i>
+          </div>
+          <div class="expandable-content">
+            <div class="expandable-inner" id="selectedArticlesList">
+              <div class="context-empty">Nenhum artigo selecionado. Vá à aba Legislação para selecionar.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- JURISPRUDENCE SECTION (search results quick-access) -->
+        <div class="expandable-section" data-section="jurisprudence">
+          <div class="expandable-header">
+            <div class="expandable-header-left">
+              <div class="expandable-icon blue"><i class="fas fa-landmark"></i></div>
+              <div class="expandable-title-wrap">
+                <span class="expandable-title">Jurisprudência</span>
+                <span class="expandable-subtitle" id="jurisResultsCount">0 resultados</span>
+              </div>
+            </div>
+            <i class="fas fa-chevron-down expandable-chevron"></i>
+          </div>
+          <div class="expandable-content">
+            <div class="expandable-inner" id="jurisResultsList">
+              <div class="context-empty">Nenhuma busca realizada. Vá à aba Jurisprudência para pesquisar.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WORKSPACE BUILDER -->
+      <div class="panel-footer">
+        <div class="workspace-builder">
+          <div class="workspace-builder-header">
+            <span class="workspace-builder-title"><i class="fas fa-briefcase"></i> Contexto do Agente</span>
+            <button class="btn btn-sm btn-outline" id="clearContextBtn"><i class="fas fa-trash"></i></button>
+          </div>
+          <div class="context-items" id="contextItems">
+            <div class="context-empty">Arraste itens aqui ou clique em "+" para adicionar ao contexto</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER PANEL: Main Content -->
+    <main class="panel center-panel">
+      <!-- ARTIFACTS VIEW -->
+      <div class="view-content active" id="viewArtifacts">
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <span class="panel-kicker">Visualização</span>
+            <span class="panel-title">Artefatos do Corpus</span>
+          </div>
+          <div class="topbar-actions">
+            <button class="ghost-btn" id="viewGridBtn"><i class="fas fa-th-large"></i></button>
+            <button class="ghost-btn" id="viewListBtn"><i class="fas fa-list"></i></button>
+          </div>
+        </div>
+        <div class="panel-body" id="artifactsGrid">
+          <!-- Artifacts rendered here -->
+        </div>
+      </div>
+
+      <!-- GRAPH VIEW -->
+      <div class="view-content" id="viewGraph">
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <span class="panel-kicker">Relacionamentos</span>
+            <span class="panel-title">Grafo de Entidades</span>
+          </div>
+          <div class="topbar-actions">
+            <select class="ghost-btn" id="graphTypeSelect">
+              <option value="entities">Entidades</option>
+              <option value="files">Arquivos</option>
+              <option value="timeline">Cronológico</option>
+              <option value="violations">Violações</option>
+              <option value="law-violations">Lei × Violações</option>
+              <option value="law-articles">Artigos × Relações</option>
+            </select>
+            <button class="ghost-btn" id="exportGraphBtn"><i class="fas fa-download"></i> Exportar</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="graph-container" id="graphContainer">
+            <div class="graph-toolbar">
+              <button class="ghost-btn btn-sm" id="zoomInBtn" title="Zoom In"><i class="fas fa-plus"></i></button>
+              <button class="ghost-btn btn-sm" id="zoomOutBtn" title="Zoom Out"><i class="fas fa-minus"></i></button>
+              <span class="graph-zoom-label" id="zoomLabel">100%</span>
+              <button class="ghost-btn btn-sm" id="fitGraphBtn" title="Ajustar"><i class="fas fa-compress-arrows-alt"></i></button>
+              <button class="ghost-btn btn-sm" id="fullscreenGraphBtn" title="Tela cheia"><i class="fas fa-expand"></i></button>
+            </div>
+            <div class="mermaid" id="mermaidDiagram"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIMELINE VIEW -->
+      <div class="view-content" id="viewTimeline">
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <span class="panel-kicker">Cronologia</span>
+            <span class="panel-title">Linha do Tempo</span>
+          </div>
+          <div class="topbar-actions">
+            <input type="date" class="ghost-btn" id="timelineFrom">
+            <span style="color: var(--ink-fade);">até</span>
+            <input type="date" class="ghost-btn" id="timelineTo">
+            <button class="btn btn-sm" id="filterTimelineBtn">Filtrar</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="timeline-list" id="timelineList"></div>
+        </div>
+      </div>
+
+      <!-- VIOLATIONS VIEW -->
+      <div class="view-content" id="viewViolations">
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <span class="panel-kicker">Análise Legal</span>
+            <span class="panel-title">Violações Identificadas</span>
+          </div>
+          <div class="topbar-actions">
+            <select class="ghost-btn" id="violationSeverity">
+              <option value="">Todas severidades</option>
+              <option value="critical">Críticas</option>
+              <option value="high">Altas</option>
+              <option value="medium">Médias</option>
+              <option value="low">Baixas</option>
+            </select>
+            <button class="ghost-btn" id="exportViolationsBtn"><i class="fas fa-download"></i> Exportar</button>
+          </div>
+        </div>
+        <div class="panel-body" id="violationsView"></div>
+      </div>
+
+      <!-- SHARED DATA VIEW -->
+      <div class="view-content" id="viewShared">
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <span class="panel-kicker">Recursos</span>
+            <span class="panel-title">Dados Compartilhados</span>
+          </div>
+        </div>
+        <div class="shared-data-tabs">
+          <button class="shared-data-tab active" data-tab="law"><i class="fas fa-scale-balanced"></i> Legislação</button>
+          <button class="shared-data-tab" data-tab="corpus"><i class="fas fa-book"></i> Corpus</button>
+          <button class="shared-data-tab" data-tab="ontology"><i class="fas fa-sitemap"></i> Ontologia</button>
+          <button class="shared-data-tab" data-tab="media"><i class="fas fa-photo-video"></i> Mídia</button>
+          <button class="shared-data-tab" data-tab="transcripts"><i class="fas fa-file-audio"></i> Transcrições</button>
+          <button class="shared-data-tab" data-tab="docs"><i class="fas fa-file-alt"></i> Documentos</button>
+        </div>
+        <div class="panel-body" id="sharedDataContent">
+          <div class="shared-tree" id="sharedTree"></div>
+        </div>
+      </div>
+
+      <!-- LEGISLATION VIEW -->
+      <div class="view-content" id="viewLegislation">
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <span class="panel-kicker">Base Legal</span>
+            <span class="panel-title">Catálogo de Legislação</span>
+          </div>
+          <div class="topbar-actions">
+            <div class="granularity-bar">
+              <button class="granularity-btn active" data-level="law" title="Apenas lei">Lei</button>
+              <button class="granularity-btn" data-level="compact" title="Lei + artigo resumido">Compacto</button>
+              <button class="granularity-btn" data-level="full" title="Lei + artigo + detalhes">Completo</button>
+            </div>
+            <div class="search-box" style="min-width: 180px;">
+              <i class="fas fa-search"></i>
+              <input type="text" id="lawSearchInput" placeholder="Buscar artigos...">
+            </div>
+            <button class="ghost-btn" id="addSelectedArticlesBtn" style="display:none;"><i class="fas fa-plus-circle"></i> Adicionar seleção ao contexto</button>
+          </div>
+        </div>
+        <!-- Selected articles bar -->
+        <div class="selected-articles-bar" id="selectedArticlesBar" style="display:none; margin: 8px 12px;">
+          <span style="font-size: 11px; font-weight: 600; color: var(--green); margin-right: 6px;"><i class="fas fa-check-circle"></i> Selecionados:</span>
+          <div id="selectedArticlesChips" style="display: flex; flex-wrap: wrap; gap: 4px; flex: 1;"></div>
+          <button class="ghost-btn btn-sm" id="clearSelectedArticlesBtn" style="margin-left: auto;"><i class="fas fa-times"></i> Limpar</button>
+        </div>
+        <div class="panel-body" id="lawCatalogueBody">
+          <div class="law-tree" id="lawTree">
+            <div class="context-empty"><i class="fas fa-spinner fa-spin"></i> Carregando catálogo de legislação...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- JURISPRUDENCE VIEW -->
+      <div class="view-content" id="viewJurisprudence">
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <span class="panel-kicker">Pesquisa TJRS</span>
+            <span class="panel-title">Jurisprudência</span>
+          </div>
+          <div class="topbar-actions">
+            <span class="badge badge-blue" id="jurisBadge">configurar busca</span>
+          </div>
+        </div>
+        <div class="panel-body" style="gap: 14px;">
+          <!-- Scraper Configuration -->
+          <div class="scraper-config">
+            <div class="scraper-config-header" id="scraperConfigHeader">
+              <span class="scraper-title"><i class="fas fa-cog"></i> Configuração da Busca</span>
+              <i class="fas fa-chevron-down" style="font-size: 10px; color: var(--ink-fade);"></i>
+            </div>
+            <div class="scraper-config-body" id="scraperConfigBody">
+              <div class="scraper-field">
+                <label for="scraperQuery">Texto de busca (semântica)</label>
+                <input type="text" id="scraperQuery" placeholder="ex: alienação parental, dano moral, pensão alimentícia..." value="">
+              </div>
+              <div class="scraper-row">
+                <div class="scraper-field">
+                  <label for="scraperMaxResults">Máx. resultados</label>
+                  <input type="number" id="scraperMaxResults" value="100" min="1" max="500">
+                </div>
+                <div class="scraper-field">
+                  <label for="scraperSearchIndex">Índice de busca</label>
+                  <select id="scraperSearchIndex">
+                    <option value="ementa">Ementa</option>
+                    <option value="inteiro_teor_url">Inteiro Teor</option>
+                  </select>
+                </div>
+              </div>
+              <div class="scraper-row">
+                <div class="scraper-field">
+                  <label for="scraperTipoDecisao">Tipo de decisão</label>
+                  <select id="scraperTipoDecisao">
+                    <option value="">Todos</option>
+                    <option value="Acórdão">Acórdão</option>
+                    <option value="Monocrática">Monocrática</option>
+                    <option value="Sentença">Sentença</option>
+                  </select>
+                </div>
+                <div class="scraper-field">
+                  <label for="scraperTipoProcesso">Tipo de processo</label>
+                  <input type="text" id="scraperTipoProcesso" placeholder="ex: Apelação Cível">
+                </div>
+              </div>
+              <div class="scraper-row">
+                <div class="scraper-field">
+                  <label for="scraperDataInicio">Data julg. início</label>
+                  <input type="date" id="scraperDataInicio">
+                </div>
+                <div class="scraper-field">
+                  <label for="scraperDataFim">Data julg. fim</label>
+                  <input type="date" id="scraperDataFim">
+                </div>
+              </div>
+              <div class="scraper-row">
+                <div class="scraper-field">
+                  <label for="scraperRelator">Relator</label>
+                  <input type="text" id="scraperRelator" placeholder="Nome do relator...">
+                </div>
+                <div class="scraper-field">
+                  <label for="scraperComarca">Comarca de origem</label>
+                  <input type="text" id="scraperComarca" placeholder="ex: Porto Alegre">
+                </div>
+              </div>
+              <div class="scraper-field">
+                <label for="scraperAssuntoCNJ">Assunto CNJ</label>
+                <input type="text" id="scraperAssuntoCNJ" placeholder="ex: Direito de Família">
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 4px;">
+                <button class="btn" id="scraperSearchBtn"><i class="fas fa-search"></i> Buscar Jurisprudência</button>
+                <button class="ghost-btn" id="scraperResetBtn"><i class="fas fa-undo"></i> Limpar</button>
+              </div>
+              <div class="context-empty" id="scraperStatus" style="display: none; padding: 10px;"></div>
+            </div>
+          </div>
+          <!-- Results -->
+          <div id="jurisResultsArea">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-weight: 600; font-size: 12px; color: var(--ink);">Resultados</span>
+              <div style="display: flex; gap: 6px;">
+                <button class="ghost-btn btn-sm" id="jurisAddAllContextBtn" style="display:none;"><i class="fas fa-plus"></i> Tudo ao Contexto</button>
+                <button class="ghost-btn btn-sm" id="jurisDownloadAllBtn" style="display:none;"><i class="fas fa-download"></i> Baixar Inteiro Teor</button>
+              </div>
+            </div>
+            <div class="juris-results" id="jurisResultsContainer">
+              <div class="context-empty">Configure a busca acima e clique "Buscar Jurisprudência" para pesquisar na base do TJRS.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT / AGENT -->
+      <div class="chat-wrapper">
+        <div class="chat-log" id="chatLog"></div>
+        <div class="composer">
+          <textarea id="chatInput" placeholder="Pergunte ao agente sobre o corpus, legislação, jurisprudência, peça análises..."></textarea>
+          <div class="composer-row">
+            <div class="composer-hints">
+              <button class="hint-chip" data-prompt="Faça um tour do meu acervo">Tour</button>
+              <button class="hint-chip" data-prompt="Quais violações são mais graves?">Violações</button>
+              <button class="hint-chip" data-prompt="Monte uma timeline dos eventos">Timeline</button>
+              <button class="hint-chip" data-prompt="Quais lacunas existem no corpus?">Lacunas</button>
+              <button class="hint-chip" data-prompt="Busque jurisprudência sobre alienação parental no TJRS">Jurisprudência</button>
+              <button class="hint-chip" data-prompt="Quais artigos de lei se aplicam às violações encontradas?">Lei × Violações</button>
+              <button class="hint-chip" data-prompt="Gere um grafo de relações entre artigos e violações">Grafo Legal</button>
+            </div>
+            <button class="btn" id="sendBtn"><i class="fas fa-paper-plane"></i> Enviar</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT PANEL: Detail & Memory -->
+    <aside class="panel right-panel">
+      <div class="right-tabs">
+        <button class="right-tab active" data-tab="detail"><i class="fas fa-eye"></i> Detalhe</button>
+        <button class="right-tab" data-tab="viewer"><i class="fas fa-file"></i> Visualizador</button>
+        <button class="right-tab" data-tab="memory"><i class="fas fa-brain"></i> Memória</button>
+      </div>
+      
+      <div class="right-content" id="rightContent">
+        <!-- DETAIL TAB -->
+        <div class="active" id="tabDetail">
+          <div class="file-viewer">
+            <div class="file-viewer-empty" id="detailEmpty">
+              <i class="fas fa-mouse-pointer"></i>
+              <p>Selecione um artefato para ver detalhes</p>
+            </div>
+            <div id="detailContent" class="hidden">
+              <div class="file-viewer-header">
+                <span class="file-viewer-name" id="detailFileName">
+                  <i class="fas fa-file"></i>
+                  <span></span>
+                </span>
+                <div class="topbar-actions">
+                  <button class="ghost-btn btn-sm" id="addToContextBtn"><i class="fas fa-plus"></i> Contexto</button>
+                  <button class="ghost-btn btn-sm" id="openRawBtn"><i class="fas fa-external-link"></i></button>
+                </div>
+              </div>
+              <div class="file-viewer-content" id="detailBody"></div>
+              <div style="padding: 12px; border-top: 1px solid var(--line);">
+                <div style="font-size: 11px; color: var(--ink-fade); margin-bottom: 8px;">Metadados</div>
+                <div id="detailMeta" style="font-size: 12px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEWER TAB -->
+        <div id="tabViewer">
+          <div class="file-viewer">
+            <div class="file-viewer-empty" id="viewerEmpty">
+              <i class="fas fa-file-lines"></i>
+              <p>Arraste um arquivo aqui ou selecione para visualizar</p>
+              <p style="font-size: 10px; margin-top: 8px;">Suporta: PDF, DOCX, MD, JSON, TXT, código</p>
+            </div>
+            <div id="viewerContent" class="hidden">
+              <div class="file-viewer-header">
+                <span class="file-viewer-name" id="viewerFileName">
+                  <i class="fas fa-file"></i>
+                  <span></span>
+                </span>
+                <div class="topbar-actions">
+                  <button class="ghost-btn btn-sm" id="downloadFileBtn"><i class="fas fa-download"></i></button>
+                  <button class="ghost-btn btn-sm" id="closeViewerBtn"><i class="fas fa-times"></i></button>
+                </div>
+              </div>
+              <div class="file-viewer-content" id="viewerBody"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MEMORY TAB -->
+        <div id="tabMemory">
+          <div style="margin-bottom: 12px;">
+            <input type="text" id="noteTitle" placeholder="Título da nota" style="width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius-xs); font-family: var(--sans); font-size: 12px; margin-bottom: 8px;">
+            <textarea id="noteBody" placeholder="Registre decisões, hipóteses, insights..." style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius-xs); font-family: var(--sans); font-size: 12px; resize: vertical;"></textarea>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <button class="btn btn-sm" id="saveNoteBtn"><i class="fas fa-save"></i> Salvar</button>
+              <button class="ghost-btn btn-sm" id="newNoteBtn"><i class="fas fa-plus"></i> Nova</button>
+            </div>
+          </div>
+          <div id="notesList"></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ARTICLE TOOLTIP -->
+<div class="article-tooltip" id="articleTooltip">
+  <div class="att-code"></div>
+  <div class="att-theme"></div>
+  <div class="att-text"></div>
+  <div class="att-meta"></div>
+</div>
+
+<!-- ADD FOLDER MODAL -->
+<div class="modal-overlay" id="addFolderModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <span class="modal-title">Adicionar ao Workspace</span>
+      <button class="modal-close" id="closeAddFolderModal"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom: 16px;">
+        <label for="folderPathInput" style="font-weight: 600; font-size: 12px; display: block; margin-bottom: 8px;">Caminho da pasta ou arquivo</label>
+        <input type="text" id="folderPathInput" placeholder="/caminho/para/pasta" style="width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); font-family: var(--sans);">
+      </div>
+      
+      <div style="margin-bottom: 16px;">
+        <div style="font-weight: 600; font-size: 12px; display: block; margin-bottom: 8px;">Tipo de conteúdo</div>
+        <div class="folder-type-options">
+          <div class="folder-type-option selected" data-type="canonical">
+            <div class="folder-type-radio"></div>
+            <div class="folder-type-content">
+              <div class="folder-type-title">Árvore Canônica</div>
+              <div class="folder-type-desc">Parte da estrutura oficial do caso. Será indexado no manifesto principal e seguirá a taxonomia padrão.</div>
+            </div>
+          </div>
+          <div class="folder-type-option" data-type="scattered">
+            <div class="folder-type-radio"></div>
+            <div class="folder-type-content">
+              <div class="folder-type-title">Materiais Dispersos</div>
+              <div class="folder-type-desc">Arquivos pessoais, anotações, materiais auxiliares que não fazem parte da estrutura formal do caso.</div>
+            </div>
+          </div>
+          <div class="folder-type-option" data-type="reference">
+            <div class="folder-type-radio"></div>
+            <div class="folder-type-content">
+              <div class="folder-type-title">Referência Externa</div>
+              <div class="folder-type-desc">Legislação, jurisprudência, artigos ou materiais de referência para consulta contextual.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label for="folderInstructions" style="font-weight: 600; font-size: 12px; display: block; margin-bottom: 8px;">Instruções para o agente (opcional)</label>
+        <textarea id="folderInstructions" placeholder="Descreva o que está nesta pasta, como deve ser tratada, relações com outros materiais..." style="width: 100%; min-height: 80px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); font-family: var(--sans); resize: vertical;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="ghost-btn" id="cancelAddFolder">Cancelar</button>
+      <button class="btn" id="confirmAddFolder"><i class="fas fa-folder-plus"></i> Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTEXT BUILDER MODAL -->
+<div class="modal-overlay" id="contextModal">
+  <div class="modal-card" style="max-width: 700px;">
+    <div class="modal-header">
+      <span class="modal-title">Montar Contexto para o Agente</span>
+      <button class="modal-close" id="closeContextModal"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size: 13px; color: var(--ink-soft); margin-bottom: 16px;">
+        O contexto montado será enviado ao agente junto com sua próxima pergunta. Itens selecionados serão resumidos e incluídos.
+      </p>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div>
+          <div style="font-weight: 600; font-size: 12px; margin-bottom: 8px;">Itens no Contexto</div>
+          <div id="contextModalItems" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px;"></div>
+        </div>
+        <div>
+          <div style="font-weight: 600; font-size: 12px; margin-bottom: 8px;">Adicionar Rapidamente</div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <button class="ghost-btn" id="addAllViolationsBtn"><i class="fas fa-gavel"></i> Todas as violações</button>
+            <button class="ghost-btn" id="addAllEntitiesBtn"><i class="fas fa-users"></i> Todas as entidades</button>
+            <button class="ghost-btn" id="addTimelineBtn"><i class="fas fa-clock"></i> Timeline completa</button>
+            <button class="ghost-btn" id="addFindingsBtn"><i class="fas fa-lightbulb"></i> Todos os achados</button>
+            <button class="ghost-btn" id="addAllLawArticlesBtn"><i class="fas fa-scale-balanced"></i> Artigos selecionados</button>
+            <button class="ghost-btn" id="addAllJurisContextBtn"><i class="fas fa-landmark"></i> Jurisprudência encontrada</button>
+          </div>
+        </div>
+      </div>
+      
+      <div style="margin-top: 16px;">
+        <div style="font-weight: 600; font-size: 12px; margin-bottom: 8px;">Instrução Especial</div>
+        <textarea id="contextInstruction" placeholder="Adicione instruções específicas para como o agente deve usar este contexto..." style="width: 100%; min-height: 60px; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); font-family: var(--sans); resize: vertical; font-size: 12px;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="ghost-btn" id="cancelContext">Cancelar</button>
+      <button class="btn" id="applyContext"><i class="fas fa-check"></i> Aplicar Contexto</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" class="hidden" id="fileUploadInput" multiple>
+<input type="file" class="hidden" id="workspaceImportInput" accept=".json,application/json">
+
+<script src="/assets/llm-provider.js"></script>
+<script>
+// ===== INITIALIZATION =====
+if (window.mermaid) {
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'neutral',
+    securityLevel: 'loose',
+    flowchart: { curve: 'basis' }
+  });
+} else {
+  console.warn('Mermaid library failed to load; graph rendering is disabled.');
+}
+
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+}
+
+// ===== CONFIGURATION =====
+const CURRENT_URL = (() => { try { return new URL(window.location.href); } catch { return null; } })();
+const CURRENT_HOST = CURRENT_URL?.hostname || window.location.hostname || 'localhost';
+const CURRENT_PROTOCOL = CURRENT_URL?.protocol || window.location.protocol || 'http:';
+const API_BASES = (() => {
+  const detectedOrigin = window.location.origin || `${CURRENT_PROTOCOL}//${CURRENT_HOST}:3010`;
+  const candidates = [
+    detectedOrigin,
+    `${CURRENT_PROTOCOL}//${CURRENT_HOST}:3010`
+  ];
+  const unique = [];
+  for (const base of candidates) {
+    if (base && !unique.includes(base)) unique.push(base);
+  }
+  return unique;
+})();
+const CASE_SERVER = API_BASES[0] || 'http://localhost:3010';
+const DISCOVERY_UI_API = API_BASES[1] || CASE_SERVER;
+const IMPORT_MODE_KEY = 'discovery.agent.import.mode';
+const SHARED_PATH = '/_shared';
+const LAW_API = {
+  frameworks: '/api/law/frameworks',
+  frameworkArticles: (code) => `/api/law/frameworks/${encodeURIComponent(code)}/articles`
+};
+
+function getDiscoveryUserId() {
+  let uid = localStorage.getItem('discoveryUserId');
+  if (!uid) {
+    uid = crypto.randomUUID
+      ? crypto.randomUUID()
+      : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) => (
+          c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4
+        ).toString(16));
+  }
+  localStorage.setItem('discoveryUserId', uid);
+  return uid;
+}
+const DISCOVERY_USER_ID = getDiscoveryUserId();
+
+// ===== STATE =====
+const state = {
+  scanned: false,
+  endpoints: [],
+  categories: {},
+  pipelineStats: null,
+  caseState: null,
+  intelligenceSummary: null,
+  violations: [],
+  timeline: [],
+  entities: {},
+  relationships: [],
+  selectedArtifact: null,
+  contextItems: [],
+  notes: [],
+  editingNoteId: null,
+  chatHistory: [],
+  currentView: 'artifacts',
+  currentSharedTab: 'law',
+  sharedData: {},
+  busy: false,
+  folderType: 'canonical',
+  // Legal knowledge
+  lawFrameworks: [],          // [{framework_code, framework_name, jurisdiction, ...}]
+  lawCatalogue: {},           // {code: {meta, articles[]}}
+  selectedLawArticles: [],    // [{eli_id, article_number, theme, text, framework_code, ...}]
+  lawGranularity: 'compact',  // 'law' | 'compact' | 'full'
+  // Jurisprudence
+  jurisResults: [],           // [{numero_processo, inteiro_url, tipo_processo, relator, ...}]
+  jurisContinuation: null,
+  jurisSearching: false,
+  scraperConfig: {
+    query: '',
+    maxResults: 100,
+    searchIndex: 'ementa',
+    tipoDecisao: '',
+    tipoProcesso: '',
+    dataInicio: '',
+    dataFim: '',
+    relator: '',
+    comarca: '',
+    assuntoCNJ: ''
+  }
+};
+
+// ===== UTILITIES =====
+function esc(val) {
+  const div = document.createElement('div');
+  div.textContent = val == null ? '' : String(val);
+  return div.innerHTML;
+}
+
+function renderMarkdown(markdown) {
+  const source = markdown == null ? '' : String(markdown);
+  if (window.marked && typeof window.marked.parse === 'function') {
+    return window.marked.parse(source);
+  }
+  return `<pre>${esc(source)}</pre>`;
+}
+
+function shortenPath(val, max = 40) {
+  if (!val) return '';
+  const str = String(val);
+  if (str.length <= max) return str;
+  const parts = str.split('/');
+  if (parts.length <= 2) return str.slice(-max);
+  return '…/' + parts.slice(-2).join('/');
+}
+
+function humanSize(bytes) {
+  const val = Number(bytes || 0);
+  if (!val) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let n = val, i = 0;
+  while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+  return `${n.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
+function getFileIcon(ext) {
+  const icons = {
+    pdf: 'fa-file-pdf', docx: 'fa-file-word', doc: 'fa-file-word',
+    xlsx: 'fa-file-excel', xls: 'fa-file-excel', csv: 'fa-file-csv',
+    png: 'fa-file-image', jpg: 'fa-file-image', jpeg: 'fa-file-image', gif: 'fa-file-image',
+    mp3: 'fa-file-audio', wav: 'fa-file-audio', m4a: 'fa-file-audio',
+    mp4: 'fa-file-video', mov: 'fa-file-video', avi: 'fa-file-video',
+    md: 'fa-file-lines', txt: 'fa-file-alt',
+    json: 'fa-file-code', js: 'fa-file-code', py: 'fa-file-code', html: 'fa-file-code', css: 'fa-file-code',
+    zip: 'fa-file-zipper', rar: 'fa-file-zipper'
+  };
+  return icons[ext?.toLowerCase()] || 'fa-file';
+}
+
+function storageKey(suffix) {
+  return `discovery.workspace.${CASE_SERVER}.${suffix}`;
+}
+
+async function safeFetch(url, options) {
+  const resp = await fetch(url, options);
+  const ct = resp.headers.get('content-type') || '';
+  if (!resp.ok) {
+    const err = ct.includes('json') ? await resp.json() : await resp.text();
+    throw new Error(typeof err === 'string' ? err : (err.error || err.detail || `HTTP ${resp.status}`));
+  }
+  return ct.includes('json') ? resp.json() : resp.text();
+}
+
+async function safeFetchApi(path, options, bases = API_BASES) {
+  let lastError = null;
+
+  for (const base of bases) {
+    try {
+      return await safeFetch(`${base}${path}`, options);
+    } catch (err) {
+      lastError = err;
+      const message = String(err?.message || err);
+      const shouldRetry = /HTTP 404|HTTP 5\d\d|Failed to fetch|NetworkError|Cannot GET/i.test(message);
+      if (!shouldRetry) throw err;
+    }
+  }
+
+  throw lastError || new Error(`Falha ao consultar ${path}`);
+}
+
+function getImportModeSetting() {
+  const stored = localStorage.getItem(IMPORT_MODE_KEY);
+  return stored === 'overwrite' ? 'overwrite' : 'add';
+}
+
+function setImportModeSetting(value) {
+  const normalized = value === 'overwrite' ? 'overwrite' : 'add';
+  localStorage.setItem(IMPORT_MODE_KEY, normalized);
+  return normalized;
+}
+
+function initImportModeControl() {
+  const select = document.getElementById('importModeSelect');
+  if (!select) return;
+  select.value = getImportModeSetting();
+  select.addEventListener('change', () => {
+    select.value = setImportModeSetting(select.value);
+  });
+}
+
+function triggerWorkspaceImport() {
+  const input = document.getElementById('workspaceImportInput');
+  if (input) input.click();
+}
+
+async function handleWorkspaceImportSelection(event) {
+  const input = event.target;
+  const file = input.files && input.files[0];
+  if (!file) return;
+
+  const importMode = getImportModeSetting();
+  const overwriteExisting = importMode === 'overwrite';
+  const modeLabel = overwriteExisting
+    ? 'Sobrescrever (substituir conflitos)'
+    : 'Adicionar (renomear conflitos)';
+
+  try {
+    appendMessage('trace', `[Workspace] Importando \"${file.name}\" no modo ${modeLabel}...`);
+
+    const formData = new FormData();
+    formData.append('bundle', file, file.name);
+    formData.append('user_id', DISCOVERY_USER_ID);
+    formData.append('overwrite_existing', overwriteExisting ? 'true' : 'false');
+
+    const resp = await fetch(`${DISCOVERY_UI_API}/api/discovery/import-session`, {
+      method: 'POST',
+      headers: {
+        'X-Discovery-User-Id': DISCOVERY_USER_ID,
+      },
+      body: formData,
+    });
+
+    const payload = await resp.json().catch(() => null);
+    if (!resp.ok) {
+      const detail = payload && payload.error ? payload.error : `HTTP ${resp.status}`;
+      throw new Error(detail);
+    }
+
+    await refreshWorkspace();
+    loadLawCatalogue().catch(() => null);
+
+    const imported = Number(payload?.import?.imported_files || 0);
+    const overwritten = Number(payload?.import?.overwritten_files || 0);
+    const renamed = Number(payload?.import?.renamed_existing_files || 0);
+    const total = Number(payload?.rebuild?.total_files || 0);
+
+    appendMessage(
+      'assistant',
+      `Importação concluída. Arquivos importados: **${imported}**. Sobrescritos: **${overwritten}**. Renomeados por conflito: **${renamed}**. Modo: **${modeLabel}**. Total indexado: **${total}**.`
+    );
+  } catch (err) {
+    appendMessage('assistant', `Falha ao importar workspace: ${err.message || String(err)}`);
+  } finally {
+    input.value = '';
+  }
+}
+
+async function ensureDiscoverySession() {
+  try {
+    await safeFetch(`${DISCOVERY_UI_API}/api/discovery/init-session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Discovery-User-Id': DISCOVERY_USER_ID,
+      },
+      body: JSON.stringify({ user_id: DISCOVERY_USER_ID }),
+    });
+    return true;
+  } catch (err) {
+    console.warn('discovery init-session failed:', err.message || err);
+    return false;
+  }
+}
+
+// ===== NOTES MANAGEMENT =====
+function loadNotes() {
+  try {
+    state.notes = JSON.parse(localStorage.getItem(storageKey('notes')) || '[]');
+  } catch { state.notes = []; }
+}
+
+function saveNotes() {
+  localStorage.setItem(storageKey('notes'), JSON.stringify(state.notes));
+}
+
+function upsertNote(note) {
+  const now = new Date().toISOString();
+  if (note.id) {
+    state.notes = state.notes.map(n => n.id === note.id ? { ...n, ...note, updatedAt: now } : n);
+  } else {
+    state.notes.unshift({ id: `note-${Date.now()}`, ...note, createdAt: now, updatedAt: now });
+  }
+  saveNotes();
+  renderNotes();
+}
+
+function deleteNote(id) {
+  state.notes = state.notes.filter(n => n.id !== id);
+  if (state.editingNoteId === id) clearNoteEditor();
+  saveNotes();
+  renderNotes();
+}
+
+function clearNoteEditor() {
+  state.editingNoteId = null;
+  document.getElementById('noteTitle').value = '';
+  document.getElementById('noteBody').value = '';
+}
+
+function editNote(id) {
+  const note = state.notes.find(n => n.id === id);
+  if (!note) return;
+  state.editingNoteId = id;
+  document.getElementById('noteTitle').value = note.title || '';
+  document.getElementById('noteBody').value = note.content || '';
+  renderNotes();
+}
+
+function renderNotes() {
+  const list = document.getElementById('notesList');
+  if (!state.notes.length) {
+    list.innerHTML = '<div class="context-empty">Nenhuma nota salva ainda.</div>';
+    return;
+  }
+  list.innerHTML = state.notes.map(n => `
+    <div class="note-item ${n.id === state.editingNoteId ? 'active' : ''}">
+      <div class="note-item-header">
+        <span class="note-item-title">${esc(n.title || 'Sem título')}</span>
+        <span class="badge">${new Date(n.updatedAt || n.createdAt).toLocaleDateString('pt-BR')}</span>
+      </div>
+      <div class="note-item-content">${esc((n.content || '').slice(0, 120))}</div>
+      <div class="note-item-actions">
+        <button class="artifact-mini-btn" onclick="editNote('${n.id}')">editar</button>
+        <button class="artifact-mini-btn" onclick="deleteNote('${n.id}')">remover</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== CONTEXT MANAGEMENT =====
+function loadContext() {
+  try {
+    state.contextItems = JSON.parse(localStorage.getItem(storageKey('context')) || '[]');
+  } catch { state.contextItems = []; }
+}
+
+function saveContext() {
+  localStorage.setItem(storageKey('context'), JSON.stringify(state.contextItems));
+}
+
+function addToContext(item) {
+  if (state.contextItems.find(c => c.id === item.id)) return;
+  state.contextItems.push(item);
+  saveContext();
+  renderContextItems();
+}
+
+function removeFromContext(id) {
+  state.contextItems = state.contextItems.filter(c => c.id !== id);
+  saveContext();
+  renderContextItems();
+}
+
+function clearContext() {
+  state.contextItems = [];
+  saveContext();
+  renderContextItems();
+}
+
+function renderContextItems() {
+  const container = document.getElementById('contextItems');
+  if (!state.contextItems.length) {
+    container.innerHTML = '<div class="context-empty">Arraste itens aqui ou clique em "+" para adicionar ao contexto</div>';
+    return;
+  }
+  container.innerHTML = state.contextItems.map(item => `
+    <div class="context-item">
+      <div class="context-item-name">
+        <i class="fas ${getFileIcon(item.extension)}"></i>
+        <span>${esc(item.name || item.file || 'Item')}</span>
+      </div>
+      <span class="context-item-type">${esc(item.type || 'file')}</span>
+      <button class="context-item-remove" onclick="removeFromContext('${esc(item.id)}')"><i class="fas fa-times"></i></button>
+    </div>
+  `).join('');
+}
+
+// ===== DATA LOADING =====
+async function refreshWorkspace(silent = false) {
+  try {
+    if (!silent) document.getElementById('statusBadge').textContent = 'carregando';
+
+    const [endpoints, categories, stats, intelligenceStatus, timeline, relationships] = await Promise.allSettled([
+      safeFetchApi('/api/endpoints'),
+      safeFetchApi('/api/categories'),
+      safeFetchApi('/api/pipeline/stats').catch(() => null),
+      safeFetchApi('/api/intelligence/status').catch(() => null),
+      safeFetchApi('/api/pipeline/timeline').catch(() => []),
+      safeFetchApi('/api/pipeline/relationships').catch(() => [])
+    ]);
+
+    const availableIntelligence = intelligenceStatus.status === 'fulfilled'
+      ? (intelligenceStatus.value?.available || {})
+      : {};
+
+    const shouldLoadCaseState = Boolean(availableIntelligence.caseState);
+    const shouldLoadViolations = Boolean(availableIntelligence.violations);
+
+    const [caseState, violations] = await Promise.allSettled([
+      shouldLoadCaseState ? safeFetchApi('/api/case-state').catch(() => null) : Promise.resolve(null),
+      shouldLoadViolations ? safeFetchApi('/api/intelligence/violations').catch(() => []) : Promise.resolve([])
+    ]);
+
+    state.endpoints = endpoints.status === 'fulfilled' ? endpoints.value : [];
+    state.categories = (categories.status === 'fulfilled' ? categories.value : {}).categories || {};
+    state.pipelineStats = stats.status === 'fulfilled' ? stats.value : null;
+    state.caseState = caseState.status === 'fulfilled' ? caseState.value : null;
+    state.violations = Array.isArray(violations.value) ? violations.value : (violations.value?.violations || []);
+    state.timeline = Array.isArray(timeline.value) ? timeline.value : (timeline.value?.events || []);
+    state.relationships = Array.isArray(relationships.value) ? relationships.value : (relationships.value?.relationships || []);
+    
+    state.scanned = Array.isArray(state.endpoints) && state.endpoints.length > 0;
+    
+    document.getElementById('statusBadge').textContent = state.scanned ? 'ativo' : 'vazio';
+    document.getElementById('statusBadge').className = `badge ${state.scanned ? 'badge-green' : 'badge-amber'}`;
+
+    // Extract entities from pipeline stats
+    if (state.pipelineStats?.entity_counts) {
+      state.entities = state.pipelineStats.entity_counts;
+    }
+
+    renderAll();
+  } catch (err) {
+    console.error('Refresh error:', err);
+    document.getElementById('statusBadge').textContent = 'erro';
+    document.getElementById('statusBadge').className = 'badge badge-red';
+  }
+}
+
+// ===== RENDERING =====
+function renderAll() {
+  renderCategories();
+  renderFiles();
+  renderEntities();
+  renderFindings();
+  renderViolationsSidebar();
+  renderArtifactsGrid();
+  renderTimeline();
+  renderViolationsView();
+  renderGraph();
+  updateCounts();
+}
+
+function updateCounts() {
+  document.getElementById('categoriesCount').textContent = `${Object.keys(state.categories).length} categorias`;
+  document.getElementById('filesCount').textContent = `${state.endpoints.length} arquivos`;
+  document.getElementById('entitiesCount').textContent = `${Object.values(state.entities).reduce((a, b) => a + (b || 0), 0)} entidades`;
+  document.getElementById('findingsCount').textContent = `${(state.caseState?.findings || []).length} achados`;
+  document.getElementById('violationsCount').textContent = `${state.violations.length} violações`;
+}
+
+function renderCategories() {
+  const container = document.getElementById('categoriesList');
+  const cats = Object.entries(state.categories);
+  if (!cats.length) {
+    container.innerHTML = '<div class="context-empty">Nenhuma categoria</div>';
+    return;
+  }
+  container.innerHTML = cats.map(([key, val]) => `
+    <div class="artifact-item" data-category="${esc(key)}">
+      <div class="artifact-item-header">
+        <span class="artifact-item-name">${esc(val.label || key)}</span>
+        <span class="badge">${val.count || 0}</span>
+      </div>
+      <div class="artifact-item-meta">${esc((val.types || []).slice(0, 3).join(', '))}</div>
+    </div>
+  `).join('');
+}
+
+function renderFiles() {
+  const container = document.getElementById('filesList');
+  const q = (document.getElementById('artifactSearchInput').value || '').toLowerCase();
+  let files = state.endpoints.slice();
+  if (q) {
+    files = files.filter(f => 
+      (f.displayName || f.fileName || f.file || '').toLowerCase().includes(q) ||
+      (f.category || '').toLowerCase().includes(q)
+    );
+  }
+  if (!files.length) {
+    container.innerHTML = '<div class="context-empty">Nenhum arquivo</div>';
+    return;
+  }
+  container.innerHTML = files.slice(0, 50).map(f => `
+    <div class="artifact-item ${state.selectedArtifact?.file === f.file ? 'selected' : ''}" data-file="${esc(f.file)}">
+      <div class="artifact-item-header">
+        <span class="artifact-item-name"><i class="fas ${getFileIcon(f.extension)}"></i> ${esc(f.displayName || f.fileName || f.file)}</span>
+      </div>
+      <div class="artifact-item-meta">${esc(shortenPath(f.file))}</div>
+      <div class="artifact-item-actions">
+        <button class="artifact-mini-btn" onclick="selectArtifact('${esc(f.file)}')">ver</button>
+        <button class="artifact-mini-btn" onclick="addFileToContext('${esc(f.file)}')">+ contexto</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderEntities() {
+  const container = document.getElementById('entitiesList');
+  const types = Object.entries(state.entities);
+  if (!types.length) {
+    container.innerHTML = '<div class="context-empty">Nenhuma entidade extraída</div>';
+    return;
+  }
+  container.innerHTML = types.map(([type, count]) => `
+    <div class="artifact-item" data-entity-type="${esc(type)}">
+      <div class="artifact-item-header">
+        <span class="artifact-item-name">${esc(type)}</span>
+        <span class="badge badge-purple">${count}</span>
+      </div>
+      <div class="artifact-item-actions">
+        <button class="artifact-mini-btn" onclick="loadEntitiesByType('${esc(type)}')">explorar</button>
+        <button class="artifact-mini-btn" onclick="addEntityTypeToContext('${esc(type)}')">+ contexto</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderFindings() {
+  const container = document.getElementById('findingsList');
+  const findings = state.caseState?.findings || [];
+  if (!findings.length) {
+    container.innerHTML = '<div class="context-empty">Nenhum achado registrado</div>';
+    return;
+  }
+  container.innerHTML = findings.slice(0, 20).map((f, i) => `
+    <div class="artifact-item">
+      <div class="artifact-item-header">
+        <span class="artifact-item-name">${esc(typeof f === 'string' ? f : (f.title || f.description || `Achado ${i+1}`))}</span>
+      </div>
+      ${f.severity ? `<span class="badge badge-${f.severity === 'high' ? 'red' : f.severity === 'medium' ? 'amber' : 'blue'}">${f.severity}</span>` : ''}
+    </div>
+  `).join('');
+}
+
+function renderViolationsSidebar() {
+  const container = document.getElementById('violationsList');
+  if (!state.violations.length) {
+    container.innerHTML = '<div class="context-empty">Nenhuma violação identificada</div>';
+    return;
+  }
+  container.innerHTML = state.violations.slice(0, 15).map(v => {
+    const sevClass = v.severity === 'critical' || v.severity === 'high' ? 'red' : v.severity === 'medium' ? 'amber' : 'blue';
+    return `
+    <div class="violation-item">
+      <div class="violation-header">
+        <span class="violation-title">${esc(v.title || v.violation_type || 'Violação')}</span>
+        <span class="badge badge-${sevClass}">${esc(v.severity || 'N/A')}</span>
+      </div>
+      <div class="violation-desc">${esc((v.description || '').slice(0, 160))}</div>
+      ${v.law_reference ? `<div class="violation-law"><i class="fas fa-balance-scale" style="margin-right: 4px;"></i>${esc(v.law_reference)}</div>` : ''}
+    </div>
+  `;
+  }).join('');
+}
+
+function renderArtifactsGrid() {
+  const container = document.getElementById('artifactsGrid');
+  if (!state.endpoints.length) {
+    container.innerHTML = '<div class="context-empty" style="padding: 40px;">Nenhum artefato no corpus. Adicione pastas ou arquivos para começar.</div>';
+    return;
+  }
+  container.innerHTML = state.endpoints.slice(0, 100).map(f => {
+    const entities = f.pipeline?.entities || f.entities || {};
+    const entityCount = Object.values(entities).reduce((s, v) => s + (Array.isArray(v) ? v.length : 0), 0);
+    const tags = (f.pipeline?.tags || f.tags || []).slice(0, 3);
+    return `
+    <div class="artifact-item ${state.selectedArtifact?.file === f.file ? 'selected' : ''}" onclick="selectArtifact('${esc(f.file)}')">
+      <div class="artifact-item-header">
+        <span class="artifact-item-name">
+          <i class="fas ${getFileIcon(f.extension)}"></i>
+          ${esc(f.displayName || f.fileName || f.file)}
+        </span>
+        <span class="badge">${esc(f.kind || f.extension || 'file').toUpperCase()}</span>
+      </div>
+      <div class="artifact-item-meta">
+        ${esc(f.categoryLabel || f.category || 'Sem categoria')} · ${humanSize(f.size_bytes)}${entityCount ? ` · ${entityCount} entidades` : ''}
+      </div>
+      ${tags.length ? `<div style="display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap;">${tags.map(t => `<span style="font-size: 9px; background: rgba(23,18,15,0.06); padding: 1px 6px; border-radius: 8px; color: var(--ink-soft);">${esc(t)}</span>`).join('')}</div>` : ''}
+      <div class="artifact-item-actions">
+        <button class="artifact-mini-btn" onclick="event.stopPropagation(); viewFile('${esc(f.file)}')">visualizar</button>
+        <button class="artifact-mini-btn" onclick="event.stopPropagation(); addFileToContext('${esc(f.file)}')">+ contexto</button>
+        <button class="artifact-mini-btn" onclick="event.stopPropagation(); askAbout('${esc(f.displayName || f.fileName || f.file)}')">perguntar</button>
+      </div>
+    </div>
+  `;
+  }).join('');
+}
+
+function renderTimeline() {
+  const container = document.getElementById('timelineList');
+  if (!state.timeline.length) {
+    container.innerHTML = '<div class="context-empty">Nenhum evento na timeline</div>';
+    return;
+  }
+  const sorted = [...state.timeline].sort((a, b) => new Date(a.date || a.timestamp) - new Date(b.date || b.timestamp));
+  container.innerHTML = sorted.map(e => `
+    <div class="timeline-item">
+      <div class="timeline-date">${esc(e.date || e.timestamp || 'Data desconhecida')}</div>
+      <div class="timeline-title">${esc(e.title || e.event || 'Evento')}</div>
+      <div class="timeline-desc">${esc(e.description || e.details || '')}</div>
+    </div>
+  `).join('');
+}
+
+function renderViolationsView() {
+  const container = document.getElementById('violationsView');
+  const severity = document.getElementById('violationSeverity').value;
+  let filtered = state.violations;
+  if (severity) {
+    filtered = filtered.filter(v => v.severity === severity);
+  }
+  if (!filtered.length) {
+    container.innerHTML = '<div class="context-empty" style="padding: 40px;">Nenhuma violação encontrada com esses filtros.</div>';
+    return;
+  }
+
+  // Summary banner
+  const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+  state.violations.forEach(v => { const s = v.severity || 'low'; if (counts[s] !== undefined) counts[s]++; });
+  const summaryHtml = `
+    <div style="display: flex; gap: 12px; margin-bottom: 16px; padding: 10px 14px; background: rgba(23,18,15,0.03); border-radius: var(--radius-xs); border: 1px solid var(--line);">
+      <span style="font-size: 12px; font-weight: 600; color: var(--ink);">Total: ${state.violations.length}</span>
+      ${counts.critical ? `<span class="badge badge-red">Críticas: ${counts.critical}</span>` : ''}
+      ${counts.high ? `<span class="badge badge-red">Altas: ${counts.high}</span>` : ''}
+      ${counts.medium ? `<span class="badge badge-amber">Médias: ${counts.medium}</span>` : ''}
+      ${counts.low ? `<span class="badge badge-blue">Baixas: ${counts.low}</span>` : ''}
+    </div>
+  `;
+
+  container.innerHTML = summaryHtml + filtered.map((v, idx) => {
+    const sevClass = v.severity === 'critical' || v.severity === 'high' ? 'red' : v.severity === 'medium' ? 'amber' : 'blue';
+    const hasDetail = v.evidence || v.recommendation || v.legal_basis || v.affected_rights || (v.files?.length);
+    return `
+    <div class="violation-item" style="margin-bottom: 12px;" id="violation-${idx}">
+      <div class="violation-header" onclick="toggleViolationDetail(${idx})">
+        <span class="violation-title">
+          <i class="fas fa-chevron-right" style="font-size: 9px; margin-right: 4px; transition: transform 0.15s;" id="violChevron-${idx}"></i>
+          ${esc(v.title || v.violation_type || 'Violação')}
+        </span>
+        <span class="badge badge-${sevClass}">${esc(v.severity || 'N/A')}</span>
+      </div>
+      <div class="violation-desc">${esc(v.description || '')}</div>
+      ${v.law_reference ? `<div class="violation-law"><i class="fas fa-balance-scale" style="margin-right: 4px;"></i>${esc(v.law_reference)}</div>` : ''}
+      ${hasDetail ? `
+      <div class="violation-detail-section hidden" id="violDetail-${idx}">
+        ${v.evidence ? `
+          <div style="margin-bottom: 8px;">
+            <div class="detail-label">Evidência</div>
+            <div class="violation-evidence">${esc(v.evidence)}</div>
+          </div>
+        ` : ''}
+        ${v.legal_basis ? `
+          <div style="margin-bottom: 8px;">
+            <div class="detail-label">Base Legal</div>
+            <div class="detail-value">${esc(v.legal_basis)}</div>
+          </div>
+        ` : ''}
+        ${v.recommendation ? `
+          <div style="margin-bottom: 8px;">
+            <div class="detail-label">Recomendação</div>
+            <div class="detail-value">${esc(v.recommendation)}</div>
+          </div>
+        ` : ''}
+        ${v.affected_rights ? `
+          <div style="margin-bottom: 8px;">
+            <div class="detail-label">Direitos Afetados</div>
+            <div class="detail-value">${esc(typeof v.affected_rights === 'string' ? v.affected_rights : v.affected_rights.join(', '))}</div>
+          </div>
+        ` : ''}
+        ${v.files?.length ? `
+          <div style="margin-bottom: 4px;">
+            <div class="detail-label">Arquivos Vinculados</div>
+            <div class="violation-files">
+              ${v.files.map(f => `<span class="violation-file-tag" onclick="event.stopPropagation(); viewFile('${esc(f)}')" style="cursor:pointer;" title="${esc(f)}">${esc(shortenPath(f))}</span>`).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+      <span class="violation-expand-toggle" onclick="toggleViolationDetail(${idx})" id="violToggle-${idx}">ver detalhes ▸</span>
+      ` : ''}
+    </div>
+  `;
+  }).join('');
+}
+
+function toggleViolationDetail(idx) {
+  const detail = document.getElementById(`violDetail-${idx}`);
+  const chevron = document.getElementById(`violChevron-${idx}`);
+  const toggle = document.getElementById(`violToggle-${idx}`);
+  if (!detail) return;
+  const expanded = detail.classList.toggle('hidden');
+  const item = detail.closest('.violation-item');
+  if (!expanded) {
+    item?.classList.add('expanded');
+    if (chevron) chevron.style.transform = 'rotate(90deg)';
+    if (toggle) toggle.textContent = 'ocultar detalhes ▾';
+  } else {
+    item?.classList.remove('expanded');
+    if (chevron) chevron.style.transform = '';
+    if (toggle) toggle.textContent = 'ver detalhes ▸';
+  }
+}
+
+function renderGraph() {
+  const type = document.getElementById('graphTypeSelect').value;
+  let diagram = '';
+  
+  if (type === 'entities' && state.relationships.length) {
+    diagram = 'graph LR\n';
+    const nodes = new Set();
+    state.relationships.slice(0, 30).forEach((r, i) => {
+      const from = r.from || r.source || `Node${i}`;
+      const to = r.to || r.target || `Node${i+1}`;
+      const fromId = from.replace(/[^a-zA-Z0-9]/g, '_');
+      const toId = to.replace(/[^a-zA-Z0-9]/g, '_');
+      if (!nodes.has(fromId)) { diagram += `  ${fromId}["${esc(from)}"]\n`; nodes.add(fromId); }
+      if (!nodes.has(toId)) { diagram += `  ${toId}["${esc(to)}"]\n`; nodes.add(toId); }
+      diagram += `  ${fromId} --> ${toId}\n`;
+    });
+  } else if (type === 'files') {
+    diagram = 'graph TD\n';
+    const cats = Object.keys(state.categories).slice(0, 8);
+    cats.forEach(cat => {
+      const catId = cat.replace(/[^a-zA-Z0-9]/g, '_');
+      diagram += `  ${catId}["${esc(state.categories[cat]?.label || cat)}"]\n`;
+      const files = state.endpoints.filter(f => f.category === cat).slice(0, 5);
+      files.forEach(f => {
+        const fId = (f.file || '').replace(/[^a-zA-Z0-9]/g, '_');
+        diagram += `  ${catId} --> ${fId}["${esc(shortenPath(f.displayName || f.fileName || f.file, 20))}"]\n`;
+      });
+    });
+  } else if (type === 'violations') {
+    diagram = 'graph TB\n  V[Violações]\n';
+    state.violations.slice(0, 10).forEach((v, i) => {
+      const vId = `v${i}`;
+      diagram += `  V --> ${vId}["${esc((v.title || v.violation_type || 'Violação').slice(0, 30))}"]\n`;
+      if (v.law_reference) {
+        diagram += `  ${vId} -.-> law${i}["${esc(v.law_reference.slice(0, 20))}"]\n`;
+      }
+    });
+  } else if (type === 'law-violations') {
+    // Law × Violations cross-reference graph
+    diagram = 'graph LR\n';
+    diagram += '  subgraph Violations\n';
+    state.violations.slice(0, 12).forEach((v, i) => {
+      diagram += `    v${i}["🔴 ${esc((v.title || v.violation_type || 'Violação').slice(0, 28))}"]\n`;
+    });
+    diagram += '  end\n';
+    
+    // Collect unique law refs from violations
+    const lawRefs = new Map();
+    state.violations.slice(0, 12).forEach((v, i) => {
+      const ref = v.law_reference || v.legal_basis || '';
+      if (ref) {
+        const refId = ref.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30);
+        if (!lawRefs.has(refId)) {
+          lawRefs.set(refId, { label: ref.slice(0, 25), violations: [] });
+        }
+        lawRefs.get(refId).violations.push(i);
+      }
+    });
+    
+    diagram += '  subgraph "Base Legal"\n';
+    lawRefs.forEach((data, refId) => {
+      diagram += `    ${refId}["⚖ ${esc(data.label)}"]\n`;
+    });
+    diagram += '  end\n';
+    
+    // Connections
+    lawRefs.forEach((data, refId) => {
+      data.violations.forEach(vi => {
+        diagram += `  ${refId} -.->|fundamenta| v${vi}\n`;
+      });
+    });
+    
+    // Add selected articles if any
+    if (state.selectedLawArticles.length) {
+      diagram += '  subgraph "Artigos Selecionados"\n';
+      state.selectedLawArticles.slice(0, 8).forEach((a, i) => {
+        const aid = `sa${i}`;
+        diagram += `    ${aid}["📄 ${esc((a.article_number || a.eli_id).slice(0, 20))}"]\n`;
+      });
+      diagram += '  end\n';
+      
+      // Try to match selected articles with law refs
+      state.selectedLawArticles.slice(0, 8).forEach((a, i) => {
+        lawRefs.forEach((data, refId) => {
+          if (data.label.toLowerCase().includes((a.article_number || '').toLowerCase()) ||
+              (a.framework_code && data.label.toLowerCase().includes(a.framework_code.toLowerCase()))) {
+            diagram += `  sa${i} -.-> ${refId}\n`;
+          }
+        });
+      });
+    }
+    
+    if (!state.violations.length && !state.selectedLawArticles.length) {
+      diagram = 'graph LR\n  A[Sem violações ou artigos para cruzar]';
+    }
+    
+  } else if (type === 'law-articles') {
+    // Selected articles relationship graph
+    if (state.selectedLawArticles.length) {
+      diagram = 'graph TD\n';
+      
+      // Group by framework
+      const byFramework = {};
+      state.selectedLawArticles.forEach(a => {
+        const code = a.framework_code || 'Unknown';
+        if (!byFramework[code]) byFramework[code] = [];
+        byFramework[code].push(a);
+      });
+      
+      Object.entries(byFramework).forEach(([code, articles]) => {
+        const fid = code.replace(/[^a-zA-Z0-9]/g, '_');
+        diagram += `  subgraph ${fid}["${esc(code)}"]${'\n'}`;
+        articles.slice(0, 10).forEach((a, i) => {
+          const aid = `${fid}_a${i}`;
+          const normStyle = a.norm_type === 'obligation' ? ':::obligation' : a.norm_type === 'prohibition' ? ':::prohibition' : a.norm_type === 'right' ? ':::right' : '';
+          diagram += `    ${aid}["${esc((a.article_number || a.eli_id).slice(0, 18))}\\n${esc((a.theme || '').slice(0, 22))}"]\n`;
+        });
+        diagram += '  end\n';
+      });
+      
+      // Draw cross-framework links for articles with matching themes
+      const allArts = state.selectedLawArticles;
+      for (let i = 0; i < Math.min(allArts.length, 10); i++) {
+        for (let j = i + 1; j < Math.min(allArts.length, 10); j++) {
+          const a = allArts[i], b = allArts[j];
+          if (a.framework_code !== b.framework_code && a.regulated_subject && a.regulated_subject === b.regulated_subject) {
+            const aid = `${(a.framework_code||'').replace(/[^a-zA-Z0-9]/g,'_')}_a${i}`;
+            const bid = `${(b.framework_code||'').replace(/[^a-zA-Z0-9]/g,'_')}_a${j}`;
+            diagram += `  ${aid} <-.-> ${bid}\n`;
+          }
+        }
+      }
+    } else {
+      diagram = 'graph LR\n  A[Selecione artigos na aba Legislação para ver relações]';
+    }
+  } else {
+    diagram = 'graph LR\n  A[Sem dados para exibir]';
+  }
+
+  const container = document.getElementById('mermaidDiagram');
+  container.innerHTML = diagram;
+  container.removeAttribute('data-processed');
+
+  if (!window.mermaid || typeof mermaid.init !== 'function') {
+    container.innerHTML = '<div class="context-empty">Mermaid indisponivel neste ambiente</div>';
+    return;
+  }
+  
+  try {
+    mermaid.init(undefined, container);
+    // Reset zoom after new render
+    graphZoom.scale = 1;
+    graphZoom.panX = 0;
+    graphZoom.panY = 0;
+    applyGraphTransform();
+  } catch (err) {
+    console.error('Mermaid error:', err);
+    container.innerHTML = '<div class="context-empty">Erro ao renderizar diagrama</div>';
+  }
+}
+
+// ===== GRAPH ZOOM / PAN / FULLSCREEN =====
+const graphZoom = { scale: 1, panX: 0, panY: 0, dragging: false, startX: 0, startY: 0 };
+
+function applyGraphTransform() {
+  const el = document.getElementById('mermaidDiagram');
+  el.style.transform = `translate(${graphZoom.panX}px, ${graphZoom.panY}px) scale(${graphZoom.scale})`;
+  const label = document.getElementById('zoomLabel');
+  if (label) label.textContent = `${Math.round(graphZoom.scale * 100)}%`;
+}
+
+function zoomGraph(delta) {
+  graphZoom.scale = Math.max(0.2, Math.min(5, graphZoom.scale + delta));
+  applyGraphTransform();
+}
+
+function fitGraph() {
+  graphZoom.scale = 1;
+  graphZoom.panX = 0;
+  graphZoom.panY = 0;
+  applyGraphTransform();
+}
+
+function toggleGraphFullscreen() {
+  const container = document.getElementById('graphContainer');
+  const btn = document.getElementById('fullscreenGraphBtn');
+  const isFullscreen = container.classList.toggle('fullscreen');
+  btn.innerHTML = isFullscreen ? '<i class="fas fa-compress"></i>' : '<i class="fas fa-expand"></i>';
+  btn.title = isFullscreen ? 'Sair tela cheia' : 'Tela cheia';
+  if (!isFullscreen) fitGraph();
+}
+
+function initGraphPan() {
+  const container = document.getElementById('graphContainer');
+  container.addEventListener('mousedown', e => {
+    if (e.target.closest('.graph-toolbar')) return;
+    graphZoom.dragging = true;
+    graphZoom.startX = e.clientX - graphZoom.panX;
+    graphZoom.startY = e.clientY - graphZoom.panY;
+    e.preventDefault();
+  });
+  container.addEventListener('mousemove', e => {
+    if (!graphZoom.dragging) return;
+    graphZoom.panX = e.clientX - graphZoom.startX;
+    graphZoom.panY = e.clientY - graphZoom.startY;
+    applyGraphTransform();
+  });
+  container.addEventListener('mouseup', () => { graphZoom.dragging = false; });
+  container.addEventListener('mouseleave', () => { graphZoom.dragging = false; });
+  container.addEventListener('wheel', e => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    zoomGraph(delta);
+  }, { passive: false });
+}
+
+function exportGraph() {
+  const container = document.getElementById('mermaidDiagram');
+  const svg = container.querySelector('svg');
+  if (!svg) {
+    alert('Nenhum grafo renderizado para exportar.');
+    return;
+  }
+  const clone = svg.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  const blob = new Blob([clone.outerHTML], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `discovery-graph-${document.getElementById('graphTypeSelect').value}-${new Date().toISOString().slice(0,10)}.svg`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportViolations() {
+  if (!state.violations.length) {
+    alert('Nenhuma violação para exportar.');
+    return;
+  }
+  const severity = document.getElementById('violationSeverity').value;
+  const filtered = severity ? state.violations.filter(v => v.severity === severity) : state.violations;
+  const blob = new Blob([JSON.stringify(filtered, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `discovery-violations${severity ? '-' + severity : ''}-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function downloadCurrentFile() {
+  if (!state.selectedArtifact) return;
+  const file = state.selectedArtifact;
+  const url = `${CASE_SERVER}/api/raw?file=${encodeURIComponent(file.file)}`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = file.fileName || file.displayName || file.file.split('/').pop();
+  a.click();
+}
+
+// ===== ARTIFACT SELECTION & VIEWING =====
+async function selectArtifact(fileRef) {
+  const file = state.endpoints.find(f => f.file === fileRef);
+  if (!file) return;
+  
+  try {
+    const detail = await safeFetch(`${CASE_SERVER}/api/file-detail?file=${encodeURIComponent(file.file)}`);
+    let preview = '';
+    try {
+      preview = await safeFetch(`${CASE_SERVER}/api/raw?file=${encodeURIComponent(file.file)}`);
+    } catch {}
+    
+    state.selectedArtifact = { ...detail, raw_preview: typeof preview === 'string' ? preview.slice(0, 2000) : '' };
+    
+    renderFiles();
+    renderArtifactsGrid();
+    renderDetail();
+    
+    // Switch to detail tab
+    switchRightTab('detail');
+  } catch (err) {
+    console.error('Error loading artifact:', err);
+  }
+}
+
+function renderDetail() {
+  const item = state.selectedArtifact;
+  const empty = document.getElementById('detailEmpty');
+  const content = document.getElementById('detailContent');
+  
+  if (!item) {
+    empty.classList.remove('hidden');
+    content.classList.add('hidden');
+    return;
+  }
+  
+  empty.classList.add('hidden');
+  content.classList.remove('hidden');
+  
+  document.querySelector('#detailFileName span').textContent = item.displayName || item.fileName || item.file;
+  
+  const body = document.getElementById('detailBody');
+  const ext = (item.extension || '').toLowerCase();
+  
+  const rawPrev = item.raw_preview;
+  const rawStr = typeof rawPrev === 'object' ? JSON.stringify(rawPrev, null, 2) : rawPrev;
+  if (['md', 'markdown'].includes(ext) && rawPrev) {
+    body.className = 'file-viewer-content markdown';
+    body.innerHTML = renderMarkdown(rawStr);
+  } else if (['json'].includes(ext) && rawPrev) {
+    body.className = 'file-viewer-content code';
+    try {
+      const obj = typeof rawPrev === 'object' ? rawPrev : JSON.parse(rawPrev);
+      body.textContent = JSON.stringify(obj, null, 2);
+    } catch {
+      body.textContent = rawStr;
+    }
+  } else if (rawPrev) {
+    body.className = 'file-viewer-content code';
+    body.textContent = rawStr;
+  } else {
+    body.className = 'file-viewer-content';
+    body.innerHTML = '<div class="context-empty">Preview não disponível</div>';
+  }
+  
+  // Meta info
+  const meta = document.getElementById('detailMeta');
+  const entities = item.pipeline?.entities || item.entities || {};
+  const entitySummary = Object.entries(entities).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.length : v}`).join(' · ');
+  const tags = (item.pipeline?.tags || item.tags || []).slice(0, 5).join(', ');
+  
+  meta.innerHTML = `
+    <div style="margin-bottom: 6px;"><strong>Caminho:</strong> ${esc(item.file || '')}</div>
+    <div style="margin-bottom: 6px;"><strong>Categoria:</strong> ${esc(item.categoryLabel || item.category || 'N/A')}</div>
+    <div style="margin-bottom: 6px;"><strong>Tamanho:</strong> ${humanSize(item.size_bytes)}</div>
+    ${entitySummary ? `<div style="margin-bottom: 6px;"><strong>Entidades:</strong> ${esc(entitySummary)}</div>` : ''}
+    ${tags ? `<div style="margin-bottom: 6px;"><strong>Tags:</strong> ${esc(tags)}</div>` : ''}
+  `;
+}
+
+async function viewFile(fileRef) {
+  const file = state.endpoints.find(f => f.file === fileRef);
+  if (!file) return;
+  
+  switchRightTab('viewer');
+  
+  const empty = document.getElementById('viewerEmpty');
+  const content = document.getElementById('viewerContent');
+  
+  empty.classList.add('hidden');
+  content.classList.remove('hidden');
+  
+  document.querySelector('#viewerFileName span').textContent = file.displayName || file.fileName || file.file;
+  
+  const body = document.getElementById('viewerBody');
+  const ext = (file.extension || '').toLowerCase();
+  
+  body.innerHTML = '<div class="loading-spinner"></div>';
+  
+  try {
+    if (['pdf'].includes(ext)) {
+      // PDF rendering
+      body.className = 'file-viewer-content pdf';
+      if (!window.pdfjsLib || typeof pdfjsLib.getDocument !== 'function') {
+        throw new Error('Biblioteca PDF.js indisponivel');
+      }
+      const rawUrl = `${CASE_SERVER}/api/raw?file=${encodeURIComponent(file.file)}`;
+      const pdf = await pdfjsLib.getDocument(rawUrl).promise;
+      const page = await pdf.getPage(1);
+      const scale = 1.5;
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      body.innerHTML = '';
+      body.appendChild(canvas);
+    } else if (['docx', 'doc'].includes(ext)) {
+      // DOCX rendering
+      body.className = 'file-viewer-content markdown';
+      if (!window.mammoth || typeof mammoth.convertToHtml !== 'function') {
+        throw new Error('Biblioteca Mammoth indisponivel');
+      }
+      const rawUrl = `${CASE_SERVER}/api/raw?file=${encodeURIComponent(file.file)}`;
+      const resp = await fetch(rawUrl);
+      const arrayBuffer = await resp.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer });
+      body.innerHTML = result.value;
+    } else {
+      // Text/code/markdown
+      const raw = await safeFetch(`${CASE_SERVER}/api/raw?file=${encodeURIComponent(file.file)}`);
+      if (['md', 'markdown'].includes(ext)) {
+        body.className = 'file-viewer-content markdown';
+        body.innerHTML = renderMarkdown(typeof raw === 'string' ? raw : JSON.stringify(raw, null, 2));
+      } else if (['json'].includes(ext)) {
+        body.className = 'file-viewer-content code';
+        try {
+          const obj = typeof raw === 'object' ? raw : JSON.parse(raw);
+          body.textContent = JSON.stringify(obj, null, 2);
+        } catch {
+          body.textContent = String(raw);
+        }
+      } else {
+        body.className = 'file-viewer-content code';
+        body.textContent = typeof raw === 'string' ? raw : JSON.stringify(raw, null, 2);
+      }
+    }
+  } catch (err) {
+    body.innerHTML = `<div class="context-empty">Erro ao carregar arquivo: ${esc(err.message)}</div>`;
+  }
+}
+
+function closeViewer() {
+  document.getElementById('viewerEmpty').classList.remove('hidden');
+  document.getElementById('viewerContent').classList.add('hidden');
+}
+
+// ===== CONTEXT HELPERS =====
+function addFileToContext(fileRef) {
+  const file = state.endpoints.find(f => f.file === fileRef);
+  if (!file) return;
+  addToContext({
+    id: file.file,
+    name: file.displayName || file.fileName || file.file,
+    file: file.file,
+    type: 'file',
+    extension: file.extension
+  });
+}
+
+function addEntityTypeToContext(type) {
+  addToContext({
+    id: `entity-${type}`,
+    name: `Entidades: ${type}`,
+    type: 'entity-type',
+    entityType: type
+  });
+}
+
+async function loadEntitiesByType(type) {
+  try {
+    const result = await safeFetch(`${CASE_SERVER}/api/pipeline/entities?type=${encodeURIComponent(type)}`);
+    const entities = Array.isArray(result) ? result : (result.entities || []);
+    appendMessage('assistant', `**Entidades do tipo "${type}":**\n\n${entities.slice(0, 30).map(e => `- ${e.name || e.value || e}`).join('\n')}`);
+  } catch (err) {
+    appendMessage('assistant', `Erro ao carregar entidades: ${err.message}`);
+  }
+}
+
+function askAbout(name) {
+  document.getElementById('chatInput').value = `Explique o artefato "${name}" e suas conexões com o restante do corpus.`;
+  document.getElementById('chatInput').focus();
+}
+
+// ===== VIEW SWITCHING =====
+function switchView(view) {
+  state.currentView = view;
+  document.querySelectorAll('.view-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+  document.querySelectorAll('.view-content').forEach(v => v.classList.toggle('active', v.id === `view${view.charAt(0).toUpperCase() + view.slice(1)}`));
+  
+  if (view === 'graph') renderGraph();
+  if (view === 'timeline') renderTimeline();
+  if (view === 'violations') renderViolationsView();
+  if (view === 'legislation') {
+    if (!state.lawFrameworks.length) loadLawCatalogue();
+  }
+  if (view === 'jurisprudence') {
+    // Focus search input
+    setTimeout(() => document.getElementById('scraperQuery')?.focus(), 100);
+  }
+}
+
+function switchRightTab(tab) {
+  document.querySelectorAll('.right-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('#rightContent > div').forEach(d => d.classList.toggle('active', d.id === `tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`));
+}
+
+function switchSharedTab(tab) {
+  state.currentSharedTab = tab;
+  document.querySelectorAll('.shared-data-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  loadSharedData(tab);
+}
+
+// ===== SHARED DATA =====
+async function loadSharedData(tab) {
+  const container = document.getElementById('sharedTree');
+  container.innerHTML = '<div class="loading-spinner"></div>';
+  
+  const paths = {
+    law: '/_shared/law',
+    corpus: '/_shared/corpus',
+    ontology: '/_shared/ontology',
+    media: '/_shared/corpus/media',
+    transcripts: '/_shared/corpus/transcripts',
+    docs: '/_shared/docs'
+  };
+  
+  try {
+    // Try to fetch tree from backend
+    const tree = await safeFetch(`${CASE_SERVER}/api/tree?path=${encodeURIComponent(paths[tab] || paths.law)}`).catch(() => null);
+    
+    if (tree && (tree.children || Array.isArray(tree))) {
+      renderSharedTree(tree, container);
+    } else {
+      container.innerHTML = `
+        <div class="context-empty">
+          <p>Dados compartilhados não disponíveis via API.</p>
+          <p style="font-size: 10px; margin-top: 8px;">Caminho esperado: ${paths[tab]}</p>
+        </div>
+      `;
+    }
+  } catch (err) {
+    container.innerHTML = `<div class="context-empty">Erro: ${esc(err.message)}</div>`;
+  }
+}
+
+function renderSharedTree(node, container, depth = 0) {
+  if (Array.isArray(node)) {
+    container.innerHTML = node.map(n => renderTreeNode(n, depth)).join('');
+    return;
+  }
+  
+  if (node.children) {
+    container.innerHTML = node.children.map(n => renderTreeNode(n, depth)).join('');
+  } else {
+    container.innerHTML = renderTreeNode(node, depth);
+  }
+}
+
+function renderTreeNode(node, depth) {
+  const isDir = node.type === 'directory' || node.children;
+  const icon = isDir ? 'fa-folder' : getFileIcon(node.extension || (node.name || '').split('.').pop());
+  const name = node.name || node.file || 'Unknown';
+  
+  let html = `
+    <div class="tree-node" style="padding-left: ${depth * 16 + 8}px" data-path="${esc(node.path || node.file || '')}" data-type="${isDir ? 'dir' : 'file'}">
+      <span class="tree-node-icon"><i class="fas ${icon}"></i></span>
+      <span class="tree-node-name">${esc(name)}</span>
+      ${!isDir ? `<button class="artifact-mini-btn" onclick="event.stopPropagation(); addSharedToContext('${esc(node.path || node.file || '')}', '${esc(name)}')">+</button>` : ''}
+    </div>
+  `;
+  
+  if (isDir && node.children) {
+    html += `<div class="tree-children">${node.children.map(c => renderTreeNode(c, depth + 1)).join('')}</div>`;
+  }
+  
+  return html;
+}
+
+function addSharedToContext(path, name) {
+  addToContext({
+    id: `shared-${path}`,
+    name: name || path,
+    file: path,
+    type: 'shared',
+    extension: (path || '').split('.').pop()
+  });
+}
+
+// ===== LEGISLATION CATALOGUE =====
+async function loadLawCatalogue() {
+  const tree = document.getElementById('lawTree');
+  try {
+    const res = await safeFetchApi(LAW_API.frameworks);
+    const frameworks = Array.isArray(res) ? res : (res.frameworks || []);
+    state.lawFrameworks = frameworks;
+    
+    // Group by jurisdiction
+    const groups = {};
+    for (const f of frameworks) {
+      const j = f.jurisdiction || 'Other';
+      if (!groups[j]) groups[j] = [];
+      groups[j].push(f);
+    }
+    
+    const jurOrder = ['BR', 'CL', 'INT'];
+    const allJurs = [...jurOrder, ...Object.keys(groups).filter(j => !jurOrder.includes(j))];
+    
+    tree.innerHTML = '';
+    let totalArticles = 0;
+    
+    for (const jur of allJurs) {
+      if (!groups[jur]) continue;
+      const jurEl = buildJurGroup(jur, groups[jur]);
+      tree.appendChild(jurEl);
+    }
+    
+    // Update counts once frameworks loaded
+    document.getElementById('selectedArticlesCount').textContent = `${state.selectedLawArticles.length} artigos`;
+    
+  } catch (err) {
+    console.error('Failed to load law catalogue:', err);
+    tree.innerHTML = `<div class="context-empty"><i class="fas fa-exclamation-triangle"></i> Catálogo não disponível: ${esc(err.message)}</div>`;
+  }
+}
+
+function jurLabel(code) {
+  return code === 'BR' ? '🇧🇷 Brasil' : code === 'CL' ? '🇨🇱 Chile' : code === 'INT' ? '🌐 Internacional' : code;
+}
+
+function buildJurGroup(jur, frameworks) {
+  const div = document.createElement('div');
+  div.className = 'jur-group';
+  div.innerHTML = `
+    <div class="jur-group-header">
+      <span class="jur-flag">${jurLabel(jur).split(' ')[0]}</span>
+      <span style="flex:1; font-size: 12px;">${jurLabel(jur).split(' ').slice(1).join(' ') || jur}</span>
+      <span class="jur-count">${frameworks.length} leis</span>
+      <span class="jur-chevron"><i class="fas fa-chevron-right"></i></span>
+    </div>
+    <div class="jur-group-body"></div>
+  `;
+  
+  const header = div.querySelector('.jur-group-header');
+  const body = div.querySelector('.jur-group-body');
+  
+  header.addEventListener('click', () => div.classList.toggle('open'));
+  
+  for (const f of frameworks) {
+    body.appendChild(buildLawItem(f));
+  }
+  
+  return div;
+}
+
+function buildLawItem(meta) {
+  const div = document.createElement('div');
+  div.className = 'law-item';
+  div.dataset.code = meta.framework_code;
+  div.innerHTML = `
+    <div class="law-item-header">
+      <span class="law-code">${esc(meta.framework_code)}</span>
+      <span class="law-name">${esc(meta.framework_name || meta.framework_code)}</span>
+      <span class="law-art-count" data-count-for="${esc(meta.framework_code)}">…</span>
+      <span class="law-chevron"><i class="fas fa-chevron-right"></i></span>
+    </div>
+    <div class="law-item-body" data-loaded="false"></div>
+  `;
+  
+  const header = div.querySelector('.law-item-header');
+  const body = div.querySelector('.law-item-body');
+  
+  header.addEventListener('click', async () => {
+    div.classList.toggle('open');
+    if (body.dataset.loaded === 'false' && div.classList.contains('open')) {
+      await loadLawArticlesForWorkspace(meta, body);
+    }
+  });
+  
+  return div;
+}
+
+async function loadLawArticlesForWorkspace(meta, bodyEl) {
+  bodyEl.innerHTML = '<div class="context-empty"><i class="fas fa-spinner fa-spin"></i> Carregando artigos...</div>';
+  try {
+    const res = await safeFetchApi(LAW_API.frameworkArticles(meta.framework_code));
+    const articles = Array.isArray(res) ? res : [];
+    
+    // Cache
+    state.lawCatalogue[meta.framework_code] = { meta, articles };
+    
+    // Update count
+    const countEl = bodyEl.closest('.law-item').querySelector('.law-art-count');
+    if (countEl) countEl.textContent = `${articles.length} art.`;
+    
+    bodyEl.innerHTML = '';
+    bodyEl.dataset.loaded = 'true';
+    
+    for (const art of articles) {
+      bodyEl.appendChild(buildArticleRow(art, meta));
+    }
+    
+    applyLawSearch();
+    
+  } catch (err) {
+    bodyEl.innerHTML = `<div class="context-empty" style="color: var(--red);">Erro: ${esc(err.message)}</div>`;
+  }
+}
+
+function buildArticleRow(article, meta) {
+  const isSelected = state.selectedLawArticles.some(a => a.eli_id === article.eli_id);
+  const div = document.createElement('div');
+  div.className = 'article-row' + (isSelected ? ' selected' : '');
+  div.dataset.eliId = article.eli_id;
+  div.dataset.search = `${article.article_number || ''} ${article.theme || ''} ${article.text || ''} ${article.hierarchy_label || ''}`.toLowerCase();
+  div.dataset.code = meta.framework_code;
+  
+  const normClass = article.norm_type ? `art-norm ${article.norm_type}` : 'art-norm';
+  const granularity = state.lawGranularity;
+  
+  let content = '';
+  if (granularity === 'law') {
+    content = `<span class="art-num">${esc(article.article_number || article.eli_id)}</span>`;
+  } else if (granularity === 'compact') {
+    content = `
+      <span class="art-num">${esc(article.article_number || article.eli_id)}</span>
+      <span class="art-theme">${esc(article.hierarchy_label || article.theme || '—')}</span>
+      ${article.norm_type ? `<span class="${normClass}">${esc(article.norm_type)}</span>` : ''}
+    `;
+  } else {
+    content = `
+      <span class="art-num">${esc(article.article_number || article.eli_id)}</span>
+      <span class="art-theme">
+        <strong>${esc(article.hierarchy_label || article.theme || '—')}</strong>
+        <br><span style="font-size:10px;color:var(--ink-fade);line-height:1.3;">${esc((article.text || '').slice(0, 150))}${(article.text||'').length > 150 ? '…' : ''}</span>
+      </span>
+      ${article.norm_type ? `<span class="${normClass}">${esc(article.norm_type)}</span>` : ''}
+    `;
+  }
+  
+  div.innerHTML = content + `<button class="art-add" title="Adicionar ao contexto" onclick="event.stopPropagation(); addArticleToContext('${esc(article.eli_id)}', '${esc(meta.framework_code)}')"><i class="fas fa-plus"></i></button>`;
+  
+  // Click to select/deselect
+  div.addEventListener('click', (e) => {
+    if (e.target.closest('.art-add')) return;
+    toggleArticleSelection(article, meta, div);
+  });
+  
+  // Hover tooltip (full granularity shows inline, others show tooltip)
+  if (granularity !== 'full') {
+    div.addEventListener('mouseenter', (e) => showArticleTooltip(article, meta, e));
+    div.addEventListener('mouseleave', hideArticleTooltip);
+    div.addEventListener('mousemove', moveArticleTooltip);
+  }
+  
+  return div;
+}
+
+function toggleArticleSelection(article, meta, rowEl) {
+  const idx = state.selectedLawArticles.findIndex(a => a.eli_id === article.eli_id);
+  if (idx >= 0) {
+    state.selectedLawArticles.splice(idx, 1);
+    if (rowEl) rowEl.classList.remove('selected');
+  } else {
+    state.selectedLawArticles.push({
+      ...article,
+      framework_code: meta.framework_code,
+      framework_name: meta.framework_name,
+      jurisdiction: meta.jurisdiction
+    });
+    if (rowEl) rowEl.classList.add('selected');
+  }
+  renderSelectedArticlesUI();
+}
+
+function addArticleToContext(eliId, code) {
+  const cached = state.lawCatalogue[code];
+  if (!cached) return;
+  const art = cached.articles.find(a => a.eli_id === eliId);
+  if (!art) return;
+  
+  addToContext({
+    id: `law-${eliId}`,
+    name: `${art.article_number || eliId} — ${cached.meta.framework_code}`,
+    type: 'law-article',
+    data: {
+      eli_id: art.eli_id,
+      article_number: art.article_number,
+      theme: art.theme,
+      text: art.text,
+      norm_type: art.norm_type,
+      framework_code: code,
+      framework_name: cached.meta.framework_name,
+      hierarchy_label: art.hierarchy_label,
+      sanctions: art.sanctions,
+      duty_bearer_roles: art.duty_bearer_roles,
+      right_holder_roles: art.right_holder_roles
+    }
+  });
+}
+
+function renderSelectedArticlesUI() {
+  const bar = document.getElementById('selectedArticlesBar');
+  const chips = document.getElementById('selectedArticlesChips');
+  const btn = document.getElementById('addSelectedArticlesBtn');
+  const count = document.getElementById('selectedArticlesCount');
+  
+  count.textContent = `${state.selectedLawArticles.length} artigos`;
+  
+  if (!state.selectedLawArticles.length) {
+    bar.style.display = 'none';
+    btn.style.display = 'none';
+    renderSelectedArticlesSidebar();
+    return;
+  }
+  
+  bar.style.display = 'flex';
+  btn.style.display = '';
+  
+  chips.innerHTML = state.selectedLawArticles.map(a => `
+    <span class="sel-chip">
+      ${esc(a.article_number || a.eli_id)} · ${esc(a.framework_code)}
+      <span class="sel-remove" onclick="event.stopPropagation(); deselectArticleById('${esc(a.eli_id)}')">×</span>
+    </span>
+  `).join('');
+  
+  renderSelectedArticlesSidebar();
+}
+
+function deselectArticleById(eliId) {
+  state.selectedLawArticles = state.selectedLawArticles.filter(a => a.eli_id !== eliId);
+  // Update row if visible
+  const row = document.querySelector(`.article-row[data-eli-id="${eliId}"]`);
+  if (row) row.classList.remove('selected');
+  renderSelectedArticlesUI();
+}
+
+function renderSelectedArticlesSidebar() {
+  const list = document.getElementById('selectedArticlesList');
+  if (!state.selectedLawArticles.length) {
+    list.innerHTML = '<div class="context-empty">Nenhum artigo selecionado. Vá à aba Legislação para selecionar.</div>';
+    return;
+  }
+  list.innerHTML = state.selectedLawArticles.map(a => `
+    <div class="article-row selected" style="cursor: default;">
+      <span class="art-num">${esc(a.article_number || a.eli_id)}</span>
+      <span class="art-theme">${esc(a.theme || a.hierarchy_label || '—')}<br><span style="font-size:9px;color:var(--ink-fade);">${esc(a.framework_code)}</span></span>
+      <button class="art-add" style="opacity:1;" onclick="deselectArticleById('${esc(a.eli_id)}')" title="Remover"><i class="fas fa-times"></i></button>
+    </div>
+  `).join('');
+}
+
+function addAllSelectedArticlesToContext() {
+  state.selectedLawArticles.forEach(a => {
+    addToContext({
+      id: `law-${a.eli_id}`,
+      name: `${a.article_number || a.eli_id} — ${a.framework_code}`,
+      type: 'law-article',
+      data: a
+    });
+  });
+  appendMessage('assistant', `Adicionei ${state.selectedLawArticles.length} artigo(s) selecionado(s) ao contexto.`);
+}
+
+function clearSelectedArticles() {
+  state.selectedLawArticles = [];
+  document.querySelectorAll('.article-row.selected').forEach(r => r.classList.remove('selected'));
+  renderSelectedArticlesUI();
+}
+
+// Article tooltip
+function showArticleTooltip(article, meta, e) {
+  const tip = document.getElementById('articleTooltip');
+  tip.querySelector('.att-code').textContent = `${article.article_number || article.eli_id} — ${meta.framework_code} · ${meta.jurisdiction || ''}`;
+  tip.querySelector('.att-theme').textContent = article.hierarchy_label || article.theme || '—';
+  tip.querySelector('.att-text').textContent = article.text || '(sem texto)';
+  
+  let metaHtml = '';
+  if (article.norm_type) metaHtml += `<span class="att-tag">${article.norm_type}</span>`;
+  if (article.norm_scope) metaHtml += `<span class="att-tag">${article.norm_scope}</span>`;
+  if (article.regulated_subject) metaHtml += `<span class="att-tag">${article.regulated_subject}</span>`;
+  if (article.sanctions?.length) metaHtml += article.sanctions.map(s => `<span class="att-tag" style="color:var(--red);">${s}</span>`).join('');
+  if (article.duty_bearer_roles?.length) metaHtml += article.duty_bearer_roles.map(r => `<span class="att-tag" style="color:var(--blue);">${r}</span>`).join('');
+  tip.querySelector('.att-meta').innerHTML = metaHtml;
+  
+  tip.style.left = Math.min(e.clientX + 12, window.innerWidth - 400) + 'px';
+  tip.style.top = Math.min(e.clientY + 12, window.innerHeight - 300) + 'px';
+  tip.classList.add('visible');
+}
+
+function hideArticleTooltip() {
+  document.getElementById('articleTooltip').classList.remove('visible');
+}
+
+function moveArticleTooltip(e) {
+  const tip = document.getElementById('articleTooltip');
+  tip.style.left = Math.min(e.clientX + 12, window.innerWidth - 400) + 'px';
+  tip.style.top = Math.min(e.clientY + 12, window.innerHeight - 300) + 'px';
+}
+
+// Granularity
+function setLawGranularity(level) {
+  state.lawGranularity = level;
+  document.querySelectorAll('.granularity-btn').forEach(b => b.classList.toggle('active', b.dataset.level === level));
+  // Re-render all loaded article bodies
+  Object.keys(state.lawCatalogue).forEach(code => {
+    const bodyEl = document.querySelector(`.law-item[data-code="${code}"] .law-item-body`);
+    if (bodyEl && bodyEl.dataset.loaded === 'true') {
+      const { meta, articles } = state.lawCatalogue[code];
+      bodyEl.innerHTML = '';
+      for (const art of articles) {
+        bodyEl.appendChild(buildArticleRow(art, meta));
+      }
+    }
+  });
+  applyLawSearch();
+}
+
+function applyLawSearch() {
+  const q = (document.getElementById('lawSearchInput')?.value || '').toLowerCase().trim();
+  document.querySelectorAll('.article-row').forEach(row => {
+    if (!q) { row.style.display = ''; return; }
+    row.style.display = (row.dataset.search || '').includes(q) ? '' : 'none';
+  });
+}
+
+// ===== JURISPRUDENCE SCRAPER =====
+function getScraperConfig() {
+  return {
+    query: document.getElementById('scraperQuery').value.trim(),
+    maxResults: parseInt(document.getElementById('scraperMaxResults').value) || 100,
+    searchIndex: document.getElementById('scraperSearchIndex').value,
+    tipoDecisao: document.getElementById('scraperTipoDecisao').value,
+    tipoProcesso: document.getElementById('scraperTipoProcesso').value.trim(),
+    dataInicio: document.getElementById('scraperDataInicio').value,
+    dataFim: document.getElementById('scraperDataFim').value,
+    relator: document.getElementById('scraperRelator').value.trim(),
+    comarca: document.getElementById('scraperComarca').value.trim(),
+    assuntoCNJ: document.getElementById('scraperAssuntoCNJ').value.trim()
+  };
+}
+
+function resetScraperForm() {
+  document.getElementById('scraperQuery').value = '';
+  document.getElementById('scraperMaxResults').value = '100';
+  document.getElementById('scraperSearchIndex').value = 'ementa';
+  document.getElementById('scraperTipoDecisao').value = '';
+  document.getElementById('scraperTipoProcesso').value = '';
+  document.getElementById('scraperDataInicio').value = '';
+  document.getElementById('scraperDataFim').value = '';
+  document.getElementById('scraperRelator').value = '';
+  document.getElementById('scraperComarca').value = '';
+  document.getElementById('scraperAssuntoCNJ').value = '';
+}
+
+async function searchJurisprudence() {
+  const config = getScraperConfig();
+  if (!config.query) {
+    appendMessage('assistant', 'Por favor, informe um texto de busca para pesquisar a jurisprudência.');
+    return;
+  }
+  
+  state.scraperConfig = config;
+  state.jurisSearching = true;
+  
+  const statusEl = document.getElementById('scraperStatus');
+  const badge = document.getElementById('jurisBadge');
+  const container = document.getElementById('jurisResultsContainer');
+  
+  statusEl.style.display = 'block';
+  statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando jurisprudência no TJRS...';
+  badge.textContent = 'buscando...';
+  badge.className = 'badge badge-amber';
+  
+  appendMessage('trace', `[TJRS Scraper] Iniciando busca: "${config.query}" (max: ${config.maxResults})`);
+  
+  try {
+    // Try the backend scraper API endpoint
+    const payload = {
+      search_text: config.query,
+      max_results: config.maxResults,
+      search_index: config.searchIndex,
+      tipo_decisao: config.tipoDecisao || null,
+      tipo_processo: config.tipoProcesso || null,
+      data_julgamento_inicio: config.dataInicio || null,
+      data_julgamento_fim: config.dataFim || null,
+      relator: config.relator || null,
+      comarca_origem: config.comarca || null,
+      assunto_cnj: config.assuntoCNJ || null
+    };
+    
+    const result = await safeFetch(`${CASE_SERVER}/api/jurisprudence/search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    
+    const results = Array.isArray(result) ? result : (result.results || []);
+    const continuation = Array.isArray(result) ? null : (result.agent_continuation || null);
+    state.jurisResults = results;
+    state.jurisContinuation = continuation;
+    
+    statusEl.innerHTML = `<i class="fas fa-check-circle" style="color:var(--green);"></i> ${results.length} resultado(s) encontrado(s)`;
+    badge.textContent = `${results.length} resultados`;
+    badge.className = 'badge badge-green';
+
+    if (continuation?.next_queries?.length) {
+      appendMessage('trace', `[TJRS] Sugestoes de continuidade: ${continuation.next_queries.slice(0, 3).join(' | ')}`);
+    }
+    
+    renderJurisResults();
+    appendMessage('assistant', `Busca de jurisprudência concluída: **${results.length} resultado(s)** para "${config.query}". Você pode adicionar resultados ao contexto ou baixar os inteiros teores.`);
+    
+  } catch (err) {
+    console.error('Jurisprudence search error:', err);
+    statusEl.innerHTML = `<i class="fas fa-exclamation-triangle" style="color:var(--red);"></i> Erro: ${esc(err.message)}. O scraper pode não estar rodando no backend.`;
+    badge.textContent = 'erro';
+    badge.className = 'badge badge-red';
+    
+    appendMessage('assistant', `Erro na busca de jurisprudência: ${err.message}. Verifique se o serviço do scraper TJRS está rodando no backend.`);
+  } finally {
+    state.jurisSearching = false;
+  }
+}
+
+function renderJurisResults() {
+  const container = document.getElementById('jurisResultsContainer');
+  const addAllBtn = document.getElementById('jurisAddAllContextBtn');
+  const downloadBtn = document.getElementById('jurisDownloadAllBtn');
+  const countEl = document.getElementById('jurisResultsCount');
+  
+  countEl.textContent = `${state.jurisResults.length} resultados`;
+  
+  if (!state.jurisResults.length) {
+    container.innerHTML = '<div class="context-empty">Nenhum resultado encontrado.</div>';
+    addAllBtn.style.display = 'none';
+    downloadBtn.style.display = 'none';
+    return;
+  }
+  
+  addAllBtn.style.display = '';
+  downloadBtn.style.display = '';
+  
+  container.innerHTML = state.jurisResults.map((r, i) => `
+    <div class="juris-item" data-idx="${i}">
+      <div class="juris-item-header">
+        <span class="juris-item-num">${esc(r.numero_processo || 'N/A')}</span>
+        <span class="badge">${esc(r.tipo_decisao || r.tipo_processo || '—')}</span>
+      </div>
+      <div class="juris-item-meta">
+        ${r.relator ? `<strong>Relator:</strong> ${esc(r.relator)} · ` : ''}
+        ${r.comarca_origem ? `<strong>Comarca:</strong> ${esc(r.comarca_origem)} · ` : ''}
+        ${r.orgao_julgador ? `${esc(r.orgao_julgador)} · ` : ''}
+        ${r.data_julgamento ? `<strong>Julg:</strong> ${esc(r.data_julgamento)}` : ''}
+      </div>
+      ${r.result_description ? `<div style="font-size:10px;color:var(--ink-fade);margin-top:4px;line-height:1.45;">${esc(r.result_description)}</div>` : ''}
+      ${r.ementa_trecho ? `<div style="font-size:10px;color:var(--ink-soft);margin-top:4px;line-height:1.4;max-height:40px;overflow:hidden;">${esc((r.ementa_trecho || '').slice(0, 200))}</div>` : ''}
+      <div class="juris-item-actions">
+        <button class="artifact-mini-btn" onclick="addJurisToContext(${i})"><i class="fas fa-plus"></i> contexto</button>
+        ${r.inteiro_url ? `<button class="artifact-mini-btn" onclick="downloadInteiroTeor(${i})"><i class="fas fa-download"></i> inteiro teor</button>` : ''}
+        <button class="artifact-mini-btn" onclick="askAboutJuris(${i})"><i class="fas fa-comment"></i> perguntar</button>
+      </div>
+    </div>
+  `).join('');
+  
+  // Render sidebar
+  renderJurisResultsSidebar();
+}
+
+function renderJurisResultsSidebar() {
+  const list = document.getElementById('jurisResultsList');
+  if (!state.jurisResults.length) {
+    list.innerHTML = '<div class="context-empty">Nenhuma busca realizada.</div>';
+    return;
+  }
+  list.innerHTML = state.jurisResults.slice(0, 20).map((r, i) => `
+    <div class="artifact-item" style="padding: 6px 8px; cursor: pointer;" onclick="addJurisToContext(${i})">
+      <span style="font-family: var(--mono); font-size: 10px; color: var(--blue); font-weight: 600;">${esc(r.numero_processo || 'N/A')}</span>
+      <span style="font-size: 10px; color: var(--ink-fade);">${esc(r.tipo_processo || r.tipo_decisao || '—')}</span>
+    </div>
+  `).join('');
+}
+
+function addJurisToContext(idx) {
+  const r = state.jurisResults[idx];
+  if (!r) return;
+  addToContext({
+    id: `juris-${r.numero_processo || idx}`,
+    name: `Proc. ${r.numero_processo || 'N/A'} (${r.tipo_processo || 'TJRS'})`,
+    type: 'jurisprudence',
+    data: r
+  });
+}
+
+function addAllJurisToContext() {
+  state.jurisResults.forEach((r, i) => addJurisToContext(i));
+  appendMessage('assistant', `Adicionados ${state.jurisResults.length} resultados de jurisprudência ao contexto.`);
+}
+
+async function downloadInteiroTeor(idx) {
+  const r = state.jurisResults[idx];
+  if (!r?.inteiro_url) return;
+  appendMessage('trace', `[TJRS] Baixando inteiro teor: ${r.numero_processo}`);
+  try {
+    await safeFetch(`${CASE_SERVER}/api/jurisprudence/download`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: r.inteiro_url, numero_processo: r.numero_processo })
+    });
+    appendMessage('assistant', `Inteiro teor do processo ${r.numero_processo} baixado com sucesso.`);
+  } catch (err) {
+    appendMessage('assistant', `Erro ao baixar inteiro teor: ${err.message}`);
+  }
+}
+
+async function downloadAllInteiroTeor() {
+  const urls = state.jurisResults.filter(r => r.inteiro_url);
+  if (!urls.length) return;
+  appendMessage('trace', `[TJRS] Baixando ${urls.length} inteiros teores...`);
+  try {
+    await safeFetch(`${CASE_SERVER}/api/jurisprudence/download-batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ results: urls })
+    });
+    appendMessage('assistant', `${urls.length} inteiros teores enviados para download.`);
+  } catch (err) {
+    appendMessage('assistant', `Erro no download em lote: ${err.message}`);
+  }
+}
+
+function askAboutJuris(idx) {
+  const r = state.jurisResults[idx];
+  if (!r) return;
+  document.getElementById('chatInput').value = `Analise o processo ${r.numero_processo || ''} (${r.tipo_processo || ''}, Relator: ${r.relator || '?'}) e indique quais artigos de lei se aplicam.`;
+  document.getElementById('chatInput').focus();
+}
+
+// ===== CONTEXT BUILDER ADDITIONS =====
+function addAllLawArticlesToContext() {
+  state.selectedLawArticles.forEach(a => {
+    addToContext({
+      id: `law-${a.eli_id}`,
+      name: `${a.article_number || a.eli_id} — ${a.framework_code}`,
+      type: 'law-article',
+      data: a
+    });
+  });
+  renderContextModalItems();
+}
+
+// ===== ENHANCED GRAPH WITH LAW RELATIONSHIPS =====
+function setupExpandables() {
+  document.querySelectorAll('.expandable-header').forEach(header => {
+    header.addEventListener('click', () => {
+      header.closest('.expandable-section').classList.toggle('open');
+    });
+  });
+}
+
+// ===== ADD FOLDER MODAL =====
+function openAddFolderModal() {
+  document.getElementById('addFolderModal').classList.add('visible');
+}
+
+function closeAddFolderModal() {
+  document.getElementById('addFolderModal').classList.remove('visible');
+  document.getElementById('folderPathInput').value = '';
+  document.getElementById('folderInstructions').value = '';
+}
+
+function setupFolderTypeOptions() {
+  document.querySelectorAll('.folder-type-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.folder-type-option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      state.folderType = opt.dataset.type;
+    });
+  });
+}
+
+async function confirmAddFolder() {
+  const path = document.getElementById('folderPathInput').value.trim();
+  const instructions = document.getElementById('folderInstructions').value.trim();
+  
+  if (!path) {
+    alert('Informe o caminho da pasta ou arquivo');
+    return;
+  }
+  
+  try {
+    // Send to backend
+    await safeFetch(`${CASE_SERVER}/api/rebuild`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        root_dir: path,
+        folder_type: state.folderType,
+        instructions: instructions
+      })
+    });
+    
+    closeAddFolderModal();
+    await refreshWorkspace();
+    
+    appendMessage('assistant', `Adicionei a pasta "${path}" ao workspace como ${state.folderType === 'canonical' ? 'árvore canônica' : state.folderType === 'scattered' ? 'materiais dispersos' : 'referência externa'}. O índice foi atualizado.`);
+  } catch (err) {
+    alert(`Erro: ${err.message}`);
+  }
+}
+
+// ===== CONTEXT BUILDER MODAL =====
+function openContextModal() {
+  renderContextModalItems();
+  document.getElementById('contextModal').classList.add('visible');
+}
+
+function closeContextModal() {
+  document.getElementById('contextModal').classList.remove('visible');
+}
+
+function renderContextModalItems() {
+  const container = document.getElementById('contextModalItems');
+  if (!state.contextItems.length) {
+    container.innerHTML = '<div class="context-empty">Nenhum item no contexto</div>';
+    return;
+  }
+  container.innerHTML = state.contextItems.map(item => `
+    <div class="context-item">
+      <div class="context-item-name">
+        <i class="fas ${getFileIcon(item.extension)}"></i>
+        <span>${esc(item.name || item.file || 'Item')}</span>
+      </div>
+      <span class="context-item-type">${esc(item.type)}</span>
+    </div>
+  `).join('');
+}
+
+function addAllViolations() {
+  state.violations.forEach((v, i) => {
+    addToContext({
+      id: `violation-${i}`,
+      name: v.title || v.violation_type || `Violação ${i+1}`,
+      type: 'violation',
+      data: v
+    });
+  });
+  renderContextModalItems();
+}
+
+function addAllEntities() {
+  Object.keys(state.entities).forEach(type => {
+    addToContext({
+      id: `entity-${type}`,
+      name: `Entidades: ${type}`,
+      type: 'entity-type',
+      entityType: type
+    });
+  });
+  renderContextModalItems();
+}
+
+function addTimeline() {
+  addToContext({
+    id: 'timeline-all',
+    name: 'Timeline completa',
+    type: 'timeline',
+    data: state.timeline
+  });
+  renderContextModalItems();
+}
+
+function addFindings() {
+  const findings = state.caseState?.findings || [];
+  findings.forEach((f, i) => {
+    addToContext({
+      id: `finding-${i}`,
+      name: typeof f === 'string' ? f : (f.title || `Achado ${i+1}`),
+      type: 'finding',
+      data: f
+    });
+  });
+  renderContextModalItems();
+}
+
+function applyContext() {
+  const instruction = document.getElementById('contextInstruction').value.trim();
+  if (instruction) {
+    state.contextInstruction = instruction;
+  }
+  closeContextModal();
+  appendMessage('assistant', `Contexto atualizado com ${state.contextItems.length} item(s). ${instruction ? 'Instrução especial registrada.' : ''}`);
+}
+
+// ===== CHAT / AGENT =====
+function appendMessage(role, content) {
+  const log = document.getElementById('chatLog');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  
+  const avatar = role === 'user' ? '<i class="fas fa-user"></i>' : role === 'trace' ? '<i class="fas fa-cog"></i>' : '<i class="fas fa-robot"></i>';
+  const bubbleContent = role === 'trace' ? esc(content) : renderMarkdown(content);
+  
+  div.innerHTML = `
+    <div class="msg-avatar">${avatar}</div>
+    <div class="msg-bubble">${bubbleContent}</div>
+  `;
+  
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function buildContextSummary() {
+  if (!state.contextItems.length) return '';
+  
+  let summary = '\n\n---\n**Contexto Montado:**\n';
+  
+  // Group by type for cleaner output
+  const byType = {};
+  state.contextItems.forEach(item => {
+    if (!byType[item.type]) byType[item.type] = [];
+    byType[item.type].push(item);
+  });
+  
+  // Regular items
+  Object.entries(byType).forEach(([type, items]) => {
+    if (type === 'law-article') {
+      summary += `\n**Artigos de Lei (${items.length}):**\n`;
+      items.forEach(item => {
+        const d = item.data || {};
+        summary += `- **${d.article_number || item.name}** (${d.framework_code || '?'}): ${d.theme || d.hierarchy_label || '—'}`;
+        if (d.norm_type) summary += ` [${d.norm_type}]`;
+        if (d.text) summary += `\n  > ${d.text.slice(0, 200)}${d.text.length > 200 ? '…' : ''}`;
+        summary += '\n';
+      });
+    } else if (type === 'jurisprudence') {
+      summary += `\n**Jurisprudência TJRS (${items.length}):**\n`;
+      items.forEach(item => {
+        const d = item.data || {};
+        summary += `- **Proc. ${d.numero_processo || '?'}** (${d.tipo_processo || '?'})`;
+        if (d.relator) summary += `, Rel. ${d.relator}`;
+        if (d.comarca_origem) summary += `, Comarca: ${d.comarca_origem}`;
+        if (d.ementa_trecho) summary += `\n  > ${d.ementa_trecho.slice(0, 200)}`;
+        summary += '\n';
+      });
+    } else {
+      items.forEach(item => {
+        summary += `- ${item.name} (${item.type})\n`;
+      });
+    }
+  });
+  
+  if (state.contextInstruction) {
+    summary += `\n**Instrução especial:** ${state.contextInstruction}\n`;
+  }
+  
+  return summary;
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || state.busy) return;
+  
+  input.value = '';
+  appendMessage('user', text);
+  
+  // === AGENT COMMAND DETECTION ===
+  // Detect if user asks the agent to search jurisprudence
+  const jurisPatterns = [
+    /^busque?\s+jurisprud[eê]ncia\s+(?:sobre\s+)?(.+)/i,
+    /^pesquis[ae]\s+(?:no\s+)?tjrs\s+(?:sobre\s+)?(.+)/i,
+    /^jurisprud[eê]ncia\s+(?:sobre\s+)?(.+)/i
+  ];
+  for (const pat of jurisPatterns) {
+    const m = text.match(pat);
+    if (m) {
+      const query = m[1].trim();
+      document.getElementById('scraperQuery').value = query;
+      appendMessage('trace', `[Agente] Detectado pedido de jurisprudência. Iniciando busca: "${query}"`);
+      switchView('jurisprudence');
+      state.busy = true;
+      document.getElementById('sendBtn').disabled = true;
+      try {
+        await searchJurisprudence();
+      } finally {
+        state.busy = false;
+        document.getElementById('sendBtn').disabled = false;
+      }
+      return;
+    }
+  }
+  
+  // Detect graph requests
+  if (/gra(?:fo|ph)\s+(?:de\s+)?(?:lei|legal|artigo|viola)/i.test(text)) {
+    switchView('graph');
+    document.getElementById('graphTypeSelect').value = 'law-violations';
+    renderGraph();
+    appendMessage('assistant', 'Gerando o grafo de relações **Lei × Violações**. Troque o tipo no seletor acima para ver outras perspectivas.');
+    return;
+  }
+  
+  state.busy = true;
+  document.getElementById('sendBtn').disabled = true;
+  
+  try {
+    const llm = window.DiscoveryLLM;
+    if (!llm?.hasApiKey()) {
+      llm?.openConfig();
+      appendMessage('assistant', 'Configure a API key no widget AA antes de usar o agente.');
+      return;
+    }
+    
+    const context = buildContextSummary();
+    const systemPrompt = buildSystemPrompt();
+    
+    const result = await llm.sendChat({
+      systemPrompt,
+      messages: [
+        ...state.chatHistory.map(m => ({ role: m.role, content: m.content })),
+        { role: 'user', content: text + context }
+      ],
+      temperature: 0.15,
+      maxTokens: 2000
+    });
+    
+    appendMessage('assistant', result.text || 'Sem resposta.');
+    state.chatHistory.push({ role: 'user', content: text }, { role: 'assistant', content: result.text });
+    
+  } catch (err) {
+    appendMessage('assistant', `Erro: ${err.message}`);
+  } finally {
+    state.busy = false;
+    document.getElementById('sendBtn').disabled = false;
+  }
+}
+
+function buildSystemPrompt() {
+  const catSummary = Object.entries(state.categories).map(([k, v]) => `${v.label || k}: ${v.count}`).join(', ');
+  const fileCount = state.endpoints.length;
+  const violationCount = state.violations.length;
+  const lawFrameworkCount = state.lawFrameworks.length;
+  const selectedArticleCount = state.selectedLawArticles.length;
+  const jurisResultCount = state.jurisResults.length;
+  
+  // Build law summary
+  let lawSummary = '';
+  if (state.lawFrameworks.length) {
+    const byJur = {};
+    state.lawFrameworks.forEach(f => {
+      const j = f.jurisdiction || 'Other';
+      if (!byJur[j]) byJur[j] = [];
+      byJur[j].push(f.framework_code);
+    });
+    lawSummary = Object.entries(byJur).map(([j, codes]) => `${j}: ${codes.join(', ')}`).join('; ');
+  }
+  
+  // Build selected articles detail
+  let selectedDetail = '';
+  if (state.selectedLawArticles.length) {
+    const byCode = {};
+    state.selectedLawArticles.forEach(a => {
+      if (!byCode[a.framework_code]) byCode[a.framework_code] = [];
+      byCode[a.framework_code].push(a);
+    });
+    selectedDetail = Object.entries(byCode).map(([code, arts]) => {
+      return `\n  ${code}: ${arts.map(a => `${a.article_number} (${a.norm_type || '?'}: ${(a.theme || '').slice(0, 40)})`).join(', ')}`;
+    }).join('');
+  }
+  
+  // Build jurisprudence context
+  let jurisDetail = '';
+  if (state.jurisResults.length) {
+    jurisDetail = state.jurisResults.slice(0, 5).map(r =>
+      `Proc. ${r.numero_processo} (${r.tipo_processo || '?'}, Relator: ${r.relator || '?'}, Comarca: ${r.comarca_origem || '?'})`
+    ).join('\n  ');
+  }
+  
+  return `Você é o Agente Curador do Discovery Workspace. Sua função é:
+1. Guiar o usuário pelo corpus de documentos
+2. Explicar artefatos, entidades e relações
+3. Identificar violações e lacunas
+4. Sugerir próximos passos operacionais
+5. **Navegar e analisar a base de legislação** — você tem acesso a ${lawFrameworkCount} frameworks legais com artigos detalhados
+6. **Pesquisar jurisprudência no TJRS** — você pode sugerir buscas e analisar resultados da base do Tribunal de Justiça do RS
+7. **Cruzar violações × artigos de lei × jurisprudência** — identificar fundamentação legal para cada violação
+
+**Estado do Workspace:**
+- Arquivos: ${fileCount}
+- Categorias: ${catSummary || 'nenhuma'}
+- Violações identificadas: ${violationCount}
+- Timeline: ${state.timeline.length} eventos
+- Frameworks legais disponíveis: ${lawFrameworkCount} (${lawSummary || 'nenhum'})
+- Artigos selecionados pelo usuário: ${selectedArticleCount}${selectedDetail ? '\n  ' + selectedDetail : ''}
+- Jurisprudência TJRS: ${jurisResultCount} resultado(s)${jurisDetail ? '\n  ' + jurisDetail : ''}
+
+**Ferramentas disponíveis para o agente:**
+- LEGISLAÇÃO: O catálogo de legislação contém frameworks como ECA, CF88, CDC, CLT, Código Penal, etc. Cada framework tem artigos com: número, tema, texto completo, tipo de norma (obligation, prohibition, right, penalty), papéis de responsáveis, sanções. Artigos podem ser selecionados pelo usuário para análise.
+- JURISPRUDÊNCIA TJRS: O scraper permite busca semântica na base de jurisprudência do TJRS. Parâmetros configuráveis: texto de busca, tipo de decisão, tipo de processo, relator, comarca, datas, assunto CNJ. Max ${state.scraperConfig.maxResults} resultados. Downloads de inteiro teor disponíveis.
+- GRAFOS: Você pode sugerir ao usuário visualizar grafos de: Entidades, Arquivos, Violações, Lei × Violações, Artigos × Relações.
+- CONTEXTO: O usuário pode montar um contexto com artefatos, violações, entidades, artigos de lei e jurisprudência para perguntas específicas.
+
+**Quando o usuário perguntar sobre legislação:**
+- Cite artigos específicos com número, lei e tema
+- Explique o tipo de norma (obrigação, proibição, direito, penalidade)
+- Relacione com violações do caso quando possível
+- Sugira artigos complementares
+
+**Quando o usuário pedir busca de jurisprudência:**
+- Sugira termos de busca adequados
+- Após resultados, destaque precedentes relevantes
+- Cruze com as violações e artigos do caso
+
+**Regras:**
+- Responda em português do Brasil
+- Seja direto e operacional
+- Cite arquivos específicos quando relevante
+- Use markdown para formatação
+- Se não souber algo, diga claramente`;
+}
+
+// ===== EVENT BINDINGS =====
+function bindEvents() {
+  // View tabs
+  document.querySelectorAll('.view-tab').forEach(tab => {
+    tab.addEventListener('click', () => switchView(tab.dataset.view));
+  });
+  
+  // Right panel tabs
+  document.querySelectorAll('.right-tab').forEach(tab => {
+    tab.addEventListener('click', () => switchRightTab(tab.dataset.tab));
+  });
+  
+  // Shared data tabs
+  document.querySelectorAll('.shared-data-tab').forEach(tab => {
+    tab.addEventListener('click', () => switchSharedTab(tab.dataset.tab));
+  });
+  
+  // Buttons
+  document.getElementById('refreshBtn').addEventListener('click', () => refreshWorkspace());
+  document.getElementById('importWorkspaceBtn').addEventListener('click', triggerWorkspaceImport);
+  document.getElementById('workspaceImportInput').addEventListener('change', handleWorkspaceImportSelection);
+  document.getElementById('addFolderBtn').addEventListener('click', openAddFolderModal);
+  document.getElementById('closeAddFolderModal').addEventListener('click', closeAddFolderModal);
+  document.getElementById('cancelAddFolder').addEventListener('click', closeAddFolderModal);
+  document.getElementById('confirmAddFolder').addEventListener('click', confirmAddFolder);
+  
+  document.getElementById('buildContextBtn').addEventListener('click', openContextModal);
+  document.getElementById('closeContextModal').addEventListener('click', closeContextModal);
+  document.getElementById('cancelContext').addEventListener('click', closeContextModal);
+  document.getElementById('applyContext').addEventListener('click', applyContext);
+  document.getElementById('addAllViolationsBtn').addEventListener('click', addAllViolations);
+  document.getElementById('addAllEntitiesBtn').addEventListener('click', addAllEntities);
+  document.getElementById('addTimelineBtn').addEventListener('click', addTimeline);
+  document.getElementById('addFindingsBtn').addEventListener('click', addFindings);
+  document.getElementById('addAllLawArticlesBtn').addEventListener('click', () => {
+    addAllLawArticlesToContext();
+    renderContextModalItems();
+  });
+  document.getElementById('addAllJurisContextBtn').addEventListener('click', () => {
+    addAllJurisToContext();
+    renderContextModalItems();
+  });
+  
+  document.getElementById('clearContextBtn').addEventListener('click', clearContext);
+  
+  document.getElementById('sendBtn').addEventListener('click', sendMessage);
+  document.getElementById('chatInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+  
+  // Hint chips
+  document.querySelectorAll('.hint-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.getElementById('chatInput').value = chip.dataset.prompt;
+      document.getElementById('chatInput').focus();
+    });
+  });
+  
+  // Search
+  document.getElementById('artifactSearchInput').addEventListener('input', () => {
+    renderFiles();
+    renderArtifactsGrid();
+  });
+  
+  // Notes
+  document.getElementById('saveNoteBtn').addEventListener('click', () => {
+    const title = document.getElementById('noteTitle').value.trim();
+    const content = document.getElementById('noteBody').value.trim();
+    if (!title && !content) return;
+    upsertNote({ id: state.editingNoteId, title: title || 'Sem título', content });
+    clearNoteEditor();
+  });
+  document.getElementById('newNoteBtn').addEventListener('click', clearNoteEditor);
+  
+  // Graph type
+  document.getElementById('graphTypeSelect').addEventListener('change', renderGraph);
+  
+  // Graph controls
+  document.getElementById('zoomInBtn').addEventListener('click', () => zoomGraph(0.2));
+  document.getElementById('zoomOutBtn').addEventListener('click', () => zoomGraph(-0.2));
+  document.getElementById('fitGraphBtn').addEventListener('click', fitGraph);
+  document.getElementById('fullscreenGraphBtn').addEventListener('click', toggleGraphFullscreen);
+  document.getElementById('exportGraphBtn').addEventListener('click', exportGraph);
+  initGraphPan();
+  
+  // Escape exits fullscreen
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('graphContainer').classList.contains('fullscreen')) {
+      toggleGraphFullscreen();
+    }
+  });
+
+  // Violations filter & export
+  document.getElementById('violationSeverity').addEventListener('change', renderViolationsView);
+  document.getElementById('exportViolationsBtn').addEventListener('click', exportViolations);
+  
+  // Viewer
+  document.getElementById('closeViewerBtn').addEventListener('click', closeViewer);
+  document.getElementById('downloadFileBtn').addEventListener('click', downloadCurrentFile);
+  
+  // Add to context from detail
+  document.getElementById('addToContextBtn').addEventListener('click', () => {
+    if (state.selectedArtifact) {
+      addFileToContext(state.selectedArtifact.file);
+    }
+  });
+
+  // === LEGISLATION ===
+  // Granularity buttons
+  document.querySelectorAll('.granularity-btn').forEach(btn => {
+    btn.addEventListener('click', () => setLawGranularity(btn.dataset.level));
+  });
+  // Law search
+  document.getElementById('lawSearchInput').addEventListener('input', applyLawSearch);
+  // Add selected articles to context
+  document.getElementById('addSelectedArticlesBtn').addEventListener('click', addAllSelectedArticlesToContext);
+  // Clear selected articles
+  document.getElementById('clearSelectedArticlesBtn').addEventListener('click', clearSelectedArticles);
+
+  // === JURISPRUDENCE / SCRAPER ===
+  document.getElementById('scraperSearchBtn').addEventListener('click', searchJurisprudence);
+  document.getElementById('scraperResetBtn').addEventListener('click', resetScraperForm);
+  document.getElementById('scraperConfigHeader').addEventListener('click', () => {
+    const body = document.getElementById('scraperConfigBody');
+    body.style.display = body.style.display === 'none' ? '' : 'none';
+  });
+  document.getElementById('jurisAddAllContextBtn').addEventListener('click', addAllJurisToContext);
+  document.getElementById('jurisDownloadAllBtn').addEventListener('click', downloadAllInteiroTeor);
+  // Enter key on search input triggers search
+  document.getElementById('scraperQuery').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); searchJurisprudence(); }
+  });
+}
+
+// ===== INIT =====
+async function init() {
+  window.DiscoveryLLM?.mountConfigWidget({
+    title: 'Configuração de IA',
+    subtitle: 'Configure provider, modelo e API key'
+  });
+  
+  setupExpandables();
+  setupFolderTypeOptions();
+  initImportModeControl();
+  bindEvents();
+  loadNotes();
+  loadContext();
+  renderNotes();
+  renderContextItems();
+
+  await ensureDiscoverySession();
+  
+  await refreshWorkspace();
+  
+  // Load law catalogue in background
+  loadLawCatalogue().catch(err => console.warn('Law catalogue load deferred:', err.message));
+  
+  if (state.scanned) {
+    appendMessage('assistant', 'Workspace ativo! Explore os artefatos, visualize grafos de relacionamento, analise violações ou monte um contexto personalizado para suas perguntas.\n\n**Novas funcionalidades:**\n- 📚 **Legislação** — Navegue artigos com 3 níveis de granularidade (lei, compacto, completo) com tooltips detalhados\n- ⚖️ **Jurisprudência** — Pesquise a base do TJRS com busca semântica configurável\n- 🔗 **Grafos Lei × Violações** — Visualize relações entre artigos e violações no Grafo');
+  } else {
+    appendMessage('assistant', 'Workspace vazio. Use o botão "Adicionar" para incluir pastas ou arquivos no corpus.\n\nVocê já pode explorar a **aba Legislação** para navegar artigos de lei e a **aba Jurisprudência** para pesquisar na base do TJRS.');
+  }
+}
+
+// Expose functions
+window.selectArtifact = selectArtifact;
+window.viewFile = viewFile;
+window.addFileToContext = addFileToContext;
+window.addEntityTypeToContext = addEntityTypeToContext;
+window.loadEntitiesByType = loadEntitiesByType;
+window.askAbout = askAbout;
+window.addSharedToContext = addSharedToContext;
+window.editNote = editNote;
+window.deleteNote = deleteNote;
+window.removeFromContext = removeFromContext;
+window.toggleViolationDetail = toggleViolationDetail;
+// Legislation
+window.addArticleToContext = addArticleToContext;
+window.deselectArticleById = deselectArticleById;
+// Jurisprudence
+window.addJurisToContext = addJurisToContext;
+window.downloadInteiroTeor = downloadInteiroTeor;
+window.askAboutJuris = askAboutJuris;
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

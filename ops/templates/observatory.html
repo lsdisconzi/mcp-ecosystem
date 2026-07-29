@@ -1,0 +1,3254 @@
+<!doctype html>
+<html lang="en">
+<!--
+============================================================================
+OBSERVATORY — Awareness-AI Ecosystem Dashboard
+
+This template dynamically populates data from the backend APIs.
+Some views have been marked as DEPRECATED and commented out because
+they referenced legacy projects (awareness-ai, pinocchio, thebridge,
+legalpipeline, kout, coremu, etc.) that are no longer running.
+
+These sections are preserved as reference for future restoration.
+To re-enable: uncomment the section and update the API endpoints.
+============================================================================
+-->
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Observatory — Awareness-AI</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --bg:#191917;--bg2:#1e1e1b;--bg3:#232320;--bg4:#2a2a26;
+      --border:#2e2e2a;--border-hi:#3a3a34;
+      --amber:#c4622d;--amber-dim:#924a22;
+      --white:#ede8df;--gray:#5a5a54;--gray-hi:#8a8a82;
+      --green:#4a9e70;--green-dim:#2d6b47;
+      --red:#c44a4a;--red-dim:#8b2f2f;
+      --blue:#4a7ec4;--blue-dim:#33578b;
+      --yellow:#c4a84a;
+      --mono:'JetBrains Mono',monospace;
+      --font:'Inter',sans-serif;
+      --radius:10px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font);background:var(--bg);color:var(--white);-webkit-font-smoothing:antialiased;min-height:100vh}
+
+    /* ── HEADER ── */
+    .obs-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:100;flex-wrap:wrap}
+    .obs-brand{display:flex;align-items:center;gap:12px}
+    .obs-brand-logo{display:flex;align-items:center;gap:10px}
+    .obs-brand-logo svg{width:28px;height:28px;flex-shrink:0}
+    .obs-brand-title{font-size:16px;font-weight:600;letter-spacing:-.02em;color:var(--white)}
+    .obs-brand-title span{color:var(--amber);font-weight:700}
+    .obs-brand-subtitle{font-size:11px;color:var(--gray);margin-top:1px}
+    .obs-header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .obs-badge{font-size:10px;font-weight:600;padding:3px 10px;border-radius:99px;text-transform:uppercase;letter-spacing:.05em;display:inline-flex;align-items:center;gap:5px}
+    .obs-badge.live{background:rgba(74,158,112,.15);color:var(--green);border:1px solid var(--green-dim)}
+    .obs-badge.syncing{background:rgba(196,98,45,.15);color:var(--amber);border:1px solid var(--amber-dim)}
+    .obs-badge.error{background:rgba(196,74,74,.15);color:var(--red);border:1px solid var(--red-dim)}
+    .mode-switch{display:inline-flex;align-items:center;background:var(--bg4);border:1px solid var(--border);border-radius:999px;overflow:hidden}
+    .mode-switch-btn{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;color:var(--gray-hi);text-decoration:none}
+    .mode-switch-btn:hover{text-decoration:none;color:var(--white)}
+    .mode-switch-btn.active{background:var(--amber-dim);color:var(--white)}
+
+    /* ── LAYOUT ── */
+    .obs-layout{display:flex;height:calc(100vh - 57px)}
+    .obs-sidebar{width:260px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+    .obs-main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+
+    /* ── SIDEBAR ── */
+    .obs-nav-section{padding:16px 14px 6px;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--gray)}
+    .obs-nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;transition:background .15s;border-left:3px solid transparent;font-size:13px;color:var(--gray-hi)}
+    .obs-nav-item:hover{background:var(--bg3);color:var(--white)}
+    .obs-nav-item.active{background:rgba(196,98,45,.08);border-left-color:var(--amber);color:var(--white)}
+    .obs-nav-item i{width:16px;text-align:center;font-size:12px;color:var(--amber);flex-shrink:0}
+    .obs-nav-item .nav-count{margin-left:auto;font-size:10px;font-family:var(--mono);background:var(--bg4);padding:2px 6px;border-radius:4px;color:var(--gray-hi)}
+    .obs-nav-divider{border:none;border-top:1px solid var(--border);margin:6px 0}
+
+    /* ── VIEWS ── */
+    .obs-view{display:none;flex:1}
+    .obs-view.active{display:block}
+    .obs-view-inner{padding:24px 28px;display:flex;flex-direction:column;gap:22px}
+
+    /* ── SECTION ── */
+    .obs-section-title{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--gray);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .obs-section-title i{color:var(--amber);font-size:10px}
+
+    /* ── SUMMARY CARDS ── */
+    .obs-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+    .obs-stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden}
+    .obs-stat-card-label{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .obs-stat-card-value{font-size:26px;font-weight:700;font-family:var(--mono)}
+    .obs-stat-card-sub{font-size:11px;color:var(--gray-hi);margin-top:4px}
+    .obs-stat-card-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:36px;opacity:.06}
+    .obs-stat-card-value.amber{color:var(--amber)}
+    .obs-stat-card-value.green{color:var(--green)}
+    .obs-stat-card-value.red{color:var(--red)}
+    .obs-stat-card-value.blue{color:var(--blue)}
+
+    /* ── BUTTONS ── */
+    .btn{font-family:var(--font);font-size:11px;font-weight:500;padding:7px 14px;border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;background:var(--bg4);color:var(--gray-hi)}
+    .btn:hover{border-color:var(--gray);color:var(--white)}
+    .btn:disabled{opacity:.4;cursor:not-allowed}
+    .btn-primary{border-color:var(--amber-dim);color:var(--amber)}
+    .btn-primary:hover{background:var(--amber-dim);color:var(--white);border-color:var(--amber)}
+    .btn-success{border-color:var(--green-dim);color:var(--green)}
+    .btn-success:hover{background:var(--green-dim);color:var(--white);border-color:var(--green)}
+    .btn-danger{border-color:var(--red-dim);color:var(--red)}
+    .btn-danger:hover{background:var(--red-dim);color:var(--white);border-color:var(--red)}
+    .btn-sm{padding:5px 10px;font-size:11px}
+
+    /* ── FILTERS / CONTROLS ── */
+    .obs-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .obs-controls input[type=text]{font-family:var(--font);font-size:12px;padding:7px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);outline:none;min-width:200px}
+    .obs-controls input[type=text]:focus{border-color:var(--amber-dim)}
+    .obs-controls select{font-family:var(--font);font-size:12px;padding:7px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);outline:none;cursor:pointer}
+    .obs-controls select:focus{border-color:var(--amber-dim)}
+
+    /* ── PILLS ── */
+    .pill{display:inline-block;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:600;font-family:var(--mono)}
+    .pill-ok{background:rgba(74,158,112,.15);color:var(--green)}
+    .pill-err{background:rgba(196,74,74,.15);color:var(--red)}
+    .pill-warn{background:rgba(196,168,74,.15);color:var(--yellow)}
+    .pill-info{background:rgba(74,126,196,.15);color:var(--blue)}
+    .pill-muted{background:var(--bg4);color:var(--gray-hi)}
+
+    /* ── SERVICE STATUS GRID ── */
+    .svc-status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+    .svc-status-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:8px;transition:border-color .15s}
+    .svc-status-card:hover{border-color:var(--border-hi)}
+    .svc-status-top{display:flex;align-items:center;gap:10px}
+    .svc-status-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+    .svc-status-dot.up{background:var(--green);box-shadow:0 0 6px rgba(74,158,112,.5)}
+    .svc-status-dot.down{background:var(--red);box-shadow:0 0 6px rgba(196,74,74,.5)}
+    .svc-status-dot.unknown{background:var(--gray)}
+    .svc-status-name{font-size:13px;font-weight:600;flex:1}
+    .svc-status-meta{font-size:11px;color:var(--gray);font-family:var(--mono);display:flex;gap:12px}
+    .svc-status-actions{display:flex;gap:6px;flex-wrap:wrap}
+    .svc-log-toolbar{margin-bottom:8px}
+    .svc-log-meta{font-size:11px;color:var(--gray);margin-bottom:8px}
+    .svc-log-view{font-family:var(--mono);font-size:11px;color:var(--gray-hi);background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;min-height:220px;max-height:460px;overflow:auto;white-space:pre-wrap;word-break:break-word;line-height:1.45}
+
+    /* ── TABLE ── */
+    .obs-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3)}
+    .obs-table{width:100%;border-collapse:collapse;font-size:12px}
+    .obs-table th{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left;font-size:11px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;background:var(--bg3)}
+    .obs-table td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--gray-hi)}
+    .obs-table tr:last-child td{border-bottom:none}
+    .obs-table tr:hover td{background:rgba(255,255,255,.02)}
+    .obs-table-empty{text-align:center;padding:40px;color:var(--gray)}
+
+    /* ── LOG TABLE ROWS ── */
+    .log-row-detail{display:none;background:var(--bg2)}
+    .log-row-detail.show{display:table-row}
+    .log-row-detail td{padding:0!important}
+    .log-detail-inner{padding:14px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .log-detail-block label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--gray);display:block;margin-bottom:4px}
+    .log-detail-pre{font-family:var(--mono);font-size:11px;color:var(--gray-hi);background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:10px;white-space:pre-wrap;word-break:break-all;max-height:220px;overflow-y:auto;line-height:1.5}
+
+    /* ── TIMELINE CHART ── */
+    .obs-chart-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+    .obs-chart-title{font-size:12px;font-weight:600;color:var(--white);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .obs-charts-row{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+
+    /* ── AGENT CARDS ── */
+    .agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+    .agent-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+    .agent-card-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+    .agent-icon{width:38px;height:38px;border-radius:9px;background:rgba(196,98,45,.12);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--amber);flex-shrink:0}
+    .agent-name{font-size:14px;font-weight:600}
+    .agent-desc{font-size:11px;color:var(--gray);margin-top:2px}
+    .agent-section{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);margin:10px 0 5px}
+    .agent-file-list{display:flex;flex-direction:column;gap:4px}
+    .agent-file-item{font-family:var(--mono);font-size:11px;color:var(--gray-hi);background:var(--bg4);padding:5px 8px;border-radius:5px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .15s}
+    .agent-file-item:hover{background:var(--bg2);color:var(--white)}
+    .agent-file-size{color:var(--gray);font-size:10px}
+    .agent-empty{font-size:12px;color:var(--gray);padding:8px 0;font-style:italic}
+
+    /* ── MEMORY / QDRANT ── */
+    .mem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+    .mem-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+    .mem-card-name{font-size:13px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+    .mem-card-count{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--amber)}
+    .mem-card-label{font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px}
+    .mem-bar-track{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-top:10px}
+    .mem-bar-fill{height:100%;background:var(--amber);border-radius:3px;transition:width .6s ease}
+
+    /* ── MODEL CARD ── */
+    .model-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:11px;font-weight:600;border:1px solid var(--amber-dim);background:rgba(196,98,45,.1);color:var(--amber)}
+    .model-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:18px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+    .model-info{flex:1;min-width:220px}
+    .model-name{font-size:16px;font-weight:700;margin-bottom:4px}
+    .model-desc{font-size:12px;color:var(--gray-hi);line-height:1.5}
+    .model-pricing{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+    .model-price{font-size:11px;font-family:var(--mono);background:var(--bg4);padding:4px 10px;border-radius:5px;color:var(--gray-hi)}
+    .model-price span{color:var(--amber)}
+    .model-catalog-row{display:flex;gap:8px;flex-wrap:wrap}
+
+    /* ── AGENT ARCHITECTURE ── */
+    .arch-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:14px}
+    .arch-editor{width:100%;min-height:420px;max-height:620px;resize:vertical;background:var(--bg4);border:1px solid var(--border);border-radius:8px;color:var(--gray-hi);padding:12px;font-family:var(--mono);font-size:11px;line-height:1.5;outline:none}
+    .arch-editor:focus{border-color:var(--amber-dim)}
+    .arch-doc{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;max-height:620px;overflow:auto;font-size:12px;color:var(--gray-hi);line-height:1.6}
+    .arch-doc h1,.arch-doc h2,.arch-doc h3{color:var(--white);margin:0 0 10px}
+    .arch-doc p{margin:0 0 10px}
+    .arch-doc ul,.arch-doc ol{margin:0 0 10px 18px}
+    .arch-doc code{font-family:var(--mono);font-size:11px;background:var(--bg4);padding:1px 4px;border-radius:4px}
+    .arch-preview{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--bg3)}
+    .arch-preview iframe{width:100%;height:460px;border:none;background:#111}
+
+    /* ── TOAST ── */
+    .toast{position:fixed;bottom:22px;right:22px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;z-index:999;display:none;box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:360px}
+    .toast.show{display:flex;align-items:center;gap:10px;animation:slideIn .3s ease}
+    .toast.ok i{color:var(--green)}
+    .toast.err i{color:var(--red)}
+    @keyframes slideIn{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+    /* ── SPINNER ── */
+    .spin{animation:spin360 1s linear infinite}
+    @keyframes spin360{to{transform:rotate(360deg)}}
+
+    /* ── LOADING ── */
+    .obs-loading{text-align:center;padding:40px;color:var(--gray);font-size:13px}
+    .obs-loading i{font-size:28px;color:var(--amber);margin-bottom:12px;display:block}
+
+    /* ── DROPZONE ── */
+    .obs-dropzone{background:var(--bg3);border:2px dashed var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;transition:border-color .2s}
+    .obs-dropzone:hover{border-color:var(--amber-dim)}
+    .obs-drop-preview{font-size:11px;color:var(--gray-hi);font-family:var(--mono);margin-top:6px;background:var(--bg4);padding:6px 10px;border-radius:5px;max-height:60px;overflow:auto}
+
+    /* ── MODAL ── */
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+    .modal-bg.show{display:flex}
+    .modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
+    .modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .modal-head h3{font-size:15px;font-weight:600}
+    .modal-close{background:none;border:none;color:var(--gray);font-size:18px;cursor:pointer;padding:4px 8px}
+    .modal-close:hover{color:var(--white)}
+    .modal-body{flex:1;overflow-y:auto}
+    .modal-footer{padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+
+    /* ── NETWORK EVENT DETAILS ── */
+    .event-detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+    .event-detail-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px}
+    .event-detail-title{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+    .event-detail-content{font-family:var(--mono);font-size:11px;color:var(--gray-hi);line-height:1.5}
+    .event-detail-pre{background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:12px;max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+    .event-detail-row{display:flex;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    .event-detail-label{font-size:11px;color:var(--gray);min-width:120px;flex-shrink:0}
+    .event-detail-value{font-family:var(--mono);font-size:11px;color:var(--gray-hi);flex:1;word-break:break-all}
+
+    /* ── SESSION CHIPS ── */
+    .session-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+    .session-chip{background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:6px 11px;cursor:pointer;transition:all .2s;font-size:12px}
+    .session-chip:hover{border-color:var(--amber-dim);color:var(--amber)}
+    .session-chip.active{border-color:var(--amber);background:rgba(196,98,45,.1);color:var(--amber)}
+    .session-chip small{color:var(--gray);display:block;font-size:10px;font-family:var(--mono)}
+
+    /* ── DETAIL PANEL ── */
+    .detail-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-top:12px;display:none}
+    .detail-panel.show{display:block}
+    .detail-panel-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600}
+    .detail-panel-body{padding:16px}
+    .detail-meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);font-size:12px}
+    .detail-meta-label{font-size:10px;color:var(--gray);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em}
+    .detail-code{font-family:var(--mono);font-size:11px;color:var(--gray-hi);background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:10px;white-space:pre-wrap;word-break:break-all;max-height:280px;overflow-y:auto;line-height:1.5}
+
+    /* ── LLM CONFIG ── */
+    .llm-key-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:12px}
+    .llm-key-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .llm-key-header i{color:var(--amber);font-size:16px;width:20px;text-align:center}
+    .llm-key-label{font-weight:600;font-size:14px;flex:1}
+    .llm-key-status{font-size:11px;padding:3px 10px;border-radius:99px;display:inline-flex;align-items:center;gap:5px;text-transform:uppercase;letter-spacing:.04em}
+    .llm-key-status.configured{background:rgba(74,158,112,.15);color:var(--green);border:1px solid var(--green-dim)}
+    .llm-key-status.missing{background:rgba(196,74,74,.15);color:var(--red);border:1px solid var(--red-dim)}
+    .llm-key-body{display:flex;gap:8px;align-items:center}
+    .llm-key-input{flex:1;font-family:var(--mono);font-size:12px;padding:8px 12px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);outline:none}
+    .llm-key-input:focus{border-color:var(--amber-dim)}
+    .llm-key-select{flex:1;font-family:var(--font);font-size:12px;padding:8px 12px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);outline:none;cursor:pointer}
+    .llm-key-select:focus{border-color:var(--amber-dim)}
+    .llm-key-hint{font-size:10px;color:var(--gray);margin-top:6px;font-family:var(--mono)}
+
+    @media(max-width:900px){
+      .obs-layout{flex-direction:column;height:auto}
+      .obs-sidebar{width:100%;flex-direction:row;overflow-x:auto;overflow-y:hidden;border-right:none;border-bottom:1px solid var(--border);flex-wrap:nowrap}
+      .obs-nav-section{display:none}
+      .obs-nav-divider{display:none}
+      .obs-nav-item{border-left:none;border-bottom:3px solid transparent;padding:12px 14px;white-space:nowrap}
+      .obs-nav-item.active{border-bottom-color:var(--amber)}
+      .obs-charts-row{grid-template-columns:1fr}
+      .log-detail-inner{grid-template-columns:1fr}
+      .arch-grid{grid-template-columns:1fr}
+    }
+  </style>
+  <link rel="stylesheet" href="/static/css/awareness-brand.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="obs-header">
+  <div class="obs-brand">
+    <div class="obs-brand-logo">
+      <svg viewBox="0 0 28 28"><rect width="28" height="28" rx="4" fill="#c4622d"/><rect x="6" y="6" width="16" height="16" rx="2" fill="#191917"/></svg>
+      <div>
+        <div class="obs-brand-title">Awareness-AI · <span>Observatory</span></div>
+        <div class="obs-brand-subtitle">API log analysis · agent sessions · service health · memory</div>
+      </div>
+    </div>
+  </div>
+  <div class="obs-header-right">
+    <span class="obs-badge syncing">Mode: {{ ops_mode|upper }}</span>
+    <span class="mode-switch" aria-label="Dashboard mode switch">
+      <a class="mode-switch-btn {% if ops_mode == 'local' %}active{% endif %}" href="/ops/mode/local?next={{ request.path }}">Local</a>
+      <a class="mode-switch-btn {% if ops_mode == 'vps' %}active{% endif %}" href="/ops/mode/vps?next={{ request.path }}">VPS</a>
+    </span>
+    <span class="obs-badge live" id="obsBadge"><i class="fas fa-circle" style="font-size:7px"></i> Live</span>
+    <button class="btn btn-primary btn-sm" id="btnAutoRefresh"><i class="fas fa-sync-alt"></i> Auto-Refresh: OFF</button>
+    <a href="/ops" class="btn btn-sm"><i class="fas fa-arrow-left"></i> Dashboard</a>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="obs-layout">
+
+  <!-- SIDEBAR NAV -->
+  <nav class="obs-sidebar">
+    <div class="obs-nav-section">Log Analysis</div>
+    <div class="obs-nav-item active" data-view="overview" onclick="switchView('overview')">
+      <i class="fas fa-chart-line"></i> Overview
+    </div>
+    <div class="obs-nav-item" data-view="network" onclick="switchView('network')">
+      <i class="fas fa-wave-square"></i> Network <!-- DEPRECATED — kept for reference -->
+      <span class="nav-count" id="navCountNetwork">0</span>
+    </div>
+    <div class="obs-nav-item" data-view="logs" onclick="switchView('logs')">
+      <i class="fas fa-list-alt"></i> API Logs
+      <span class="nav-count" id="navCountLogs">0</span>
+    </div>
+    <hr class="obs-nav-divider"/>
+    <div class="obs-nav-section">Platform</div>
+    <div class="obs-nav-item" data-view="services" onclick="switchView('services')">
+      <i class="fas fa-server"></i> Services
+      <span class="nav-count" id="navCountSvcs">0</span>
+    </div>
+    <div class="obs-nav-item" data-view="agents" onclick="switchView('agents')">
+      <i class="fas fa-robot"></i> Agents
+    </div>
+    <div class="obs-nav-item" data-view="architecture" onclick="switchView('architecture')">
+      <i class="fas fa-project-diagram"></i> Agent Architecture <!-- DEPRECATED — kept for reference -->
+      <span class="nav-count" id="navCountArchitecture">0</span>
+    </div>
+    <div class="obs-nav-item" data-view="mcp" onclick="switchView('mcp')">
+      <i class="fas fa-plug"></i> MCP Registry
+      <span class="nav-count" id="navCountMcp">0</span>
+    </div>
+    <div class="obs-nav-item" data-view="memory" onclick="switchView('memory')">
+      <i class="fas fa-database"></i> Memory <!-- DEPRECATED — kept for reference -->
+    </div>
+    <div class="obs-nav-item" data-view="models" onclick="switchView('models')">
+      <i class="fas fa-brain"></i> Models
+    </div>
+    <hr class="obs-nav-divider"/>
+    <div class="obs-nav-section">Import</div>
+    <div class="obs-nav-item" data-view="import" onclick="switchView('import')">
+      <i class="fas fa-file-import"></i> Import / Export
+    </div>
+    <hr class="obs-nav-divider"/>
+    <div class="obs-nav-section">Settings</div>
+    <div class="obs-nav-item" data-view="llm" onclick="switchView('llm')">
+      <i class="fas fa-key"></i> LLM API Keys
+    </div>
+  </nav>
+
+  <!-- MAIN AREA -->
+  <main class="obs-main">
+
+    <!-- ── VIEW: OVERVIEW ── -->
+    <div id="view-overview" class="obs-view active">
+      <div class="obs-view-inner">
+
+        <div>
+          <div class="obs-section-title"><i class="fas fa-chart-line"></i> Log Overview</div>
+          <div class="obs-summary-grid" id="overviewStats">
+            <div class="obs-stat-card"><i class="fas fa-network-wired obs-stat-card-icon"></i><div class="obs-stat-card-label">Total Requests</div><div class="obs-stat-card-value amber" id="statTotal">—</div></div>
+            <div class="obs-stat-card"><i class="fas fa-check-circle obs-stat-card-icon"></i><div class="obs-stat-card-label">Success Rate</div><div class="obs-stat-card-value green" id="statSuccess">—</div></div>
+            <div class="obs-stat-card"><i class="fas fa-tachometer-alt obs-stat-card-icon"></i><div class="obs-stat-card-label">Avg Response</div><div class="obs-stat-card-value blue" id="statAvg">—</div></div>
+            <div class="obs-stat-card"><i class="fas fa-exclamation-triangle obs-stat-card-icon"></i><div class="obs-stat-card-label">Error Rate</div><div class="obs-stat-card-value red" id="statError">—</div></div>
+          </div>
+        </div>
+
+        <div class="obs-charts-row">
+          <div class="obs-chart-card">
+            <div class="obs-chart-title"><i class="fas fa-chart-area" style="color:var(--amber)"></i> Requests Timeline <span style="margin-left:auto;font-size:11px;color:var(--gray);font-weight:400">grouped by hour</span></div>
+            <canvas id="chartTimeline" height="110"></canvas>
+          </div>
+          <div class="obs-chart-card">
+            <div class="obs-chart-title"><i class="fas fa-chart-bar" style="color:var(--amber)"></i> By Method</div>
+            <canvas id="chartMethod" height="110"></canvas>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+            <div class="obs-section-title" style="margin:0"><i class="fas fa-server"></i> Service Health Snapshot</div>
+            <button class="btn btn-primary btn-sm" onclick="loadServices()"><i class="fas fa-sync-alt"></i> Refresh</button>
+          </div>
+          <div class="svc-status-grid" id="overviewSvcGrid">
+            <div class="obs-loading"><i class="fas fa-spinner spin"></i>Loading services…</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── VIEW: NETWORK (DEPRECATED — kept for reference) ── -->
+    <div id="view-network" class="obs-view">
+      <div class="obs-view-inner">
+
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <div>
+            <div class="obs-section-title" style="margin:0"><i class="fas fa-wave-square"></i> Network Observatory</div>
+            <div style="font-size:11px;color:var(--gray);margin-top:3px">Passive listener for inbound/outbound/proxy traffic observed by ops-dashboard</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="loadNetworkSnapshot()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            <button class="btn btn-danger btn-sm" onclick="clearNetworkTelemetry()"><i class="fas fa-trash"></i> Clear</button>
+          </div>
+        </div>
+
+        <div class="obs-summary-grid" id="networkStatsGrid">
+          <div class="obs-stat-card"><i class="fas fa-random obs-stat-card-icon"></i><div class="obs-stat-card-label">Events</div><div class="obs-stat-card-value amber" id="netTotal">—</div></div>
+          <div class="obs-stat-card"><i class="fas fa-bug obs-stat-card-icon"></i><div class="obs-stat-card-label">Error Rate</div><div class="obs-stat-card-value red" id="netErrorRate">—</div></div>
+          <div class="obs-stat-card"><i class="fas fa-stopwatch obs-stat-card-icon"></i><div class="obs-stat-card-label">Avg Latency</div><div class="obs-stat-card-value blue" id="netAvgLatency">—</div></div>
+          <div class="obs-stat-card"><i class="fas fa-sitemap obs-stat-card-icon"></i><div class="obs-stat-card-label">Endpoint Coverage</div><div class="obs-stat-card-value green" id="netCoverage">—</div></div>
+        </div>
+
+        <div class="obs-controls">
+          <input type="text" id="netSearch" placeholder="Search URL, path, service, source, error…"/>
+          <select id="netDirectionFilter">
+            <option value="all">All directions</option>
+            <option value="inbound">Inbound</option>
+            <option value="outbound">Outbound</option>
+            <option value="proxy">Proxy</option>
+            <option value="ingested">Ingested</option>
+          </select>
+          <select id="netServiceFilter"><option value="all">All services</option></select>
+          <select id="netStatusFilter">
+            <option value="all">All status</option>
+            <option value="ok">OK only</option>
+            <option value="error">Errors only</option>
+          </select>
+          <select id="netWindow" style="margin-left:auto">
+            <option value="1">Last 1h</option>
+            <option value="6">Last 6h</option>
+            <option value="24" selected>Last 24h</option>
+            <option value="72">Last 3d</option>
+            <option value="168">Last 7d</option>
+            <option value="0">All time</option>
+          </select>
+        </div>
+
+        <div class="obs-table-wrap">
+          <table class="obs-table">
+            <thead><tr>
+              <th style="width:150px">Timestamp</th>
+              <th style="width:90px">Direction</th>
+              <th style="width:70px">Method</th>
+              <th>Path / URL</th>
+              <th style="width:130px">Service</th>
+              <th style="width:80px">Status</th>
+              <th style="width:80px">ms</th>
+              <th style="width:180px">Source</th>
+            </tr></thead>
+            <tbody id="networkTbody">
+              <tr><td colspan="8" class="obs-table-empty"><i class="fas fa-wave-square" style="display:block;font-size:32px;opacity:.2;margin-bottom:10px"></i>No network events yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <div class="obs-section-title"><i class="fas fa-route"></i> Proxy Listener Test</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+            <select id="proxyMethod" style="min-width:110px">
+              <option>GET</option>
+              <option>POST</option>
+              <option>PUT</option>
+              <option>PATCH</option>
+              <option>DELETE</option>
+            </select>
+            <input type="text" id="proxyUrl" placeholder="http://localhost:8078/api/manus/health" style="flex:1;min-width:280px;font-family:var(--mono);font-size:12px;padding:8px 12px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);outline:none"/>
+            <button class="btn btn-primary btn-sm" onclick="runProxyListenerTest()"><i class="fas fa-paper-plane"></i> Send via Proxy</button>
+          </div>
+          <textarea id="proxyBody" placeholder='Optional JSON body, e.g. {"ping":true}' style="width:100%;min-height:86px;font-family:var(--mono);font-size:11px;padding:10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--gray-hi);outline:none;resize:vertical"></textarea>
+          <div class="log-detail-pre" id="proxyResult" style="margin-top:8px">No proxy call executed yet.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── VIEW: API LOGS ── -->
+    <div id="view-logs" class="obs-view">
+      <div class="obs-view-inner">
+
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <div>
+            <div class="obs-section-title" style="margin:0"><i class="fas fa-list-alt"></i> API Call Log</div>
+            <div style="font-size:11px;color:var(--gray);margin-top:3px">Fetched from ops-dashboard store + local file imports</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" id="btnFetchLogs" onclick="fetchBackendLogs(7)"><i class="fas fa-cloud-download-alt"></i> Fetch from Backend</button>
+            <button class="btn btn-sm" id="btnDlJson" onclick="downloadFilteredJSON()"><i class="fas fa-file-code"></i> JSON</button>
+            <button class="btn btn-sm" id="btnDlCsv" onclick="downloadFilteredCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+            <button class="btn btn-danger btn-sm" onclick="clearLogs()"><i class="fas fa-eraser"></i> Clear</button>
+          </div>
+        </div>
+
+        <div class="obs-controls">
+          <input type="text" id="logSearch" placeholder="Search URL, page, payload…"/>
+          <select id="logPageFilter"><option value="ALL">All pages</option></select>
+          <select id="logMethodFilter"><option value="ALL">All methods</option><option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option><option>PATCH</option></select>
+          <select id="logStatusFilter"><option value="ALL">All status</option><option value="2xx">2xx</option><option value="3xx">3xx</option><option value="4xx">4xx</option><option value="5xx">5xx</option></select>
+          <select id="logSessionFilter"><option value="ALL">All sessions</option></select>
+          <select id="logWindow" style="margin-left:auto"><option value="all">All time</option><option value="1">Last 1h</option><option value="24">Last 24h</option><option value="72">Last 3d</option><option value="168">Last 7d</option></select>
+        </div>
+
+        <div class="obs-table-wrap">
+          <table class="obs-table" id="logsTable">
+            <thead><tr>
+              <th style="width:150px">Timestamp</th>
+              <th>Page</th>
+              <th style="width:70px">Method</th>
+              <th>Endpoint</th>
+              <th style="width:80px">Status</th>
+              <th style="width:80px">ms</th>
+              <th style="width:90px">Session</th>
+              <th style="width:50px"></th>
+            </tr></thead>
+            <tbody id="logsTbody">
+              <tr><td colspan="8" class="obs-table-empty"><i class="fas fa-inbox" style="display:block;font-size:32px;opacity:.2;margin-bottom:10px"></i>No logs. Click "Fetch from Backend" or import a file.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="logDetailPanel" class="detail-panel">
+          <div class="detail-panel-head">
+            <span><i class="fas fa-microscope" style="color:var(--amber);margin-right:8px"></i>Request Inspector</span>
+            <button class="btn btn-sm" onclick="document.getElementById('logDetailPanel').classList.remove('show')"><i class="fas fa-times"></i></button>
+          </div>
+          <div class="detail-panel-body" id="logDetailBody"></div>
+        </div>
+
+        <!-- Saved sessions -->
+        <div>
+          <div class="obs-section-title"><i class="fas fa-bookmark"></i> Saved Sessions <span style="font-weight:400;font-size:10px;color:var(--gray);text-transform:none;letter-spacing:0;margin-left:4px">— right-click to delete</span></div>
+          <div class="session-chips" id="sessionChips">
+            <div style="font-size:12px;color:var(--gray)">No saved sessions.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── VIEW: SERVICES ── -->
+    <div id="view-services" class="obs-view">
+      <div class="obs-view-inner">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div class="obs-section-title" style="margin:0"><i class="fas fa-server"></i> Live Service Status</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm" onclick="loadServices()"><i class="fas fa-sync-alt"></i> Refresh</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="obs-section-title"><i class="fas fa-brain"></i> Active Model</div>
+          <div id="modelCurrentBadge" style="color:var(--gray);font-size:13px">Loading…</div>
+        </div>
+
+        <div>
+          <div class="obs-section-title"><i class="fas fa-boxes"></i> Docker + Host Services</div>
+          <div class="svc-status-grid" id="svcGrid">
+            <div class="obs-loading"><i class="fas fa-spinner spin"></i>Loading…</div>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+            <div class="obs-section-title" style="margin:0"><i class="fas fa-terminal"></i> Service &amp; Process Live Logs</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-primary btn-sm" onclick="loadServiceLogs()"><i class="fas fa-sync-alt"></i> Refresh</button>
+              <button class="btn btn-sm" id="btnSvcLogsAuto" onclick="toggleServiceLogsAuto()"><i class="fas fa-stream"></i> Auto-tail: OFF</button>
+            </div>
+          </div>
+          <div class="obs-controls svc-log-toolbar">
+            <select id="svcLogServiceFilter"><option value="all">All services</option></select>
+            <select id="svcLogLines">
+              <option value="80">80 lines/service</option>
+              <option value="120" selected>120 lines/service</option>
+              <option value="200">200 lines/service</option>
+              <option value="300">300 lines/service</option>
+              <option value="500">500 lines/service</option>
+            </select>
+            <select id="svcLogMaxServices">
+              <option value="10">Top 10 services</option>
+              <option value="20">Top 20 services</option>
+              <option value="40" selected>Top 40 services</option>
+              <option value="80">Top 80 services</option>
+            </select>
+          </div>
+          <div class="svc-log-meta" id="svcLogMeta">No service logs loaded yet.</div>
+          <pre class="svc-log-view" id="svcLiveLogs">No service logs loaded yet.</pre>
+        </div>
+
+        <div>
+          <div class="obs-section-title"><i class="fas fa-layer-group"></i> Ecosystem Map <span style="color:var(--gray);font-weight:400;font-size:10px;letter-spacing:0;text-transform:none;margin-left:6px">7 projects from ECOSYSTEM_ORCHESTRATION.md</span></div>
+          <div class="svc-status-grid" id="ecoMapGrid">
+            <div class="obs-loading"><i class="fas fa-spinner spin"></i>Loading ecosystem…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: AGENTS ── -->
+    <div id="view-agents" class="obs-view">
+      <div class="obs-view-inner">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div class="obs-section-title" style="margin:0"><i class="fas fa-robot"></i> Agent Sessions &amp; Logs</div>
+          <button class="btn btn-primary btn-sm" onclick="loadAgents()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+
+        <!-- DEPRECATED: Jurisprudence Search Panel — legacy project. Preserved for reference.
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+            <i class="fas fa-balance-scale" style="color:var(--amber)"></i>
+            <div class="obs-section-title" style="margin:0">Jurisprudence Search</div>
+          </div>
+          <div style="font-size:12px;color:var(--gray);margin-bottom:12px">
+            Search for legal jurisprudence relevant to specific laws and articles using background agents.
+            <div style="margin-top:4px;display:flex;gap:8px">
+              <button class="btn btn-sm" onclick="showAdvancedJurisSearch()"><i class="fas fa-sliders-h"></i> Advanced Search</button>
+              <button class="btn btn-sm" onclick="showJurisSearchHistory()"><i class="fas fa-history"></i> Search History</button>
+              <button class="btn btn-sm" onclick="showDownloadedJurisprudence()"><i class="fas fa-folder-open"></i> Browse Downloads</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px">
+            <div>
+              <label for="jurisLaw" style="display:block;font-size:11px;color:var(--gray-hi);margin-bottom:4px">Law</label>
+              <input type="text" id="jurisLaw" placeholder="e.g., Lei 8.078/1990" style="width:100%;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px">
+            </div>
+            <div>
+              <label for="jurisArticle" style="display:block;font-size:11px;color:var(--gray-hi);margin-bottom:4px">Article</label>
+              <input type="text" id="jurisArticle" placeholder="e.g., art. 39" style="width:100%;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px">
+            </div>
+            <div>
+              <label for="jurisKeywords" style="display:block;font-size:11px;color:var(--gray-hi);margin-bottom:4px">Keywords</label>
+              <input type="text" id="jurisKeywords" placeholder="e.g., consumer protection, warranty" style="width:100%;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px">
+            </div>
+            <div>
+              <label for="jurisAgent" style="display:block;font-size:11px;color:var(--gray-hi);margin-bottom:4px">Agent (optional)</label>
+              <input type="text" id="jurisAgent" placeholder="Agent ID for association" style="width:100%;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-sm" onclick="clearJurisSearch()"><i class="fas fa-times"></i> Clear</button>
+            <button class="btn btn-primary btn-sm" onclick="startJurisprudenceSearch()"><i class="fas fa-search"></i> Start Search</button>
+          </div>
+          <div id="jurisSearchStatus" style="margin-top:12px;display:none">
+            <!-- Status will be shown here -->
+          </div>
+        </div>
+        -->
+
+        <div class="agent-grid" id="agentGrid">
+          <div class="obs-loading"><i class="fas fa-spinner spin"></i>Loading agents…</div>
+        </div>
+
+        <!-- DEPRECATED: TheBridge Sessions — legacy project. Preserved for reference.
+        <div>
+          <div class="obs-section-title"><i class="fas fa-code-branch"></i> TheBridge Sessions</div>
+          <div id="bridgeGrid" style="color:var(--gray);font-size:13px">Loading…</div>
+        </div>
+        -->
+      </div>
+    </div>
+
+    <!-- ── VIEW: AGENT ARCHITECTURE (DEPRECATED — kept for reference) ── -->
+    <div id="view-architecture" class="obs-view">
+      <div class="obs-view-inner">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div class="obs-section-title" style="margin:0"><i class="fas fa-project-diagram"></i> Agent Architecture Workspace</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="startArchitectureService()"><i class="fas fa-play"></i> Start Service</button>
+            <button class="btn btn-sm" onclick="restartArchitectureService()"><i class="fas fa-sync"></i> Restart Service</button>
+            <button class="btn btn-primary btn-sm" onclick="loadArchitectureWorkspace()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            <button class="btn btn-success btn-sm" onclick="saveArchitectureSource()"><i class="fas fa-save"></i> Save JSX</button>
+            <button class="btn btn-sm" onclick="openArchitectureService()"><i class="fas fa-external-link-alt"></i> Open Live</button>
+          </div>
+        </div>
+
+        <div class="obs-summary-grid">
+          <div class="obs-stat-card"><i class="fas fa-user-cog obs-stat-card-icon"></i><div class="obs-stat-card-label">Agents</div><div class="obs-stat-card-value amber" id="archCountAgents">0</div></div>
+          <div class="obs-stat-card"><i class="fas fa-box-open obs-stat-card-icon"></i><div class="obs-stat-card-label">Bundles</div><div class="obs-stat-card-value blue" id="archCountBundles">0</div></div>
+          <div class="obs-stat-card"><i class="fas fa-shield-alt obs-stat-card-icon"></i><div class="obs-stat-card-label">Policies</div><div class="obs-stat-card-value green" id="archCountPolicies">0</div></div>
+          <div class="obs-stat-card"><i class="fas fa-file-code obs-stat-card-icon"></i><div class="obs-stat-card-label">Schemas</div><div class="obs-stat-card-value red" id="archCountSchemas">0</div></div>
+        </div>
+
+        <div style="font-size:11px;color:var(--gray);margin-top:-10px">
+          <span id="archSourceMeta">Loading architecture source...</span>
+          <span style="margin-left:12px" id="archServiceMeta"></span>
+        </div>
+
+        <div class="arch-grid">
+          <div>
+            <div class="obs-section-title"><i class="fas fa-code"></i> JSX Source Editor</div>
+            <textarea id="archSourceEditor" class="arch-editor" spellcheck="false" placeholder="Loading agent-architecture.jsx..."></textarea>
+          </div>
+          <div>
+            <div class="obs-section-title"><i class="fas fa-book-open"></i> How To Use</div>
+            <div class="arch-doc" id="archGuide">Loading generated guide...</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="obs-section-title"><i class="fas fa-folder-tree"></i> Generated Runtime Artifacts</div>
+          <div class="obs-table-wrap">
+            <table class="obs-table">
+              <thead><tr><th style="width:130px">Category</th><th>Path</th><th style="width:90px">Size</th><th style="width:190px">Modified</th></tr></thead>
+              <tbody id="archFilesTbody">
+                <tr><td colspan="4" class="obs-table-empty">No generated files listed yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <div class="obs-section-title"><i class="fas fa-desktop"></i> Live Preview</div>
+          <div class="arch-preview">
+            <iframe id="archPreviewFrame" title="Agent Architecture Preview"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: MCP REGISTRY ── -->
+    <div id="view-mcp" class="obs-view">
+      <div class="obs-view-inner">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div class="obs-section-title" style="margin:0"><i class="fas fa-plug"></i> MCP Registry — OliviaLegal Ecosystem</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="loadMcpRegistry()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            <a class="btn btn-sm" href="/ops/api/observatory/mcp/config" download="mcp-bridge-config.json" target="_blank"><i class="fas fa-download"></i> Config JSON</a>
+            <a class="btn btn-sm" href="/ops/api/observatory/mcp/catalog" download="mcp-catalog.json" target="_blank"><i class="fas fa-download"></i> Catalog JSON</a>
+          </div>
+        </div>
+
+        <div class="obs-summary-grid">
+          <div class="obs-stat-card"><i class="fas fa-server obs-stat-card-icon"></i><div class="obs-stat-card-label">Servers</div><div class="obs-stat-card-value amber" id="mcpCountServers">0</div></div>
+          <div class="obs-stat-card"><i class="fas fa-wrench obs-stat-card-icon"></i><div class="obs-stat-card-label">Functions</div><div class="obs-stat-card-value blue" id="mcpCountTools">0</div></div>
+          <div class="obs-stat-card"><i class="fas fa-shield-check obs-stat-card-icon"></i><div class="obs-stat-card-label">Scripts Ready</div><div class="obs-stat-card-value green" id="mcpCountRequired">0</div></div>
+          <div class="obs-stat-card"><i class="fas fa-circle-check obs-stat-card-icon"></i><div class="obs-stat-card-label">Available</div><div class="obs-stat-card-value red" id="mcpCountAvailable">0</div></div>
+        </div>
+
+        <div style="font-size:11px;color:var(--gray);margin-top:-10px;display:flex;flex-wrap:wrap;gap:10px">
+          <span id="mcpMeta">Loading MCP registry...</span>
+          <span id="mcpEndpointHint"></span>
+        </div>
+
+        <div>
+          <div class="obs-section-title"><i class="fas fa-server"></i> MCP Servers</div>
+          <div class="obs-table-wrap">
+            <table class="obs-table">
+              <thead><tr><th style="width:200px">Server</th><th style="width:90px">Tools</th><th style="width:100px">Required</th><th style="width:100px">Available</th><th>Status</th></tr></thead>
+              <tbody id="mcpServersTbody">
+                <tr><td colspan="5" class="obs-table-empty">Loading MCP servers...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <div class="obs-section-title"><i class="fas fa-wrench"></i> Function Catalog</div>
+          <div class="obs-controls" style="margin-bottom:10px">
+            <input type="text" id="mcpToolSearch" placeholder="Search functions…" oninput="_renderMcpTools(window._mcpAllTools||[])" style="min-width:220px"/>
+            <select id="mcpCategoryFilter" onchange="_renderMcpTools(window._mcpAllTools||[])">
+              <option value="">All categories</option>
+            </select>
+          </div>
+          <div class="obs-table-wrap">
+            <table class="obs-table">
+              <thead><tr><th>Function ID</th><th style="width:200px">Category</th><th style="width:80px">Method</th><th>Endpoint / Description</th></tr></thead>
+              <tbody id="mcpToolsTbody">
+                <tr><td colspan="4" class="obs-table-empty">Loading functions...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: MEMORY (DEPRECATED — kept for reference) ── -->
+    <div id="view-memory" class="obs-view">
+      <div class="obs-view-inner">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div class="obs-section-title" style="margin:0"><i class="fas fa-database"></i> Qdrant Vector Memory</div>
+          <button class="btn btn-primary btn-sm" onclick="loadMemory()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+        <div class="mem-grid" id="memGrid">
+          <div class="obs-loading"><i class="fas fa-spinner spin"></i>Loading collections…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: MODELS ── -->
+    <div id="view-models" class="obs-view">
+      <div class="obs-view-inner">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div class="obs-section-title" style="margin:0"><i class="fas fa-brain"></i> Model Catalog</div>
+          <button class="btn btn-primary btn-sm" onclick="loadModels()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+
+        <div>
+          <div class="obs-section-title"><i class="fas fa-check-circle"></i> Currently Active</div>
+          <div id="modelsCurrentCard" style="color:var(--gray);font-size:13px">Loading…</div>
+        </div>
+
+        <div>
+          <div class="obs-section-title"><i class="fas fa-list"></i> Full Catalog</div>
+          <div class="model-catalog-row" id="modelsCatalog">
+            <div class="obs-loading"><i class="fas fa-spinner spin"></i>Loading…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: IMPORT ── -->
+    <div id="view-import" class="obs-view">
+      <div class="obs-view-inner">
+        <div class="obs-section-title"><i class="fas fa-file-import"></i> Import Logs</div>
+
+        <div class="obs-dropzone" id="obsDropzone">
+          <div>
+            <div style="font-weight:600;margin-bottom:4px"><i class="fas fa-file-import" style="color:var(--amber);margin-right:6px"></i>Drop JSON or CSV file here, or click Browse</div>
+            <div style="font-size:12px;color:var(--gray)">Accepts JSON array, JSON with array key, or CSV with header row. Merges with existing logs.</div>
+            <div class="obs-drop-preview" id="dropPreview">No file loaded yet.</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap">
+            <label class="btn btn-sm" for="fileInput"><i class="fas fa-folder-open"></i> Browse</label>
+            <input id="fileInput" type="file" accept=".json,.csv" style="display:none"/>
+            <button class="btn btn-success btn-sm" onclick="saveSession()"><i class="fas fa-save"></i> Save Session</button>
+            <button class="btn btn-sm" onclick="clearAllSessions()"><i class="fas fa-trash"></i> Clear Sessions</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="obs-section-title"><i class="fas fa-upload"></i> Remote Collector</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <input type="url" id="remoteEndpoint" placeholder="https://your-collector.com/ingest" style="flex:1;min-width:280px;font-family:var(--mono);font-size:12px;padding:8px 12px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);outline:none"/>
+            <button class="btn btn-primary btn-sm" onclick="sendRemote()"><i class="fas fa-cloud-upload-alt"></i> Send Filtered Logs</button>
+          </div>
+        </div>
+
+        <!-- DEPRECATED: Kout Fresh Start — legacy project. Preserved for reference.
+        <div>
+          <div class="obs-section-title"><i class="fas fa-broom"></i> Kout Fresh Start</div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:12px;color:var(--gray-hi);line-height:1.55">
+              Runs a full reset for Kout: backs up runtime data to
+              <span style="font-family:var(--mono);color:var(--amber)">OPS_KOUT_BACKUPS_DIR (default: PROJECT_ROOT/back-ups/kout)</span>,
+              wipes agents/projects state, seeds files from agents/generated, imports all core + legal bundles,
+              and validates project-agent wiring.
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-danger btn-sm" id="btnKoutFreshReset" onclick="runKoutFreshReset()">
+                <i class="fas fa-triangle-exclamation"></i> Backup + Clean + Reimport Kout
+              </button>
+              <button class="btn btn-sm" onclick="clearKoutFreshResetOutput()">
+                <i class="fas fa-eraser"></i> Clear Output
+              </button>
+            </div>
+            <pre id="koutFreshResetOutput" style="margin:0;max-height:260px;overflow:auto;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:11px;color:var(--gray-hi);font-family:var(--mono)">No reset run yet.</pre>
+          </div>
+        </div>
+        -->
+
+        <!-- DEPRECATED: COREMU Fresh Start — legacy project. Preserved for reference.
+        <div>
+          <div class="obs-section-title"><i class="fas fa-hospital"></i> COREMU Fresh Start</div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:12px;color:var(--gray-hi);line-height:1.55">
+              Runs a full reset for COREMU: backs up runtime data to
+              <span style="font-family:var(--mono);color:var(--amber)">OPS_COREMU_BACKUPS_DIR (default: PROJECT_ROOT/back-ups/coremu)</span>,
+              wipes agents/projects state, seeds files from agents/generated, and imports
+              <span style="font-family:var(--mono);color:var(--amber)">coremu-*</span> + Olivia bundles from
+              <span style="font-family:var(--mono);color:var(--amber)">agents/generated/bundles/</span>
+              (excluding legal bundles), then validates project-agent wiring.
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-danger btn-sm" id="btnCoremuFreshReset" onclick="runCoremuFreshReset()">
+                <i class="fas fa-triangle-exclamation"></i> Backup + Clean + Reimport COREMU
+              </button>
+              <button class="btn btn-sm" onclick="clearCoremuFreshResetOutput()">
+                <i class="fas fa-eraser"></i> Clear Output
+              </button>
+            </div>
+            <pre id="coremuFreshResetOutput" style="margin:0;max-height:260px;overflow:auto;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:11px;color:var(--gray-hi);font-family:var(--mono)">No reset run yet.</pre>
+          </div>
+        </div>
+        -->
+
+        <!-- DEPRECATED: Awareness Fresh Start — legacy project. Preserved for reference.
+        <div>
+          <div class="obs-section-title"><i class="fas fa-eye"></i> Awareness Fresh Start</div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:12px;color:var(--gray-hi);line-height:1.55">
+              Runs a full reset for Awareness at
+              <span style="font-family:var(--mono);color:var(--amber)">/Users/dev/awareness</span>:
+              backs up runtime data to
+              <span style="font-family:var(--mono);color:var(--amber)">OPS_AWARENESS_BACKUPS_DIR (default: PROJECT_ROOT/back-ups/awareness)</span>,
+              wipes agents/projects state, seeds files from agents/generated, and imports bundles from the
+              selected groups in
+              <span style="font-family:var(--mono);color:var(--amber)">/Users/dev/agents/agents-groups</span>,
+              then validates project-agent wiring.
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+                <div style="font-size:11px;color:var(--gray-hi)">Select agent groups to import before reset:</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                  <button class="btn btn-sm" type="button" onclick="setAwarenessGroupSelection('defaults')">Default</button>
+                  <button class="btn btn-sm" type="button" onclick="setAwarenessGroupSelection('all')">All</button>
+                  <button class="btn btn-sm" type="button" onclick="setAwarenessGroupSelection('none')">None</button>
+                  <button class="btn btn-sm" type="button" onclick="loadAwarenessGroups(true)"><i class="fas fa-sync-alt"></i> Reload</button>
+                </div>
+              </div>
+              <div id="awarenessGroupSelector" style="display:flex;gap:8px;flex-wrap:wrap">
+                <span style="font-size:11px;color:var(--gray)">Loading groups...</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-danger btn-sm" id="btnAwarenessFreshReset" onclick="runAwarenessFreshReset()">
+                <i class="fas fa-triangle-exclamation"></i> Backup + Clean + Reimport Awareness
+              </button>
+              <button class="btn btn-sm" onclick="clearAwarenessFreshResetOutput()">
+                <i class="fas fa-eraser"></i> Clear Output
+              </button>
+            </div>
+            <pre id="awarenessFreshResetOutput" style="margin:0;max-height:260px;overflow:auto;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:11px;color:var(--gray-hi);font-family:var(--mono)">No reset run yet.</pre>
+          </div>
+        </div>
+        -->
+
+      </div>
+    </div>
+
+    <!-- ── VIEW: LLM CONFIG ── -->
+    <div id="view-llm" class="obs-view">
+      <div class="obs-view-inner">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div class="obs-section-title" style="margin:0"><i class="fas fa-key"></i> LLM API Keys &amp; Configuration</div>
+          <button class="btn btn-primary btn-sm" onclick="loadLlmConfig()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+        <p style="color:var(--gray);font-size:13px;margin:-8px 0 8px">Configure API keys for AI providers. Keys are stored in <code style="color:var(--amber)">_shared/.env</code></p>
+        <div id="llmConfigContainer">
+          <div class="obs-loading"><i class="fas fa-spinner spin"></i> Loading…</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════
+   Observatory — Awareness-AI · ops-dashboard
+   All routes wired to /api/api-logger/* and /api/observatory/*
+   ══════════════════════════════════════════════════════════════════════ */
+
+const BASE = '/ops';
+
+// ── State ────────────────────────────────────────────────────────────────────
+let _logs = [];
+let _filtered = [];
+let _networkEvents = [];
+let _networkSummary = null;
+let _sessions = loadLocalSessions();
+let _chartTimeline = null, _chartMethod = null;
+let _autoRefreshTimer = null;
+let _isAutoRefresh = false;
+let _serviceLogTimer = null;
+let _isServiceLogAuto = false;
+let _servicesCache = [];
+let _architectureMeta = null;
+let _architectureServiceUrl = '';
+let _mcpLastSource = '';
+let _awarenessGroups = [];
+let _awarenessDefaultGroups = ['coremu','olivia'];
+
+function normalizeArchitectureServiceUrl(rawUrl){
+  const v=String(rawUrl||'').trim();
+  if(!v) return '';
+  const base=String(BASE||'').replace(/\/+$/,'');
+  const prefixedPath=((base||'') + '/agent-architecture/').replace(/([^:])\/+/g,'$1/');
+  try{
+    const u=new URL(v, window.location.origin);
+    const sameOriginPath=u.pathname.replace(/\/+$/,'');
+    if(u.origin===window.location.origin && sameOriginPath.endsWith('/agent-architecture')){
+      return prefixedPath || '/agent-architecture/';
+    }
+    return u.href;
+  }catch(_){
+    if(/\/agent-architecture\/?$/.test(v)) return prefixedPath || '/agent-architecture/';
+    return v;
+  }
+}
+
+/* DEPRECATED: thebridge service aliases removed (legacy projects). */
+const NETWORK_SERVICE_LABELS = {};
+
+// ── Ecosystem index (fetched from ops-dashboard API) ─────────────────────────
+let ECOSYSTEM = [];
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function esc(s){
+  if(s===null||s===undefined) return '';
+  return String(s).replace(/[&<>"'`]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'})[m]);
+}
+function pretty(v){try{return JSON.stringify(v,null,2)}catch(e){return String(v)}}
+function safeparse(v){try{return JSON.parse(v)}catch(e){return v}}
+function debounce(fn,ms=200){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}}
+function fmt(n){if(n>1000000)return(n/1000000).toFixed(1)+'M';if(n>1000)return(n/1000).toFixed(1)+'k';return String(n)}
+
+function toast(msg, type='ok'){
+  const el=document.getElementById('toast');
+  const icon=el.querySelector('i');
+  document.getElementById('toastMsg').textContent=msg;
+  el.className='toast show '+(type==='err'?'err':type==='info'?'ok':'ok');
+  icon.className='fas fa-'+(type==='err'?'exclamation-triangle':type==='info'?'sync-alt spin':'check-circle');
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove('show'),4000);
+}
+
+function setObsBadge(text,cls){
+  const b=document.getElementById('obsBadge');
+  b.textContent='';
+  const dot=document.createElement('i');
+  dot.className='fas fa-circle';dot.style.fontSize='7px';
+  b.appendChild(dot);
+  b.appendChild(document.createTextNode(' '+text));
+  b.className='obs-badge '+cls;
+}
+
+// ── View switching ────────────────────────────────────────────────────────────
+const _viewLoaders = {
+  overview: () => { updateSummary(); updateCharts(); loadServices(); },
+  network: () => { loadNetworkSnapshot(); },
+  logs: () => renderLogsTable(),
+  services: () => { loadServices(); loadEcoMap(); loadServiceLogs(); },
+  agents: () => { loadAgents(); },
+  architecture: () => { loadArchitectureWorkspace(); },
+  mcp: () => { loadMcpRegistry(); },
+  memory: () => loadMemory(),
+  models: () => loadModels(),
+  import: () => { renderSessionChips(); /* loadAwarenessGroups() — DEPRECATED */ },
+  llm: () => loadLlmConfig(),
+};
+const _viewLoaded = {};
+
+function switchView(id){
+  document.querySelectorAll('.obs-view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.obs-nav-item').forEach(el=>el.classList.remove('active'));
+  const view=document.getElementById('view-'+id);
+  if(view) view.classList.add('active');
+  const nav=document.querySelector('.obs-nav-item[data-view="'+id+'"]');
+  if(nav) nav.classList.add('active');
+  if(id!=='services'){ stopServiceLogsAuto(); }
+  if(!_viewLoaded[id]&&_viewLoaders[id]){ _viewLoaders[id](); _viewLoaded[id]=true; }
+}
+
+// ── Auto-refresh ───────────────────────────────────────────────────────────────
+function toggleAutoRefresh(){
+  _isAutoRefresh=!_isAutoRefresh;
+  const btn=document.getElementById('btnAutoRefresh');
+  if(_isAutoRefresh){
+    btn.innerHTML='<i class="fas fa-sync-alt spin"></i> Auto-Refresh: ON';
+    btn.classList.add('btn-success');btn.classList.remove('btn-primary');
+    _autoRefreshTimer=setInterval(()=>{
+      fetchBackendLogs(7);
+      loadServices();
+      loadNetworkSnapshot();
+      if(document.getElementById('view-services')?.classList.contains('active')){
+        loadServiceLogs();
+      }
+    },30000);
+    fetchBackendLogs(7); loadServices(); loadNetworkSnapshot();
+    if(document.getElementById('view-services')?.classList.contains('active')){
+      loadServiceLogs();
+    }
+  } else {
+    btn.innerHTML='<i class="fas fa-sync-alt"></i> Auto-Refresh: OFF';
+    btn.classList.add('btn-primary');btn.classList.remove('btn-success');
+    clearInterval(_autoRefreshTimer);
+  }
+}
+document.getElementById('btnAutoRefresh').addEventListener('click',toggleAutoRefresh);
+
+// ══════════════════════════════════════════════════════════════════════
+// NETWORK OBSERVATORY
+// ══════════════════════════════════════════════════════════════════════
+
+async function loadNetworkSnapshot(){
+  await ensureNetworkServiceCatalog();
+  await Promise.all([loadNetworkSummary(), loadNetworkFeed()]);
+}
+
+function normalizeServiceToken(v){
+  return String(v || '').trim().toLowerCase();
+}
+
+function networkServiceLabel(value, fallback){
+  const token = normalizeServiceToken(value || fallback);
+  return NETWORK_SERVICE_LABELS[token] || String(fallback || value || token || 'unknown');
+}
+
+async function ensureNetworkServiceCatalog(){
+  if ((_servicesCache && _servicesCache.length) || (ECOSYSTEM && ECOSYSTEM.length)) return;
+  try {
+    const [svcResp, ecoResp] = await Promise.all([
+      fetch(BASE + '/api/observatory/services'),
+      fetch(BASE + '/api/ecosystem')
+    ]);
+
+    if (svcResp.ok) {
+      const svcData = await svcResp.json();
+      _servicesCache = Array.isArray(svcData?.services) ? svcData.services : [];
+    }
+    if (ecoResp.ok) {
+      const ecoData = await ecoResp.json();
+      ECOSYSTEM = Array.isArray(ecoData?.services) ? ecoData.services : [];
+    }
+  } catch (_) {
+    // Best effort: keep network telemetry functional even if catalog preload fails.
+  }
+}
+
+function collectNetworkServiceOptions(data){
+  const observedCounts = data?.by_service || {};
+  const registry = new Map();
+
+  function addOption(rawValue, rawLabel){
+    const value = normalizeServiceToken(rawValue);
+    if (!value) return;
+    const label = networkServiceLabel(value, rawLabel || rawValue);
+    if (!registry.has(value)) {
+      registry.set(value, { value, label, count: Number(observedCounts[value] || 0) });
+      return;
+    }
+    const existing = registry.get(value);
+    if (!existing.label && label) existing.label = label;
+    existing.count = Math.max(Number(existing.count || 0), Number(observedCounts[value] || 0));
+  }
+
+  Object.keys(observedCounts).forEach((svc) => addOption(svc, svc));
+
+  (_servicesCache || []).forEach((svc) => {
+    addOption(svc?.name, svc?.name || svc?.display_name || svc?.id);
+  });
+
+  (ECOSYSTEM || []).forEach((svc) => {
+    addOption(svc?.id, svc?.name || svc?.id);
+    addOption(svc?.name, svc?.name);
+  });
+
+  const options = Array.from(registry.values())
+    .sort((a, b) => {
+      if (a.value === 'unknown') return 1;
+      if (b.value === 'unknown') return -1;
+      return a.label.localeCompare(b.label);
+    });
+
+  return options;
+}
+
+function getNetworkFilters(){
+  return {
+    q:(document.getElementById('netSearch')?.value||'').trim(),
+    direction:(document.getElementById('netDirectionFilter')?.value||'all'),
+    service:(document.getElementById('netServiceFilter')?.value||'all'),
+    status:(document.getElementById('netStatusFilter')?.value||'all'),
+    window_h:(document.getElementById('netWindow')?.value||'24'),
+  };
+}
+
+async function loadNetworkSummary(){
+  const f=getNetworkFilters();
+  try{
+    const r=await fetch(BASE+'/api/observatory/network/summary?window_h='+encodeURIComponent(f.window_h));
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    _networkSummary=await r.json();
+    renderNetworkSummary(_networkSummary);
+  }catch(e){
+    _networkSummary=null;
+    document.getElementById('netTotal').textContent='—';
+    document.getElementById('netErrorRate').textContent='—';
+    document.getElementById('netAvgLatency').textContent='—';
+    document.getElementById('netCoverage').textContent='—';
+  }
+}
+
+function renderNetworkSummary(data){
+  const total=data?.total_events||0;
+  const errRate=(data?.error_rate_pct??0)+'%';
+  const avg=data?.avg_latency_ms;
+  const cov=data?.coverage?.coverage_pct;
+  document.getElementById('netTotal').textContent=fmt(total);
+  document.getElementById('netErrorRate').textContent=errRate;
+  document.getElementById('netAvgLatency').textContent=(avg===null||avg===undefined)?'—':(Math.round(avg)+'ms');
+  document.getElementById('netCoverage').textContent=(cov===null||cov===undefined)?'—':(cov+'%');
+
+  const svcOptions=collectNetworkServiceOptions(data);
+  const sel=document.getElementById('netServiceFilter');
+  const prev=sel?.value||'all';
+  if(sel){
+    sel.innerHTML='<option value="all">All services</option>';
+    svcOptions.forEach(s=>{
+      const opt=document.createElement('option');
+      opt.value=s.value;
+      opt.textContent=s.count>0 ? `${s.label} (${s.count})` : s.label;
+      if(opt.value===prev) opt.selected=true;
+      sel.appendChild(opt);
+    });
+
+    if (prev !== 'all' && !Array.from(sel.options).some(o => o.value === prev)) {
+      const fallback=document.createElement('option');
+      fallback.value=prev;
+      fallback.textContent=networkServiceLabel(prev, prev);
+      fallback.selected=true;
+      sel.appendChild(fallback);
+    }
+  }
+}
+
+async function loadNetworkFeed(){
+  const f=getNetworkFilters();
+  const params=new URLSearchParams({
+    limit:'400',
+    q:f.q,
+    direction:f.direction,
+    service:f.service,
+    status:f.status,
+    window_h:String(f.window_h),
+  });
+  try{
+    const r=await fetch(BASE+'/api/observatory/network/feed?'+params.toString());
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data=await r.json();
+    _networkEvents=Array.isArray(data.events)?data.events:[];
+    document.getElementById('navCountNetwork').textContent=fmt(Number(data.total||_networkEvents.length));
+    renderNetworkTable();
+  }catch(e){
+    _networkEvents=[];
+    const tbody=document.getElementById('networkTbody');
+    if(tbody){
+      tbody.innerHTML='<tr><td colspan="8" class="obs-table-empty"><i class="fas fa-exclamation-triangle" style="display:block;font-size:30px;opacity:.25;margin-bottom:10px"></i>'+esc(e.message)+'</td></tr>';
+    }
+  }
+}
+
+function renderNetworkTable(){
+  const tbody=document.getElementById('networkTbody');
+  if(!tbody) return;
+  if(!_networkEvents.length){
+    tbody.innerHTML='<tr><td colspan="8" class="obs-table-empty"><i class="fas fa-wave-square" style="display:block;font-size:32px;opacity:.2;margin-bottom:10px"></i>No network events for this filter set.</td></tr>';
+    return;
+  }
+  tbody.innerHTML=_networkEvents.slice(0,400).map((ev,index)=>{
+    const ts=new Date(ev.timestamp||Date.now()).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'medium'});
+    const direction=(ev.direction||'unknown').toLowerCase();
+    const dCls=direction==='inbound'?'pill-info':direction==='outbound'?'pill-warn':direction==='proxy'?'pill-ok':'pill-muted';
+    const st=Number(ev.status||0);
+    const stCls=st>=400?'pill-err':st>0?'pill-ok':'pill-muted';
+    const path=ev.path||ev.url||'—';
+    const ms=(ev.latency_ms===null||ev.latency_ms===undefined)?'—':ev.latency_ms;
+    const source=ev.source||'—';
+    return `<tr onclick="showNetworkEventDetails(${index})" style="cursor:pointer">
+      <td style="font-family:var(--mono);font-size:10px;color:var(--gray-hi)">${esc(ts)}</td>
+      <td><span class="pill ${dCls}" style="font-size:10px">${esc(direction)}</span></td>
+      <td><span class="pill pill-info" style="font-size:10px">${esc(ev.method||'GET')}</span></td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--gray-hi);max-width:460px;word-break:break-all" title="${esc(path)}">${esc(path)}</td>
+      <td style="font-size:11px">${esc(ev.service||'unknown')}</td>
+      <td><span class="pill ${stCls}">${st||'—'}</span></td>
+      <td style="font-family:var(--mono);font-size:11px">${esc(ms)}</td>
+      <td style="font-size:11px;color:var(--gray)">${esc(source)}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function clearNetworkTelemetry(){
+  if(!confirm('Clear all captured network telemetry events?')) return;
+  try{
+    const r=await fetch(BASE+'/api/observatory/network/clear',{method:'POST'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    toast('Network telemetry cleared');
+    _networkEvents=[];
+    renderNetworkTable();
+    await loadNetworkSummary();
+    document.getElementById('navCountNetwork').textContent='0';
+  }catch(e){
+    toast('Failed to clear telemetry: '+e.message,'err');
+  }
+}
+
+async function runProxyListenerTest(){
+  const method=(document.getElementById('proxyMethod')?.value||'GET').toUpperCase();
+  const url=(document.getElementById('proxyUrl')?.value||'').trim();
+  const bodyRaw=(document.getElementById('proxyBody')?.value||'').trim();
+  const out=document.getElementById('proxyResult');
+  if(!url){toast('Provide a target URL','err');return;}
+  const payload={method,url};
+  if(bodyRaw){
+    try{payload.json=JSON.parse(bodyRaw);}catch(e){payload.body=bodyRaw;}
+  }
+  out.textContent='Sending via proxy…';
+  try{
+    const r=await fetch(BASE+'/api/observatory/network/proxy',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error||('HTTP '+r.status));
+    out.textContent=pretty(data);
+    toast('Proxy call completed with status '+(data.status||'—'));
+    await loadNetworkSnapshot();
+  }catch(e){
+    out.textContent='Error: '+e.message;
+    toast('Proxy call failed: '+e.message,'err');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// LOG MANAGEMENT
+// ══════════════════════════════════════════════════════════════════════
+
+function normalizeArray(arr){
+  return arr.map((entry,idx)=>{
+    if(typeof entry==='string'){try{entry=JSON.parse(entry)}catch(e){entry={raw:entry}}}
+    const maybe=(keys)=>keys.map(k=>entry[k]).find(v=>v!==undefined);
+    const ts=maybe(['timestamp','time','created','ts'])||entry.date||new Date().toISOString();
+    const method=(maybe(['method','httpMethod'])||'GET').toUpperCase();
+    const url=maybe(['url','endpoint','requestUrl','path'])||'';
+    let page=entry.page||entry.pagePath||'';
+    if(!page&&entry.referrer){try{const u=new URL(entry.referrer);page=u.pathname.split('/').pop()||u.pathname}catch(e){}}
+    if(!page&&entry.pageUrl){try{const u=new URL(entry.pageUrl);page=u.pathname.split('/').pop()||u.pathname}catch(e){}}
+    if(page){page=page.split('?')[0].split('#')[0]}
+    const status=Number(maybe(['status','statusCode']))||0;
+    const duration=Number(maybe(['duration','latency','time_ms']))||0;
+    const sessionId=entry.sessionId||entry.session_id||'unknown';
+    const tryParse=(v)=>{if(v===null||v===undefined)return null;if(typeof v==='object')return v;try{return JSON.parse(v)}catch(e){return v}};
+    const reqPayload=tryParse(maybe(['requestPayload','payload','body','request_body','request']));
+    const resPayload=tryParse(maybe(['responsePayload','response','response_body','resp']));
+    return {
+      id:entry.id||entry.logId||`r_${Date.now()}_${idx}`,
+      timestamp:(new Date(ts)).toISOString(),
+      page:page||'—',method,url,status,duration,
+      requestPayload:reqPayload,responsePayload:resPayload,
+      sessionId,raw:entry
+    };
+  }).sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+}
+
+async function fetchBackendLogs(days=7){
+  setObsBadge('Fetching…','syncing');
+  const btn=document.getElementById('btnFetchLogs');
+  if(btn){btn.innerHTML='<i class="fas fa-spinner spin"></i> Fetching…';btn.disabled=true;}
+  try{
+    const r=await fetch(BASE+'/api/api-logger/sessions?days='+days+'&limit=1000');
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data=await r.json();
+    const sids=(data.sessions||[]);
+    const allNew=[];
+    for(const s of sids){
+      try{
+        const sr=await fetch(BASE+'/api/api-logger/session/'+s.session_id);
+        if(!sr.ok) continue;
+        const sd=await sr.json();
+        const entries=(sd.logs||[]).map(l=>({...l,session_id:s.session_id}));
+        allNew.push(...entries);
+      }catch(e){}
+    }
+    const norm=normalizeArray(allNew);
+    const existing=new Set(_logs.map(l=>l.id));
+    _logs=[..._logs,...norm.filter(l=>!existing.has(l.id))];
+    document.getElementById('navCountLogs').textContent=fmt(_logs.length);
+    applyFilters();
+    setObsBadge('Live','live');
+    toast('Loaded '+norm.length+' log entries');
+  }catch(e){
+    setObsBadge('Error','error');
+    toast('Failed: '+e.message,'err');
+  } finally {
+    if(btn){btn.innerHTML='<i class="fas fa-cloud-download-alt"></i> Fetch from Backend';btn.disabled=false;}
+  }
+}
+
+function applyFilters(){
+  const q=(document.getElementById('logSearch')?.value||'').toLowerCase();
+  const method=document.getElementById('logMethodFilter')?.value||'ALL';
+  const page=document.getElementById('logPageFilter')?.value||'ALL';
+  const status=document.getElementById('logStatusFilter')?.value||'ALL';
+  const window=document.getElementById('logWindow')?.value||'all';
+  const sessionF=document.getElementById('logSessionFilter')?.value||'ALL';
+  _filtered=_logs.filter(l=>{
+    if(q){const txt=(l.url+JSON.stringify(l.requestPayload)+JSON.stringify(l.responsePayload)+l.page).toLowerCase();if(!txt.includes(q))return false}
+    if(method!=='ALL'&&l.method!==method)return false;
+    if(page!=='ALL'&&l.page!==page)return false;
+    if(sessionF!=='ALL'&&l.sessionId!==sessionF)return false;
+    if(status!=='ALL'){
+      if(status==='2xx'&&!(l.status>=200&&l.status<300))return false;
+      if(status==='3xx'&&!(l.status>=300&&l.status<400))return false;
+      if(status==='4xx'&&!(l.status>=400&&l.status<500))return false;
+      if(status==='5xx'&&!(l.status>=500&&l.status<600))return false;
+    }
+    if(window&&window!=='all'){const cutoff=Date.now()-(Number(window)*3600000);if(new Date(l.timestamp).getTime()<cutoff)return false}
+    return true;
+  });
+  updateFiltersUI();
+  updateSummary();
+  renderLogsTable();
+  updateCharts();
+}
+
+function updateFiltersUI(){
+  // page filter options
+  const pages=[...new Set(_logs.map(l=>l.page).filter(Boolean))];
+  const pf=document.getElementById('logPageFilter');
+  const curPage=pf?.value;
+  if(pf){pf.innerHTML='<option value="ALL">All pages</option>';pages.forEach(p=>{const o=document.createElement('option');o.value=o.textContent=p;if(p===curPage)o.selected=true;pf.appendChild(o);})}
+  // session filter
+  const sids=[...new Set(_logs.map(l=>l.sessionId))];
+  const sf=document.getElementById('logSessionFilter');
+  const curSid=sf?.value;
+  if(sf){sf.innerHTML='<option value="ALL">All sessions</option>';sids.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s.substr(0,24)+'…';if(s===curSid)o.selected=true;sf.appendChild(o);})}
+}
+
+function updateSummary(){
+  const total=_filtered.length;
+  const ok=_filtered.filter(l=>l.status>=200&&l.status<400).length;
+  const err=_filtered.filter(l=>l.status>=400).length;
+  const avg=total?Math.round(_filtered.reduce((s,v)=>s+(v.duration||0),0)/total):0;
+  document.getElementById('statTotal').textContent=fmt(total);
+  document.getElementById('statSuccess').textContent=total?Math.round(ok/total*100)+'%':'—';
+  document.getElementById('statAvg').textContent=avg+'ms';
+  document.getElementById('statError').textContent=total?Math.round(err/total*1000)/10+'%':'—';
+}
+
+function renderLogsTable(){
+  const tbody=document.getElementById('logsTbody');
+  if(!tbody) return;
+  if(!_filtered.length){
+    tbody.innerHTML='<tr><td colspan="8" class="obs-table-empty"><i class="fas fa-inbox" style="font-size:32px;display:block;opacity:.2;margin-bottom:10px"></i>No logs match your filters.</td></tr>';
+    return;
+  }
+  let html='';
+  _filtered.slice(0,200).forEach(l=>{
+    const rowId='lr-'+l.id.replace(/[^a-zA-Z0-9]/g,'_');
+    const ts=new Date(l.timestamp).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'medium'});
+    const st=l.status;
+    const stCls=st>=400?'pill-err':st>=300?'pill-warn':st>0?'pill-ok':'pill-muted';
+    html+=`<tr class="log-main-row" style="cursor:pointer" onclick="toggleLogDetail('${rowId}','${esc(l.id)}')">
+      <td style="font-family:var(--mono);font-size:10px;color:var(--gray-hi)">${ts}</td>
+      <td style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px" title="${esc(l.page)}">${esc(l.page)}</td>
+      <td><span class="pill pill-info" style="font-size:10px">${esc(l.method)}</span></td>
+      <td style="max-width:360px;word-break:break-all;font-family:var(--mono);font-size:11px;color:var(--gray-hi)">${esc(l.url)}</td>
+      <td><span class="pill ${stCls}">${st||'—'}</span></td>
+      <td style="font-family:var(--mono);font-size:11px">${l.duration||'—'}</td>
+      <td style="font-family:var(--mono);font-size:10px;color:var(--gray)">${esc((l.sessionId||'').substr(0,14))}…</td>
+      <td><button class="btn btn-sm" onclick="event.stopPropagation();downloadSingle('${esc(l.id)}')"><i class="fas fa-download"></i></button></td>
+    </tr>
+    <tr class="log-row-detail" id="${rowId}"><td colspan="8"><div class="log-detail-inner" id="${rowId}-body"></div></td></tr>`;
+  });
+  if(_filtered.length>200) html+=`<tr><td colspan="8" style="text-align:center;color:var(--gray);padding:12px;font-size:12px">Showing 200 of ${_filtered.length}. Apply filters to narrow down.</td></tr>`;
+  tbody.innerHTML=html;
+}
+
+function toggleLogDetail(rowId, logId){
+  const row=document.getElementById(rowId);
+  if(!row) return;
+  const showing=row.classList.contains('show');
+  // Close all open
+  document.querySelectorAll('.log-row-detail.show').forEach(r=>r.classList.remove('show'));
+  if(showing) return;
+  row.classList.add('show');
+  const l=_logs.find(x=>x.id===logId)||_filtered.find(x=>x.id===logId);
+  if(!l){document.getElementById(rowId+'-body').innerHTML='<div style="color:var(--gray)">Not found</div>';return;}
+  const body=document.getElementById(rowId+'-body');
+  body.innerHTML=`
+    <div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:10px">
+      <span class="pill pill-info">${esc(l.method)}</span>
+      <span style="font-family:var(--mono);font-size:12px;color:var(--white)">${esc(l.url)}</span>
+      <span class="pill ${l.status>=400?'pill-err':l.status>0?'pill-ok':'pill-muted'}">${l.status||'—'}</span>
+      <span style="font-size:11px;color:var(--gray)">${l.duration||'—'}ms</span>
+      <span style="font-size:11px;color:var(--gray)">session: ${esc(l.sessionId)}</span>
+    </div>
+    <div class="log-detail-block">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--gray);display:block;margin-bottom:4px">Request Payload</div>
+      <div class="log-detail-pre">${esc(pretty(l.requestPayload||'null'))}</div>
+    </div>
+    <div class="log-detail-block">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--gray);display:block;margin-bottom:4px">Response Payload</div>
+      <div class="log-detail-pre">${esc(pretty(l.responsePayload||'null'))}</div>
+    </div>
+  `;
+}
+
+function downloadSingle(logId){
+  const l=_logs.find(x=>x.id===logId)||_filtered.find(x=>x.id===logId);
+  if(!l) return;
+  const blob=new Blob([JSON.stringify(l,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`obs_${l.id}.json`;a.click();URL.revokeObjectURL(a.href);
+}
+
+function downloadFilteredJSON(){
+  const blob=new Blob([JSON.stringify(_filtered,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`obs_filtered_${Date.now()}.json`;a.click();URL.revokeObjectURL(a.href);
+}
+
+function downloadFilteredCSV(){
+  const keys=['timestamp','page','method','url','status','duration','sessionId','id'];
+  const esc2=v=>{if(v===null||v===undefined)return'';let s=typeof v==='object'?JSON.stringify(v):String(v);s=s.replace(/"/g,'""');if(s.includes(',')||s.includes('"')||s.includes('\n'))s=`"${s}"`;return s};
+  const rows=[keys.join(','),..._filtered.map(o=>keys.map(k=>esc2(o[k])).join(','))];
+  const blob=new Blob([rows.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`obs_filtered_${Date.now()}.csv`;a.click();URL.revokeObjectURL(a.href);
+}
+
+function clearLogs(){
+  if(!confirm('Clear all logs from current view?')) return;
+  _logs=[];_filtered=[];
+  applyFilters();
+  document.getElementById('navCountLogs').textContent='0';
+}
+
+// ── Charts ────────────────────────────────────────────────────────────────────
+function updateCharts(){
+  // Timeline
+  const byTime={};
+  _filtered.forEach(l=>{const k=new Date(l.timestamp).toISOString().substr(0,13);byTime[k]=(byTime[k]||0)+1;});
+  const tLabels=Object.keys(byTime).sort();const tVals=tLabels.map(k=>byTime[k]);
+
+  // Method distribution
+  const byMethod={};
+  _filtered.forEach(l=>{byMethod[l.method]=(byMethod[l.method]||0)+1;});
+  const mLabels=Object.keys(byMethod);const mVals=mLabels.map(k=>byMethod[k]);
+
+  const chartDefaults={responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a5a54',font:{size:10}}},x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a5a54',font:{size:10},maxRotation:0}}}};
+
+  if(_chartTimeline){_chartTimeline.data.labels=tLabels;_chartTimeline.data.datasets[0].data=tVals;_chartTimeline.update();}
+  else{const ctx=document.getElementById('chartTimeline').getContext('2d');_chartTimeline=new Chart(ctx,{type:'line',data:{labels:tLabels,datasets:[{label:'Requests',data:tVals,borderColor:'#c4622d',backgroundColor:'rgba(196,98,45,.12)',tension:.3,fill:true,pointRadius:3}]},options:{...chartDefaults}});}
+
+  if(_chartMethod){_chartMethod.data.labels=mLabels;_chartMethod.data.datasets[0].data=mVals;_chartMethod.update();}
+  else{const ctx2=document.getElementById('chartMethod').getContext('2d');_chartMethod=new Chart(ctx2,{type:'bar',data:{labels:mLabels,datasets:[{label:'Requests',data:mVals,backgroundColor:['#c4622d','#4a9e70','#4a7ec4','#c44a4a','#c4a84a']}]},options:{...chartDefaults}});}
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// SERVICES
+// ══════════════════════════════════════════════════════════════════════
+
+async function loadServices(){
+  try{
+    const r=await fetch(BASE+'/api/observatory/services');
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data=await r.json();
+    _servicesCache=Array.isArray(data.services)?data.services:[];
+    renderSvcGrid(_servicesCache);
+    updateServiceLogFilters(_servicesCache);
+    renderModelBadge(data.manus_model||{});
+    document.getElementById('navCountSvcs').textContent=fmt(_servicesCache.length);
+  }catch(e){
+    const g=document.getElementById('svcGrid');
+    if(g) g.innerHTML='<div style="color:var(--red);font-size:13px">'+esc(e.message)+'</div>';
+    const g2=document.getElementById('overviewSvcGrid');
+    if(g2) g2.innerHTML='<div style="color:var(--red);font-size:13px">'+esc(e.message)+'</div>';
+  }
+}
+
+function renderSvcGrid(svcs){
+  const makeCard=(svc, dim)=>{
+    const st=svc.status||'unknown';
+    const isRunning=st==='running'||st==='reachable'||st==='healthy'||st==='up';
+    const isStopped=st==='stopped'||st==='exited'||st==='not_found';
+    const dotCls=isRunning?'up':isStopped?'down':'unknown';
+    const badges={running:'pill-ok',exited:'pill-err',stopped:'pill-err',paused:'pill-warn',not_found:'pill-err',inactive:'pill-warn',unknown:'pill-muted',docker_unavailable:'pill-muted'};
+    const badgeCls=badges[st]||'pill-muted';
+    const hasOpenUrl=svc.open_url&&svc.open_url!=='—';
+    const isCloud=svc.type==='cloud';
+    const isCompose=!!svc.compose;
+    const name=esc(svc.name);
+    // Action buttons
+    let actions='';
+    if(!isCloud){
+      if(isRunning){
+        actions+=`<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();svcAction('${name}','stop')" title="Stop"><i class="fas fa-stop"></i></button>`;
+        if((!isCompose)&&svc.start_script){
+          actions+=`<button class="btn btn-sm" onclick="event.stopPropagation();svcAction('${name}','restart')" title="Restart"><i class="fas fa-sync-alt"></i></button>`;
+        }
+      }else if(isStopped&&svc.start_script){
+        actions+=`<button class="btn btn-success btn-sm" onclick="event.stopPropagation();svcAction('${name}','start')" title="Start"><i class="fas fa-play"></i></button>`;
+      }
+      if(hasOpenUrl){
+        actions+=`<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();svcLaunch('${name}','${esc(svc.open_url)}')" title="Open App"><i class="fas fa-external-link-alt"></i></button>`;
+      }
+      if(actions) actions=`<div class="svc-status-actions">${actions}</div>`;
+    }
+    return `<div class="svc-status-card"${dim?' style="opacity:.55"':''}>
+      <div class="svc-status-top">
+        <div class="svc-status-dot ${dotCls}"></div>
+        <div class="svc-status-name">${name}</div>
+        <span class="pill ${badgeCls}" style="font-size:10px;margin-left:auto">${esc(st)}</span>
+      </div>
+      <div class="svc-status-meta">
+        <span><i class="fas fa-plug" style="margin-right:3px"></i>${esc(svc.port||'—')}</span>
+        ${svc.uptime&&svc.uptime!=='—'?`<span><i class="fas fa-clock" style="margin-right:3px"></i>${esc(svc.uptime)}</span>`:''}
+        ${svc.health&&svc.health!=='—'?`<span><i class="fas fa-heart" style="margin-right:3px"></i>${esc(svc.health)}</span>`:''}
+      </div>
+      <div style="font-size:11px;color:var(--gray);line-height:1.4">${esc(svc.desc||'')}</div>
+      ${actions}
+    </div>`;
+  };
+  // Split into running vs non-running so dead legacy entries don't visually crowd the live ones.
+  const activeStatuses=new Set(['running','reachable','healthy','up']);
+  const inactive=[], active=[];
+  (svcs||[]).forEach(s=>{
+    const st=String(s.status||'').toLowerCase();
+    (activeStatuses.has(st)?active:inactive).push(s);
+  });
+  const activeHtml=active.map(s=>makeCard(s,false)).join('');
+  const inactiveHtml=inactive.map(s=>makeCard(s,true)).join('');
+  const legacySection=inactive.length?`
+    <details class="svc-legacy-block" style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:12px;color:var(--gray-hi);padding:6px 0">
+        <i class="fas fa-ghost" style="margin-right:6px"></i>
+        Legacy / Not running <span class="pill pill-muted" style="font-size:10px;margin-left:6px">${inactive.length}</span>
+        <span style="color:var(--gray);font-weight:normal;margin-left:8px">— services defined but currently not up</span>
+      </summary>
+      <div class="svc-status-grid" style="margin-top:8px">${inactiveHtml}</div>
+    </details>`:'';
+  const combined=(active.length?`<div class="svc-status-grid">${activeHtml}</div>`:'<div style="color:var(--gray);font-size:13px">No running services.</div>')+legacySection;
+  const g1=document.getElementById('svcGrid');if(g1){ g1.style.display='block'; g1.innerHTML=combined; }
+  const g2=document.getElementById('overviewSvcGrid');if(g2){ g2.style.display='block'; g2.innerHTML=combined; }
+}
+
+// ── Service action helpers ──────────────────────────────────────────────────
+async function svcAction(name, action){
+  const label=action==='start'?'Starting':action==='stop'?'Stopping':'Restarting';
+  toast(`${label} ${name}…`, 'info');
+  try{
+    const r=await fetch(`${BASE}/api/services/${encodeURIComponent(name)}/${action}`, {method:'POST'});
+    const data=await r.json();
+    if(r.ok && data.ok){
+      toast(`${name} ${action==='start'?'started':action==='stop'?'stopped':'restarted'}`, 'ok');
+      setTimeout(()=>loadServices(), 1500);
+    }else{
+      toast(data.message||data.error||`${action} failed`, 'err');
+    }
+  }catch(e){
+    toast(`${action} failed: ${e.message}`, 'err');
+  }
+}
+
+function svcLaunch(name, url){
+  if(!url){ return; }
+  try{
+    fetch(`${BASE}/api/services/${encodeURIComponent(name)}/launch`, {method:'POST'}).catch(()=>{});
+    window.open(url, '_blank', 'noopener');
+    toast(`Opening ${name}…`, 'ok');
+  }catch(e){
+    window.open(url, '_blank', 'noopener');
+  }
+}
+
+function stopServiceLogsAuto(){
+  _isServiceLogAuto=false;
+  if(_serviceLogTimer){
+    clearInterval(_serviceLogTimer);
+    _serviceLogTimer=null;
+  }
+  const btn=document.getElementById('btnSvcLogsAuto');
+  if(btn){
+    btn.innerHTML='<i class="fas fa-stream"></i> Auto-tail: OFF';
+    btn.classList.remove('btn-success');
+  }
+}
+
+function toggleServiceLogsAuto(){
+  const btn=document.getElementById('btnSvcLogsAuto');
+  _isServiceLogAuto=!_isServiceLogAuto;
+  if(_isServiceLogAuto){
+    if(btn){
+      btn.innerHTML='<i class="fas fa-stream spin"></i> Auto-tail: ON';
+      btn.classList.add('btn-success');
+    }
+    _serviceLogTimer=setInterval(()=>{
+      if(document.getElementById('view-services')?.classList.contains('active')){
+        loadServiceLogs();
+      }
+    },8000);
+    loadServiceLogs();
+    return;
+  }
+  stopServiceLogsAuto();
+}
+
+function updateServiceLogFilters(svcs){
+  const sel=document.getElementById('svcLogServiceFilter');
+  if(!sel) return;
+  const prev=sel.value||'all';
+  const sorted=[...(svcs||[])].sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
+  sel.innerHTML='<option value="all">All services</option>';
+  sorted.forEach(svc=>{
+    const name=String(svc.name||'').trim();
+    if(!name) return;
+    const opt=document.createElement('option');
+    opt.value=name;
+    const status=svc.status||'unknown';
+    opt.textContent=`${name} · ${svc.port||'—'} · ${status}`;
+    sel.appendChild(opt);
+  });
+  const hasPrev=[...sel.options].some(o=>o.value===prev);
+  sel.value=hasPrev?prev:'all';
+}
+
+function _serviceLogFilterState(){
+  return {
+    service:(document.getElementById('svcLogServiceFilter')?.value||'all'),
+    lines:Number(document.getElementById('svcLogLines')?.value||120),
+    maxServices:Number(document.getElementById('svcLogMaxServices')?.value||40),
+  };
+}
+
+async function loadServiceLogs(){
+  const out=document.getElementById('svcLiveLogs');
+  const meta=document.getElementById('svcLogMeta');
+  if(!out||!meta) return;
+
+  const f=_serviceLogFilterState();
+  const params=new URLSearchParams({
+    service:String(f.service||'all'),
+    lines:String(f.lines||120),
+    max_services:String(f.maxServices||40),
+  });
+
+  out.textContent='Loading service logs…';
+  meta.textContent='Fetching latest service/process tails…';
+
+  try{
+    const r=await fetch(BASE+'/api/observatory/services/logs?'+params.toString());
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data=await r.json();
+    const entries=Array.isArray(data.entries)?data.entries:[];
+
+    if(!entries.length){
+      meta.textContent='No logs available for the selected filters.';
+      out.textContent='No log output available yet.';
+      return;
+    }
+
+    const statusMap={};
+    (_servicesCache||[]).forEach(s=>{
+      const key=String(s.name||'').toLowerCase();
+      if(key) statusMap[key]=s.status||'unknown';
+    });
+
+    const stamp=new Date(data.timestamp||Date.now()).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'medium'});
+    meta.textContent=`${entries.length} stream(s) · updated ${stamp}`;
+
+    out.textContent=entries.map(ent=>{
+      const svcName=String(ent.service||'unknown');
+      const status=statusMap[svcName.toLowerCase()]||'unknown';
+      const header='['+(ent.service_port||svcName)+'] status='+status+' source='+(ent.source||'none')+
+        ((Array.isArray(ent.pids)&&ent.pids.length)?(' pids='+ent.pids.join(',')):'');
+      const divider='-'.repeat(Math.min(header.length,120));
+      const body=(String(ent.logs||'').trim())||'(no log output)';
+      return header+'\n'+divider+'\n'+body;
+    }).join('\n\n');
+
+    out.scrollTop=out.scrollHeight;
+  }catch(e){
+    meta.textContent='Failed to load logs.';
+    out.textContent='Error: '+e.message;
+  }
+}
+
+function renderModelBadge(model){
+  const el=document.getElementById('modelCurrentBadge');
+  if(!el) return;
+  if(model.error){el.innerHTML='<span style="color:var(--red);font-size:12px">'+esc(model.error)+'</span>';return;}
+  const name=model.model||'unknown';
+  el.innerHTML=`<span class="model-pill"><i class="fas fa-brain"></i>${esc(name)}</span>${model.info?`<span style="font-size:12px;color:var(--gray-hi);margin-left:10px">${esc(model.info.description||'')} &mdash; $${model.info.input_cost_per_1m_tokens||'?'}/1M in</span>`:''}`;
+}
+
+// ── Ecosystem map ─────────────────────────────────────────────────────────────
+function _normSvc(v){ return String(v||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+
+async function loadEcoMap(){
+  const g=document.getElementById('ecoMapGrid');
+  if(!g) return;
+  g.innerHTML='<div class="obs-loading"><i class="fas fa-spinner spin"></i>Loading ecosystem…</div>';
+  try{
+    const ecoResp = await fetch(BASE + '/api/ecosystem');
+    if(!ecoResp.ok) throw new Error('Ecosystem HTTP ' + ecoResp.status);
+    const ecoData = await ecoResp.json();
+
+    ECOSYSTEM = ecoData.services || [];
+
+    g.innerHTML = ECOSYSTEM.map(function(s){
+      const st = s.status || 'UNKNOWN';
+      const dotCls = st === 'UP' ? 'up' : (st === 'DOWN' ? 'down' : 'unknown');
+      const pillCls = st === 'UP' ? 'pill-ok' : (st === 'DOWN' ? 'pill-err' : 'pill-muted');
+      const count = Number(s.endpoint_count || s.total_tools || 0);
+      const compHtml = (s.components||[]).map(function(c){
+        return '<span class="pill '+(c.status==='UP'?'pill-ok':'pill-err')+'" style="font-size:9px;padding:2px 6px;margin:0 2px 2px 0;display:inline-block">'+c.type+':'+c.port+'</span>';
+      }).join('');
+      return `
+      <div class="svc-status-card">
+        <div class="svc-status-top">
+          <div class="svc-status-dot ${dotCls}"></div>
+          <div class="svc-status-name">${esc(s.name || s.id)}</div>
+          <span class="pill ${pillCls}" style="font-size:10px;margin-left:auto">${esc(st)}</span>
+        </div>
+        <div class="svc-status-meta">
+          <span style="font-family:var(--mono);font-size:10px;color:var(--amber)">${esc(s.id || '')}</span>
+          ${s.port ? `<span style="margin-left:8px"><i class="fas fa-plug" style="margin-right:3px"></i>:${esc(s.port)}</span>` : ''}
+          ${s.up_count !== undefined ? `<span style="margin-left:8px"><i class="fas fa-check-circle" style="margin-right:3px;color:var(--green)"></i>${s.up_count}/${s.total_components}</span>` : ''}
+          ${s.total_tools ? `<span style="margin-left:8px"><i class="fas fa-tools" style="margin-right:3px;color:var(--blue)"></i>${s.total_tools}</span>` : ''}
+        </div>
+        <div style="font-size:11px;color:var(--gray)">${esc(s.description || '')}</div>
+        <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:2px">${compHtml}</div>
+        <div style="margin-top:6px"><span class="pill pill-info" style="font-size:10px">${count} endpoint${count===1?'':'s'}</span></div>
+      </div>`;
+    }).join('') || '<div style="color:var(--gray);font-size:13px">No ecosystem services found.</div>';
+  }catch(e){
+    g.innerHTML = '<div style="color:var(--red);font-size:13px">Failed to load ecosystem: '+esc(e.message)+'</div>';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// AGENTS
+// ══════════════════════════════════════════════════════════════════════
+
+async function loadAgents(){
+  const g=document.getElementById('agentGrid');
+  if(g) g.innerHTML='<div class="obs-loading"><i class="fas fa-spinner spin"></i>Loading agents…</div>';
+  try{
+    const r=await fetch(BASE+'/api/observatory/agents');
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data=await r.json();
+    renderAgentGrid(data);
+  }catch(e){
+    if(g) g.innerHTML='<div style="color:var(--red);font-size:13px">'+esc(e.message)+'</div>';
+  }
+  // DEPRECATED: TheBridge — legacy project. Preserved for reference.
+  // try{
+  //   const r2=await fetch(BASE+'/api/observatory/bridge');
+  //   if(r2.ok){
+  //     const bd=await r2.json();
+  //     renderBridgeSessions(bd);
+  //   }
+  // }catch(e){}
+}
+
+const AGENT_META={
+  manus:   {icon:'fa-robot',     name:'Manus — General Agent',   desc:'General-purpose agent with SSE streaming'},
+  guided:  {icon:'fa-compass',   name:'Guided Agent',            desc:'Pauseable/resumable guided agent'},
+  auditor: {icon:'fa-search-plus',name:'Architectural Auditor', desc:'Clean Architecture audit agent'},
+};
+
+// Icon hint by agent-architecture/kout role keyword — used only when server provided no name hint.
+const AGENT_ICON_RULES=[
+  [/aviation|legal|jurisprud|justice|court/i,'fa-gavel'],
+  [/criminal|investig|forensic/i,'fa-magnifying-glass'],
+  [/consumer|protection/i,'fa-shield-halved'],
+  [/memory|qdrant|neo4j|graph/i,'fa-database'],
+  [/orchestr|control|coordinator/i,'fa-sitemap'],
+  [/discover|listen/i,'fa-ear-listen'],
+  [/studio|ui|visual/i,'fa-palette'],
+  [/shader|pipeline/i,'fa-diagram-project'],
+  [/api|explorer/i,'fa-terminal'],
+  [/la8159|cult|workspace/i,'fa-briefcase'],
+];
+
+function _agentIcon(info, id){
+  const hay=`${info.name||''} ${info.description||''} ${id||''}`;
+  for(const [rx,icon] of AGENT_ICON_RULES){ if(rx.test(hay)) return icon; }
+  return 'fa-robot';
+}
+
+function renderAgentGrid(data){
+  const g=document.getElementById('agentGrid');
+  // Sort: named agents first, then legacy/unnamed UUIDs; within each group by name/id.
+  const entries=Object.entries(data).sort((a,b)=>{
+    const an=String(a[1].name||'').trim(), bn=String(b[1].name||'').trim();
+    if((!!an) !== (!!bn)) return an ? -1 : 1;
+    return (an||a[0]).localeCompare(bn||b[0]);
+  });
+  const html=entries.map(([id,info])=>{
+    const legacy=AGENT_META[id];
+    const serverName=String(info.name||'').trim();
+    const displayName=serverName || (legacy?legacy.name:('Agent '+String(id).slice(0,8)));
+    const displayDesc=String(info.description||info.agent_type||(legacy?legacy.desc:'')||'').trim();
+    const icon=legacy?legacy.icon:_agentIcon(info, id);
+    const agentType=String(info.type||(legacy?'manus':'kout'));
+    const subType=String(info.agent_type||'').trim();
+    const isUuid=/^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(id);
+    const idLabel=isUuid ? id.slice(0,8) : id;
+    const chats=Array.isArray(info.chats)?info.chats:(Array.isArray(info.chats?.chats)?info.chats.chats:[]);
+    const logs=info.logs||[];
+    const artifacts=info.artifacts||[];
+    const jurisprudence=info.jurisprudence_links||[];
+
+    const chatList=chats.slice(0,5).map(c=>`<div class="agent-file-item"><span>${esc(c.name||c)}</span><span class="agent-file-size">${c.messages||''}</span></div>`).join('');
+    const logList=logs.slice(0,5).map(l=>`<div class="agent-file-item"><span>${esc(l.name)}</span><span class="agent-file-size">${esc(l.size?Math.round(l.size/1024)+'KB':'')}</span></div>`).join('');
+    const artList=artifacts.slice(0,5).map(a=>`<div class="agent-file-item"><span>${esc(a.name)}</span><span class="agent-file-size">${esc(a.size?Math.round(a.size/1024)+'KB':'')}</span></div>`).join('');
+
+    // Jurisprudence links
+    let jurisHtml = '';
+    if (jurisprudence.length > 0) {
+      jurisHtml = jurisprudence.slice(0,5).map(j=>{
+        const title = j.title || j.url || 'Jurisprudence link';
+        const law = j.law ? `<span style="color:var(--amber);font-size:10px">${esc(j.law)}</span>` : '';
+        const article = j.article ? `<span style="color:var(--blue);font-size:10px">art. ${esc(j.article)}</span>` : '';
+        const tags = j.tags ? `<span style="color:var(--gray);font-size:9px">${esc(j.tags)}</span>` : '';
+        return `<div class="agent-file-item" onclick="window.open('${esc(j.url)}', '_blank')" title="${esc(title)}">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:11px">${esc(title.substring(0,40))}${title.length > 40 ? '...' : ''}</span>
+            <div style="display:flex;gap:4px;align-items:center">
+              ${law} ${article} ${tags}
+            </div>
+          </div>
+          <span class="agent-file-size">${j.date ? esc(j.date.substring(0,10)) : ''}</span>
+        </div>`;
+      }).join('');
+    }
+
+    return `<div class="agent-card">
+      <div class="agent-card-top">
+        <div class="agent-icon"><i class="fas ${icon}"></i></div>
+        <div style="flex:1;min-width:0">
+          <div class="agent-name" title="${esc(id)}">${esc(displayName)}</div>
+          <div class="agent-desc">${esc(displayDesc)}</div>
+          <div style="display:flex;gap:6px;margin-top:4px;align-items:center;flex-wrap:wrap">
+            <span class="pill pill-muted" style="font-size:9px;padding:1px 6px">${esc(agentType)}</span>
+            ${subType?`<span class="pill pill-muted" style="font-size:9px;padding:1px 6px">${esc(subType)}</span>`:''}
+            <span style="font-family:var(--mono);font-size:9px;color:var(--gray)">${esc(idLabel)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="agent-section">Saved Chats (${chats.length})</div>
+      <div class="agent-file-list">${chatList||'<div class="agent-empty">No chats saved yet.</div>'}</div>
+      <div class="agent-section">Log Files (${logs.length})</div>
+      <div class="agent-file-list">${logList||'<div class="agent-empty">No log files.</div>'}</div>
+      <div class="agent-section">Artifacts (${artifacts.length})</div>
+      <div class="agent-file-list">${artList||'<div class="agent-empty">No artifacts.</div>'}</div>
+      ${jurisprudence.length > 0 ? `<div class="agent-section">Jurisprudence (${jurisprudence.length})</div>
+      <div class="agent-file-list">${jurisHtml}</div>` : ''}
+    </div>`;
+  }).join('');
+  if(g) g.innerHTML=html||'<div style="color:var(--gray);font-size:13px">No agent data available.</div>';
+}
+
+/* DEPRECATED: renderBridgeSessions — legacy thebridge project.
+function renderBridgeSessions(bd){
+  const g=document.getElementById('bridgeGrid');
+  if(!g) return;
+  const health=bd.health||{};
+  const sessions=bd.sessions||[];
+  const hStatus=health.error?'<span style="color:var(--red)">Offline — '+esc(health.error)+'</span>':'<span style="color:var(--green)">Online</span>';
+  let html=`<div style="font-size:12px;margin-bottom:10px">TheBridge: ${hStatus}</div>`;
+  if(sessions.length){
+    html+='<div style="display:flex;flex-wrap:wrap;gap:8px">';
+    sessions.slice(0,12).forEach(s=>{
+      html+=`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:12px">
+        <div style="font-family:var(--mono);color:var(--amber);font-size:11px">${esc(s.session_id)}</div>
+        <div style="color:var(--gray);font-size:11px;margin-top:2px">${s.file_count||0} files</div>
+      </div>`;
+    });
+    html+='</div>';
+  } else {
+    html+='<div style="color:var(--gray);font-size:12px">No sessions found.</div>';
+  }
+  g.innerHTML=html;
+}
+*/
+
+// ══════════════════════════════════════════════════════════════════════
+// AGENT ARCHITECTURE
+// ══════════════════════════════════════════════════════════════════════
+
+function _fmtBytes(bytes){
+  const n = Number(bytes || 0);
+  if(n <= 0) return '0 B';
+  if(n < 1024) return n + ' B';
+  if(n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+  return (n / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function renderArchitectureFiles(files){
+  const tbody=document.getElementById('archFilesTbody');
+  if(!tbody) return;
+  if(!Array.isArray(files) || !files.length){
+    tbody.innerHTML='<tr><td colspan="4" class="obs-table-empty">No generated files found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML=files.map(f=>{
+    const stamp=new Date(f.modified||Date.now()).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'medium'});
+    return `<tr>
+      <td><span class="pill pill-info" style="font-size:10px">${esc(f.category||'unknown')}</span></td>
+      <td style="font-family:var(--mono);font-size:11px">${esc(f.path||'')}</td>
+      <td style="font-family:var(--mono);font-size:11px">${esc(_fmtBytes(f.size||0))}</td>
+      <td style="font-size:11px;color:var(--gray)">${esc(stamp)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function loadArchitecturePreview(){
+  const frame=document.getElementById('archPreviewFrame');
+  if(!frame) return;
+  if(!_architectureServiceUrl){
+    frame.src='about:blank';
+    return;
+  }
+  frame.src=_architectureServiceUrl;
+}
+
+function openArchitectureService(){
+  if(!_architectureServiceUrl){
+    toast('Architecture service URL is unavailable', 'err');
+    return;
+  }
+  window.open(_architectureServiceUrl, '_blank', 'noopener');
+}
+
+async function loadArchitectureWorkspace(){
+  const editor=document.getElementById('archSourceEditor');
+  const guide=document.getElementById('archGuide');
+  const srcMeta=document.getElementById('archSourceMeta');
+  const svcMeta=document.getElementById('archServiceMeta');
+  if(editor) editor.value='Loading architecture source...';
+  if(guide) guide.innerHTML='Loading generated guide...';
+  if(srcMeta) srcMeta.textContent='Loading architecture source...';
+  if(svcMeta) svcMeta.textContent='';
+
+  try{
+    const [metaResp, sourceResp] = await Promise.all([
+      fetch(BASE + '/api/observatory/architecture'),
+      fetch(BASE + '/api/observatory/architecture/source'),
+    ]);
+    if(!metaResp.ok) throw new Error('Architecture metadata HTTP ' + metaResp.status);
+    if(!sourceResp.ok) throw new Error('Architecture source HTTP ' + sourceResp.status);
+
+    const meta=await metaResp.json();
+    const source=await sourceResp.json();
+    _architectureMeta=meta;
+    _architectureServiceUrl=normalizeArchitectureServiceUrl(meta?.service?.url);
+
+    if(editor) editor.value=String(source.content||'');
+    if(guide){
+      const markdown=String(meta.readme_markdown||'').trim();
+      guide.innerHTML=markdown ? marked.parse(markdown) : '<em style="color:var(--gray)">No generated README found.</em>';
+    }
+
+    document.getElementById('archCountAgents').textContent=String(meta?.counts?.agents||0);
+    document.getElementById('archCountBundles').textContent=String(meta?.counts?.bundles||0);
+    document.getElementById('archCountPolicies').textContent=String(meta?.counts?.policies||0);
+    document.getElementById('archCountSchemas').textContent=String(meta?.counts?.schemas||0);
+    const totalFiles=Number(meta?.counts?.total_files||0);
+    const navCount=document.getElementById('navCountArchitecture');
+    if(navCount) navCount.textContent=fmt(totalFiles);
+
+    const srcSize=_fmtBytes(meta?.source?.size||0);
+    const mod=meta?.source?.modified ? new Date(meta.source.modified).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'medium'}) : 'unknown';
+    if(srcMeta) srcMeta.textContent=`${meta?.source?.path||'agent-architecture.jsx'} · ${srcSize} · updated ${mod}`;
+    if(svcMeta) svcMeta.textContent=`Service: ${meta?.service?.url||'n/a'} (port ${meta?.service?.port||'n/a'})`;
+
+    renderArchitectureFiles(Array.isArray(meta.files)?meta.files:[]);
+    loadArchitecturePreview();
+  }catch(e){
+    if(editor) editor.value='Error loading source: ' + e.message;
+    if(guide) guide.innerHTML='<span style="color:var(--red)">Error loading guide: ' + esc(e.message) + '</span>';
+    toast('Architecture view failed: ' + e.message, 'err');
+  }
+}
+
+async function saveArchitectureSource(){
+  const editor=document.getElementById('archSourceEditor');
+  if(!editor){
+    toast('Source editor not found', 'err');
+    return;
+  }
+  try{
+    const r=await fetch(BASE + '/api/observatory/architecture/source', {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({content: editor.value})
+    });
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+    toast('agent-architecture.jsx saved');
+    await loadArchitectureWorkspace();
+  }catch(e){
+    toast('Failed to save architecture source: ' + e.message, 'err');
+  }
+}
+
+async function _architectureServiceAction(action){
+  const r=await fetch(BASE + '/api/services/agent-architecture/' + action, { method: 'POST' });
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok || data.ok===false){
+    throw new Error(data.message || data.error || ('HTTP ' + r.status));
+  }
+  return data;
+}
+
+async function startArchitectureService(){
+  try{
+    await _architectureServiceAction('start');
+    toast('Agent Architecture service start requested');
+    await loadArchitectureWorkspace();
+  }catch(e){
+    toast('Failed to start service: ' + e.message, 'err');
+  }
+}
+
+async function restartArchitectureService(){
+  try{
+    await _architectureServiceAction('restart');
+    toast('Agent Architecture service restarted');
+    await loadArchitectureWorkspace();
+  }catch(e){
+    toast('Failed to restart service: ' + e.message, 'err');
+  }
+}
+
+function _mcpArray(payload, key){
+  if(Array.isArray(payload)) return payload;
+  if(payload && Array.isArray(payload[key])) return payload[key];
+  return [];
+}
+
+function _mcpNum(v, fallback){
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+async function _mcpFetchAny(paths){
+  let lastErr = null;
+  for(const rel of paths){
+    const url = BASE + rel;
+    try{
+      const r = await fetch(url);
+      if(!r.ok) throw new Error(rel + ' -> HTTP ' + r.status);
+      const data = await r.json();
+      return { path: rel, data };
+    }catch(err){
+      lastErr = err;
+    }
+  }
+  throw (lastErr || new Error('No MCP endpoint available'));
+}
+
+function _mcpStatusChip(ok, yesLabel, noLabel){
+  const label = ok ? yesLabel : noLabel;
+  const bg = ok ? 'rgba(74,158,112,.15)' : 'rgba(196,98,45,.15)';
+  const border = ok ? 'rgba(74,158,112,.35)' : 'rgba(196,98,45,.35)';
+  const color = ok ? 'var(--green)' : 'var(--amber)';
+  return `<span style="display:inline-block;padding:2px 7px;border-radius:999px;border:1px solid ${border};background:${bg};color:${color};font-size:10px;font-family:var(--mono)">${esc(label)}</span>`;
+}
+
+async function loadMcpRegistry(){
+  const metaEl = document.getElementById('mcpMeta');
+  const endpointEl = document.getElementById('mcpEndpointHint');
+  const serversTbody = document.getElementById('mcpServersTbody');
+  const toolsTbody = document.getElementById('mcpToolsTbody');
+  const navCountEl = document.getElementById('navCountMcp');
+  const categoryFilterEl = document.getElementById('mcpCategoryFilter');
+  const toolSearchEl = document.getElementById('mcpToolSearch');
+
+  if(metaEl) metaEl.textContent = 'Loading MCP registry...';
+  if(endpointEl) endpointEl.textContent = '';
+  if(serversTbody) serversTbody.innerHTML = '<tr><td colspan="5" class="obs-table-empty">Loading MCP servers...</td></tr>';
+  if(toolsTbody) toolsTbody.innerHTML = '<tr><td colspan="4" class="obs-table-empty">Loading MCP tools...</td></tr>';
+
+  // Local ops routes (from mcp-files-used-in-OliviaLegal) take priority.
+  // Fall back to agent-architecture if local routes are unavailable.
+  const localSummaryPaths = [BASE + '/api/observatory/mcp/summary'];
+  const localServersPaths = [BASE + '/api/observatory/mcp/servers'];
+  const localToolsPaths   = [BASE + '/api/observatory/mcp/tools?limit=320'];
+
+  const fallbackSummaryPaths = [
+    '/agent-architecture/api/architecture/mcp/registry-summary',
+    '/agent-architecture/api/mcp/registry-summary',
+  ];
+  const fallbackServersPaths = [
+    '/agent-architecture/api/architecture/mcp/registry-servers',
+    '/agent-architecture/api/mcp/registry-servers',
+  ];
+  const fallbackToolsPaths = [
+    '/agent-architecture/api/architecture/mcp/registry-tools?limit=320',
+    '/agent-architecture/api/mcp/registry-tools?limit=320',
+  ];
+
+  async function _fetchDirect(urls){
+    let lastErr = null;
+    for(const url of urls){
+      try{
+        const r = await fetch(url);
+        if(!r.ok) throw new Error(url + ' → HTTP ' + r.status);
+        const data = await r.json();
+        return { path: url, data };
+      }catch(err){ lastErr = err; }
+    }
+    throw (lastErr || new Error('No endpoint available'));
+  }
+
+  try{
+    let summaryRes, serversRes, toolsRes, source = 'local';
+    try{
+      [summaryRes, serversRes, toolsRes] = await Promise.all([
+        _fetchDirect(localSummaryPaths),
+        _fetchDirect(localServersPaths),
+        _fetchDirect(localToolsPaths),
+      ]);
+    }catch(_localErr){
+      source = 'agent-architecture';
+      [summaryRes, serversRes, toolsRes] = await Promise.all([
+        _mcpFetchAny(fallbackSummaryPaths),
+        _mcpFetchAny(fallbackServersPaths),
+        _mcpFetchAny(fallbackToolsPaths),
+      ]);
+    }
+
+    _mcpLastSource = source;
+    const summary  = summaryRes.data || {};
+    const servers  = _mcpArray(serversRes.data, 'servers');
+    const tools    = _mcpArray(toolsRes.data, 'tools');
+    const cats     = (toolsRes.data && Array.isArray(toolsRes.data.categories)) ? toolsRes.data.categories : [];
+
+    const serverCount    = _mcpNum(summary.server_count, servers.length);
+    const toolCount      = _mcpNum(summary.total_tools, tools.length);
+    const requiredReady  = _mcpNum(summary.required_server_available_count, servers.filter(s => s.required && s.available).length);
+    const availableCount = _mcpNum(summary.server_available_count, servers.filter(s => s.available).length);
+
+    const countServersEl  = document.getElementById('mcpCountServers');
+    const countToolsEl    = document.getElementById('mcpCountTools');
+    const countRequiredEl = document.getElementById('mcpCountRequired');
+    const countAvailableEl= document.getElementById('mcpCountAvailable');
+    if(countServersEl)   countServersEl.textContent  = String(serverCount);
+    if(countToolsEl)     countToolsEl.textContent    = String(toolCount);
+    if(countRequiredEl)  countRequiredEl.textContent = String(requiredReady);
+    if(countAvailableEl) countAvailableEl.textContent= String(availableCount);
+    if(navCountEl) navCountEl.textContent = fmt(toolCount);
+
+    if(metaEl){
+      const now = new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' });
+      metaEl.textContent = `${serverCount} servers · ${toolCount} functions · source: ${source} · ${now}`;
+    }
+    if(endpointEl) endpointEl.textContent = summary.categories_count ? `${summary.categories_count} categories` : '';
+
+    // Populate category filter
+    if(categoryFilterEl && cats.length){
+      const existing = Array.from(categoryFilterEl.options).map(o=>o.value);
+      if(existing.length <= 1){
+        cats.forEach(c=>{
+          const o = document.createElement('option');
+          o.value = c; o.textContent = c.replace(/_/g,' ');
+          categoryFilterEl.appendChild(o);
+        });
+      }
+    }
+
+    // Render servers
+    if(!servers.length){
+      if(serversTbody) serversTbody.innerHTML = '<tr><td colspan="5" class="obs-table-empty">No MCP servers configured.</td></tr>';
+    }else if(serversTbody){
+      serversTbody.innerHTML = servers.map(s=>{
+        const id = s.id || s.service || s.name || 'unknown';
+        const toolCountCell = (s.tool_count !== undefined && s.tool_count !== null) ? s.tool_count : '-';
+        const reqChip  = _mcpStatusChip(!!s.required, 'yes', 'no');
+        const availChip= _mcpStatusChip(!!s.available, 'yes', 'no');
+        const status   = (s.readiness && s.readiness.status) ? s.readiness.status : (s.available ? 'ready' : 'unknown');
+        return `<tr>
+          <td><code>${esc(id)}</code></td>
+          <td>${esc(toolCountCell)}</td>
+          <td>${reqChip}</td>
+          <td>${availChip}</td>
+          <td>${esc(status)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // Store tools for filtering
+    window._mcpAllTools = tools;
+    _renderMcpTools(tools);
+
+  }catch(e){
+    if(metaEl) metaEl.textContent = 'MCP registry unavailable.';
+    if(endpointEl) endpointEl.textContent = 'Check that the ops dashboard is running and the mcp-files-used-in-OliviaLegal directory exists.';
+    if(navCountEl) navCountEl.textContent = '0';
+    if(serversTbody) serversTbody.innerHTML = `<tr><td colspan="5" class="obs-table-empty">Failed: ${esc(e.message)}</td></tr>`;
+    if(toolsTbody) toolsTbody.innerHTML = '<tr><td colspan="4" class="obs-table-empty">No MCP tools available.</td></tr>';
+    toast('MCP registry unavailable: ' + e.message, 'err');
+  }
+}
+
+function _renderMcpTools(tools){
+  const toolsTbody = document.getElementById('mcpToolsTbody');
+  if(!toolsTbody) return;
+  const catFilter  = (document.getElementById('mcpCategoryFilter') || {}).value || '';
+  const search     = ((document.getElementById('mcpToolSearch') || {}).value || '').toLowerCase();
+  let filtered = tools;
+  if(catFilter) filtered = filtered.filter(t => (t.server_id || '') === catFilter);
+  if(search)    filtered = filtered.filter(t =>
+    (t.tool_name || '').toLowerCase().includes(search) ||
+    (t.name || '').toLowerCase().includes(search) ||
+    (t.description || '').toLowerCase().includes(search)
+  );
+  if(!filtered.length){
+    toolsTbody.innerHTML = '<tr><td colspan="4" class="obs-table-empty">No tools match the filter.</td></tr>';
+    return;
+  }
+  toolsTbody.innerHTML = filtered.slice(0, 320).map(t=>{
+    const toolName = t.tool_name || t.name || t.id || 'unknown_tool';
+    const serverId = t.server_id || t.server || t.service || t.command_id || 'n/a';
+    const src      = t.source || (t.source_file ? String(t.source_file).split('/').slice(-1)[0] : 'n/a');
+    const desc     = t.description || '';
+    const shortDesc= desc.length > 120 ? (desc.slice(0, 120) + '…') : desc;
+    return `<tr>
+      <td><code>${esc(toolName)}</code></td>
+      <td><span style="font-size:10px;padding:1px 6px;border-radius:4px;background:var(--bg4);color:var(--amber)">${esc(serverId)}</span></td>
+      <td><span style="font-size:10px;font-family:var(--mono);color:var(--gray-hi)">${esc(src)}</span></td>
+      <td style="font-size:11px;color:var(--gray-hi)">${esc(shortDesc)}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+// JURISPRUDENCE SEARCH — DEPRECATED (legacy project)
+// All jurisprudence search functions, advanced search modal functions,
+// real-time log streaming functions, history, and downloads are
+// commented out below. Preserved as reference for future restoration.
+// ══════════════════════════════════════════════════════════════════════
+//
+// let _activeJurisSearch = null;
+// let _jurisSearchInterval = null;
+// ... (entire jurisprudence search JS block preserved below)
+// ══════════════════════════════════════════════════════════════════════
+function startJurisSearch_deprecated_placeholder(){}
+function showAdvancedJurisSearch_deprecated_placeholder(){}
+function showJurisSearchHistory_deprecated_placeholder(){}
+function showDownloadedJurisprudence_deprecated_placeholder(){}
+// ══════════════════════════════════════════════════════════════════════
+*/
+
+// ══════════════════════════════════════════════════════════════════════
+// MEMORY
+// ══════════════════════════════════════════════════════════════════════
+
+async function loadMemory(){
+  const g=document.getElementById('memGrid');
+  if(g) g.innerHTML='<div class="obs-loading"><i class="fas fa-spinner spin"></i>Loading…</div>';
+  try{
+    const r=await fetch(BASE+'/api/observatory/memory');
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data=await r.json();
+    renderMemGrid(data);
+  }catch(e){
+    if(g) g.innerHTML='<div style="color:var(--red);font-size:13px">'+esc(e.message)+'</div>';
+  }
+}
+
+function renderMemGrid(data){
+  const g=document.getElementById('memGrid');
+  if(!g) return;
+  if(data && data.error){
+    g.innerHTML=`<div style="color:var(--red);font-size:13px">${esc(data.error)}</div>`;
+    return;
+  }
+  const cols=Array.isArray(data.collections)?data.collections:[];
+  const graph=data.graph||{};
+  const sources=Array.isArray(data.sources)?data.sources:[];
+  const totals=data.totals||{};
+  const via=data._source||'';
+  const dashboards=data.dashboards||{};
+  const qdrantDashboard=dashboards.qdrant||'https://2858642c-bbc7-48a2-887f-fc6ab50d4e5a.europe-west3-0.gcp.cloud.qdrant.io:6333/dashboard#/collections';
+  const neo4jDashboard=dashboards.neo4j||'https://console-preview.neo4j.io/projects/bd660511-a47c-46c9-ae2f-ba68f117e2b5/instances';
+
+  // ── 1. Data sources strip (Qdrant, Neo4j, local proxies) ──
+  const sourceCards=sources.map(s=>{
+    const st=String(s.status||'unknown').toLowerCase();
+    const dotCls=['running','reachable','connected','listening','healthy'].includes(st)?'up':
+                 (st==='error'||st==='disconnected')?'down':'unknown';
+    const urlShort=s.url?String(s.url).replace(/^https?:\/\//,'').slice(0,50):'—';
+    const extra=[];
+    if(s.collections!=null) extra.push(`${fmt(s.collections)} collections`);
+    if(s.points!=null && s.points>0) extra.push(`${fmt(s.points)} points`);
+    if(s.labels!=null) extra.push(`${fmt(s.labels)} labels`);
+    if(s.relationships!=null) extra.push(`${fmt(s.relationships)} rel-types`);
+    if(s.database) extra.push(`db: ${s.database}`);
+    return `<div class="mem-card">
+      <div class="mem-card-name"><div class="svc-status-dot ${dotCls}" style="flex-shrink:0"></div>${esc(s.label||s.role||'source')}</div>
+      <div style="font-size:10px;color:var(--gray);font-family:var(--mono);margin:4px 0" title="${esc(s.url||'')}">${esc(urlShort)}</div>
+      <div style="font-size:11px;color:var(--gray-hi);line-height:1.5">${extra.map(e=>esc(e)).join(' · ')||'—'}</div>
+      <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
+        <span class="pill pill-muted" style="font-size:9px">${esc(s.kind||'store')}</span>
+        <span class="pill pill-muted" style="font-size:9px">via ${esc(s.via||'?')}</span>
+        <span class="pill ${dotCls==='up'?'pill-ok':dotCls==='down'?'pill-err':'pill-muted'}" style="font-size:9px">${esc(st)}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // ── 2. Qdrant collections grid ──
+  const maxCount=Math.max(...cols.map(c=>c.points||c.vectors_count||0),1);
+  const collHtml=cols.map(c=>{
+    const name=c.name||c.collection_name||'?';
+    const count=c.points||c.vectors_count||0;
+    const pct=Math.round(count/maxCount*100);
+    const status=String(c.status||'green').toLowerCase();
+    const dotCls=status==='green'?'up':status==='red'?'down':'unknown';
+    const dims=c.dimension||c.dims||(c.config?.params?.size);
+    const targetHost=c.target_qdrant?String(c.target_qdrant).replace(/^https?:\/\//,'').split('.')[0]:'';
+    return `<div class="mem-card">
+      <div class="mem-card-name"><div class="svc-status-dot ${dotCls}" style="flex-shrink:0"></div>${esc(name)}</div>
+      <div class="mem-card-label">Vectors</div>
+      <div class="mem-card-count">${fmt(count)}</div>
+      <div style="font-size:10px;color:var(--gray);margin-top:4px;display:flex;gap:6px;flex-wrap:wrap">
+        ${dims?`<span>dims: ${esc(String(dims))}</span>`:''}
+        ${c.readable===false?'<span style="color:var(--red)">read-only ✗</span>':''}
+        ${c.writable===false?'<span style="color:var(--amber)">read-only</span>':''}
+        ${targetHost?`<span title="${esc(c.target_qdrant)}">@${esc(targetHost)}</span>`:''}
+      </div>
+      <div class="mem-bar-track"><div class="mem-bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('') || '<div style="color:var(--gray);font-size:13px">No collections returned.</div>';
+
+  // ── 3. Neo4j labels + relationship types ──
+  const labels=graph.labels||{};
+  const rels=graph.relationships||{};
+  const labelList=Object.entries(labels).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+    <div class="agent-file-item"><span>${esc(k)}</span><span class="agent-file-size">${fmt(v||0)}</span></div>`).join('');
+  const relList=Object.entries(rels).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+    <div class="agent-file-item"><span>${esc(k)}</span><span class="agent-file-size">${fmt(v||0)}</span></div>`).join('');
+  const graphStatus=String(graph.status||'unknown').toLowerCase();
+  const graphDot=graphStatus==='connected'?'up':graphStatus==='disconnected'?'down':'unknown';
+
+  g.style.display='block';
+  g.innerHTML=`
+    <div class="obs-section-title" style="margin-top:0"><i class="fas fa-external-link-alt"></i> Memory Browsers</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <a class="btn btn-sm" href="${esc(qdrantDashboard)}" target="_blank" rel="noreferrer">
+        <i class="fas fa-layer-group"></i> Open Qdrant Collections
+      </a>
+      <a class="btn btn-sm" href="${esc(neo4jDashboard)}" target="_blank" rel="noreferrer">
+        <i class="fas fa-project-diagram"></i> Open Neo4j Console
+      </a>
+    </div>
+
+    <div class="obs-section-title" style="margin-top:0"><i class="fas fa-plug"></i> Data Sources</div>
+    <div class="mem-grid">${sourceCards||'<div style="color:var(--gray);font-size:13px">No source info.</div>'}</div>
+
+    <div class="obs-section-title" style="margin-top:20px">
+      <i class="fas fa-layer-group"></i> Qdrant Collections
+      <span class="pill pill-muted" style="font-size:10px;margin-left:8px">${cols.length} collections · ${fmt(totals.points||0)} points · via ${esc(via||'?')}</span>
+    </div>
+    <div class="mem-grid">${collHtml}</div>
+
+    <div class="obs-section-title" style="margin-top:20px">
+      <i class="fas fa-project-diagram"></i> Neo4j Graph
+      <span class="pill pill-muted" style="font-size:10px;margin-left:8px">
+        <span class="svc-status-dot ${graphDot}" style="display:inline-block;vertical-align:middle;margin-right:4px"></span>${esc(graphStatus)}
+      </span>
+    </div>
+    <div class="mem-grid">
+      <div class="mem-card">
+        <div class="mem-card-name"><i class="fas fa-tags"></i> Node Labels</div>
+        <div class="agent-file-list" style="max-height:200px;overflow:auto">${labelList||'<div class="agent-empty">No labels reported.</div>'}</div>
+      </div>
+      <div class="mem-card">
+        <div class="mem-card-name"><i class="fas fa-link"></i> Relationship Types</div>
+        <div class="agent-file-list" style="max-height:200px;overflow:auto">${relList||'<div class="agent-empty">No relationship types reported.</div>'}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// MODELS
+// ══════════════════════════════════════════════════════════════════════
+
+async function loadModels(){
+  try{
+    const r=await fetch(BASE+'/api/observatory/models');
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data=await r.json();
+    renderModelsView(data);
+  }catch(e){
+    const el=document.getElementById('modelsCurrentCard');
+    if(el) el.innerHTML='<span style="color:var(--red)">'+esc(e.message)+'</span>';
+  }
+}
+
+function renderModelsView(data){
+  const current=(typeof data.current==='object'&&!data.current?.error)?data.current:null;
+  const catalog=(data.catalog?.models||[]);
+
+  const curEl=document.getElementById('modelsCurrentCard');
+  if(curEl && current){
+    const info=current.info||{};
+    curEl.innerHTML=`<div class="model-card">
+      <div class="model-info">
+        <div class="model-name">${esc(current.model||'unknown')}</div>
+        <div class="model-desc">${esc(info.description||'')}</div>
+        <div class="model-pricing">
+          <div class="model-price">In: <span>$${info.input_cost_per_1m_tokens||'?'}</span>/1M</div>
+          <div class="model-price">Out: <span>$${info.output_cost_per_1m_tokens||'?'}</span>/1M</div>
+          ${info.context_window?`<div class="model-price">Context: <span>${fmt(info.context_window)}</span></div>`:''}
+          ${current.max_tokens?`<div class="model-price">max_tokens: <span>${fmt(current.max_tokens)}</span></div>`:''}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const catEl=document.getElementById('modelsCatalog');
+  if(catEl && catalog.length){
+    catEl.innerHTML=catalog.map(m=>{
+      const isCurrent=m.id===current?.model;
+      return `<div class="agent-card" style="${isCurrent?'border-color:var(--amber)':''}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div class="agent-icon" style="${isCurrent?'background:rgba(196,98,45,.2)':''}"><i class="fas fa-brain"></i></div>
+          <div>
+            <div class="agent-name">${esc(m.id||m.name)}</div>
+            ${isCurrent?'<span class="obs-badge live" style="font-size:9px">Active</span>':''}
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--gray-hi);line-height:1.5;margin-bottom:10px">${esc(m.description||'')}</div>
+        <div class="model-pricing">
+          <div class="model-price">In: <span>$${m.input_cost_per_1m_tokens||'?'}</span>/1M</div>
+          <div class="model-price">Out: <span>$${m.output_cost_per_1m_tokens||'?'}</span>/1M</div>
+          ${m.context_window?`<div class="model-price">Ctx: <span>${fmt(m.context_window)}</span></div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// FILE IMPORT / SESSIONS
+// ══════════════════════════════════════════════════════════════════════
+
+function loadLocalSessions(){
+  try{const s=localStorage.getItem('obs_sessions');return s?JSON.parse(s):{}}catch(e){return{}}}
+
+function saveLocalSessions(){localStorage.setItem('obs_sessions',JSON.stringify(_sessions))}
+
+function renderSessionChips(){
+  const el=document.getElementById('sessionChips');
+  if(!el) return;
+  const keys=Object.keys(_sessions).sort((a,b)=>new Date(_sessions[b].saved_at)-new Date(_sessions[a].saved_at));
+  if(!keys.length){el.innerHTML='<div style="font-size:12px;color:var(--gray)">No saved sessions yet.</div>';return;}
+  el.innerHTML=keys.map(k=>{
+    const s=_sessions[k];
+    return `<div class="session-chip" onclick="loadLocalSession('${k}')" oncontextmenu="event.preventDefault();deleteSession('${k}')">
+      <span>${esc((s.name||k).substr(0,26))}</span>
+      <small>${new Date(s.saved_at).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}</small>
+    </div>`;
+  }).join('');
+}
+
+function loadLocalSession(key){
+  const s=_sessions[key];
+  if(!s) return;
+  const arr=Array.isArray(s.logs)?s.logs:[];
+  _logs=normalizeArray(arr);
+  document.getElementById('navCountLogs').textContent=fmt(_logs.length);
+  applyFilters();
+  toast('Session loaded: '+( s.name||key));
+  switchView('logs');
+}
+
+function deleteSession(key){
+  if(!confirm('Delete session "'+(_sessions[key]?.name||key)+'"?')) return;
+  delete _sessions[key];saveLocalSessions();renderSessionChips();
+}
+
+function saveSession(){
+  if(!_logs.length){toast('No logs to save','err');return;}
+  const name=prompt('Session name:',`obs_${new Date().toISOString().slice(0,10)}`);
+  if(!name) return;
+  const key='s_'+Date.now();
+  _sessions[key]={id:key,name,saved_at:new Date().toISOString(),logs:_logs.map(l=>l.raw||l)};
+  saveLocalSessions();renderSessionChips();toast('Session saved');
+}
+
+function clearAllSessions(){
+  if(!confirm('Clear all saved sessions?')) return;
+  localStorage.removeItem('obs_sessions');_sessions={};renderSessionChips();
+}
+
+// ── File drop/upload ──────────────────────────────────────────────────────────
+function parseCSV(text){
+  const rows=[];let cur='',r=[],inQ=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i],nch=text[i+1];
+    if(ch==='"'&&inQ&&nch==='"'){cur+='"';i++;continue}
+    if(ch==='"'){inQ=!inQ;continue}
+    if(ch===','&&!inQ){r.push(cur);cur='';continue}
+    if((ch==='\n'||ch==='\r')&&!inQ){if(cur!==''||r.length){r.push(cur);rows.push(r);r=[];cur=''}if(ch==='\r'&&text[i+1]==='\n')i++;continue}
+    cur+=ch;
+  }
+  if(cur!==''||r.length){r.push(cur);rows.push(r);}
+  if(!rows.length) return[];
+  const header=rows[0].map(h=>h.trim());
+  return rows.slice(1).map(row=>{const o={};header.forEach((h,j)=>{o[h]=row[j]!==undefined?row[j]:''});return o;});
+}
+
+async function handleFile(file){
+  const text=await file.text();
+  document.getElementById('dropPreview').textContent=file.name+' — '+file.size+' bytes';
+  let parsed=null;
+  try{
+    const j=JSON.parse(text);
+    if(Array.isArray(j)) parsed=j;
+    else{const k=Object.keys(j).find(x=>Array.isArray(j[x]));parsed=k?j[k]:[j];}
+  }catch(e){
+    const csv=parseCSV(text);
+    if(csv&&csv.length) parsed=csv;
+    else{toast('Unrecognized format. Need JSON array or CSV.','err');return;}
+  }
+  const norm=normalizeArray(parsed);
+  const existing=new Set(_logs.map(l=>l.id));
+  _logs=[..._logs,...norm.filter(l=>!existing.has(l.id))];
+  document.getElementById('navCountLogs').textContent=fmt(_logs.length);
+  applyFilters();
+  toast('Imported '+norm.length+' entries from '+file.name);
+  // auto-save as session
+  const key='tmp_'+Date.now();
+  _sessions[key]={id:key,name:file.name,saved_at:new Date().toISOString(),logs:parsed};
+  saveLocalSessions();renderSessionChips();
+}
+
+async function sendRemote(){
+  const endpoint=document.getElementById('remoteEndpoint').value.trim();
+  if(!endpoint){toast('Set remote endpoint first','err');return;}
+  if(!_filtered.length){toast('No logs in filtered view','err');return;}
+  try{
+    const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'obs_export_'+Date.now(),logs:_filtered,metadata:{exported_at:new Date().toISOString(),count:_filtered.length}})});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    toast('Sent '+_filtered.length+' logs to remote');
+  }catch(e){toast('Send failed: '+e.message,'err');}
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+// FRESH RESET FUNCTIONS — DEPRECATED (legacy projects: kout, coremu, awareness)
+// All fresh reset JS functions are commented out below.
+// Preserved as reference for future restoration.
+// ══════════════════════════════════════════════════════════════════════
+//
+// function clearKoutFreshResetOutput(){ ... }
+// function runKoutFreshReset(){ ... }
+// function clearCoremuFreshResetOutput(){ ... }
+// function runCoremuFreshReset(){ ... }
+// function clearAwarenessFreshResetOutput(){ ... }
+// function getSelectedAwarenessGroups(){ ... }
+// function renderAwarenessGroups(...){ ... }
+// function setAwarenessGroupSelection(...){ ... }
+// async function loadAwarenessGroups(...){ ... }
+// async function runAwarenessFreshReset(){ ... }
+// ══════════════════════════════════════════════════════════════════════
+*/
+
+// ── Drop events ───────────────────────────────────────────────────────────────
+
+// ── Drop events ───────────────────────────────────────────────────────────────
+const dz=document.getElementById('obsDropzone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor='var(--amber)'});
+dz.addEventListener('dragleave',()=>{dz.style.borderColor=''});
+dz.addEventListener('drop',async e=>{e.preventDefault();dz.style.borderColor='';const f=e.dataTransfer.files[0];if(f) await handleFile(f);});
+document.getElementById('fileInput').addEventListener('change',async e=>{const f=e.target.files[0];if(f) await handleFile(f);e.target.value='';});
+
+// ── Filter listeners ──────────────────────────────────────────────────────────
+document.getElementById('logSearch').addEventListener('input',debounce(applyFilters,300));
+['logMethodFilter','logPageFilter','logStatusFilter','logWindow','logSessionFilter'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('change',applyFilters);
+});
+
+const _netSearchEl=document.getElementById('netSearch');
+if(_netSearchEl) _netSearchEl.addEventListener('input',debounce(loadNetworkFeed,300));
+['netDirectionFilter','netServiceFilter','netStatusFilter','netWindow'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.addEventListener('change',async ()=>{
+    if(id==='netWindow'){
+      await loadNetworkSummary();
+    }
+    await loadNetworkFeed();
+  });
+});
+
+['svcLogServiceFilter','svcLogLines','svcLogMaxServices'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.addEventListener('change',()=>{ loadServiceLogs(); });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// LLM API KEYS
+// ══════════════════════════════════════════════════════════════════════
+const LLM_KEYS = [
+  { key: 'ANTHROPIC_API_KEY', label: 'Anthropic-Compatible (DeepSeek)', placeholder: 'ANTHROPIC_API_KEY', icon: 'fa-brain' },
+  { key: 'DEEPSEEK_API_KEY', label: 'DeepSeek', placeholder: 'sk-...', icon: 'fa-microchip' },
+  { key: 'OLLAMA_API_KEY', label: 'Ollama', placeholder: 'Optional', icon: 'fa-server' },
+  { key: 'QDRANT_API_KEY', label: 'Qdrant (Vector DB)', placeholder: 'qdrant-api-key', icon: 'fa-database' },
+];
+
+async function loadLlmConfig() {
+  const container = document.getElementById('llmConfigContainer');
+  container.innerHTML = '<div class="obs-loading"><i class="fas fa-spinner spin"></i> Loading…</div>';
+  try {
+    const r = await fetch('/ops/api/observatory/env');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    const env = data.env || {};
+    let html = '';
+    LLM_KEYS.forEach(item => {
+      const val = env[item.key] || '';
+      const masked = val ? (val.slice(0, 12) + '•'.repeat(Math.max(0, val.length - 16)) + val.slice(-4)) : '';
+      const hasKey = !!val;
+      html += `
+        <div class="llm-key-card" data-key="${item.key}">
+          <div class="llm-key-header">
+            <i class="fas ${item.icon}"></i>
+            <span class="llm-key-label">${item.label}</span>
+            <span class="llm-key-status ${hasKey ? 'configured' : 'missing'}">
+              <i class="fas ${hasKey ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+              ${hasKey ? 'Configured' : 'Not Set'}
+            </span>
+          </div>
+          <div class="llm-key-body">
+            <input type="password" class="llm-key-input" id="input-${item.key}" 
+                   value="${val}" placeholder="${item.placeholder}" autocomplete="off"/>
+            <button class="btn btn-sm" onclick="toggleKeyVisibility('${item.key}')" title="Show/Hide">
+              <i class="fas fa-eye" id="eye-${item.key}"></i>
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="saveLlmKey('${item.key}')">
+              <i class="fas fa-save"></i> Save
+            </button>
+          </div>
+          <div class="llm-key-hint">${item.key}</div>
+        </div>
+      `;
+    });
+    // Additional env vars section
+    html += `
+      <div class="obs-section-title" style="margin-top:24px"><i class="fas fa-cog"></i> Other Configuration</div>
+      <div class="llm-key-card">
+        <div class="llm-key-header">
+          <i class="fas fa-globe"></i>
+          <span class="llm-key-label">Default Model</span>
+        </div>
+        <div class="llm-key-body">
+          <select id="input-DEFAULT_MODEL" class="llm-key-select">
+            <option value="deepseek-v4-pro" ${env.DEFAULT_MODEL === 'deepseek-v4-pro' ? 'selected' : ''}>DeepSeek V4 Pro</option>
+            <option value="deepseek-v4-flash" ${env.DEFAULT_MODEL === 'deepseek-v4-flash' ? 'selected' : ''}>DeepSeek V4 Flash</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="saveLlmKey('DEFAULT_MODEL')">
+            <i class="fas fa-save"></i> Save
+          </button>
+        </div>
+      </div>
+      <div class="llm-key-card">
+        <div class="llm-key-header">
+          <i class="fas fa-link"></i>
+          <span class="llm-key-label">Qdrant URL</span>
+        </div>
+        <div class="llm-key-body">
+          <input type="text" class="llm-key-input" id="input-QDRANT_URL" 
+                 value="${env.QDRANT_URL || ''}" placeholder="https://your-cluster.cloud.qdrant.io" />
+          <button class="btn btn-primary btn-sm" onclick="saveLlmKey('QDRANT_URL')">
+            <i class="fas fa-save"></i> Save
+          </button>
+        </div>
+        <div class="llm-key-hint">QDRANT_URL</div>
+      </div>
+    `;
+    container.innerHTML = html;
+  } catch (e) {
+    container.innerHTML = '<div style="color:var(--red)"><i class="fas fa-exclamation-triangle"></i> Failed to load: ' + e.message + '</div>';
+  }
+}
+
+function toggleKeyVisibility(key) {
+  const input = document.getElementById('input-' + key);
+  const eye = document.getElementById('eye-' + key);
+  if (input.type === 'password') {
+    input.type = 'text';
+    eye.classList.remove('fa-eye');
+    eye.classList.add('fa-eye-slash');
+  } else {
+    input.type = 'password';
+    eye.classList.remove('fa-eye-slash');
+    eye.classList.add('fa-eye');
+  }
+}
+
+async function saveLlmKey(key) {
+  const input = document.getElementById('input-' + key);
+  const value = input.value.trim();
+  try {
+    const r = await fetch('/ops/api/observatory/env', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ updates: { [key]: value } })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    if (data.success) {
+      toast(key + ' saved successfully');
+      // Update status indicator
+      const card = document.querySelector(`.llm-key-card[data-key="${key}"]`);
+      if (card) {
+        const status = card.querySelector('.llm-key-status');
+        if (status && value) {
+          status.className = 'llm-key-status configured';
+          status.innerHTML = '<i class="fas fa-check-circle"></i> Configured';
+        } else if (status && !value) {
+          status.className = 'llm-key-status missing';
+          status.innerHTML = '<i class="fas fa-exclamation-circle"></i> Not Set';
+        }
+      }
+    } else {
+      throw new Error(data.error || 'Unknown error');
+    }
+  } catch (e) {
+    toast('Failed to save: ' + e.message, 'err');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// NETWORK EVENT INSPECTOR
+// ══════════════════════════════════════════════════════════════════════
+
+let _currentNetworkEvent = null;
+
+function showNetworkEventDetails(index) {
+  if (!_networkEvents || !_networkEvents[index]) return;
+
+  _currentNetworkEvent = _networkEvents[index];
+
+  const modal = document.getElementById('networkEventModal');
+  const content = document.getElementById('networkEventContent');
+  const exportBtn = document.getElementById('exportEventBtn');
+
+  if (!modal || !content) return;
+
+  // Format the event data for display
+  const event = _currentNetworkEvent;
+  const timestamp = new Date(event.timestamp || Date.now()).toLocaleString('pt-BR', {
+    dateStyle: 'full',
+    timeStyle: 'long'
+  });
+
+  // Create detailed HTML
+  let html = `
+    <div style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <span class="pill ${event.direction === 'inbound' ? 'pill-info' : event.direction === 'outbound' ? 'pill-warn' : 'pill-muted'}" style="font-size:12px">
+          ${esc(event.direction || 'unknown')}
+        </span>
+        <span class="pill pill-info" style="font-size:12px">
+          ${esc(event.method || 'GET')}
+        </span>
+        <span class="pill ${event.status >= 400 ? 'pill-err' : event.status > 0 ? 'pill-ok' : 'pill-muted'}" style="font-size:12px">
+          ${event.status || '—'}
+        </span>
+        <span style="margin-left:auto;color:var(--gray);font-size:12px">
+          <i class="far fa-clock"></i> ${esc(timestamp)}
+        </span>
+      </div>
+
+      <div style="background:var(--bg-hi);border-radius:8px;padding:16px;margin-bottom:16px">
+        <div style="font-weight:600;margin-bottom:8px;color:var(--gray-hi)">Request</div>
+        <div style="font-family:var(--mono);font-size:13px;word-break:break-all">
+          ${esc(event.method || 'GET')} ${esc(event.path || event.url || '/')}
+        </div>
+        ${event.service ? `<div style="margin-top:8px;font-size:13px"><strong>Service:</strong> ${esc(event.service)}</div>` : ''}
+        ${event.source ? `<div style="margin-top:4px;font-size:13px"><strong>Source:</strong> ${esc(event.source)}</div>` : ''}
+      </div>
+  `;
+
+  // Add latency if available
+  if (event.latency_ms !== null && event.latency_ms !== undefined) {
+    html += `
+      <div style="background:var(--bg-hi);border-radius:8px;padding:16px;margin-bottom:16px">
+        <div style="font-weight:600;margin-bottom:8px;color:var(--gray-hi)">Performance</div>
+        <div style="font-size:13px"><strong>Latency:</strong> ${event.latency_ms} ms</div>
+      </div>
+    `;
+  }
+
+  // Add headers if available
+  if (event.headers && Object.keys(event.headers).length > 0) {
+    html += `
+      <div style="background:var(--bg-hi);border-radius:8px;padding:16px;margin-bottom:16px">
+        <div style="font-weight:600;margin-bottom:8px;color:var(--gray-hi)">Headers</div>
+        <div style="font-family:var(--mono);font-size:12px;max-height:200px;overflow-y:auto">
+    `;
+    for (const [key, value] of Object.entries(event.headers)) {
+      html += `<div><span style="color:var(--primary)">${esc(key)}:</span> ${esc(value)}</div>`;
+    }
+    html += `</div></div>`;
+  }
+
+  // Add body if available
+  if (event.body) {
+    html += `
+      <div style="background:var(--bg-hi);border-radius:8px;padding:16px;margin-bottom:16px">
+        <div style="font-weight:600;margin-bottom:8px;color:var(--gray-hi)">Body</div>
+        <div style="font-family:var(--mono);font-size:12px;max-height:200px;overflow-y:auto;white-space:pre-wrap">
+          ${esc(typeof event.body === 'string' ? event.body : JSON.stringify(event.body, null, 2))}
+        </div>
+      </div>
+    `;
+  }
+
+  // Add response if available
+  if (event.response) {
+    html += `
+      <div style="background:var(--bg-hi);border-radius:8px;padding:16px;margin-bottom:16px">
+        <div style="font-weight:600;margin-bottom:8px;color:var(--gray-hi)">Response</div>
+        <div style="font-family:var(--mono);font-size:12px;max-height:200px;overflow-y:auto;white-space:pre-wrap">
+          ${esc(typeof event.response === 'string' ? event.response : JSON.stringify(event.response, null, 2))}
+        </div>
+      </div>
+    `;
+  }
+
+  // Add raw JSON view
+  html += `
+    <div style="background:var(--bg-hi);border-radius:8px;padding:16px">
+      <div style="font-weight:600;margin-bottom:8px;color:var(--gray-hi)">Raw JSON</div>
+      <div style="font-family:var(--mono);font-size:11px;max-height:300px;overflow-y:auto;white-space:pre-wrap;color:var(--gray)">
+        ${esc(JSON.stringify(event, null, 2))}
+      </div>
+    </div>
+  `;
+
+  content.innerHTML = html;
+
+  // Show export button
+  if (exportBtn) {
+    exportBtn.style.display = 'inline-flex';
+  }
+
+  // Show modal
+  modal.style.display = 'flex';
+}
+
+function closeNetworkEventModal() {
+  const modal = document.getElementById('networkEventModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+  _currentNetworkEvent = null;
+}
+
+function copyNetworkEventDetails() {
+  if (!_currentNetworkEvent) {
+    toast('No event selected', 'warn');
+    return;
+  }
+
+  try {
+    const jsonStr = JSON.stringify(_currentNetworkEvent, null, 2);
+    navigator.clipboard.writeText(jsonStr).then(() => {
+      toast('Event JSON copied to clipboard', 'ok');
+    }).catch(err => {
+      console.error('Copy failed:', err);
+      toast('Failed to copy: ' + err.message, 'err');
+    });
+  } catch (err) {
+    console.error('JSON stringify failed:', err);
+    toast('Failed to copy: ' + err.message, 'err');
+  }
+}
+
+function exportNetworkEvent() {
+  if (!_currentNetworkEvent) {
+    toast('No event selected', 'warn');
+    return;
+  }
+
+  try {
+    const jsonStr = JSON.stringify(_currentNetworkEvent, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `network-event-${_currentNetworkEvent.timestamp || Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('Event exported as JSON', 'ok');
+  } catch (err) {
+    console.error('Export failed:', err);
+    toast('Failed to export: ' + err.message, 'err');
+  }
+}
+
+// Close modal on ESC key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeNetworkEventModal();
+  }
+});
+
+// Close modal when clicking outside
+document.addEventListener('click', (e) => {
+  const modal = document.getElementById('networkEventModal');
+  if (modal && modal.style.display === 'flex' && e.target === modal) {
+    closeNetworkEventModal();
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// BOOTSTRAP
+// ══════════════════════════════════════════════════════════════════════
+renderSessionChips();
+loadServices();        // loads overview + services view
+fetchBackendLogs(7);  // load logs on start
+loadNetworkSnapshot();
+
+</script>
+
+<!-- Network Event Inspector Modal -->
+<div id="networkEventModal" class="modal-bg" style="display:none">
+  <div class="modal-box" style="width:min(800px,95vw);max-height:85vh">
+    <div class="modal-head">
+      <h3><i class="fas fa-search"></i> Network Event Details</h3>
+      <button class="modal-close" onclick="closeNetworkEventModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" style="padding:20px;overflow-y:auto;flex:1">
+      <div id="networkEventContent">
+        <div style="text-align:center;padding:40px 20px;color:var(--gray)">
+          <i class="fas fa-wave-square" style="font-size:48px;opacity:.2;margin-bottom:16px"></i>
+          <div>Select a network event to view details</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" onclick="closeNetworkEventModal()"><i class="fas fa-times"></i> Close</button>
+      <button class="btn btn-primary" onclick="copyNetworkEventDetails()"><i class="fas fa-copy"></i> Copy JSON</button>
+      <button class="btn btn-success" onclick="exportNetworkEvent()" id="exportEventBtn" style="display:none"><i class="fas fa-download"></i> Export</button>
+    </div>
+  </div>
+</div>
+
+<!-- DEPRECATED: Jurisprudence Advanced Search Modal — legacy project.
+<div id="jurisAdvancedModal" class="modal-bg" style="display:none">
+  <div class="modal-box" style="width:min(800px,95vw);max-height:85vh">
+    <div class="modal-head">
+      <h3><i class="fas fa-sliders-h"></i> Advanced Jurisprudence Search</h3>
+      <button class="modal-close" onclick="closeJurisAdvancedModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" style="padding:20px;overflow-y:auto;flex:1">
+      <div id="jurisAdvancedContent">
+        <div style="margin-bottom:24px">
+          <div style="font-size:12px;color:var(--gray);margin-bottom:16px">
+            Configure detailed search parameters for TJRS jurisprudence. All fields are optional.
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:20px">
+            <!-- Basic Search -->
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px">
+              <div class="event-detail-title"><i class="fas fa-search"></i> Basic Search</div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div>
+                  <label for="advSearchText" style="display:block;font-size:11px;color:var(--gray-hi);margin-bottom:4px">Search Text *</label>
+                  <input type="text" id="advSearchText" placeholder="e.g., consumer protection, warranty" style="width:100%;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px">
+                </div>
+                <div>
+                  <label for="advMaxResults" style="display:block;font-size:11px;color:var(--gray-hi);margin-bottom:4px">Max Results</label>
+                  <input type="number" id="advMaxResults" value="50" min="1" max="500" style="width:100%;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px">
+                </div>
+                <div>
+                  <label for="advSearchIndex" style="display:block;font-size:11px;color:var(--gray-hi);margin-bottom:4px">Search Index</label>
+                  <select id="advSearchIndex" style="width:100%;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px;cursor:pointer">
+                    <option value="ementa">Ementa (summary)</option>
+                    <option value="inteiro_teor_url">Inteiro Teor (full text)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Legal Filters -->
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px">
+              <div class="event-detail-title"><i class="fas fa-gavel"></i> Legal Filters</div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div>
+                  <label for="advTipoDecisao" style="display:block;font-size:11px;color:var(--gray-hi);margin-bottom:4px">Decision Type</label>
+                  <input type="text" id="advTipoDecisao" placeholder="e.g., Acórdão, Sentença" style="width:100%;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px">
+                </div>
+                <div>
+                  <label for="advTipoProcesso" style="display:block;font-size:11px;color:var(--gray-hi);margin-bottom:4px">Process Type</label>
+                  <input type="text" id="advTipoProcesso" placeholder="e.g., Apelação Cível" style="width:100%;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px">
+                </div>
+                <div>
+                  <label for="advRelator" style="display:block;font-size:11px;color:var(--gray-hi);margin-bottom:4px">Rapporteur (Relator)</label>
+                  <input type="text" id="advRelator" placeholder="e.g., Des. João Silva" style="width:100%;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px">
+                </div>
+              </div>
+            </div>
+
+            <!-- Court Filters -->
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px">
+              <div class="event-detail-title"><i class="fas fa-landmark"></i> Court Filters</div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div>
+                  <label for="advComarcaOrigem" style="display:block;font-size:11px;color:var(--gray-hi);margin-bottom:4px">Origin Comarca</label>
+                  <input type="text" id="advComarcaOrigem" placeholder="e.g., Porto Alegre" style="width:100%;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px">
+                </div>
+                <div>
+                  <label for="advAssuntoCNJ" style="display:block;font-size:11px;color:var(--gray-hi);margin-bottom:4px">CNJ Subject</label>
+                  <input type="text" id="advAssuntoCNJ" placeholder="e.g., Direito do Consumidor" style="width:100%;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px">
+                </div>
+                <div>
+                  <label for="advDataInicio" style="display:block;font-size:11px;color:var(--gray-hi);margin-bottom:4px">Judgment Date Range</label>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                    <input type="date" id="advDataInicio" style="width:100%;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px">
+                    <input type="date" id="advDataFim" style="width:100%;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Download Settings -->
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px">
+              <div class="event-detail-title"><i class="fas fa-download"></i> Download Settings</div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div>
+                  <label for="advFolderName" style="display:block;font-size:11px;color:var(--gray-hi);margin-bottom:4px">Folder Name</label>
+                  <input type="text" id="advFolderName" placeholder="Auto-generated from search" style="width:100%;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px">
+                  <div style="font-size:10px;color:var(--gray);margin-top:4px">Will be created in: <code style="font-size:9px">/kout/uploads/projects/la8159/down_jurisprudence/</code></div>
+                </div>
+                <div>
+                  <label for="advAgentId" style="display:block;font-size:11px;color:var(--gray-hi);margin-bottom:4px">Agent ID</label>
+                  <input type="text" id="advAgentId" placeholder="Optional - associate with agent" style="width:100%;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px">
+                </div>
+                <div>
+                  <label for="advAutoDownload" style="display:block;font-size:11px;color:var(--gray-hi);margin-bottom:4px">Auto-download</label>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <input type="checkbox" id="advAutoDownload" checked style="width:16px;height:16px">
+                    <span style="font-size:11px;color:var(--gray-hi)">Download all found documents automatically</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Search Description -->
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px">
+            <div class="event-detail-title"><i class="fas fa-file-alt"></i> Search Description</div>
+            <textarea id="advSearchDescription" placeholder="Describe the purpose of this search (optional)" rows="3" style="width:100%;padding:10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px;font-family:var(--font);resize:vertical"></textarea>
+          </div>
+
+          <!-- Real-time Log Panel -->
+          <div id="jurisLogPanel" style="display:none">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px">
+              <div class="event-detail-title" style="display:flex;justify-content:space-between;align-items:center">
+                <div><i class="fas fa-stream"></i> Real-time Search Logs</div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <span id="logStatus" style="font-size:10px;color:var(--gray);font-family:var(--mono)">Disconnected</span>
+                  <button class="btn btn-xs" onclick="toggleLogStream()" id="logToggleBtn"><i class="fas fa-play"></i> Start Stream</button>
+                  <button class="btn btn-xs" onclick="clearLogPanel()"><i class="fas fa-trash"></i> Clear</button>
+                </div>
+              </div>
+              <div id="logContainer" style="background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:12px;max-height:300px;overflow-y:auto;font-family:var(--mono);font-size:11px;line-height:1.4">
+                <div style="color:var(--gray);text-align:center;padding:20px">
+                  <i class="fas fa-stream" style="opacity:.3;font-size:24px;margin-bottom:8px"></i>
+                  <div>Log stream will appear here when search starts</div>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:10px;color:var(--gray)">
+                <div>
+                  <span id="logCount">0</span> log entries
+                </div>
+                <div>
+                  <span id="logLastUpdate">--:--:--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" onclick="closeJurisAdvancedModal()"><i class="fas fa-times"></i> Cancel</button>
+      <button class="btn btn-primary" onclick="saveAdvancedSearchAsTemplate()"><i class="fas fa-save"></i> Save Template</button>
+      <button class="btn btn-success" onclick="startAdvancedJurisSearch()"><i class="fas fa-play"></i> Start Search</button>
+    </div>
+  </div>
+</div>
+
+<!-- Jurisprudence Search History Modal -->
+<div id="jurisHistoryModal" class="modal-bg" style="display:none">
+  <div class="modal-box" style="width:min(900px,95vw);max-height:85vh">
+    <div class="modal-head">
+      <h3><i class="fas fa-history"></i> Jurisprudence Search History</h3>
+      <button class="modal-close" onclick="closeJurisHistoryModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" style="padding:20px;overflow-y:auto;flex:1">
+      <div id="jurisHistoryContent">
+        <div style="text-align:center;padding:40px 20px;color:var(--gray)">
+          <i class="fas fa-history" style="font-size:48px;opacity:.2;margin-bottom:16px"></i>
+          <div>Loading search history...</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" onclick="closeJurisHistoryModal()"><i class="fas fa-times"></i> Close</button>
+      <button class="btn btn-primary" onclick="refreshJurisHistory()"><i class="fas fa-sync-alt"></i> Refresh</button>
+    </div>
+  </div>
+</div>
+
+<!-- Downloaded Jurisprudence Browser Modal -->
+<div id="jurisDownloadsModal" class="modal-bg" style="display:none">
+  <div class="modal-box" style="width:min(1000px,95vw);max-height:85vh">
+    <div class="modal-head">
+      <h3><i class="fas fa-folder-open"></i> Downloaded Jurisprudence</h3>
+      <button class="modal-close" onclick="closeJurisDownloadsModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" style="padding:20px;overflow-y:auto;flex:1">
+      <div id="jurisDownloadsContent">
+        <div style="text-align:center;padding:40px 20px;color:var(--gray)">
+          <i class="fas fa-folder-open" style="font-size:48px;opacity:.2;margin-bottom:16px"></i>
+          <div>Loading downloaded jurisprudence...</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" onclick="closeJurisDownloadsModal()"><i class="fas fa-times"></i> Close</button>
+      <button class="btn btn-primary" onclick="refreshJurisDownloads()"><i class="fas fa-sync-alt"></i> Refresh</button>
+      <button class="btn btn-success" onclick="exportJurisDownloads()"><i class="fas fa-download"></i> Export List</button>
+    </div>
+  </div>
+</div>
+-->
+
+</body>
+</html>

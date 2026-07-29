@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "ocr-main-ocr": {
+      "command": "python",
+      "args": [
+        "mcp/servers/ocr_server.py"
+      ],
+      "env": {
+        "OCR_PROJECT_ROOT": "${workspaceFolder}",
+        "DEEPSEEK_API_KEY": "<set_me>",
+        "DEEPSEEK_API_BASE_URL": "https://api.deepseek.com/v1/chat/completions"
+      }
+    },
+    "ocr-main-pdf": {
+      "command": "python",
+      "args": [
+        "mcp/servers/pdf_server.py"
+      ],
+      "env": {
+        "OCR_PROJECT_ROOT": "${workspaceFolder}",
+        "DEEPSEEK_API_KEY": "<set_me>",
+        "DEEPSEEK_API_BASE_URL": "https://api.deepseek.com/v1/chat/completions"
+      }
+    }
+  }
+}

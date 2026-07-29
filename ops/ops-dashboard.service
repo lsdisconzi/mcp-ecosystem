@@ -1,0 +1,17 @@
+[Unit]
+Description=Awareness-AI Ops Dashboard
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/Users/dev/ops
+EnvironmentFile=/etc/ops-dashboard.env
+Environment="OPS_PROJECT_ROOT=/Users/dev"
+ExecStart=/Users/dev/ops/.venv/bin/python3 /Users/dev/ops/app.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

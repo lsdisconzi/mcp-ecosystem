@@ -1,0 +1,42 @@
+{
+  "name": "violation-refiner-dev",
+  "description": "Development and infrastructure agent for ViolationRefiner — the layered legal artifact enrichment, validation, and packaging library",
+  "project_path": "/awareness/services/ViolationRefiner",
+  "language": "python",
+  "package": "violation_pack",
+  "tools": ["Read", "Glob", "Grep", "Bash", "Write", "Edit"],
+  "model": "sonnet",
+  "interfaces": [
+    {"type": "python_library", "symbols": 20},
+    {"type": "mcp_server", "tools": 30, "transport": "stdio"},
+    {"type": "cli", "command": "violation-pack-catalog"}
+  ],
+  "ports": {},
+  "external_services": [
+    {"name": "Qdrant", "package": "qdrant-client>=1.7", "optional": true, "extra": "qdrant"},
+    {"name": "Neo4j", "package": "neo4j>=5", "optional": true, "extra": "neo4j"},
+    {"name": "LLM Providers", "package": "httpx>=0.27", "optional": true, "extra": "llm"},
+    {"name": "MCP SDK", "package": "mcp>=1.2", "optional": true, "extra": "mcp"}
+  ],
+  "known_issues": {
+    "critical": [
+      "start.sh MCP transport mismatch — sets streamable-http but server only speaks stdio",
+      "refine_batch_tool sys.path hack in mcp_server.py:385-390",
+      "docs/mcp_mapping.md referenced in README but does not exist"
+    ],
+    "important": [
+      ".env.example missing LLM configuration fields",
+      "mcp_catalog.py out of date (15 listed vs 30 actual tools)",
+      "generate_map.py is dead code with hardcoded paths",
+      "_sha256_text() duplicated in layers.py and refine_batch.py"
+    ]
+  },
+  "architecture_layers": ["models", "sources", "layers", "confidence", "validation", "verifier", "authority_verification", "pack", "extensions", "qdrant_index", "neo4j_graph", "jurisprudence", "embeddings", "ingesters", "enrich", "llm", "config", "mcp_server", "mcp_catalog"],
+  "key_files": [
+    {"path": "violation_pack/models.py", "lines": 370, "role": "All Pydantic schemas"},
+    {"path": "violation_pack/enrich.py", "lines": 990, "role": "LLM-driven enrichment orchestration"},
+    {"path": "violation_pack/mcp_server.py", "lines": 769, "role": "MCP server with 30 tools"},
+    {"path": "violation_pack/ingesters.py", "lines": 652, "role": "Bulk corpus ingestion"}
+  ],
+  "def_file": "agent_violation_refiner.md"
+}

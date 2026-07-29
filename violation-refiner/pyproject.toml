@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "violation-pack"
+version = "0.1.0"
+description = "Layered enrichment + validation pipeline for legal violation files. Designed as pure functions so each step can be wrapped as an MCP tool."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "pydantic>=2.5",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+mcp = ["mcp>=1.2"]
+qdrant = ["qdrant-client>=1.7"]
+neo4j = ["neo4j>=5"]
+llm = ["httpx>=0.27"]
+all = ["mcp>=1.2", "qdrant-client>=1.7", "neo4j>=5", "httpx>=0.27"]
+
+[project.scripts]
+violation-pack-mcp = "violation_pack.mcp_server:main"
+violation-pack-catalog = "violation_pack.mcp_catalog:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["violation_pack*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

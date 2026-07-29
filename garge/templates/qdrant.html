@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Awareness-AI · Qdrant Manager</title>
+    <link rel="icon" href="data:,">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+/* ── AWARENESS-AI · GARAGE APP SHELL ── */
+:root {
+  --bg:         #191917;
+  --bg-card:    #1f1f1d;
+  --bg-code:    #161614;
+  --bg-input:   #171715;
+  --border:     #2a2a28;
+  --border-hi:  #363634;
+  --amber:      #c4622d;
+  --amber-lo:   rgba(196,98,45,0.10);
+  --white:      #ede8df;
+  --gray:       #6b6b68;
+  --gray-hi:    #9a9a96;
+  --green:      #4a9e70;
+  --green-lo:   rgba(74,158,112,0.10);
+  --red:        #9e4a4a;
+  --red-lo:     rgba(158,74,74,0.10);
+  --blue:       #5b8fa8;
+  --blue-lo:    rgba(91,143,168,0.10);
+  --yellow:     #b8962e;
+  --yellow-lo:  rgba(184,150,46,0.10);
+  --serif:      'Lora', Georgia, serif;
+  --sans:       'Inter', sans-serif;
+  --mono:       'JetBrains Mono', monospace;
+  --r:          8px;
+
+  /* compat aliases for external JS that reads these */
+  --primary:        #c4622d;
+  --primary-light:  #d4825a;
+  --secondary:      #5b8fa8;
+  --success:        #4a9e70;
+  --warning:        #b8962e;
+  --danger:         #9e4a4a;
+  --gray-100:       #1f1f1d;
+  --gray-200:       #2a2a28;
+  --gray-300:       #363634;
+  --gray-400:       #6b6b68;
+  --gray-600:       #9a9a96;
+  --card-bg:        #1f1f1d;
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--white);line-height:1.7;font-size:15px;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+/* ─── CONTAINER ─── */
+.container{max-width:1400px;margin:0 auto;padding:24px 32px}
+
+/* ─── HEADER / APP BAR ─── */
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 0 20px;margin-bottom:8px;border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:14px}
+.logo-icon{width:38px;height:38px;background:var(--amber-lo);border:1px solid rgba(196,98,45,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--amber);font-size:15px}
+.logo-text{font-family:var(--serif);font-size:18px;font-weight:500;color:var(--white)}
+.logo-text span{color:var(--amber)}
+.header-info{display:flex;gap:28px}
+.info-item{text-align:right}
+.info-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--gray)}
+.info-value{font-family:var(--mono);font-size:12px;color:var(--gray-hi);margin-top:2px}
+
+/* ─── STATUS BADGE ─── */
+.status-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 14px;border-radius:4px;font-size:12px;font-family:var(--mono);font-weight:500;border:1px solid}
+.status-badge{color:var(--green);background:var(--green-lo);border-color:rgba(74,158,112,.25)}
+.status-badge.connecting,.status-badge.secondary{color:var(--yellow);background:var(--yellow-lo);border-color:rgba(184,150,46,.25)}
+.status-badge.error{color:var(--red);background:var(--red-lo);border-color:rgba(158,74,74,.25)}
+.status-badge.disconnected{color:var(--gray);background:rgba(255,255,255,.04);border-color:var(--border)}
+
+/* ─── MAIN TABS ─── */
+.main-tabs,.tabs{display:flex;gap:2px;margin-bottom:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:4px;flex-wrap:wrap}
+.main-tab-btn,.tab-btn{display:flex;align-items:center;gap:7px;padding:9px 16px;background:transparent;border:none;border-radius:6px;color:var(--gray-hi);font-family:var(--sans);font-size:13px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.main-tab-btn:hover,.tab-btn:hover{color:var(--white);background:rgba(255,255,255,.05)}
+.main-tab-btn.active,.tab-btn.active{background:var(--bg);color:var(--white);border:1px solid var(--border-hi)}
+.main-tab-btn i,.tab-btn i{font-size:11px;color:var(--amber)}
+
+/* ─── SECTIONS ─── */
+.main-section,.tab-content{display:block}
+.main-section[style*="display:none"],.tab-content:not(.active){display:none!important}
+
+/* ─── CARD ─── */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:18px;overflow:hidden;transition:border-color .2s}
+.card:hover{border-color:var(--border-hi)}
+.card-header{padding:18px 22px 14px;border-bottom:1px solid var(--border)}
+.card-header h2{font-family:var(--serif);font-size:18px;font-weight:500;color:var(--white);margin:0 0 4px;display:flex;align-items:center;gap:10px}
+.card-header h2 i{color:var(--amber);font-size:14px}
+.card-header p{font-size:13px;color:var(--gray);margin:0}
+.card-body{padding:20px 22px}
+h3{font-family:var(--serif);font-size:16px;font-weight:500;color:var(--white);margin:20px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+h3:first-child{margin-top:0}
+h4{font-size:13px;font-weight:500;color:var(--gray-hi);margin:14px 0 8px;text-transform:uppercase;letter-spacing:.05em}
+hr{border:none;border-top:1px solid var(--border);margin:22px 0}
+p{color:var(--gray-hi);font-size:14px;line-height:1.7}
+small,.helper-text{font-size:12px;color:var(--gray);display:block;margin-top:4px;line-height:1.5}
+strong{color:var(--white);font-weight:500}
+
+/* ─── FORMS ─── */
+.form-group{margin-bottom:16px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.form-row .stretch{grid-column:auto}
+.parameter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+.parameter-group{display:flex;flex-direction:column;gap:4px}
+label{display:block;font-size:12px;color:var(--gray);margin-bottom:5px;letter-spacing:.05em;text-transform:uppercase}
+label.inline{display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;cursor:pointer}
+input[type="text"],input[type="number"],input[type="password"],input[type="url"],input[type="email"],select,textarea{
+  width:100%;padding:10px 13px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--sans);font-size:14px;transition:border-color .15s;appearance:none;-webkit-appearance:none}
+input[type="range"]{appearance:none;-webkit-appearance:none;background:var(--border);height:4px;border-radius:4px;border:none;padding:0}
+input[type="range"]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--amber);cursor:pointer}
+input[type="checkbox"]{width:15px;height:15px;accent-color:var(--amber);cursor:pointer;flex-shrink:0}
+input[type="file"]{color:var(--gray-hi);font-size:13px}
+input[type="file"]::file-selector-button{background:var(--bg-card);border:1px solid var(--border);color:var(--gray-hi);padding:5px 12px;border-radius:4px;cursor:pointer;font-size:12px;margin-right:10px;transition:all .15s}
+input[type="file"]::file-selector-button:hover{border-color:var(--border-hi);color:var(--white)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(237,232,223,.3)}
+select option{background:var(--bg-card)}
+textarea{min-height:100px;resize:vertical;font-family:var(--mono);font-size:13px;line-height:1.7}
+textarea#prompt-input,textarea#pe-input-description,textarea#pe-generated-prompt,textarea#pe-system-instruction,textarea#engineer-prompt,textarea#manus-prompt,textarea#lawyer-prompt{font-family:var(--sans);font-size:14px}
+.form-control{width:100%;padding:10px 13px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--sans);font-size:14px;transition:border-color .15s}
+.form-control:focus{outline:none;border-color:rgba(237,232,223,.3)}
+
+/* ─── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 18px;border:1px solid var(--border-hi);border-radius:6px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;background:transparent;color:var(--gray-hi);white-space:nowrap;text-decoration:none}
+.btn:hover{border-color:rgba(237,232,223,.3);color:var(--white);background:rgba(237,232,223,.05)}
+.btn:disabled,.btn[disabled]{opacity:.4;cursor:not-allowed;transform:none!important}
+.btn-primary{background:var(--white);border-color:var(--white);color:#191917;font-weight:600}
+.btn-primary:hover{background:#f5f0e8;border-color:#f5f0e8;color:#191917}
+.btn-secondary{background:transparent;border-color:var(--border-hi);color:var(--gray-hi)}
+.btn-secondary:hover{color:var(--white);background:rgba(255,255,255,.05)}
+.btn-success{background:var(--green-lo);border-color:rgba(74,158,112,.35);color:var(--green)}
+.btn-success:hover{background:rgba(74,158,112,.18);border-color:rgba(74,158,112,.55);color:#6bcf96}
+.btn-danger{background:var(--red-lo);border-color:rgba(158,74,74,.35);color:var(--red)}
+.btn-danger:hover{background:rgba(158,74,74,.18);color:#cf8080}
+.btn-warning{background:var(--yellow-lo);border-color:rgba(184,150,46,.35);color:var(--yellow)}
+.btn-light{background:rgba(255,255,255,.05);border-color:var(--border-hi);color:var(--gray-hi)}
+.btn-light:hover{color:var(--white)}
+.btn-link{background:none;border:none;color:var(--amber);padding:4px 0;font-size:13px}
+.btn-link:hover{color:var(--white);background:none;border:none}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-ai{background:rgba(74,158,112,.12);border-color:rgba(74,158,112,.3);color:var(--green)}
+.btn-ai:hover{background:rgba(74,158,112,.22);color:#6bcf96}
+.btn-download{background:var(--amber-lo);border-color:rgba(196,98,45,.35);color:var(--amber)}
+.btn-download:hover{background:rgba(196,98,45,.2);color:#e08050}
+.action-bar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0;align-items:center}
+.button-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+/* ─── BADGE ─── */
+.badge{display:inline-block;padding:2px 9px;border-radius:4px;font-size:11px;font-family:var(--mono)}
+.badge{background:rgba(255,255,255,.07);color:var(--gray-hi);border:1px solid var(--border)}
+
+/* ─── MODEL GRID ─── */
+.model-grid,.assistant-grid,.collection-grid,.files-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:12px}
+
+/* ─── PLAYGROUND ─── */
+.playground{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:18px}
+
+/* ─── TOOL CONTAINER ─── */
+.tool-container{display:grid;grid-template-columns:240px 1fr;gap:14px;margin-top:14px}
+.tool-sidebar{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.tool-main-content{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:18px}
+.tool-list{margin-top:10px;display:flex;flex-direction:column;gap:4px}
+.search-box{position:relative}
+.search-box input{padding-right:32px}
+.search-box i{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--gray);font-size:12px}
+#tool-tester{margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+.tool-assignments{margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+
+/* ─── RESPONSE AREA ─── */
+.response-area,.markdown-body{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-top:14px;font-size:13px;line-height:1.8;color:var(--gray-hi);max-height:500px;overflow-y:auto}
+.response-area.hidden{display:none}
+pre{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;overflow-x:auto;white-space:pre-wrap;word-break:break-word;font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--gray-hi);max-height:400px;overflow-y:auto;margin:8px 0}
+code{font-family:var(--mono);font-size:12px;color:var(--gray-hi);background:rgba(237,232,223,.06);padding:2px 6px;border-radius:3px}
+pre code{background:none;padding:0;font-size:13px}
+#json-preview,#test-tool-output{font-size:12px;max-height:250px}
+
+/* ─── API TABLE ─── */
+.api-table{width:100%;border-collapse:collapse;font-size:13px}
+.api-table th{text-align:left;padding:9px 12px;background:var(--bg);border:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-hi);font-weight:500}
+.api-table td{padding:9px 12px;border:1px solid var(--border);color:var(--gray-hi);vertical-align:middle}
+.api-table tr:hover td{background:rgba(255,255,255,.02)}
+
+/* ─── MODAL ─── */
+.modal,.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:2000;align-items:center;justify-content:center}
+.modal-content{background:var(--bg-card);border:1px solid var(--border-hi);border-radius:var(--r);width:90%;max-width:560px;max-height:85vh;overflow-y:auto;position:relative}
+.large-modal{max-width:780px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid var(--border)}
+.modal-header h3{font-family:var(--serif);font-size:18px;font-weight:500;color:var(--white);margin:0;display:flex;align-items:center;gap:8px}
+.close-modal{background:none;border:none;font-size:20px;color:var(--gray);cursor:pointer;padding:4px;line-height:1;transition:color .15s}
+.close-modal:hover{color:var(--white)}
+.modal-body{padding:20px 22px}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+.modal.hidden{display:none!important}
+
+/* ─── CHAT UI ─── */
+.chat-container{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:14px}
+.chat-messages{padding:16px;max-height:440px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;background:var(--bg)}
+#lawyer-conversation,#engineer-conversation{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-top:14px;max-height:500px;overflow-y:auto}
+.chat-message{display:flex;gap:10px}
+.chat-message.user{flex-direction:row-reverse}
+.chat-bubble{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:14px;color:var(--gray-hi);max-width:85%;line-height:1.7}
+.chat-message.user .chat-bubble{background:var(--amber-lo);border-color:rgba(196,98,45,.3);color:var(--white)}
+.chat-input-area{display:flex;gap:8px;padding:10px 14px;background:var(--bg-card);border-top:1px solid var(--border)}
+.chat-input-area input{flex:1;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;padding:9px 13px;color:var(--white);font-size:14px}
+.chat-input-area input:focus{outline:none;border-color:rgba(237,232,223,.3)}
+.chat-payload-viewer{margin-top:14px}
+.chat-payload-viewer h4{font-size:12px;color:var(--gray);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+#chat-payload-preview{max-height:140px;font-size:12px}
+.chat-config-panel{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.chat-config-panel h4{margin-top:0;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.chat-config-panel .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;align-items:center}
+.chat-config-panel .field{display:flex;flex-direction:column;gap:4px}
+.quick-prompts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.quick-prompt-btn{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:20px;padding:5px 13px;font-size:12px;color:var(--gray-hi);cursor:pointer;transition:all .15s}
+.quick-prompt-btn:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-lo)}
+.conversation-placeholder{text-align:center;color:var(--gray);padding:40px 20px}
+.conversation-placeholder i{font-size:40px;margin-bottom:14px;display:block;color:var(--border-hi)}
+
+/* ─── INGESTION ADVISOR ─── */
+.advisor-input-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media (max-width:900px){.advisor-input-grid{grid-template-columns:1fr}}
+.advisor-intent label,.advisor-files label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--gray);display:block;margin-bottom:6px}
+#advisor-intent-input{width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--white);font-family:var(--sans);font-size:14px;line-height:1.6;resize:vertical}
+#advisor-intent-input:focus{outline:none;border-color:var(--amber)}
+.advisor-drop{background:var(--bg);border:1px dashed var(--border-hi);border-radius:var(--r);padding:18px;text-align:center;color:var(--gray-hi);transition:all .15s;cursor:pointer}
+.advisor-drop:hover,.advisor-drop.drag-over{border-color:var(--amber);background:var(--amber-lo);color:var(--white)}
+.advisor-drop i{font-size:26px;color:var(--amber);display:block;margin-bottom:8px}
+.advisor-drop small{display:block;margin-top:6px;color:var(--gray);font-size:11px}
+.advisor-drop a{color:var(--amber);text-decoration:underline}
+.advisor-file-list{list-style:none;margin-top:10px;display:flex;flex-direction:column;gap:6px;max-height:160px;overflow-y:auto}
+.advisor-file-list li{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:12px;font-family:var(--mono);color:var(--gray-hi)}
+.advisor-file-list li .meta{color:var(--gray);font-size:11px}
+.advisor-file-list li button{background:transparent;border:none;color:var(--red);cursor:pointer;font-size:13px}
+#advisor-messages{max-height:520px}
+#advisor-messages .chat-bubble{max-width:92%}
+#advisor-messages .chat-bubble pre{background:var(--bg-code);border:1px solid var(--border);border-radius:6px;padding:10px 12px;overflow-x:auto;font-family:var(--mono);font-size:12px;color:var(--white);margin:8px 0}
+#advisor-messages .chat-bubble code{font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px}
+#advisor-messages .chat-bubble pre code{background:transparent;padding:0}
+#advisor-messages .chat-bubble h1,#advisor-messages .chat-bubble h2,#advisor-messages .chat-bubble h3{font-family:var(--serif);color:var(--white);margin:10px 0 6px}
+#advisor-messages .chat-bubble ul,#advisor-messages .chat-bubble ol{margin:6px 0 6px 22px}
+#advisor-payload-preview{max-height:160px;overflow:auto;font-size:12px}
+
+/* ─── PROMPT ENGINEER ─── */
+.prompt-engineer-container{display:grid;grid-template-columns:300px 1fr;gap:18px;margin-bottom:18px}
+.pe-left-panel{display:flex;flex-direction:column;gap:14px}
+.pe-right-panel{display:flex;flex-direction:column;gap:14px}
+.source-item{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;margin-bottom:8px}
+.sub-options{margin-top:10px;padding-left:12px;display:flex;flex-direction:column;gap:8px}
+.metrics-grid{display:flex;flex-direction:column;gap:8px}
+.metric-item{display:grid;grid-template-columns:80px 1fr 30px;gap:8px;align-items:center;font-size:12px;color:var(--gray)}
+.templates-grid{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;max-height:180px;overflow-y:auto}
+.prompt-editor-container{position:relative}
+.prompt-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.prompt-details{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.details-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.details-header h5{font-size:13px;font-weight:500;color:var(--white);margin:0;display:flex;align-items:center;gap:7px}
+.detail-item{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+.detail-item:last-child{border-bottom:none}
+.detail-label{color:var(--gray)}
+.history-container{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.history-container select{width:100%;border:none;background:transparent;color:var(--gray-hi);padding:8px 12px;font-size:13px}
+.history-actions{display:flex;gap:6px;padding:8px;border-top:1px solid var(--border);background:var(--bg-card)}
+.output-preview-container{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.preview-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg-card)}
+.preview-tab{flex:1;padding:8px;background:none;border:none;color:var(--gray);font-size:12px;cursor:pointer;transition:all .15s;border-bottom:2px solid transparent}
+.preview-tab.active{color:var(--white);border-bottom-color:var(--amber)}
+.preview-content{padding:12px}
+.preview-pane{display:none}
+.preview-pane.active{display:block}
+.advanced-settings{margin-top:14px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.settings-toggle{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg-card);cursor:pointer;font-size:13px;color:var(--gray-hi);margin:0}
+.settings-toggle:hover{color:var(--white)}
+.settings-content{padding:16px;border-top:1px solid var(--border)}
+.quick-actions-bar{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.input-with-voice{display:flex;gap:8px;align-items:flex-start}
+.input-with-voice textarea{flex:1}
+
+/* ─── MANUS GARAGE ─── */
+.progress-bar-container{background:var(--border);border-radius:20px;height:5px;overflow:hidden;margin:14px 0;position:relative}
+.progress-bar-container .progress-bar{background:var(--amber);height:100%;border-radius:20px;transition:width .3s}
+#manus-progress-label{position:absolute;right:0;top:-18px;font-size:11px;color:var(--gray);font-family:var(--mono)}
+.chip-list,.tag-list,.assistant-files-list,.history-list{list-style:none;padding:0;margin:8px 0;display:flex;flex-wrap:wrap;gap:6px}
+.chip-list li,.tag-list li{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--gray-hi)}
+.chip-list li.empty,.tag-list li.empty,.assistant-files-list li.empty,.history-list li.empty{color:var(--gray);font-style:italic;font-size:12px;background:none;border:none}
+.assistant-files-list,.history-list{flex-direction:column;gap:0}
+.assistant-files-list li,.history-list li{padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--gray-hi)}
+.saved-outcomes-panel,.history-panel{margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+.saved-outcomes-grid{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
+.saved-outcomes-actions{display:flex;flex-direction:column;gap:6px}
+.input-with-button{display:flex;gap:6px}
+.input-with-button select{flex:1}
+.selected-order-wrapper{margin-top:10px}
+.url-adder{margin-top:8px}
+.url-adder .input-group{display:flex;gap:6px}
+.input-group{display:flex;gap:6px}
+.input-group input{flex:1}
+.assistant-active{margin-top:8px;font-size:12px;color:var(--gray);display:flex;gap:6px;align-items:center}
+.assistant-active strong{color:var(--white)}
+.assistant-files-panel{margin-top:10px}
+.assistant-files-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12px;color:var(--gray)}
+.source-options{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.checkbox-group{display:flex;align-items:center;gap:8px}
+.response-actions{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+
+/* ─── RESOURCES (ASSISTANT MODAL) ─── */
+.resource-tabs{display:flex;gap:2px;margin-bottom:10px}
+.resource-tab{padding:6px 14px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--gray);font-size:12px;cursor:pointer}
+.resource-tab.active{background:var(--bg-card);color:var(--white);border-color:var(--border-hi)}
+.resource-content{display:none}
+.resource-content.active{display:block}
+.checkbox-list{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto}
+.checkbox-list label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gray-hi);text-transform:none;letter-spacing:0;padding:6px 8px;border-radius:4px;cursor:pointer}
+.checkbox-list label:hover{background:rgba(255,255,255,.04)}
+
+/* ─── FILES LIST ─── */
+.files-list{display:flex;flex-direction:column;gap:6px;margin-top:8px;max-height:160px;overflow-y:auto}
+.files-list .empty,.files-grid .empty{color:var(--gray);font-size:12px;font-style:italic;padding:8px 0}
+
+/* ─── COLLECTION CARDS ─── */
+.collection-list,.collection-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:12px}
+.collection-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px;transition:border-color .15s;cursor:pointer}
+.collection-item:hover{border-color:var(--amber)}
+.collection-item h4{font-size:14px;font-weight:500;color:var(--white);margin:0 0 6px}
+.collection-item p{font-size:12px;color:var(--gray);margin:0}
+
+/* ─── MULTI-SELECT ─── */
+.multi-select-container{position:relative;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.multi-select-placeholder{padding:10px 14px;font-size:13px;color:var(--gray);cursor:pointer;background:var(--bg-card)}
+.multi-select-options{background:var(--bg-card);max-height:200px;overflow-y:auto;padding:4px 0}
+.multi-select-options label{display:flex;align-items:center;gap:8px;padding:7px 14px;font-size:13px;color:var(--gray-hi);text-transform:none;letter-spacing:0;cursor:pointer}
+.multi-select-options label:hover{background:rgba(255,255,255,.04)}
+select[multiple]{min-height:120px;padding:4px}
+select[multiple] option{padding:6px 10px;border-radius:4px}
+select[multiple] option:checked{background:var(--amber-lo);color:var(--white)}
+.placeholder-text{color:var(--gray);font-style:italic;font-size:13px;padding:12px 0}
+
+/* ─── WORKFLOW ─── */
+#workflow-steps-order{border:1px solid var(--border);border-radius:var(--r);padding:14px;min-height:80px;background:var(--bg)}
+#workflow-step-results{padding:0 0 14px}
+
+/* ─── LAWYER ─── */
+.legislation-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:14px;max-height:650px;overflow-y:auto}
+.quick-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+
+/* ─── THEME TOGGLE (keep visible but brand it) ─── */
+.theme-toggle{position:fixed;bottom:24px;right:24px;width:40px;height:40px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gray);transition:all .15s;z-index:500}
+.theme-toggle:hover{border-color:var(--amber);color:var(--amber)}
+
+/* ─── ALERTS ─── */
+.alert{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--r);margin-bottom:12px;font-size:13px;line-height:1.6}
+.alert-error,.alert-danger{background:var(--red-lo);border:1px solid rgba(158,74,74,.3);color:#cf8080}
+.alert-success{background:var(--green-lo);border:1px solid rgba(74,158,112,.3);color:#6bcf96}
+.alert-warning{background:var(--yellow-lo);border:1px solid rgba(184,150,46,.3);color:#d4b060}
+.alert-info{background:var(--blue-lo);border:1px solid rgba(91,143,168,.3);color:#7ab5cc}
+
+/* ─── ENHANCED INGESTION PANELS (qdrant) ─── */
+#enhanced-ingest-panel > div[style*="background: linear-gradient"],
+#enhanced-ingest-panel > div[style*="background:linear-gradient"]{
+  background:var(--bg-card)!important;
+  border-left:2px solid var(--amber)!important;
+  padding:16px!important;
+  border-radius:0 var(--r) var(--r) 0!important;
+  margin-bottom:14px!important;
+}
+#enhanced-ingest-panel h4{color:var(--white)!important}
+#enhanced-ingest-panel label{color:var(--gray)!important}
+#enhanced-ingest-panel small{color:var(--gray)!important}
+#advanced-structured-options{background:var(--bg)!important;border-left:2px solid var(--amber)!important}
+
+/* ─── STATUS INDICATORS ─── */
+.status-complete{color:var(--green);background:var(--green-lo);border:1px solid rgba(74,158,112,.3);padding:2px 8px;border-radius:4px;font-size:11px;font-family:var(--mono)}
+.status-incomplete{color:var(--yellow);background:var(--yellow-lo);border:1px solid rgba(184,150,46,.3);padding:2px 8px;border-radius:4px;font-size:11px;font-family:var(--mono)}
+.status-missing{color:var(--red);background:var(--red-lo);border:1px solid rgba(158,74,74,.3);padding:2px 8px;border-radius:4px;font-size:11px;font-family:var(--mono)}
+
+/* ─── ENGINEER CONVERSATION ─── */
+.chat-interface .parameter-group label{text-transform:uppercase;font-size:11px;letter-spacing:.06em;color:var(--gray)}
+#engineer-files-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+
+/* ─── CUSTOM SCROLLBARS ─── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--gray)}
+
+/* ─── PRISM OVERRIDES (argus) ─── */
+code[class*="language-"],pre[class*="language-"]{color:#ede8df;background:var(--bg-code);font-family:var(--mono);font-size:13px;text-shadow:none}
+.token.comment,.token.prolog,.token.doctype,.token.cdata{color:#6b6b68}
+.token.keyword{color:#c792ea}
+.token.string{color:#c3e88d}
+.token.number{color:#c4622d}
+.token.function{color:#82aaff}
+.token.operator{color:#9a9a96}
+.token.class-name{color:#80cbc4}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:1024px){
+  .prompt-engineer-container{grid-template-columns:1fr}
+  .tool-container{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .container{padding:16px 18px}
+  header{flex-direction:column;gap:12px;align-items:flex-start}
+  .header-info{display:none}
+  .form-row{grid-template-columns:1fr}
+  .main-tabs,.tabs{gap:1px;overflow-x:auto;flex-wrap:nowrap;padding:3px}
+  .main-tab-btn,.tab-btn{font-size:12px;padding:7px 12px}
+  .chat-config-panel .row{grid-template-columns:1fr}
+  .saved-outcomes-grid{grid-template-columns:1fr}
+  .saved-outcomes-actions{flex-direction:row}
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div>
+                    <div class="logo-text">Qdrant <span>Manager</span></div>
+                    <div style="font-size:15px;color:var(--primary-light);font-weight:500;margin-top:2px;">Vector Database Management</div>
+                </div>
+            </div>
+            <div id="connection-status" class="status-badge connecting">
+                <i class="fas fa-plug"></i>
+                <span>Connecting...</span>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="collections">
+                <i class="fas fa-layer-group"></i> Collections
+            </button>
+            <button class="tab-btn" data-tab="query">
+                <i class="fas fa-search"></i> Query Data
+            </button>
+            <button class="tab-btn" data-tab="chat">
+                <i class="fas fa-comments"></i> Chat with Data
+            </button>
+            <button class="tab-btn" data-tab="workflow">
+                <i class="fas fa-project-diagram"></i> AI Workflow
+            </button>
+            <button class="tab-btn" data-tab="advisor">
+                <i class="fas fa-hat-wizard"></i> Ingestion Advisor
+            </button>
+        </div>
+
+        <!-- Collections Tab -->
+        <div id="collections-tab" class="tab-content active">
+            
+            <!-- Ingest Document Card -->
+
+        <!-- Replace the existing Ingest Document Card with this enhanced version -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-upload"></i> Enhanced Data Ingestion</h2>
+                <p>Upload files or structured JSON with advanced chunking, legal structure extraction, and quality validation.</p>
+            </div>
+            <div class="card-body">
+                <!-- Ingestion Mode Selection -->
+                <div class="form-group">
+                    <label for="ingest-mode-select">Ingestion Mode</label>
+                    <select id="ingest-mode-select">
+                        <option value="file" selected>File Upload (PDF, TXT, MD)</option>
+                        <option value="structured">Structured JSON (Transcript, Violation, Law)</option>
+                        <option value="enhanced">Enhanced File Upload (with Legal Extraction)</option>
+                    </select>
+                </div>
+
+                <!-- File Upload Mode (Original) -->
+                <div id="file-ingest-panel">
+                    <div class="form-group">
+                        <label for="ingest-collection-select">Target Collection</label>
+                        <select id="ingest-collection-select">
+                            <option value="">Select a collection...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="file-upload">Select Files</label>
+                        <input type="file" id="file-upload" accept=".pdf,.txt,.json,.md" multiple>
+                    </div>
+                    <div class="form-group">
+                        <div style="font-size:12px;color:var(--gray);margin-bottom:5px;letter-spacing:.05em;text-transform:uppercase;">Vector Options</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; background-color: var(--gray-100); padding: 12px; border-radius: 6px;">
+                            <label class="inline" title="Generate standard semantic vectors. Good for contextual meaning.">
+                                <input type="checkbox" id="ingest-option-dense" checked>
+                                <span>Generate Dense Vectors</span>
+                            </label>
+                            <label class="inline" title="Generate keyword-based vectors. Good for matching specific terms.">
+                                <input type="checkbox" id="ingest-option-sparse">
+                                <span>Generate Sparse Vectors</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="action-bar">
+                        <button class="btn btn-success" id="ingest-files-btn">
+                            <i class="fas fa-arrow-up-from-bracket"></i> Ingest Files
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Enhanced File Upload Mode (NEW) -->
+                <div id="enhanced-ingest-panel" style="display:none;">
+                    <div class="form-group">
+                        <label for="enhanced-collection-select">Target Collection</label>
+                        <select id="enhanced-collection-select">
+                            <option value="">Select a collection...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="enhanced-file-upload">Select Legal Documents</label>
+                        <input type="file" id="enhanced-file-upload" accept=".pdf,.txt,.md" multiple>
+                        <small style="color: var(--gray-600); display: block; margin-top: 4px;">
+                            Supported: PDF, TXT, MD. Metadata files (.meta.json) will be loaded automatically if present.
+                        </small>
+                    </div>
+
+                    <!-- Document Metadata Card -->
+                    <div style="background: var(--gray-100); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                        <h4 style="margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-file-alt"></i> Document Metadata
+                        </h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="enhanced-framework-type" style="font-size: 13px;">Framework Type</label>
+                                <select id="enhanced-framework-type">
+                                    <option value="regulation">Regulation</option>
+                                    <option value="law" selected>Law</option>
+                                    <option value="statute">Statute</option>
+                                    <option value="code">Code</option>
+                                    <option value="decree">Decree</option>
+                                    <option value="guideline">Guideline</option>
+                                    <option value="guidance">Guidance</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="enhanced-jurisdiction" style="font-size: 13px;">Jurisdiction</label>
+                                <input type="text" id="enhanced-jurisdiction" placeholder="e.g., Brazil, Chile" value="Brazil">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="enhanced-legal-domain" style="font-size: 13px;">Legal Domain</label>
+                                <input type="text" id="enhanced-legal-domain" placeholder="e.g., consumer_protection">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="enhanced-specificity" style="font-size: 13px;">Specificity Level</label>
+                                <select id="enhanced-specificity">
+                                    <option value="specific">Specific</option>
+                                    <option value="moderate" selected>Moderate</option>
+                                    <option value="generic">Generic</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="enhanced-language" style="font-size: 13px;">Language</label>
+                                <select id="enhanced-language">
+                                    <option value="pt-BR">Portuguese (Brazil)</option>
+                                    <option value="es-CL">Spanish (Chile)</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="enhanced-authority" style="font-size: 13px;">Issuing Authority (Optional)</label>
+                                <input type="text" id="enhanced-authority" placeholder="e.g., Brazilian Congress">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chunking Configuration Card -->
+                    <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0ea5e9;">
+                        <h4 style="margin: 0 0 12px 0; color: #0c4a6e; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-cut"></i> Chunking Configuration
+                        </h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="enhanced-chunk-size" style="font-size: 13px; color: #0c4a6e;">Chunk Size (chars)</label>
+                                <input type="number" id="enhanced-chunk-size" value="1500" min="500" max="5000" step="100">
+                                <small style="color: #0c4a6e; font-size: 11px;">Recommended: 1500-2000</small>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="enhanced-chunk-overlap" style="font-size: 13px; color: #0c4a6e;">Overlap (chars)</label>
+                                <input type="number" id="enhanced-chunk-overlap" value="200" min="0" max="500" step="50">
+                                <small style="color: #0c4a6e; font-size: 11px;">Preserves context</small>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <div style="font-size: 13px; color: #0c4a6e; margin-bottom: 5px;">Vector Types</div>
+                                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                                    <label class="inline">
+                                        <input type="checkbox" id="enhanced-dense-vectors" checked>
+                                        <span style="font-size: 12px; color: #0c4a6e;">Dense</span>
+                                    </label>
+                                    <label class="inline">
+                                        <input type="checkbox" id="enhanced-sparse-vectors">
+                                        <span style="font-size: 12px; color: #0c4a6e;">Sparse</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 12px; font-size: 12px; color: #0c4a6e; line-height: 1.6;">
+                            <strong>How it works:</strong><br>
+                            • Text is split at sentence boundaries for natural chunks<br>
+                            • Overlap ensures context continuity between chunks<br>
+                            • Legal structure (articles, sections) automatically extracted<br>
+                            • Each chunk preserves position metadata for reconstruction
+                        </div>
+                    </div>
+
+                    <!-- Quality Validation Card -->
+                    <div style="background: linear-gradient(135deg, #fef3c7, #fef08a); padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #f59e0b;">
+                        <h4 style="margin: 0 0 12px 0; color: #92400e; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-shield-check"></i> Quality Validation
+                        </h4>
+                        <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
+                            <label class="inline">
+                                <input type="checkbox" id="enhanced-validate-before" checked>
+                                <span style="color: #92400e;">Validate before ingestion</span>
+                            </label>
+                            <label class="inline">
+                                <input type="checkbox" id="enhanced-skip-existing" checked>
+                                <span style="color: #92400e;">Skip existing documents</span>
+                            </label>
+                            <label class="inline">
+                                <input type="checkbox" id="enhanced-extract-legal" checked>
+                                <span style="color: #92400e;">Extract legal structure</span>
+                            </label>
+                            <label class="inline">
+                                <input type="checkbox" id="enhanced-calculate-specificity" checked>
+                                <span style="color: #92400e;">Calculate specificity scores</span>
+                            </label>
+                        </div>
+                        <div style="font-size: 12px; color: #92400e; line-height: 1.6;">
+                            <strong>Validation checks:</strong><br>
+                            • Minimum chunk length (50 chars)<br>
+                            • Maximum chunk length (5000 chars)<br>
+                            • Required metadata presence<br>
+                            • Specificity score calculation (0-1)
+                        </div>
+                    </div>
+
+                    <div class="action-bar">
+                        <button class="btn btn-success" id="enhanced-ingest-btn" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            <i class="fas fa-rocket"></i> Start Enhanced Ingestion
+                        </button>
+                        <button class="btn btn-secondary" id="create-sample-metadata-btn">
+                            <i class="fas fa-file-code"></i> Generate Sample .meta.json
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Structured JSON Mode (Existing) -->
+                <div id="structured-ingest-panel" style="display:none;">
+                    <div class="form-group">
+                        <label for="structured-collection-select">Target Collection</label>
+                        <select id="structured-collection-select">
+                            <option value="">Select a collection...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="structured-data-type">Data Type</label>
+                        <select id="structured-data-type">
+                            <option value="transcript">Transcript</option>
+                            <option value="violation">Violation</option>
+                            <option value="law">Law</option>
+                            <option value="generic">Generic JSON</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Replace textarea with file upload -->
+                    <div class="form-group">
+                        <label for="structured-file-upload">Select JSON Files</label>
+                        <input type="file" id="structured-file-upload" accept=".json,.jsonl" multiple>
+                        <small style="color: var(--gray-600); display: block; margin-top: 4px;">
+                            Multiple JSON files can be selected. Each file can contain a single object or an array of objects.
+                        </small>
+                    </div>
+                    
+                    <!-- Advanced Options (collapsible) -->
+                    <div class="advanced-options" style="margin-bottom: 16px;">
+                        <button type="button" class="btn btn-link" onclick="toggleAdvancedOptions()" 
+                                style="padding: 0; border: none; background: none; color: var(--primary); font-size: 14px;">
+                            <i class="fas fa-cog"></i> Advanced Options
+                        </button>
+                        
+                        <div id="advanced-structured-options" style="display: none; margin-top: 12px; padding: 12px; 
+                                background: var(--gray-100); border-radius: 6px; border-left: 3px solid var(--primary);">
+                            <div class="form-group" style="margin-bottom: 8px;">
+                                <label for="skip-existing-checkbox" style="font-size: 13px;">
+                                    <input type="checkbox" id="skip-existing-checkbox" checked>
+                                    Skip items with existing IDs
+                                </label>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 8px;">
+                                <label for="custom-id-field" style="font-size: 13px;">Custom ID Field (optional)</label>
+                                <input type="text" id="custom-id-field" placeholder="e.g., 'item_id' or 'document_id'">
+                            </div>
+                            <div class="form-group">
+                                <label for="custom-text-field" style="font-size: 13px;">Custom Text Field for Embedding (optional)</label>
+                                <input type="text" id="custom-text-field" placeholder="e.g., 'content' or 'description'">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- File Preview Area -->
+                    <div id="structured-files-preview" style="display: none; margin-bottom: 16px; max-height: 200px; 
+                        overflow-y: auto; border: 1px solid var(--gray-300); border-radius: 4px; padding: 8px;">
+                        <h5 style="margin: 0 0 8px 0; font-size: 14px;">Selected Files:</h5>
+                        <div id="structured-files-list"></div>
+                    </div>
+                    
+                    <div class="action-bar">
+                        <button class="btn btn-success" id="ingest-structured-btn">
+                            <i class="fas fa-database"></i> Ingest JSON Files
+                        </button>
+                        <button class="btn btn-secondary" id="validate-structured-btn" style="margin-right: 8px;">
+                            <i class="fas fa-check-circle"></i> Validate Files
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ingestion Status Area (Shared) -->
+                <div id="ingestion-status-area" class="response-area" style="display:none;"></div>
+            </div>
+        </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-layer-group"></i> Vector Collections</h2>
+                </div>
+                <div class="card-body">
+                    <div class="action-bar">
+                        <button class="btn btn-primary" id="create-collection-btn">
+                            <i class="fas fa-plus"></i> Create Collection
+                        </button>
+                        <button class="btn btn-secondary" id="refresh-collections-btn">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+
+                    <div class="collection-list" id="collections-list">
+                        <!-- Collections will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Collection Modal (initially hidden) -->
+            <div class="card" id="create-collection-form" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="fas fa-plus-circle"></i> Create New Collection</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="collection-name">Collection Name</label>
+                        <input type="text" id="collection-name" placeholder="e.g., project-documents">
+                    </div>
+                    <div class="form-group">
+                        <label for="vector-size">Vector Size</label>
+                        <input type="number" id="vector-size" value="384" min="1" placeholder="Must match your embedding model (e.g., 384)">
+                    </div>
+                    <div class="form-group">
+                        <label for="distance-metric">Distance Metric</label>
+                        <select id="distance-metric">
+                            <option value="Cosine">Cosine</option>
+                            <option value="Euclid">Euclidean</option>
+                            <option value="Dot">Dot Product</option>
+                        </select>
+                    </div>
+                    <div class="action-bar">
+                        <button class="btn btn-success" id="submit-collection-btn">
+                            <i class="fas fa-check"></i> Create
+                        </button>
+                        <button class="btn btn-secondary" id="cancel-collection-btn">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Query Tab -->
+        <div id="query-tab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-search-location"></i> Search with Text</h2>
+                    <p>Find relevant documents in a collection using a text query.</p>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="query-collection-select">Collection to Search</label>
+                        <select id="query-collection-select">
+                            <option value="">Select a collection...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="query-text-input">Search Query</label>
+                        <input type="text" id="query-text-input" placeholder="e.g., what are the main project goals?">
+                    </div>
+                    <div class="form-group">
+                        <label for="query-limit-input">Number of Results</label>
+                        <input type="number" id="query-limit-input" value="5" min="1" max="50">
+                    </div>
+                    <div class="action-bar">
+                        <button class="btn btn-primary" id="query-search-btn">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        <button class="btn btn-secondary" id="load-query-results-btn">
+                            <i class="fas fa-folder-open"></i> Load Results
+                        </button>
+                        <input type="file" id="query-file-input" accept=".json" style="display: none;">
+                    </div>
+                    <div id="query-results-area" class="response-area" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Tab - ENHANCED -->
+        <div id="chat-tab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-comments"></i> Chat with Data (RAG)</h2>
+                    <p>Ask questions about your data. The AI will find relevant context and provide an answer.</p>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="chat-source-type">Knowledge Source</label>
+                        <select id="chat-source-type">
+                            <option value="qdrant" selected>Qdrant Collection</option>
+                            <option value="neo4j">Neo4j Graph (local via Manus)</option>
+                            <option value="hybrid">Hybrid (Qdrant + Neo4j)</option>
+                        </select>
+                    </div>
+
+                    <div id="chat-source-qdrant" class="form-group">
+                        <label for="chat-collection-select">Select a Collection to Chat With</label>
+                        <select id="chat-collection-select">
+                            <option value="">Select a collection...</option>
+                        </select>
+                    </div>
+
+                    <div id="chat-source-neo4j" class="form-group" hidden>
+                        <label for="chat-neo4j-mode">Neo4j Retrieval Mode</label>
+                        <select id="chat-neo4j-mode">
+                            <option value="cypher" selected>Raw Cypher</option>
+                            <option value="schema">Schema + stats only</option>
+                        </select>
+                        <label for="chat-neo4j-cypher" style="margin-top:8px;">Cypher Query</label>
+                        <textarea id="chat-neo4j-cypher" rows="3"
+                            placeholder="MATCH (n) RETURN n LIMIT 25"
+                            style="width:100%;font-family:monospace;"></textarea>
+                        <small style="color:#888;">Read-only by default. Writes (CREATE/MERGE/DELETE/SET) are blocked server-side.</small>
+                    </div>
+                    
+                    <!-- NEW: Chat Configuration Panel -->
+                    <div class="chat-config-panel">
+                        <h4><i class="fas fa-cog"></i> Chat Configuration</h4>
+                        <div class="row">
+                            <div class="field">
+                                <label for="chat-assistant-select">AI Assistant (Optional)</label>
+                                <select id="chat-assistant-select">
+                                    <option value="">Default (Use Model Select)</option>
+                                    <!-- Assistants will be loaded here by JS -->
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="chat-model-select">Model (if no assistant selected)</label>
+                                <select id="chat-model-select">
+                                    <option value="">Select a model...</option>
+                                    <!-- Models will be loaded here by JS -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="field">
+                                <label for="chat-endpoint-input">API Endpoint</label>
+                                <input type="text" id="chat-endpoint-input" value="http://localhost:8066/v1/assistants/deepseek-stream-proxy" placeholder="http://localhost:8066">
+                            </div>
+                            <div class="field">
+                                <label for="chat-limit-input">Context Search Limit</label>
+                                <input type="number" id="chat-limit-input" value="3" min="1" max="10">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <label class="inline" title="Include the text from vector search results in the prompt.">
+                                <input type="checkbox" id="include-search-results" checked>
+                                <span>Include search results in context</span>
+                            </label>
+                            <label class="inline" title="Include metadata about the collection in the prompt.">
+                                <input type="checkbox" id="include-collection-info" checked>
+                                <span>Include collection info</span>
+                            </label>
+                            <label class="inline" title="Stream responses from the server (if supported).">
+                                <input type="checkbox" id="stream-responses">
+                                <span>Stream responses</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- NEW: Quick Prompts -->
+                    <div class="quick-prompts">
+                        <button class="quick-prompt-btn" data-prompt="Summarize the main topics in this collection">Summarize Topics</button>
+                        <button class="quick-prompt-btn" data-prompt="What are the key insights from this data?">Key Insights</button>
+                        <button class="quick-prompt-btn" data-prompt="Find connections between different documents">Find Connections</button>
+                        <button class="quick-prompt-btn" data-prompt="Generate a detailed analysis of this data">Detailed Analysis</button>
+                        <!-- NEW: Add more quick prompts as needed - can you add a button and coding to look for connections, but the user can select the other collections to look for ? so would take this collection beng the main context, and the user could choose others to the assistant look for connections between them.-->
+                        <button class="quick-prompt-btn" id="find-cross-connections-btn" onclick="openCrossConnectionsModal()">Find Cross-Collection Connections</button>
+                    </div>
+                    
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="chat-message assistant">
+                                <div class="chat-bubble">
+                                    Hello! I'm your AI assistant for exploring the data in your Qdrant collections. 
+                                    Select a collection and ask me anything about its content.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" id="chat-input" placeholder="Type your message here...">
+                            <button class="btn btn-primary" id="chat-send-btn" title="Send Message">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                            <button class="btn btn-secondary" id="save-chat-btn" title="Save Chat History">
+                                <i class="fas fa-save"></i>
+                            </button>
+                            <button class="btn btn-secondary" id="load-chat-btn" title="Load Chat History">
+                                <i class="fas fa-folder-open"></i>
+                            </button>
+                                <button class="btn btn-danger" id="clear-chat-btn" title="Clear Chat History">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                            <input type="file" id="chat-file-input" accept=".json" style="display: none;">
+                        </div>
+                    </div>
+                    
+                    <!-- NEW: Payload Viewer -->
+                    <div class="chat-payload-viewer">
+                        <h4><i class="fas fa-code"></i> Request Payload</h4>
+                        <pre id="chat-payload-preview">{"message": "Select a collection and ask a question to see the payload"}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ...existing code... -->
+        
+        <!-- AI Workflow Tab -->
+        <div id="workflow-tab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-cogs"></i> Step Builder</h2>
+                    <p>Create and save individual analytical steps that can be reused across workflows.</p>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="step-name">Step Name</label>
+                        <input type="text" id="step-name" placeholder="e.g., Extract Legal Terms or Summarize Findings">
+                        <input type="hidden" id="editing-step-id">
+                    </div>
+                    <div class="form-group">
+                        <label for="step-type-select">Step Type</label>
+                        <select id="step-type-select">
+                            <option value="search">Vector Search</option>
+                            <option value="ai_call">AI Call</option>
+                        </select>
+                    </div>
+
+                    <!-- Fields for Vector Search -->
+                    <div id="search-step-fields">
+                        <div class="form-group">
+                            <label for="step-collection-select">Data Source (Collection)</label>
+                            <select id="step-collection-select">
+                                <option value="">Select a collection...</option>
+                                <!-- Collections will be populated by JS -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="step-description">Step Description / Goal</label>
+                            <textarea id="step-description" rows="3" placeholder="Describe what this step should accomplish... This will be used as the search query."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- AI Call Fields -->
+                    <div id="step-type-ai-call" style="display: none;">
+                        <div class="form-group">
+                            <label for="step-ai-assistant-select">AI Assistant (Optional)</label>
+                            <select id="step-ai-assistant-select">
+                                <option value="">Manual (Use Model Select)</option>
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="step-ai-model-select">Model (if no assistant)</label>
+                            <select id="step-ai-model-select">
+                                <option value="">Select a model...</option>
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="step-ai-prompt">Prompt / Instructions</label>
+                            <textarea id="step-ai-prompt" rows="4" placeholder="e.g., Analyze the following text: {{previous_step_result}}"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="step-parameters">Advanced Parameters (JSON)</label>
+                            <textarea id="step-parameters" rows="3" placeholder='e.g., { "limit": 10, "temperature": 0.5 }'></textarea>
+                        </div>
+                        
+                        <!-- NEW: Checkbox for passing result -->
+                        <div class="form-group">
+                            <label class="inline-label">
+                                <input type="checkbox" id="pass-result-checkbox" checked>
+                                Pass result to next step
+                            </label>
+                        </div>
+                    </div> <!-- This div for AI Call fields was incorrectly wrapping the action-bar -->
+
+                    <div class="action-bar">
+                        <button class="btn btn-success" id="save-step-btn">
+                            <i class="fas fa-save"></i> Save Step
+                        </button>
+                        <button class="btn btn-secondary" id="cancel-edit-step-btn" style="display: none;">
+                            <i class="fas fa-times"></i> Cancel Edit
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-list-ol"></i> Workflow Builder</h2>
+                    <p>Select and arrange saved steps to build your workflow.</p>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="saved-workflows-select">Load Saved Workflow</label>
+                        <div style="display: flex; gap: 10px;">
+                            <select id="saved-workflows-select" style="flex-grow: 1;">
+                                <option value="">Select a saved workflow...</option>
+                            </select>
+                            <button id="load-workflow-btn" class="btn btn-secondary"><i class="fas fa-folder-open"></i> Load</button>
+                        </div>
+                    </div>
+                    <hr style="margin: 20px 0; border-color: var(--gray-200);">
+                    <div class="form-group">
+                        <div style="font-size:12px;color:var(--gray);margin-bottom:5px;letter-spacing:.05em;text-transform:uppercase;">1. Select Steps</div>
+                        <div id="saved-steps-container" class="multi-select-container">
+                            <div class="multi-select-placeholder">Click to select saved steps...</div>
+                            <div class="multi-select-options" id="saved-steps-list">
+                                <!-- Saved steps will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 20px;">
+                        <div style="font-size:12px;color:var(--gray);margin-bottom:5px;letter-spacing:.05em;text-transform:uppercase;">2. Arrange and Execute</div>
+                        <div id="workflow-steps-order">
+                            <p class="placeholder-text">No steps selected. Choose steps from the list above.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="action-bar">
+                        <button class="btn btn-primary" id="workflow-execute-btn">
+                            <i class="fas fa-play"></i> Execute Workflow
+                        </button>
+                        <button class="btn btn-success" id="save-workflow-btn" title="Save the current sequence of steps as a new workflow">
+                            <i class="fas fa-save"></i> Save Workflow
+                        </button>
+                        <button class="btn btn-secondary" id="clear-workflow-btn">
+                            <i class="fas fa-times"></i> Clear Workflow
+                        </button>
+                         <button class="btn btn-secondary" id="refresh-steps-btn">
+                            <i class="fas fa-sync-alt"></i> Refresh Steps
+                        </button>
+                    </div>
+                    <div id="workflow-results-area" class="response-area" style="display: none;">
+                        <!-- Workflow plan and results will be shown here -->
+                    </div>
+                </div>
+                <div id="workflow-step-results">
+                    <!-- Individual step results will be shown here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ingestion Advisor Tab -->
+    <div id="advisor-tab" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-hat-wizard"></i> Ingestion Advisor</h2>
+                <p>Describe what you want to ingest and (optionally) attach sample files. An AI agent that knows this project's Qdrant infrastructure will analyze the data and produce a step-by-step ingestion plan with concrete API calls.</p>
+            </div>
+            <div class="card-body">
+                <div class="chat-config-panel">
+                    <h4><i class="fas fa-cog"></i> Advisor Configuration</h4>
+                    <div class="row">
+                        <div class="field">
+                            <label for="advisor-assistant-select">AI Assistant (optional)</label>
+                            <select id="advisor-assistant-select">
+                                <option value="">Default (DeepSeek stream proxy)</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="advisor-model-select">Model (if no assistant selected)</label>
+                            <select id="advisor-model-select">
+                                <option value="deepseek-chat">deepseek-chat</option>
+                                <option value="deepseek-reasoner">deepseek-reasoner</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="field">
+                            <label for="advisor-target-collection">Target Collection (optional)</label>
+                            <select id="advisor-target-collection">
+                                <option value="">— Let the agent recommend / create new —</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="inline" style="margin-top:22px">
+                                <input type="checkbox" id="advisor-stream" checked>
+                                <span>Stream response</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="advisor-input-grid">
+                    <div class="advisor-intent">
+                        <label for="advisor-intent-input"><i class="fas fa-bullseye"></i> What do you want to ingest? What will you query later?</label>
+                        <textarea id="advisor-intent-input" rows="4" placeholder="e.g. I have a folder of legal rulings (PDF) and a CSV of case metadata. I want to be able to search by case number, by judge, and find similar rulings to a given one."></textarea>
+                    </div>
+
+                    <div class="advisor-files">
+                        <div class="advisor-drop" id="advisor-drop">
+                            <input type="file" id="advisor-file-input" multiple style="display:none">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <div><strong>Drop files here</strong> or <a href="#" id="advisor-browse">browse</a></div>
+                            <small>Up to 10 files. Text/JSON/CSV/MD are previewed; binaries (PDF/DOCX) are described by metadata only.</small>
+                        </div>
+                        <ul id="advisor-file-list" class="advisor-file-list"></ul>
+                    </div>
+                </div>
+
+                <div class="quick-prompts">
+                    <button class="quick-prompt-btn" data-advisor-prompt="Recommend the best collection layout (vector size, distance, payload schema, indexes) for what I have.">Recommend collection layout</button>
+                    <button class="quick-prompt-btn" data-advisor-prompt="Produce an end-to-end ingestion plan with concrete curl commands against this project's endpoints.">End-to-end plan with curl</button>
+                    <button class="quick-prompt-btn" data-advisor-prompt="Suggest chunking strategy and metadata fields for these documents.">Chunking & metadata</button>
+                    <button class="quick-prompt-btn" data-advisor-prompt="Compare /v1/qdrant/collections/{name}/ingest vs the legal/transcript ingestion routes for my case and pick one.">Pick the right endpoint</button>
+                </div>
+
+                <div class="action-bar" style="margin-bottom:10px">
+                    <button class="btn btn-primary" id="advisor-send-btn"><i class="fas fa-paper-plane"></i> Ask the Advisor</button>
+                    <button class="btn btn-secondary" id="advisor-clear-btn"><i class="fas fa-trash-alt"></i> Clear Conversation</button>
+                    <button class="btn btn-secondary" id="advisor-copy-plan-btn" title="Copy last assistant reply as Markdown"><i class="fas fa-copy"></i> Copy Plan</button>
+                </div>
+
+                <div class="chat-container">
+                    <div class="chat-messages" id="advisor-messages">
+                        <div class="chat-message assistant">
+                            <div class="chat-bubble">
+                                Hi — I'm the <strong>Ingestion Advisor</strong> for this Qdrant project. I know the available collections, the embedding models (384/768 dims), the chunking and legal/transcript ingestion routes, and the Qdrant API surface. Tell me what you want to ingest and I'll produce a concrete plan.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-payload-viewer">
+                    <h4><i class="fas fa-code"></i> Last Request Payload</h4>
+                    <pre id="advisor-payload-preview">{"info": "Ask the advisor to populate this preview"}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Collection Details Modal -->
+    <div id="collection-details-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-collection-name">Collection Details</h2>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <pre id="modal-collection-details"></pre>
+            </div>
+        </div>
+    </div>
+    
+    <!-- NEW: Cross-Collection Connections Modal -->
+    <div id="cross-connections-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Find Connections Between Collections</h2>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Select additional collections to find connections with the main collection (<span id="main-collection-name"></span>):</p>
+                <div id="cross-collections-options" class="multi-select-container">
+                    <div class="multi-select-placeholder">Click to select collections...</div>
+                    <div class="multi-select-options">
+                        <!-- Checkboxes will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 16px 24px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--gray-200);">
+                <button id="cancel-cross-connections-btn" class="btn btn-secondary">Cancel</button>
+                <button id="confirm-cross-connections-btn" class="btn btn-primary">Find Connections</button>
+            </div>
+        </div>
+    </div>
+
+<!-- Replace the Create Collection Modal section (around line 5085-5245) -->
+
+<!-- Enhanced Create Collection Modal -->
+<div id="create-collection-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-plus-circle"></i> Create Legal/Compliance Collection</h2>
+            <span class="modal-close" onclick="closeCreateCollectionModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <!-- STEP 1: Collection Name -->
+            <div style="background: linear-gradient(135deg, #e0f2fe, #bae6fd); padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #0284c7;">
+                <h3 style="margin: 0 0 16px 0; color: #0c4a6e; display: flex; align-items: center; gap: 8px;">
+                    <span style="background: #0284c7; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">1</span>
+                    <span>Collection Information</span>
+                </h3>
+                
+                <div class="form-group">
+                    <label for="modal-collection-name-input">
+                        Collection Name
+                        <i class="fas fa-info-circle" style="color: #0284c7; cursor: help;" 
+                           title="Use lowercase letters, numbers, and underscores. Example: legal_documents_2024"></i>
+                    </label>
+                    <input type="text" id="modal-collection-name-input" placeholder="e.g., br_legal_frameworks_2024">
+                    <small style="color: #0c4a6e; display: block; margin-top: 4px;">
+                        ✓ Use descriptive names (legal_docs, transcripts, violations)<br>
+                        ✓ Lowercase with underscores preferred<br>
+                        ✗ Avoid spaces or special characters
+                    </small>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="modal-collection-purpose">
+                        Use Case Template
+                        <i class="fas fa-info-circle" style="color: #0284c7; cursor: help;" 
+                           title="Pre-configured settings for common scenarios"></i>
+                    </label>
+                    <select id="modal-collection-purpose" style="font-size: 16px; padding: 12px;">
+                        <option value="">-- Select Primary Purpose --</option>
+                        <optgroup label="Legal Documents">
+                            <option value="laws_regulations">Laws & Regulations</option>
+                            <option value="legal_frameworks">Legal Frameworks & Guidelines</option>
+                            <option value="case_law">Case Law & Jurisprudence</option>
+                            <option value="contracts">Contracts & Agreements</option>
+                        </optgroup>
+                        <optgroup label="Compliance & Violations">
+                            <option value="violation_reports">Violation Reports & Findings</option>
+                            <option value="compliance_audits">Compliance Audits & Assessments</option>
+                            <option value="incident_records">Incident Records & Complaints</option>
+                        </optgroup>
+                        <optgroup label="Transcripts & Communications">
+                            <option value="audio_transcripts">Audio/Call Transcripts (Diarized)</option>
+                            <option value="meeting_transcripts">Meeting Transcripts</option>
+                            <option value="customer_communications">Customer Communications</option>
+                        </optgroup>
+                        <optgroup label="General">
+                            <option value="mixed_legal">Mixed Legal Content</option>
+                            <option value="custom">Custom Configuration</option>
+                        </optgroup>
+                    </select>
+                    <small style="color: #0c4a6e; display: block; margin-top: 4px;">
+                        Select a template to auto-fill optimal settings
+                    </small>
+                </div>
+
+                <div id="modal-purpose-description" style="display: none; background: white; padding: 12px; border-radius: 6px; font-size: 14px; color: #0c4a6e; margin-top: 12px;">
+                    <!-- Will be populated -->
+                </div>
+            </div>
+
+            <!-- STEP 2: Vector Configuration (keep existing structure but update IDs) -->
+            <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0ea5e9;">
+                <h4 style="margin: 0 0 12px 0; color: #0c4a6e;">
+                    <i class="fas fa-vector-square"></i>
+                    <span>Vector Configuration</span>
+                </h4>
+
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label for="modal-vector-size">Vector Dimensions</label>
+                    <input type="number" id="modal-vector-size" value="384" min="1" max="4096">
+                    <div id="modal-vector-model-info" style="font-size: 12px; color: #0c4a6e; margin-top: 6px;">
+                        Model: all-MiniLM-L6-v2 (384d)
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="modal-distance-metric">Distance Metric</label>
+                    <select id="modal-distance-metric">
+                        <option value="Cosine" selected>Cosine (Recommended)</option>
+                        <option value="Dot">Dot Product</option>
+                        <option value="Euclid">Euclidean</option>
+                        <option value="Manhattan">Manhattan</option>
+                    </select>
+                    <div id="modal-metric-description" style="font-size: 12px; color: #0c4a6e; margin-top: 8px;">
+                        Cosine: Best for text similarity
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keep other sections with modal- prefixed IDs -->
+            
+            <!-- Validation Summary -->
+            <div id="modal-validation-summary" style="display: none; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
+                <!-- Validation results -->
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-bar" style="justify-content: space-between;">
+                <button class="btn btn-secondary" onclick="closeCreateCollectionModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-primary" id="modal-validate-config-btn">
+                        <i class="fas fa-shield-check"></i> Validate
+                    </button>
+                    <button class="btn btn-success" id="modal-submit-collection-btn" disabled>
+                        <i class="fas fa-check-circle"></i> Create Collection
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../static/js/qdrant/qdrant.js"></script>
+<script src="../static/js/qdrant/advisor.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+</body>
+</html>

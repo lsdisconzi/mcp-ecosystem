@@ -1,0 +1,24 @@
+[Unit]
+Description=Discovery case-server (Node.js document processing API)
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/vps_ecosystem/vps_projects_/awareness-ai/discovery/case-server
+ExecStart=/usr/bin/node auto_server_builder.js
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=discovery
+Environment="ROOT_DIR=/root/vps_ecosystem/vps_projects_/awareness-ai/discovery/documents_scanned/sessions/_server_boot/workspace"
+Environment="DISCOVERY_STRICT_ISOLATION=true"
+Environment="DISCOVERY_ALLOW_GLOBAL_ROOT=false"
+Environment="DISCOVERY_WORKSPACE_BASE_DIR=/root/vps_ecosystem/vps_projects_/awareness-ai/discovery/documents_scanned/sessions"
+Environment="PUBLIC_BASE_URL=http://localhost:3010"
+Environment="PORT=3010"
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,2 @@
+so when the url is accessed <<<<<       >>>>>     the captcha is only a check box, the source code is <div class="recaptcha-checkbox-border" role="presentation"></div>
+once its ticked and after around 1 sec, then it should click in the enviar button, <input type="submit" name="pbEnviar" value="Enviar" onclick="" onmouseover="B_mOver(this);" onmouseout="B_mOut(this);" class="spwBotaoDefault " id="pbEnviar">

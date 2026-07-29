@@ -1,0 +1,7 @@
+- [Discovery pipeline refinement initiative](pipeline-refinement-initiative.md) — Completed 2026-05-02: Qdrant/Neo4j KB integration. Next phase: corpus ingestion planning with 4-phase approach (laws → transcripts → cross-ref → Neo4j graph)
+- [Corpus data inventory](corpus-data-inventory.md) — 48 standardized transcripts, 658 law articles (BR/CL/INT), 25 metadata files at /Users/leandrodisconzi/work/corpus/
+- [Backend services reference](backend-services-reference.md) — Qdrant Memory Service (:8079) and Garage/Assistants API (:8066), both live at 72.60.143.139, no auth
+- [Key project directory paths](key-project-paths.md) — Important filesystem paths for Discovery pipeline, OliviaLegal agents, Bridge exports, corpus, and service toolkits
+- [LA8159 legal grounding library](la8159-library-reference.md) — 41 agents, 59 cached sources, 71 violation IDs, 7 personnel dossiers, per-agent policies
+- [Nullish-check boolean defaults instead of `||`](feedback-nullish-boolean-defaults.md) — Use `!== undefined` ternary for boolean flags where `false` is meaningful
+- [Graceful degradation for optional infrastructure](feedback-graceful-degradation.md) — When adding optional backend services, degrade gracefully, never break existing flows

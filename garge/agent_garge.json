@@ -1,0 +1,47 @@
+{
+  "name": "garge-dev",
+  "description": "Development and infrastructure agent for Garage — the FastAPI AI Tools & Services Hub wrapping Ollama LLMs, Qdrant vector DB, ingestion pipelines, and OpenAI-compatible REST API with 5 MCP servers",
+  "project_path": "/awareness/services/garge",
+  "language": "python",
+  "tools": ["Read", "Glob", "Grep", "Bash", "Write", "Edit"],
+  "model": "sonnet",
+  "interfaces": [
+    {"type": "fastapi_rest", "port": 8066, "routers": 13, "lines": 18500},
+    {"type": "mcp_server", "servers": 5, "transport": "stdio"}
+  ],
+  "external_services": [
+    {"name": "Ollama", "purpose": "Local LLM inference", "required": true},
+    {"name": "Qdrant", "purpose": "Vector database", "required": true},
+    {"name": "DeepSeek API", "purpose": "Streaming chat proxy", "required": true},
+    {"name": "OpenAI/Anthropic/Groq/xAI", "purpose": "External chat providers", "required": false},
+    {"name": "Neo4j", "purpose": "Graph database", "required": false},
+    {"name": "SentenceTransformers", "purpose": "Embedding generation", "required": true}
+  ],
+  "known_issues": {
+    "critical": [
+      "api/knowledge_router.py has 3 bugs preventing it from working — broken IngestionPipeline import, networkx.cut_size used as integer chunk_size, undefined metadata variable",
+      "Dual LegalDocumentChunker/LegalDocumentExtractor duplicated in core/ingestion/ and services/",
+      "Three overlapping ingestion systems with no canonical path",
+      "0% formal test coverage for ~18,500 line codebase",
+      "No authentication on any endpoint"
+    ],
+    "important": [
+      "Google Drive OAuth — Settings fields exist, zero implementation",
+      ".logs/ not in .gitignore",
+      "requirements.txt is 132 lines — overly broad, needs pyproject.toml"
+    ]
+  },
+  "architecture_layers": ["api", "routes", "core", "core/ingestion", "services", "config", "mcp/servers", "data/tools"],
+  "key_files": [
+    {"path": "main.py", "lines": 996, "role": "FastAPI entry point, 13 routers registered"},
+    {"path": "routes/qdrant_router.py", "lines": 1621, "role": "Largest file — Qdrant collection management"},
+    {"path": "api/knowledge_router.py", "lines": 434, "role": "Knowledge base queries — BROKEN"},
+    {"path": "api/openclaude_router.py", "lines": 1075, "role": "OpenClaude agent integration"},
+    {"path": "api/schemas.py", "lines": 802, "role": "All Pydantic models"}
+  ],
+  "virtual_envs": [
+    {"name": ".venv", "purpose": "API server", "key_deps": "FastAPI 0.104.1, starlette 0.27.x, anyio 3.x"},
+    {"name": ".venv-mcp", "purpose": "MCP servers", "key_deps": "mcp SDK >=1.0.0, httpx >=0.27.1"}
+  ],
+  "def_file": "agent_garge.md"
+}

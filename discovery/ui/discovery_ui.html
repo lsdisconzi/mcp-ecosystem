@@ -1,0 +1,3486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discovery — Awareness-AI</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%23c4622d'/><text y='.85em' font-size='65' text-anchor='middle' x='50'>🌉</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+/* ── AWARENESS-AI · DATA BRIDGE SHELL ── */
+:root {
+  --bg:         #191917;
+  --bg-card:    #1f1f1d;
+  --bg-code:    #161614;
+  --bg-input:   #171715;
+  --border:     #2a2a28;
+  --border-hi:  #363634;
+  --amber:      #c4622d;
+  --amber-lo:   rgba(196,98,45,0.10);
+  --white:      #ede8df;
+  --gray:       #6b6b68;
+  --gray-hi:    #9a9a96;
+  --green:      #4a9e70;
+  --green-lo:   rgba(74,158,112,0.10);
+  --red:        #9e4a4a;
+  --red-lo:     rgba(158,74,74,0.10);
+  --blue:       #5b8fa8;
+  --blue-lo:    rgba(91,143,168,0.10);
+  --yellow:     #b8962e;
+  --yellow-lo:  rgba(184,150,46,0.10);
+  --serif:      'Lora', Georgia, serif;
+  --sans:       'Inter', sans-serif;
+  --mono:       'JetBrains Mono', monospace;
+  --r:          8px;
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--white);line-height:1.7;font-size:15px;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+/* ─── NAV ─── */
+nav{position:fixed;top:0;left:0;right:0;height:56px;background:rgba(25,25,23,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;z-index:100}
+.nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--white)}
+.nav-logo-icon{width:34px;height:34px;background:var(--amber-lo);border:1px solid rgba(196,98,45,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--amber);font-size:14px}
+.nav-logo-text{font-family:var(--serif);font-size:17px;font-weight:600;color:var(--white)}
+.nav-logo-text span{color:var(--amber)}
+.nav-logo-sub{display:block;font-family:var(--sans);font-size:10px;color:var(--gray);font-weight:400;letter-spacing:.08em;text-transform:uppercase;margin-top:-2px}
+.nav-right{display:flex;align-items:center;gap:16px}
+.nav-badge{font-family:var(--mono);font-size:10px;color:var(--gray-hi);border:1px solid var(--border);padding:3px 10px;border-radius:20px;letter-spacing:.06em}
+.nav-status{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-family:var(--mono);color:var(--gray)}
+.nav-status .dot{width:7px;height:7px;border-radius:50%;background:var(--gray)}
+.nav-status .dot.live{background:var(--green);box-shadow:0 0 6px rgba(74,158,112,.5)}
+
+/* ─── CONTAINER ─── */
+.container{max-width:1200px;margin:0 auto;padding:76px 32px 40px}
+
+/* ─── START-HERE PANEL ─── */
+.start-here-panel{background:var(--bg-card);border:1px solid var(--amber);border-radius:var(--r);margin-bottom:24px;overflow:hidden;box-shadow:0 0 20px rgba(196,98,45,.08)}
+.start-here-header{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;cursor:pointer;user-select:none;transition:background .15s}
+.start-here-header:hover{background:rgba(255,255,255,.02)}
+.start-here-header h2{margin:0;font-family:var(--serif);font-size:16px;font-weight:500;color:var(--white);display:flex;align-items:center;gap:10px}
+.start-here-header h2 i{color:var(--amber);font-size:14px}
+.start-here-header .toggle-icon{color:var(--gray);transition:transform .2s;margin-left:auto}
+.start-here-header.collapsed .toggle-icon{transform:rotate(-90deg)}
+.start-here-body{padding:20px 22px}
+.start-here-body.closed{display:none}
+.start-here-welcome{text-align:center;padding:8px 20px 24px}
+.start-here-welcome .welcome-main{font-family:var(--serif);font-size:20px;color:var(--white);margin:0 0 8px}
+.start-here-welcome .welcome-sub{font-size:13px;color:var(--gray-hi);line-height:1.7;max-width:620px;margin:0 auto}
+.start-here-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:700px){.start-here-grid{grid-template-columns:1fr}}
+.badge{display:inline-block;padding:2px 9px;border-radius:4px;font-size:11px;font-family:var(--mono)}
+
+/* ─── FOLDER INPUT ZONE ─── */
+.folder-zone{border:2px dashed var(--border-hi);border-radius:12px;padding:32px 24px;text-align:center;transition:all .2s}
+.folder-zone:hover{border-color:var(--amber);background:var(--amber-lo)}
+.folder-zone-icon{font-size:36px;color:var(--amber);margin-bottom:12px}
+.folder-zone-title{font-size:14px;font-weight:500;color:var(--white);margin-bottom:6px}
+.folder-zone-hint{font-size:12px;color:var(--gray);margin-bottom:16px}
+.folder-input-row{display:flex;gap:8px;max-width:520px;margin:0 auto}
+.folder-input-row input[type="text"]{flex:1;padding:10px 14px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--mono);font-size:13px;transition:border-color .15s}
+.folder-input-row input[type="text"]:focus{outline:none;border-color:rgba(237,232,223,.3)}
+.folder-input-row input[type="text"]::placeholder{color:var(--gray)}
+.folder-browse-hint{text-align:center;margin-top:8px;font-size:11px;color:var(--gray);max-width:520px;margin-left:auto;margin-right:auto}
+.folder-browse-hint strong{color:var(--amber)}
+
+/* ─── INFO PANEL ─── */
+.start-info{padding:18px 20px;background:var(--bg);border-radius:12px;border:1px solid var(--border)}
+.start-info-title{font-size:11px;font-weight:600;color:var(--white);margin-bottom:14px;text-transform:uppercase;letter-spacing:.08em}
+.start-info-step{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:13px;color:var(--gray-hi)}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--amber-lo);border:1px solid rgba(196,98,45,.25);color:var(--amber);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.data-promise{margin-top:18px;padding:14px 16px;background:var(--green-lo);border:1px solid rgba(74,158,112,.25);border-radius:8px;display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--green);line-height:1.5}
+.data-promise i{margin-top:2px;flex-shrink:0}
+
+/* ─── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 18px;border:1px solid var(--border-hi);border-radius:6px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;background:transparent;color:var(--gray-hi);white-space:nowrap;text-decoration:none}
+.btn:hover{border-color:rgba(237,232,223,.3);color:var(--white);background:rgba(255,255,255,.05)}
+.btn:disabled,.btn[disabled]{opacity:.4;cursor:not-allowed;transform:none!important}
+.btn-primary{background:var(--white);border-color:var(--white);color:#191917;font-weight:600}
+.btn-primary:hover{background:#f5f0e8;border-color:#f5f0e8;color:#191917}
+.btn-ai{background:var(--amber);border-color:var(--amber);color:var(--bg);font-weight:600}
+.btn-ai:hover{filter:brightness(1.1)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-success{background:var(--green-lo);border-color:rgba(74,158,112,.35);color:var(--green)}
+.btn-browse{background:var(--bg);border:1px solid var(--border-hi);color:var(--gray-hi);font-family:var(--sans);font-size:12px;padding:9px 13px;border-radius:6px;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn-browse:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-lo)}
+
+/* ─── DASHBOARD ACTION BAR ─── */
+.dashboard-actions{display:flex;gap:8px;justify-content:flex-end;margin-bottom:16px;flex-wrap:wrap}
+.dashboard-actions .btn i{font-size:11px}
+.import-mode-wrap{display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);min-height:32px}
+.import-mode-label{font-size:11px;color:var(--gray);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.import-mode-select{background:transparent;border:none;color:var(--gray-hi);font-family:var(--sans);font-size:12px;cursor:pointer;padding:4px 2px}
+.import-mode-select:focus{outline:none;color:var(--white)}
+.import-mode-select option{background:#1f1f1d;color:#efe8da}
+
+/* ─── IMPORT/EXPORT ─── */
+.diff-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:18px;overflow:hidden}
+.diff-panel-header{padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.diff-panel-header h3{font-family:var(--serif);font-size:15px;font-weight:500;color:var(--white);margin:0;display:flex;align-items:center;gap:8px}
+.diff-panel-header h3 i{color:var(--amber);font-size:13px}
+.diff-panel-body{padding:16px 22px}
+.diff-section{margin-bottom:14px}
+.diff-section:last-child{margin-bottom:0}
+.diff-section-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.diff-section-title.added{color:var(--green)}
+.diff-section-title.removed{color:var(--red)}
+.diff-section-title.changed{color:var(--yellow)}
+.diff-list{list-style:none;padding:0;margin:0;font-size:12px;font-family:var(--mono);color:var(--gray-hi)}
+.diff-list li{padding:4px 10px;border-left:2px solid var(--border);margin-bottom:2px}
+.diff-list li.added{border-left-color:var(--green);color:#6bcf96}
+.diff-list li.removed{border-left-color:var(--red);color:#cf8080}
+.diff-list li.changed{border-left-color:var(--yellow);color:#d4b84e}
+
+/* ─── STATUS ALERT ─── */
+.alert{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--r);margin-bottom:14px;font-size:13px;line-height:1.6}
+.alert.hidden{display:none}
+.alert-success{background:var(--green-lo);border:1px solid rgba(74,158,112,.3);color:#6bcf96}
+.alert-error{background:var(--red-lo);border:1px solid rgba(158,74,74,.3);color:#cf8080}
+.alert-info{background:var(--blue-lo);border:1px solid rgba(91,143,168,.3);color:#7ab5cc}
+
+/* ─── DASHBOARD (hidden until data) ─── */
+#dashboard{display:none}
+
+/* ─── STATS ROW ─── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;transition:border-color .2s}
+.stat-card:hover{border-color:var(--border-hi)}
+.stat-num{font-family:var(--serif);font-size:30px;font-weight:600;color:var(--amber);display:block;line-height:1}
+.stat-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);margin-top:6px;display:block}
+.stat-sub{font-size:11px;color:var(--gray-hi);font-family:var(--mono);margin-top:4px;display:block}
+
+/* ─── SECTION CARD ─── */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:18px;overflow:hidden;transition:border-color .2s}
+.card:hover{border-color:var(--border-hi)}
+.card-header{padding:16px 22px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-header h2{font-family:var(--serif);font-size:17px;font-weight:500;color:var(--white);margin:0;display:flex;align-items:center;gap:10px}
+.card-header h2 i{color:var(--amber);font-size:13px}
+.card-header p{font-size:12px;color:var(--gray);margin:0}
+.card-body{padding:18px 22px}
+
+/* ─── MAIN TABS ─── */
+.tabs{display:flex;gap:2px;margin-bottom:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:4px;flex-wrap:wrap}
+.tab-btn{display:flex;align-items:center;gap:7px;padding:9px 16px;background:transparent;border:none;border-radius:6px;color:var(--gray-hi);font-family:var(--sans);font-size:13px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.tab-btn:hover{color:var(--white);background:rgba(255,255,255,.05)}
+.tab-btn.active{background:var(--bg);color:var(--white);border:1px solid var(--border-hi)}
+.tab-btn i{font-size:11px;color:var(--amber)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ─── CATEGORY TAGS ─── */
+.cat-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.cat-tag{padding:5px 13px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--gray-hi);transition:all .15s;font-family:var(--sans)}
+.cat-tag:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-lo)}
+.cat-tag.active{background:var(--amber);border-color:var(--amber);color:var(--bg);font-weight:600}
+
+/* ─── CATEGORY GRID (visual overview) ─── */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:12px}
+.cat-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:16px;cursor:pointer;transition:border-color .2s}
+.cat-card:hover{border-color:var(--amber)}
+.cat-card-name{font-family:var(--serif);font-size:15px;font-weight:500;color:var(--white);margin-bottom:4px}
+.cat-card-count{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--amber)}
+.cat-card-kinds{font-size:11px;color:var(--gray);margin-top:6px}
+.cat-card-bar{height:4px;border-radius:2px;background:var(--border);margin-top:8px;overflow:hidden}
+.cat-card-bar-fill{height:100%;border-radius:2px;background:var(--amber);transition:width .4s}
+
+/* ─── SEARCH ─── */
+.search-box{position:relative;margin-bottom:14px}
+.search-box input{width:100%;padding:10px 14px 10px 36px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--sans);font-size:14px;transition:border-color .15s}
+.search-box input:focus{outline:none;border-color:rgba(237,232,223,.3)}
+.search-box input::placeholder{color:var(--gray)}
+.search-box i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gray);font-size:13px}
+
+/* ─── FILE TABLE ─── */
+.api-table{width:100%;border-collapse:collapse;font-size:13px}
+.api-table th{text-align:left;padding:9px 12px;background:var(--bg);border:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-hi);font-weight:500}
+.api-table td{padding:9px 12px;border:1px solid var(--border);color:var(--gray-hi);vertical-align:middle}
+.api-table tr:hover td{background:rgba(255,255,255,.02)}
+.file-name{font-weight:500;color:var(--white);display:block}
+.file-desc{font-size:11px;color:var(--gray);margin-top:2px;display:block}
+.file-kind{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-family:var(--mono);background:rgba(255,255,255,.05);color:var(--gray-hi);border:1px solid var(--border)}
+.file-url{font-family:var(--mono);font-size:11px;color:var(--amber);text-decoration:none;word-break:break-all}
+.file-url:hover{color:#d4825a;text-decoration:underline}
+
+/* ─── CONTENT GROUP LEGEND ─── */
+.group-legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.group-dot{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--gray-hi);font-family:var(--mono)}
+.group-dot::before{content:'';width:8px;height:8px;border-radius:50%}
+.group-dot.document::before{background:#5b8fa8}
+.group-dot.data::before{background:#b8962e}
+.group-dot.code::before{background:#4a9e70}
+.group-dot.image::before{background:#c4622d}
+.group-dot.audio::before{background:#9e4a4a}
+.group-dot.video::before{background:#7a5ba8}
+.group-dot.archive::before{background:#6b6b68}
+.group-dot.config::before{background:#9a9a96}
+
+/* ─── PIPELINE READINESS ─── */
+.pipeline-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.pipeline-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center}
+.pipeline-card-icon{font-size:24px;color:var(--amber);margin-bottom:8px}
+.pipeline-card-title{font-size:13px;font-weight:500;color:var(--white);margin-bottom:4px}
+.pipeline-card-desc{font-size:11px;color:var(--gray);line-height:1.5}
+.pipeline-card-count{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--green);margin-top:6px}
+
+/* ─── PIPELINE DATA VISUALIZATION ─── */
+.pipeline-sub-tabs{display:flex;gap:2px;margin-bottom:16px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px;flex-wrap:wrap}
+.pipeline-sub-btn{display:flex;align-items:center;gap:6px;padding:7px 13px;background:transparent;border:none;border-radius:5px;color:var(--gray-hi);font-family:var(--sans);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.pipeline-sub-btn:hover{color:var(--white);background:rgba(255,255,255,.04)}
+.pipeline-sub-btn.active{background:var(--bg-card);color:var(--white);border:1px solid var(--border-hi)}
+.pipeline-sub-btn i{font-size:10px;color:var(--amber)}
+.pipeline-sub-btn .sub-count{font-family:var(--mono);font-size:10px;color:var(--amber);margin-left:2px}
+.pipeline-sub-content{display:none}
+.pipeline-sub-content.active{display:block}
+
+/* Pipeline stats grid */
+.pipe-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.pipe-stat{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;text-align:center}
+.pipe-stat-num{font-family:var(--serif);font-size:26px;font-weight:600;color:var(--amber);display:block;line-height:1}
+.pipe-stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);margin-top:5px;display:block}
+
+/* Language / Domain bars */
+.pipe-bars{margin-bottom:16px}
+.pipe-bar-row{display:flex;align-items:center;gap:10px;padding:6px 0}
+.pipe-bar-label{font-family:var(--mono);font-size:11px;color:var(--gray-hi);width:100px;text-align:right;flex-shrink:0}
+.pipe-bar-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.pipe-bar-fill{height:100%;border-radius:4px;transition:width .4s}
+.pipe-bar-fill.lang-pt{background:var(--green)}
+.pipe-bar-fill.lang-es{background:var(--yellow)}
+.pipe-bar-fill.lang-en{background:var(--blue)}
+.pipe-bar-fill.lang-unknown{background:var(--gray)}
+.pipe-bar-fill.domain{background:var(--amber)}
+.pipe-bar-count{font-family:var(--mono);font-size:11px;color:var(--gray);width:50px;flex-shrink:0}
+
+/* Tag cloud */
+.pipe-tag-cloud{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.pipe-tag{padding:4px 10px;border-radius:14px;font-size:11px;font-family:var(--mono);background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--gray-hi);transition:all .15s;cursor:default}
+.pipe-tag:hover{border-color:var(--amber);color:var(--amber)}
+
+/* Entity table */
+.entity-type-selector{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.entity-type-btn{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--gray-hi);transition:all .15s;font-family:var(--sans);display:flex;align-items:center;gap:6px}
+.entity-type-btn:hover{border-color:var(--amber);color:var(--amber)}
+.entity-type-btn.active{background:var(--amber);border-color:var(--amber);color:var(--bg);font-weight:600}
+.entity-type-btn .etype-count{font-family:var(--mono);font-size:10px;opacity:.8}
+.entity-list{max-height:500px;overflow-y:auto}
+.entity-item{display:flex;align-items:center;gap:12px;padding:8px 12px;border-bottom:1px solid var(--border);transition:background .12s}
+.entity-item:hover{background:rgba(255,255,255,.02)}
+.entity-item:last-child{border-bottom:none}
+.entity-rank{font-family:var(--mono);font-size:10px;color:var(--gray);width:28px;text-align:right;flex-shrink:0}
+.entity-name{font-size:13px;color:var(--white);flex:1;font-weight:500}
+.entity-count{font-family:var(--mono);font-size:12px;color:var(--amber);background:var(--amber-lo);padding:2px 8px;border-radius:10px;flex-shrink:0}
+.entity-files-btn{background:transparent;border:1px solid var(--border);color:var(--gray);font-size:10px;font-family:var(--mono);padding:3px 8px;border-radius:4px;cursor:pointer;flex-shrink:0;transition:all .15s}
+.entity-files-btn:hover{border-color:var(--amber);color:var(--amber)}
+
+/* Relationship cards */
+.rel-list{display:grid;gap:8px;max-height:500px;overflow-y:auto}
+.rel-card{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;display:flex;align-items:center;gap:10px;transition:border-color .15s}
+.rel-card:hover{border-color:var(--border-hi)}
+.rel-file{font-family:var(--mono);font-size:11px;color:var(--white);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rel-arrow{color:var(--amber);font-size:12px;flex-shrink:0}
+.rel-strength{font-family:var(--mono);font-size:10px;color:var(--gray);background:var(--bg-card);border:1px solid var(--border);padding:2px 8px;border-radius:10px;flex-shrink:0}
+.rel-shared{font-size:10px;color:var(--gray);font-family:var(--mono);flex-shrink:0;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Timeline */
+.timeline-container{max-height:500px;overflow-y:auto;padding-left:20px;border-left:2px solid var(--border)}
+.timeline-entry{position:relative;padding:8px 0 8px 20px;border-bottom:1px solid rgba(42,42,40,.5)}
+.timeline-entry:last-child{border-bottom:none}
+.timeline-entry::before{content:'';position:absolute;left:-25px;top:14px;width:10px;height:10px;border-radius:50%;background:var(--amber);border:2px solid var(--bg)}
+.timeline-date{font-family:var(--mono);font-size:12px;color:var(--amber);font-weight:500}
+.timeline-file{font-family:var(--mono);font-size:11px;color:var(--gray-hi);margin-top:2px}
+.timeline-context{font-size:11px;color:var(--gray);margin-top:2px;font-style:italic}
+
+/* Pipeline search */
+.pipe-search-box{position:relative;margin-bottom:14px}
+.pipe-search-box input{width:100%;padding:10px 14px 10px 36px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--sans);font-size:14px;transition:border-color .15s}
+.pipe-search-box input:focus{outline:none;border-color:rgba(237,232,223,.3)}
+.pipe-search-box input::placeholder{color:var(--gray)}
+.pipe-search-box i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gray);font-size:13px}
+.pipe-search-results{max-height:500px;overflow-y:auto}
+.pipe-result{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+.pipe-result:hover{border-color:var(--amber)}
+.pipe-result-name{font-size:13px;font-weight:500;color:var(--white);margin-bottom:4px}
+.pipe-result-meta{font-size:11px;color:var(--gray);font-family:var(--mono);display:flex;gap:10px;flex-wrap:wrap}
+.pipe-result-matches{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.pipe-result-match{font-size:10px;padding:2px 7px;border-radius:3px;font-family:var(--mono);background:var(--amber-lo);border:1px solid rgba(196,98,45,.2);color:var(--amber)}
+
+/* Section dividers for pipeline sub-panels */
+.pipe-section{margin-bottom:20px}
+.pipe-section-title{font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--gray-hi);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.pipe-section-title i{color:var(--amber);font-size:11px}
+
+/* ─── EMPTY STATE ─── */
+.empty-state{text-align:center;padding:48px 20px;color:var(--gray)}
+.empty-state i{font-size:40px;color:var(--border-hi);margin-bottom:14px;display:block}
+.empty-state h3{font-family:var(--serif);font-size:16px;color:var(--white);margin-bottom:6px}
+.empty-state p{font-size:13px}
+
+/* ─── FOOTER ─── */
+footer{text-align:center;padding:32px;font-size:11px;color:var(--gray);border-top:1px solid var(--border);margin-top:40px}
+footer a{color:var(--amber);text-decoration:none}
+
+/* ─── SCROLLBARS ─── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--gray)}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:768px){
+  nav{padding:0 16px}
+  .container{padding:68px 16px 24px}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .cat-grid{grid-template-columns:1fr}
+  .pipeline-grid{grid-template-columns:1fr}
+}
+
+/* FILE PREVIEW MODAL */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:500;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;transition:opacity .18s}
+.modal-backdrop.open{opacity:1}
+.modal-backdrop.hidden{display:none}
+.modal-box{background:var(--bg-card);border:1px solid var(--border-hi);border-radius:12px;width:100%;max-width:780px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;transform:translateY(12px);transition:transform .18s}
+.modal-backdrop.open .modal-box{transform:translateY(0)}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px;flex-shrink:0}
+.modal-header-icon{width:36px;height:36px;border-radius:8px;background:var(--amber-lo);border:1px solid rgba(196,98,45,.25);display:flex;align-items:center;justify-content:center;color:var(--amber);font-size:14px;flex-shrink:0;margin-top:2px}
+.modal-header-meta{flex:1;min-width:0}
+.modal-header-name{font-family:var(--serif);font-size:16px;font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modal-header-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.modal-chip{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-family:var(--mono);background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--gray-hi)}
+.modal-chip.kind{color:var(--amber);border-color:rgba(196,98,45,.25);background:var(--amber-lo)}
+.modal-close{background:transparent;border:none;color:var(--gray);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:4px;flex-shrink:0;transition:color .15s;margin-top:-2px}
+.modal-close:hover{color:var(--white)}
+.modal-url{padding:10px 20px;background:var(--bg-code);border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--amber);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.modal-url span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modal-url a{color:var(--amber);text-decoration:none}
+.modal-url a:hover{text-decoration:underline}
+.modal-url-copy{background:transparent;border:1px solid var(--border);color:var(--gray);font-size:10px;font-family:var(--mono);padding:3px 9px;border-radius:4px;cursor:pointer;flex-shrink:0;transition:all .15s}
+.modal-url-copy:hover{border-color:var(--amber);color:var(--amber)}
+.modal-body{flex:1;overflow-y:auto;padding:0}
+.modal-content-area{padding:20px}
+.modal-loading{text-align:center;padding:40px;color:var(--gray);font-size:13px}
+.modal-loading i{display:block;font-size:24px;margin-bottom:10px;color:var(--border-hi)}
+.modal-binary{text-align:center;padding:40px;color:var(--gray-hi)}
+.modal-binary i{display:block;font-size:32px;margin-bottom:12px;color:var(--amber)}
+.modal-binary h3{font-family:var(--serif);font-size:15px;color:var(--white);margin-bottom:6px}
+.modal-binary p{font-size:12px;line-height:1.6}
+.modal-pre{background:var(--bg-code);border-radius:6px;padding:16px;font-family:var(--mono);font-size:12px;color:var(--gray-hi);white-space:pre-wrap;word-break:break-word;line-height:1.65;border:1px solid var(--border);margin:0}
+.modal-markdown{font-size:13.5px;line-height:1.75;color:var(--gray-hi)}
+.modal-markdown h1,.modal-markdown h2,.modal-markdown h3{font-family:var(--serif);color:var(--white);margin:18px 0 8px}
+.modal-markdown h1{font-size:20px}.modal-markdown h2{font-size:17px}.modal-markdown h3{font-size:15px}
+.modal-markdown p{margin-bottom:10px}
+.modal-markdown code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:2px 5px;border-radius:3px;color:var(--amber)}
+.modal-markdown pre{background:var(--bg-code);border:1px solid var(--border);border-radius:6px;padding:14px;overflow-x:auto;margin:12px 0}
+.modal-markdown pre code{background:none;padding:0;color:var(--gray-hi)}
+.modal-markdown ul,.modal-markdown ol{margin-left:20px;margin-bottom:10px}
+.modal-markdown li{margin-bottom:3px}
+.modal-markdown blockquote{border-left:3px solid var(--amber);padding-left:14px;color:var(--gray);margin-left:0}
+.modal-markdown strong{color:var(--white);font-weight:600}
+.modal-markdown table{border-collapse:collapse;width:100%;margin:12px 0;font-size:12px}
+.modal-markdown th{background:var(--bg);border:1px solid var(--border);padding:7px 12px;text-align:left;color:var(--gray-hi);font-size:10px;text-transform:uppercase;letter-spacing:.06em}
+.modal-markdown td{border:1px solid var(--border);padding:7px 12px}
+.modal-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0}
+.file-row-click{cursor:pointer}
+.file-row-click:hover td{background:rgba(196,98,45,.05)!important}
+
+/* PIPELINE THUMBNAIL HOVER */
+.pipeline-card{position:relative}
+.pipeline-card-thumbs{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--bg-card);border:1px solid var(--border-hi);border-radius:8px;padding:10px 12px;min-width:220px;max-width:300px;display:none;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.pipeline-card-thumbs::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--border-hi)}
+.pipeline-card:hover .pipeline-card-thumbs{display:block}
+.thumb-label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--gray);margin-bottom:7px;font-family:var(--mono)}
+.thumb-item{display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:5px;cursor:pointer;transition:background .12s;margin-bottom:2px}
+.thumb-item:last-of-type{margin-bottom:0}
+.thumb-item:hover{background:var(--amber-lo)}
+.thumb-item-icon{color:var(--amber);font-size:11px;flex-shrink:0;width:14px;text-align:center}
+.thumb-item-name{font-family:var(--mono);font-size:11px;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.thumb-item-size{font-family:var(--mono);font-size:10px;color:var(--gray);flex-shrink:0}
+.thumb-more{font-size:11px;color:var(--gray);padding:5px 7px 2px;text-align:center;margin-top:4px;border-top:1px solid var(--border);cursor:pointer;transition:color .12s}
+.thumb-more:hover{color:var(--amber)}
+
+/* LLM CHAT PANEL */
+.chat-fab{position:fixed;bottom:28px;right:28px;width:52px;height:52px;background:var(--amber);border-radius:50%;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;color:var(--bg);font-size:20px;z-index:200;box-shadow:0 4px 20px rgba(196,98,45,.55);transition:all .18s}
+.chat-fab:hover{filter:brightness(1.1);transform:scale(1.06)}
+.chat-fab.visible{display:flex}
+
+/* CHAT ACTION BUTTONS — rendered inside AI messages */
+.chat-action-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:6px;background:var(--amber-lo);border:1px solid rgba(196,98,45,.3);color:var(--amber);font-size:12px;font-family:var(--sans);font-weight:500;cursor:pointer;transition:all .15s;margin:2px 4px 2px 0;vertical-align:middle}
+.chat-action-btn:hover{background:var(--amber);color:var(--bg);border-color:var(--amber)}
+.chat-action-btn i{font-size:10px}
+.chat-actions-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(196,98,45,.15)}
+.chat-api-card{background:var(--bg-code);border:1px solid var(--border);border-radius:6px;padding:7px 11px;margin:3px 0;font-size:11px}
+.chat-api-method{color:var(--green);font-weight:700;font-family:var(--mono);margin-right:8px}
+.chat-api-path{color:var(--amber);font-family:var(--mono)}
+.chat-api-desc{color:var(--gray-hi);font-family:var(--sans);font-size:12px;display:block;margin-top:3px;line-height:1.4}
+.chat-panel{position:fixed;bottom:90px;right:28px;width:400px;max-height:68vh;background:var(--bg-card);border:1px solid var(--border-hi);border-radius:12px;display:flex;flex-direction:column;z-index:200;box-shadow:0 12px 40px rgba(0,0,0,.6);transform:scale(.95) translateY(10px);opacity:0;pointer-events:none;transition:all .2s}
+.chat-panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
+.chat-panel-header{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.chat-panel-icon{color:var(--amber);font-size:13px}
+.chat-panel-title{font-family:var(--serif);font-size:14px;font-weight:500;color:var(--white);flex:1}
+.chat-panel-ctx{font-family:var(--mono);font-size:10px;color:var(--gray);background:var(--bg-code);border:1px solid var(--border);padding:2px 8px;border-radius:10px;white-space:nowrap}
+.chat-panel-close{background:transparent;border:none;color:var(--gray);cursor:pointer;font-size:14px;padding:4px;transition:color .15s}
+.chat-panel-close:hover{color:var(--white)}
+.chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px;min-height:100px}
+.chat-msg{display:flex;gap:8px;font-size:13px;line-height:1.65;align-items:flex-start}
+.chat-msg-user{flex-direction:row-reverse}
+.chat-msg-avatar{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:2px}
+.chat-msg-user .chat-msg-avatar{background:var(--amber-lo);border:1px solid rgba(196,98,45,.25);color:var(--amber)}
+.chat-msg-ai .chat-msg-avatar{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--gray-hi)}
+.chat-msg-bubble{padding:8px 12px;border-radius:10px;max-width:calc(100% - 36px);color:var(--gray-hi)}
+.chat-msg-user .chat-msg-bubble{background:var(--amber-lo);border:1px solid rgba(196,98,45,.2);color:var(--white);border-radius:10px 2px 10px 10px}
+.chat-msg-ai .chat-msg-bubble{background:var(--bg);border:1px solid var(--border);border-radius:2px 10px 10px 10px}
+.chat-msg-ai .chat-msg-bubble code{font-family:var(--mono);font-size:11px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:3px;color:var(--amber)}
+.chat-typing{display:flex;gap:4px;align-items:center;padding:6px 4px}
+.chat-typing span{width:5px;height:5px;border-radius:50%;background:var(--gray);animation:bounce .9s infinite}
+.chat-typing span:nth-child(2){animation-delay:.15s}
+.chat-typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+.chat-input-area{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;flex-shrink:0}
+.chat-textarea{flex:1;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:var(--sans);font-size:13px;padding:8px 11px;resize:none;min-height:36px;max-height:96px;line-height:1.5;transition:border-color .15s}
+.chat-textarea:focus{outline:none;border-color:rgba(196,98,45,.4)}
+.chat-textarea::placeholder{color:var(--gray)}
+.chat-send-btn{background:var(--amber);border:none;color:var(--bg);width:34px;height:34px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:all .15s;margin-bottom:1px}
+.chat-send-btn:hover{filter:brightness(1.1)}
+.chat-send-btn:disabled{opacity:.4;cursor:not-allowed}
+.chat-suggestions{padding:0 12px 10px;display:flex;flex-wrap:wrap;gap:6px}
+.chat-suggestion{font-size:11px;background:var(--bg);border:1px solid var(--border);color:var(--gray-hi);border-radius:20px;padding:4px 11px;cursor:pointer;transition:all .15s;font-family:var(--sans)}
+.chat-suggestion:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-lo)}
+@media(max-width:480px){.chat-panel{width:calc(100vw - 32px);right:16px;bottom:76px}.chat-fab{right:16px;bottom:16px}}
+
+/* ─── INTELLIGENCE TAB ─── */
+.intel-hero{display:flex;align-items:center;gap:16px;padding:20px 22px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin-bottom:18px}
+.intel-hero-icon{width:48px;height:48px;border-radius:10px;background:var(--amber-lo);border:1px solid rgba(196,98,45,.3);display:flex;align-items:center;justify-content:center;color:var(--amber);font-size:20px;flex-shrink:0}
+.intel-hero-text h3{font-family:var(--serif);font-size:17px;font-weight:500;color:var(--white);margin:0 0 4px}
+.intel-hero-text p{font-size:12px;color:var(--gray-hi);margin:0;line-height:1.5}
+.intel-status-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.intel-status-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-family:var(--mono);padding:3px 10px;border-radius:14px;border:1px solid var(--border)}
+.intel-status-chip.ready{color:var(--green);border-color:rgba(74,158,112,.3);background:var(--green-lo)}
+.intel-status-chip.pending{color:var(--yellow);border-color:rgba(184,150,46,.3);background:var(--yellow-lo)}
+.intel-status-chip.error{color:var(--red);border-color:rgba(158,74,74,.3);background:var(--red-lo)}
+.intel-run-bar{display:flex;gap:10px;align-items:center;padding:14px 18px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:18px;flex-wrap:wrap}
+.intel-run-bar .btn{flex-shrink:0}
+.intel-concurrency{display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg)}
+.intel-concurrency label{font-size:11px;color:var(--gray-hi);font-family:var(--mono);letter-spacing:.02em;white-space:nowrap}
+.intel-concurrency input,.intel-concurrency select{width:64px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--mono);font-size:12px;padding:6px 8px}
+.intel-concurrency select{width:auto;min-width:160px}
+.intel-concurrency input:focus,.intel-concurrency select:focus{outline:none;border-color:rgba(196,98,45,.45)}
+.intel-run-progress{flex:1;font-size:12px;color:var(--gray-hi);font-family:var(--mono)}
+.intel-options-panel{margin-top:-8px;margin-bottom:18px;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r)}
+.intel-options-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 14px}
+.intel-option-item{display:flex;align-items:flex-start;gap:8px;padding:7px 8px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,.02)}
+.intel-option-item.disabled{opacity:.55}
+.intel-option-item input{margin-top:2px;accent-color:var(--amber)}
+.intel-option-label{display:block;font-size:12px;color:var(--white);line-height:1.4}
+.intel-option-desc{display:block;font-size:10px;color:var(--gray);font-family:var(--mono);margin-top:2px;line-height:1.45}
+.intel-options-note{font-size:11px;color:var(--gray-hi);margin-top:10px;line-height:1.6}
+.intel-sub-tabs{display:flex;gap:2px;margin-bottom:16px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px;flex-wrap:wrap}
+.intel-sub-btn{display:flex;align-items:center;gap:6px;padding:7px 13px;background:transparent;border:none;border-radius:5px;color:var(--gray-hi);font-family:var(--sans);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.intel-sub-btn:hover{color:var(--white);background:rgba(255,255,255,.04)}
+.intel-sub-btn.active{background:var(--bg-card);color:var(--white);border:1px solid var(--border-hi)}
+.intel-sub-btn i{font-size:10px;color:var(--amber)}
+.intel-sub-content{display:none}
+.intel-sub-content.active{display:block}
+.intel-narrative{font-size:13.5px;line-height:1.75;color:var(--gray-hi)}
+.intel-narrative h1,.intel-narrative h2,.intel-narrative h3{font-family:var(--serif);color:var(--white);margin:18px 0 8px}
+.intel-narrative h1{font-size:20px}.intel-narrative h2{font-size:17px}.intel-narrative h3{font-size:15px}
+.intel-narrative p{margin-bottom:10px}
+.intel-narrative strong{color:var(--white);font-weight:600}
+.intel-narrative ul,.intel-narrative ol{margin-left:20px;margin-bottom:10px}
+.intel-narrative li{margin-bottom:3px}
+.intel-narrative blockquote{border-left:3px solid var(--amber);padding-left:14px;color:var(--gray);margin-left:0}
+.viol-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;margin-bottom:10px;transition:border-color .15s}
+.viol-card:hover{border-color:var(--border-hi)}
+.viol-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.viol-severity{font-size:10px;font-family:var(--mono);font-weight:600;padding:2px 8px;border-radius:4px;text-transform:uppercase}
+.viol-severity.high{background:var(--red-lo);color:var(--red);border:1px solid rgba(158,74,74,.3)}
+.viol-severity.medium{background:var(--yellow-lo);color:var(--yellow);border:1px solid rgba(184,150,46,.3)}
+.viol-severity.low{background:var(--blue-lo);color:var(--blue);border:1px solid rgba(91,143,168,.3)}
+.viol-category{font-size:11px;color:var(--gray-hi);font-family:var(--mono)}
+.viol-confidence{font-size:10px;font-family:var(--mono);color:var(--gray);margin-left:auto}
+.viol-desc{font-size:13px;color:var(--gray-hi);line-height:1.6;margin-bottom:6px}
+.viol-articles{font-size:11px;color:var(--amber);font-family:var(--mono)}
+.evt-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:8px;transition:border-color .15s}
+.evt-card:hover{border-color:var(--border-hi)}
+.evt-type-badge{display:inline-block;font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:4px;background:var(--amber-lo);border:1px solid rgba(196,98,45,.2);color:var(--amber);margin-right:8px}
+.evt-desc{font-size:13px;color:var(--gray-hi);line-height:1.5;margin-top:6px}
+.evt-meta{font-size:11px;color:var(--gray);font-family:var(--mono);margin-top:4px;display:flex;gap:12px;flex-wrap:wrap}
+.case-phase-bar{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap}
+.phase-step{flex:1;min-width:100px;padding:10px 12px;text-align:center;border-radius:var(--r);font-size:11px;font-family:var(--mono);border:1px solid var(--border);color:var(--gray);background:var(--bg);transition:all .2s}
+.phase-step.reached{background:var(--green-lo);border-color:rgba(74,158,112,.3);color:var(--green)}
+.phase-step.current{background:var(--amber-lo);border-color:rgba(196,98,45,.3);color:var(--amber);font-weight:600}
+.finding-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:8px}
+.finding-card .finding-type{font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:4px;text-transform:uppercase}
+.finding-card .finding-type.anomaly{background:var(--red-lo);color:var(--red);border:1px solid rgba(158,74,74,.3)}
+.finding-card .finding-type.gap{background:var(--yellow-lo);color:var(--yellow);border:1px solid rgba(184,150,46,.3)}
+.finding-card .finding-type.recommendation{background:var(--green-lo);color:var(--green);border:1px solid rgba(74,158,112,.3)}
+.finding-card .finding-type.flag{background:var(--blue-lo);color:var(--blue);border:1px solid rgba(91,143,168,.3)}
+.finding-desc{font-size:13px;color:var(--gray-hi);line-height:1.5;margin-top:6px}
+.next-step-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.next-step-item:last-child{border-bottom:none}
+.next-step-num{width:24px;height:24px;border-radius:50%;background:var(--amber-lo);border:1px solid rgba(196,98,45,.25);color:var(--amber);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.next-step-text{font-size:13px;color:var(--gray-hi);line-height:1.6}
+.gap-section{margin-bottom:16px}
+.gap-section-title{font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--gray-hi);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.gap-section-title i{color:var(--amber);font-size:11px}
+.gap-item{font-size:12px;color:var(--gray-hi);padding:6px 12px;border-left:2px solid var(--yellow);margin-bottom:4px;font-family:var(--mono)}
+.intel-filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.intel-filter-btn{padding:5px 12px;border-radius:14px;font-size:11px;font-weight:500;cursor:pointer;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--gray-hi);transition:all .15s;font-family:var(--sans)}
+.intel-filter-btn:hover{border-color:var(--amber);color:var(--amber)}
+.intel-filter-btn.active{background:var(--amber);border-color:var(--amber);color:var(--bg);font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ NAV BAR ═══════════════ -->
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-icon"><i class="fas fa-compass"></i></div>
+    <div>
+      <div class="nav-logo-text">Awareness<span>-AI</span></div>
+      <div class="nav-logo-sub">Discovery</div>
+    </div>
+  </a>
+  <div class="nav-right">
+    <span class="nav-badge">ONT v2.4</span>
+    <span class="nav-status" id="serverStatus"><span class="dot" id="statusDot"></span> verificando…</span>
+  </div>
+</nav>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<div class="container">
+  <div id="alert-box" class="alert hidden"></div>
+
+  <h3 id="intelHeroTitle">Inteligência do Workspace</h3>
+  <p id="intelHeroDesc">Resultados da análise por IA para o seu corpus: narrativa, achados, eventos, estado analítico e lacunas. Ajuste o perfil conforme o tipo de operação.</p>
+  <div class="start-here-header" id="startHeader">
+    <h2><i class="fas fa-hand-sparkles"></i> Comece Aqui
+      <span class="badge" style="font-size:10px;background:var(--amber-lo);color:var(--amber);border:1px solid rgba(196,98,45,.25)">Seus dados, do seu jeito</span>
+    </h2>
+    <span style="font-size:12px;color:var(--gray);margin-right:8px">Aponte para qualquer pasta - organizamos, categorizamos e disponibilizamos cada arquivo</span>
+    <span class="toggle-icon">&#9660;</span>
+  </div>
+
+  <div class="start-here-body" id="startBody">
+    <div class="start-here-welcome">
+      <p class="welcome-main">Seus dados já têm estrutura. Vamos torná-la visível.</p>
+      <div class="folder-input-row" style="justify-content:center;flex-wrap:wrap;gap:8px;margin-top:10px">
+        <button class="btn btn-ai" id="startIntelRunBtn" onclick="runSelectedAnalysis('startIntelRunBtn')">
+          <i class="fas fa-bolt"></i> Executar Análise Geral
+        </button>
+        <button class="btn btn-sm" id="startIntelLegalBtn" onclick="runIntelligencePipeline('startIntelLegalBtn')">
+          <i class="fas fa-scale-balanced"></i> Pipeline Jurídico
+        </button>
+        <button class="btn btn-sm" id="startIntelComprehendBtn" onclick="runComprehension('startIntelComprehendBtn')">
+          <i class="fas fa-book-open-reader"></i> Somente Compreensão
+        </button>
+        <div class="intel-concurrency">
+          <label for="intelProfileSelect">Perfil</label>
+          <select id="intelProfileSelect" title="Perfil de análise para o seu tipo de operação">
+            <option value="general">Geral</option>
+            <option value="office">Escritório</option>
+            <option value="law-firm">Escritório de Advocacia</option>
+            <option value="business">Empresa</option>
+            <option value="legal">Jurídico / Violações</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="start-here-grid">
+        <!-- Upload zone -->
+        <div class="folder-zone" id="uploadDropZone"
+             ondragover="event.preventDefault();this.classList.add('dragover')"
+             ondragleave="this.classList.remove('dragover')"
+             ondrop="event.preventDefault();this.classList.remove('dragover');handleUploadDrop(event)">
+          <div class="folder-zone-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+          <div class="folder-zone-title">Envie seus dados</div>
+          <div class="folder-zone-hint">Arraste arquivos ou uma pasta, ou use os botões abaixo</div>
+          <div class="folder-input-row" style="justify-content:center;flex-wrap:wrap;gap:8px">
+            <button class="btn-browse" type="button" onclick="document.getElementById('filePicker').click()"><i class="fas fa-file"></i> Selecionar Arquivos</button>
+            <button class="btn-browse" type="button" onclick="document.getElementById('folderPicker').click()"><i class="fas fa-folder-open"></i> Selecionar Pasta</button>
+            <button class="btn btn-ai" id="organizeBtn" onclick="organize()" style="display:none"><i class="fas fa-wand-magic-sparkles"></i> Organizar</button>
+            <input type="file" id="filePicker" style="display:none" multiple
+                   onchange="handleUploadFiles(this.files)">
+            <input type="file" id="folderPicker" webkitdirectory style="display:none"
+                   onchange="handleUploadFiles(this.files)">
+          </div>
+          <div class="folder-browse-hint" id="browseHint" style="display:none"></div>
+          <div id="uploadFileList" style="margin-top:10px;max-height:120px;overflow-y:auto"></div>
+        </div>
+
+        <!-- What happens next -->
+        <div class="start-info">
+          <div class="start-info-title">O que acontece</div>
+          <div class="start-info-step"><span class="step-num">1</span> Escaneamos cada arquivo na árvore de pastas</div>
+          <div class="start-info-step"><span class="step-num">2</span> Identificamos tipo, formato e grupo de conteúdo</div>
+          <div class="start-info-step"><span class="step-num">3</span> Categorizamos por estrutura de caminho e nomeação</div>
+          <div class="start-info-step"><span class="step-num">4</span> Geramos nomes e descrições legíveis</div>
+          <div class="start-info-step"><span class="step-num">5</span> Disponibilizamos cada arquivo via sua própria URL REST</div>
+          <div class="data-promise">
+            <i class="fas fa-shield-halved"></i>
+            <div><strong>Garantia local-first</strong> — seus dados permanecem fisicamente na sua infraestrutura. Nada é enviado, carregado ou armazenado externamente. A ponte cria URLs que só funcionam na sua rede.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────── DASHBOARD ───────────── -->
+  <div id="dashboard">
+
+    <!-- Action bar -->
+    <div class="dashboard-actions">
+      <button class="btn btn-sm" onclick="exportData()"><i class="fas fa-download"></i> Exportar Workspace</button>
+      <div class="import-mode-wrap" title="Escolha como lidar com arquivos já existentes no workspace durante a importação">
+        <label for="importModeSelect" class="import-mode-label">Modo de importação</label>
+        <select id="importModeSelect" class="import-mode-select">
+          <option value="add">Adicionar (renomear conflitos)</option>
+          <option value="overwrite">Sobrescrever (substituir conflitos)</option>
+        </select>
+      </div>
+      <button class="btn btn-sm" onclick="triggerImport()"><i class="fas fa-upload"></i> Importar Workspace</button>
+      <input type="file" id="importPicker" accept=".json" style="display:none">
+    </div>
+
+    <!-- Diff panel (shown after import if changes detected) -->
+    <div class="diff-panel" id="diffPanel" style="display:none"></div>
+
+    <!-- Stats row -->
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card">
+        <span class="stat-num" id="statFiles">0</span>
+        <span class="stat-label">Arquivos Organizados</span>
+        <span class="stat-sub" id="statTotalSize"></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num" id="statCategories">0</span>
+        <span class="stat-label">Categorias</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num" id="statTypes">0</span>
+        <span class="stat-label">Tipos de Arquivo</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num" id="statEndpoints">0</span>
+        <span class="stat-label">Endpoints da API</span>
+        <span class="stat-sub" id="statRoot"></span>
+      </div>
+    </div>
+
+    <!-- Dashboard tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('overview')"><i class="fas fa-th-large"></i> Visão Geral</button>
+      <button class="tab-btn" onclick="switchTab('files')"><i class="fas fa-file-alt"></i> Todos os Arquivos</button>
+      <button class="tab-btn" onclick="switchTab('pipeline')"><i class="fas fa-diagram-project"></i> Pronto para Pipeline</button>
+      <button class="tab-btn" onclick="switchTab('insights')"><i class="fas fa-brain"></i> Insights</button>
+      <button class="tab-btn" onclick="switchTab('intelligence')"><i class="fas fa-wand-sparkles"></i> Inteligência</button>
+      <button class="tab-btn" onclick="switchTab('api')"><i class="fas fa-plug"></i> Acesso à API</button>
+    </div>
+
+    <!-- ─── TAB: OVERVIEW ─── -->
+    <div class="tab-content active" id="tab-overview">
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-layer-group"></i> Categorias</h2>
+          <p style="font-size:12px;color:var(--gray)">Como seus dados foram organizados</p>
+        </div>
+        <div class="card-body">
+          <div class="group-legend" id="groupLegend"></div>
+          <div class="cat-grid" id="catGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── TAB: ALL FILES ─── -->
+    <div class="tab-content" id="tab-files">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Buscar por nome, tipo, categoria, descrição…" oninput="filterFiles()">
+      </div>
+      <div class="cat-tags" id="catTags"></div>
+      <div id="fileTableArea"></div>
+    </div>
+
+    <!-- ─── TAB: PIPELINE READY ─── -->
+    <div class="tab-content" id="tab-pipeline">
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-gears"></i> O Que Foi Criado a Partir dos Seus Dados</h2>
+        </div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--gray-hi);margin-bottom:16px">
+            Cada arquivo foi processado em um formato estruturado e legível por máquina. Aqui está o que está pronto para seu pipeline, treinamento de agentes ou aplicação posterior.
+          </p>
+          <div class="pipeline-grid" id="pipelineGrid"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-cube"></i> Grupos de Conteúdo</h2>
+        </div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--gray-hi);margin-bottom:14px">Arquivos agrupados por sua natureza — prontos para processamento específico de formato.</p>
+          <div class="cat-grid" id="groupGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── TAB: INSIGHTS (Pipeline Data) ─── -->
+    <div class="tab-content" id="tab-insights">
+      <div id="insightsLoading" style="text-align:center;padding:40px;color:var(--gray)">
+        <i class="fas fa-spinner fa-spin" style="font-size:24px;display:block;margin-bottom:10px;color:var(--border-hi)"></i>
+        Carregando dados do pipeline…
+      </div>
+      <div id="insightsContent" style="display:none">
+
+        <!-- Pipeline stats overview -->
+        <div class="pipe-stats-grid" id="pipeStatsGrid"></div>
+
+        <!-- Sub-tabs within Insights -->
+        <div class="pipeline-sub-tabs" id="pipeSubTabs">
+          <button class="pipeline-sub-btn active" onclick="switchPipeSub('stats')"><i class="fas fa-chart-bar"></i> Estatísticas <span class="sub-count" id="subCountStats"></span></button>
+          <button class="pipeline-sub-btn" onclick="switchPipeSub('entities')"><i class="fas fa-user-tag"></i> Entidades <span class="sub-count" id="subCountEntities"></span></button>
+          <button class="pipeline-sub-btn" onclick="switchPipeSub('relationships')"><i class="fas fa-project-diagram"></i> Relações <span class="sub-count" id="subCountRels"></span></button>
+          <button class="pipeline-sub-btn" onclick="switchPipeSub('timeline')"><i class="fas fa-clock-rotate-left"></i> Timeline <span class="sub-count" id="subCountTimeline"></span></button>
+          <button class="pipeline-sub-btn" onclick="switchPipeSub('search')"><i class="fas fa-magnifying-glass-chart"></i> Busca Enriquecida</button>
+        </div>
+
+        <!-- SUB: Stats -->
+        <div class="pipeline-sub-content active" id="pipesub-stats">
+          <div class="card">
+            <div class="card-header">
+              <h2><i class="fas fa-language"></i> Idiomas Detectados</h2>
+            </div>
+            <div class="card-body">
+              <div class="pipe-bars" id="pipeLangBars"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h2><i class="fas fa-tags"></i> Domínios Classificados</h2>
+            </div>
+            <div class="card-body">
+              <div class="pipe-bars" id="pipeDomainBars"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h2><i class="fas fa-hashtag"></i> Tags Mais Frequentes</h2>
+            </div>
+            <div class="card-body">
+              <div class="pipe-tag-cloud" id="pipeTagCloud"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB: Entities -->
+        <div class="pipeline-sub-content" id="pipesub-entities">
+          <div class="card">
+            <div class="card-header">
+              <h2><i class="fas fa-database"></i> Índice de Entidades</h2>
+              <p style="font-size:12px;color:var(--gray)">Extraídas automaticamente dos seus arquivos</p>
+            </div>
+            <div class="card-body">
+              <div class="entity-type-selector" id="entityTypeSelector"></div>
+              <div class="entity-list" id="entityList"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB: Relationships -->
+        <div class="pipeline-sub-content" id="pipesub-relationships">
+          <div class="card">
+            <div class="card-header">
+              <h2><i class="fas fa-link"></i> Conexões entre Arquivos</h2>
+              <p style="font-size:12px;color:var(--gray)">Baseadas em entidades compartilhadas</p>
+            </div>
+            <div class="card-body">
+              <div class="pipe-section">
+                <div class="pipe-section-title"><i class="fas fa-sliders"></i> Força mínima</div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+                  <input type="range" id="relStrengthSlider" min="1" max="10" value="2" style="flex:1;accent-color:var(--amber)" oninput="loadRelationships()">
+                  <span id="relStrengthVal" style="font-family:var(--mono);font-size:12px;color:var(--amber);min-width:20px">2</span>
+                </div>
+              </div>
+              <div class="rel-list" id="relList"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB: Timeline -->
+        <div class="pipeline-sub-content" id="pipesub-timeline">
+          <div class="card">
+            <div class="card-header">
+              <h2><i class="fas fa-timeline"></i> Linha do Tempo</h2>
+              <p style="font-size:12px;color:var(--gray)">Datas extraídas dos conteúdos</p>
+            </div>
+            <div class="card-body">
+              <div class="timeline-container" id="timelineContainer"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB: Enriched Search -->
+        <div class="pipeline-sub-content" id="pipesub-search">
+          <div class="card">
+            <div class="card-header">
+              <h2><i class="fas fa-magnifying-glass-chart"></i> Busca em Dados Enriquecidos</h2>
+            </div>
+            <div class="card-body">
+              <div class="pipe-search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="pipeSearchInput" placeholder="Buscar em entidades, tags, domínios, conteúdo…" onkeydown="if(event.key==='Enter')pipeSearch()">
+              </div>
+              <div class="pipe-search-results" id="pipeSearchResults">
+                <div class="empty-state">
+                  <i class="fas fa-magnifying-glass-chart"></i>
+                  <h3>Busca Enriquecida</h3>
+                  <p>Pesquise em todos os dados extraídos pelo pipeline — entidades, tags, domínios e conteúdo textual.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ─── TAB: INTELLIGENCE ─── -->
+    <div class="tab-content" id="tab-intelligence">
+      <!-- Hero + Status -->
+      <div class="intel-hero">
+        <div class="intel-hero-icon"><i class="fas fa-wand-sparkles"></i></div>
+        <div class="intel-hero-text">
+          <h3>Artefatos de Inteligência</h3>
+          <p>Resultados da análise por IA — narrativa, violações, eventos, estado do caso e lacunas. Gerados pelo pipeline L5–L7 usando LLM.</p>
+          <div class="intel-status-row" id="intelStatusRow"></div>
+        </div>
+      </div>
+
+      <!-- Run bar -->
+      <div class="intel-run-bar" id="intelRunBar">
+        <button class="btn btn-ai" id="intelRunBtn" onclick="runIntelligencePipeline()">
+          <i class="fas fa-bolt"></i> Executar Pipeline de Inteligência
+        </button>
+        <button class="btn btn-sm" id="intelComprehendBtn" onclick="runComprehension()">
+          <i class="fas fa-book-open-reader"></i> Compreensão do Corpus
+        </button>
+        <div class="intel-concurrency">
+          <label for="intelConcurrencyInput">Concorrência</label>
+          <input id="intelConcurrencyInput" type="text" inputmode="numeric" pattern="[0-9]*" value="3" title="Concorrência das chamadas LLM (1-8)">
+        </div>
+        <span class="intel-run-progress" id="intelRunProgress"></span>
+      </div>
+
+      <div class="intel-options-panel" id="intelOptionsPanel">
+        <div class="intel-options-grid">
+          <label class="intel-option-item" for="intelOptUseCache">
+            <input id="intelOptUseCache" type="checkbox">
+            <span>
+              <span class="intel-option-label">Usar Cache de Extração</span>
+              <span class="intel-option-desc">use_cache: reutiliza resultados LLM anteriores por hash</span>
+            </span>
+          </label>
+          <label class="intel-option-item" for="intelOptSkipDedup">
+            <input id="intelOptSkipDedup" type="checkbox">
+            <span>
+              <span class="intel-option-label">Pular Deduplicação (L5)</span>
+              <span class="intel-option-desc">skip_dedup: força extração em todos os arquivos</span>
+            </span>
+          </label>
+          <label class="intel-option-item" for="intelOptBulkFast">
+            <input id="intelOptBulkFast" type="checkbox">
+            <span>
+              <span class="intel-option-label">Modo Bulk Fast</span>
+              <span class="intel-option-desc">bulk_fast: prioriza velocidade em lotes grandes</span>
+            </span>
+          </label>
+          <label class="intel-option-item" for="intelOptKbEnabled">
+            <input id="intelOptKbEnabled" type="checkbox">
+            <span>
+              <span class="intel-option-label">Habilitar Base de Conhecimento</span>
+              <span class="intel-option-desc">kb_enabled: ativa resolução/enriquecimento legal via KB</span>
+            </span>
+          </label>
+          <label class="intel-option-item" for="intelOptPersistGraph">
+            <input id="intelOptPersistGraph" type="checkbox">
+            <span>
+              <span class="intel-option-label">Persistir no Grafo</span>
+              <span class="intel-option-desc">persist_to_graph: grava o case graph no Neo4j</span>
+            </span>
+          </label>
+          <label class="intel-option-item" for="intelOptAugmentExtraction">
+            <input id="intelOptAugmentExtraction" type="checkbox">
+            <span>
+              <span class="intel-option-label">Enriquecer Extração com KB</span>
+              <span class="intel-option-desc">augment_extraction: adiciona contexto legal durante normalização</span>
+            </span>
+          </label>
+          <label class="intel-option-item" for="intelOptSkipVerification">
+            <input id="intelOptSkipVerification" type="checkbox">
+            <span>
+              <span class="intel-option-label">Pular Verificação L8</span>
+              <span class="intel-option-desc">skip_verification: desativa verificação final de violações</span>
+            </span>
+          </label>
+        </div>
+        <p class="intel-options-note">A concorrência definida acima é aplicada como valor real da execução (1–8), respeitando apenas o total de arquivos a processar.</p>
+      </div>
+
+      <!-- Sub-tabs -->
+      <div class="intel-sub-tabs">
+        <button class="intel-sub-btn active" onclick="switchIntelSub('narrative')"><i class="fas fa-scroll"></i> Narrativa</button>
+        <button class="intel-sub-btn" id="intelSubFindingsBtn" onclick="switchIntelSub('violations')"><i class="fas fa-exclamation-triangle"></i> Achados</button>
+        <button class="intel-sub-btn" onclick="switchIntelSub('events')"><i class="fas fa-timeline"></i> Eventos</button>
+        <button class="intel-sub-btn" onclick="switchIntelSub('case-state')"><i class="fas fa-gavel"></i> Estado do Caso</button>
+        <button class="intel-sub-btn" onclick="switchIntelSub('gaps')"><i class="fas fa-puzzle-piece"></i> Lacunas</button>
+        <button class="intel-sub-btn" onclick="switchIntelSub('comprehension')"><i class="fas fa-book-open"></i> Compreensão</button>
+      </div>
+
+      <!-- SUB: Narrative -->
+      <div class="intel-sub-content active" id="intelsub-narrative">
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-scroll"></i> Narrativa do Caso</h2>
+            <p>Síntese cronológica gerada por IA</p>
+          </div>
+          <div class="card-body" id="intelNarrativeBody">
+            <div class="empty-state"><i class="fas fa-scroll"></i><h3>Narrativa não gerada</h3><p>Execute o pipeline de inteligência para gerar a narrativa do caso.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB: Violations -->
+      <div class="intel-sub-content" id="intelsub-violations">
+        <div class="card">
+          <div class="card-header">
+            <h2 id="intelFindingsTitle"><i class="fas fa-exclamation-triangle"></i> Achados e Riscos</h2>
+            <p id="intelFindingsDesc">Sinais relevantes detectados nos documentos (operacionais, de processo ou regulatórios)</p>
+          </div>
+          <div class="card-body">
+            <div class="intel-filters" id="violFilters"></div>
+            <div id="intelViolationsBody">
+              <div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Nenhum achado</h3><p>Execute uma análise para identificar sinais relevantes no corpus.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB: Events -->
+      <div class="intel-sub-content" id="intelsub-events">
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-timeline"></i> Eventos Formalizados</h2>
+            <p>Acontecimentos extraídos e consolidados com evidências múltiplas</p>
+          </div>
+          <div class="card-body">
+            <div class="intel-filters" id="evtFilters"></div>
+            <div id="intelEventsBody">
+              <div class="empty-state"><i class="fas fa-timeline"></i><h3>Nenhum evento</h3><p>Execute o pipeline de inteligência para formalizar eventos.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB: Case State -->
+      <div class="intel-sub-content" id="intelsub-case-state">
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-gavel"></i> Estado do Caso</h2>
+            <p>Fase atual, achados e próximos passos recomendados</p>
+          </div>
+          <div class="card-body" id="intelCaseStateBody">
+            <div class="empty-state"><i class="fas fa-gavel"></i><h3>Estado não avaliado</h3><p>Execute o pipeline de inteligência para avaliar o estado do caso.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB: Gaps -->
+      <div class="intel-sub-content" id="intelsub-gaps">
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-puzzle-piece"></i> Relatório de Lacunas</h2>
+            <p>Evidências ausentes, referências não resolvidas, contradições</p>
+          </div>
+          <div class="card-body" id="intelGapsBody">
+            <div class="empty-state"><i class="fas fa-puzzle-piece"></i><h3>Sem lacunas identificadas</h3><p>Execute o pipeline de inteligência para gerar o relatório de lacunas.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB: Comprehension -->
+      <div class="intel-sub-content" id="intelsub-comprehension">
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-book-open"></i> Compreensão do Corpus</h2>
+            <p>Análise de IA sobre o que seus dados contêm e como organizá-los</p>
+          </div>
+          <div class="card-body" id="intelComprehensionBody">
+            <div class="empty-state"><i class="fas fa-book-open"></i><h3>Compreensão não gerada</h3><p>Clique em "Compreensão do Corpus" para analisar.</p></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ─── TAB: API ACCESS ─── -->
+    <div class="tab-content" id="tab-api">
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-terminal"></i> Referência de Endpoints</h2>
+        </div>
+        <div class="card-body">
+          <table class="api-table">
+            <thead><tr><th>Endpoint</th><th>Método</th><th>Descrição</th></tr></thead>
+            <tbody>
+              <tr><td><a class="file-url" href="#" id="linkManifest" target="_blank">/api/manifest</a></td><td>GET</td><td>Manifesto completo — cada arquivo com metadados completos</td></tr>
+              <tr><td><a class="file-url" href="#" id="linkEndpoints" target="_blank">/api/endpoints</a></td><td>GET</td><td>Array de todos os endpoints</td></tr>
+              <tr><td><a class="file-url" href="#" id="linkFiles" target="_blank">/api/files</a></td><td>GET</td><td>Filtrável: <code style="font-family:var(--mono);font-size:11px;color:var(--gray-hi);background:rgba(255,255,255,.04);padding:1px 5px;border-radius:3px">?category=&amp;ext=&amp;kind=&amp;group=</code></td></tr>
+              <tr><td><a class="file-url" href="#" id="linkCategories" target="_blank">/api/categories</a></td><td>GET</td><td>Resumo de categorias com contagens + detalhamento por tipo</td></tr>
+              <tr><td><a class="file-url" href="#" id="linkSearch" target="_blank">/api/search?q=</a></td><td>GET</td><td>Busca textual em todos os metadados</td></tr>
+              <tr><td><a class="file-url" href="#" id="linkTree" target="_blank">/api/tree</a></td><td>GET</td><td>Árvore de diretórios recursiva</td></tr>
+              <tr><td><span style="color:var(--gray-hi)">/api/raw?file=</span></td><td>GET</td><td>Acesso direto ao arquivo (caminho validado)</td></tr>
+              <tr><td><span style="color:var(--gray-hi)">/api/rebuild</span></td><td>POST</td><td>Recarga dinâmica: <code style="font-family:var(--mono);font-size:11px;color:var(--gray-hi);background:rgba(255,255,255,.04);padding:1px 5px;border-radius:3px">{"root_dir":"..."}</code></td></tr>
+              <tr><td><a class="file-url" href="#" id="linkPipeStats" target="_blank">/api/pipeline/stats</a></td><td>GET</td><td>Estatísticas do pipeline — idiomas, domínios, tags, contagens</td></tr>
+              <tr><td><span style="color:var(--gray-hi)">/api/pipeline/entities?type=</span></td><td>GET</td><td>Índice de entidades: people, organizations, laws, locations, dates</td></tr>
+              <tr><td><span style="color:var(--gray-hi)">/api/pipeline/relationships</span></td><td>GET</td><td>Conexões entre arquivos via entidades compartilhadas</td></tr>
+              <tr><td><span style="color:var(--gray-hi)">/api/pipeline/timeline</span></td><td>GET</td><td>Linha do tempo de datas extraídas dos conteúdos</td></tr>
+              <tr><td><span style="color:var(--gray-hi)">/api/pipeline/search?q=</span></td><td>GET</td><td>Busca em dados enriquecidos — entidades, tags, domínios</td></tr>
+              <tr><td><span style="color:var(--gray-hi)">/api/file-detail?file=</span></td><td>GET</td><td>Detalhes completos de um arquivo com enriquecimento do pipeline</td></tr>
+              <tr><td colspan="3" style="text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);background:var(--bg);font-weight:600;padding:10px">Inteligência (L5–L7)</td></tr>
+              <tr><td><span style="color:var(--gray-hi)">/api/intelligence/run</span></td><td>POST</td><td>Executar pipeline L5–L7: <code style="font-family:var(--mono);font-size:11px;color:var(--gray-hi);background:rgba(255,255,255,.04);padding:1px 5px;border-radius:3px">{"api_key":"...","concurrency":4,"bulk_fast":false,"use_cache":true,"skip_dedup":false,"kb_enabled":true,"persist_to_graph":false,"augment_extraction":false,"skip_verification":false,"analysis_profile":"general|office|law-firm|business|legal"}</code></td></tr>
+              <tr><td><span style="color:var(--gray-hi)">/api/intelligence/summary</span></td><td>GET</td><td>Resumo do pipeline de inteligência</td></tr>
+              <tr><td><span style="color:var(--gray-hi)">/api/intelligence/narrative</span></td><td>GET</td><td>Narrativa cronológica gerada por IA</td></tr>
+              <tr><td><span style="color:var(--gray-hi)">/api/intelligence/violations</span></td><td>GET</td><td>Achados/violações com filtros de severidade e confiança</td></tr>
+              <tr><td><span style="color:var(--gray-hi)">/api/intelligence/gap-report</span></td><td>GET</td><td>Relatório de lacunas e evidências ausentes</td></tr>
+              <tr><td><span style="color:var(--gray-hi)">/api/events</span></td><td>GET</td><td>Eventos formalizados por tipo</td></tr>
+              <tr><td><span style="color:var(--gray-hi)">/api/case-state</span></td><td>GET</td><td>Estado do caso: fase, achados, próximos passos</td></tr>
+              <tr><td><span style="color:var(--gray-hi)">/api/comprehend/overview</span></td><td>GET</td><td>Compreensão do corpus por IA</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:16px;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);font-size:12px;color:var(--gray-hi);line-height:1.7">
+            <strong style="color:var(--white)">Início rápido —</strong> curl de qualquer aplicação na sua rede:<br>
+            <code style="font-family:var(--mono);font-size:12px;color:var(--amber);background:none;padding:0" id="curlExample">curl http://localhost:3010/api/manifest | python3 -m json.tool</code>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /dashboard -->
+
+  <!-- Footer -->
+  <footer>
+    &copy; 2026 <a href="https://awareness-ai.com.br">Awareness-AI</a> &middot; Ontologia v2.4 &middot; Responsável por Design
+  </footer>
+</div>
+
+<!-- FILE PREVIEW MODAL -->
+<div class="modal-backdrop hidden" id="fileModal" onclick="closeModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-icon" id="modalIcon"><i class="fas fa-file"></i></div>
+      <div class="modal-header-meta">
+        <div class="modal-header-name" id="modalName">—</div>
+        <div class="modal-header-chips" id="modalChips"></div>
+      </div>
+      <button class="modal-close" onclick="closeFileModal()" title="Fechar">&#10005;</button>
+    </div>
+    <div class="modal-url" id="modalUrl">
+      <span id="modalUrlText"></span>
+      <button class="modal-url-copy" onclick="copyModalUrl()" id="copyBtn">copiar</button>
+      <a id="modalUrlLink" href="#" target="_blank" title="Abrir no navegador"><i class="fas fa-external-link-alt"></i></a>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <div class="modal-content-area">
+        <div class="modal-loading"><i class="fas fa-spinner fa-spin"></i> Carregando…</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-sm" onclick="openInChat()" id="modalChatBtn" style="display:none"><i class="fas fa-comment-dots"></i> Perguntar ao agente</button>
+      <a class="btn btn-sm" id="modalDownloadBtn" href="#" target="_blank"><i class="fas fa-external-link-alt"></i> Abrir URL</a>
+      <button class="btn btn-sm btn-primary" onclick="closeFileModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT FAB -->
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" title="Perguntar ao agente sobre seus dados">
+  <i class="fas fa-comment-dots"></i>
+</button>
+
+<!-- CHAT PANEL -->
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-panel-header">
+    <i class="fas fa-robot chat-panel-icon"></i>
+    <span class="chat-panel-title">Agente de Dados</span>
+    <span class="chat-panel-ctx" id="chatCtxBadge">0 arquivos</span>
+    <button class="chat-panel-close" onclick="toggleChat()">&#10005;</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-msg chat-msg-ai">
+      <div class="chat-msg-avatar"><i class="fas fa-robot"></i></div>
+      <div class="chat-msg-bubble">Olá! Sou o agente de dados do Discovery.<br><br>Aponte para uma pasta e clique <strong>Organizar</strong> — depois vou te apresentar um catálogo completo dos endpoints disponíveis com seus dados e o que cada um faz.</div>
+    </div>
+  </div>
+  <div class="chat-suggestions" id="chatSuggestions">
+    <span class="chat-suggestion" onclick="useSuggestion(this)">Quais categorias existem?</span>
+    <span class="chat-suggestion" onclick="useSuggestion(this)">Que endpoints posso usar?</span>
+    <span class="chat-suggestion" onclick="useSuggestion(this)">Explique o pipeline de inteligência</span>
+    <span class="chat-suggestion" onclick="useSuggestion(this)">Como integrar com Node.js?</span>
+  </div>
+  <div class="chat-input-area">
+    <textarea class="chat-textarea" id="chatInput" placeholder="Pergunte sobre seus dados…" rows="1" onkeydown="chatKeyDown(event)" oninput="autoResize(this)"></textarea>
+    <button class="chat-send-btn" id="chatSendBtn" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<script src="/assets/llm-provider.js"></script>
+<script>
+// ============================================================================
+// CONFIG & STATE
+// ============================================================================
+const CURRENT_URL = window.location.origin && window.location.origin.startsWith('http')
+  ? new URL(window.location.href)
+  : null;
+const CURRENT_HOST = CURRENT_URL ? CURRENT_URL.hostname : 'localhost';
+const CURRENT_PROTOCOL = CURRENT_URL ? CURRENT_URL.protocol : 'http:';
+const CASE_SERVER = window.location.origin && window.location.origin.startsWith('http')
+  ? window.location.origin
+  : 'http://localhost:3010';
+const DISCOVERY_UI_API = CASE_SERVER;
+const DESKTOP_DISCOVERY = window.discoveryDesktop && window.discoveryDesktop.isDesktop
+  ? window.discoveryDesktop
+  : null;
+const INTEL_CONCURRENCY_KEY = 'discovery.intel.concurrency';
+const INTEL_PROFILE_KEY = 'discovery.intel.profile';
+const IMPORT_MODE_KEY = 'discovery.import.mode';
+const INTEL_PIPELINE_OPTIONS_KEY = 'discovery.intel.pipeline.options';
+const INTEL_CONCURRENCY_MIN = 1;
+const INTEL_CONCURRENCY_MAX = 8;
+const INTEL_CONCURRENCY_DEFAULT = 3;
+const INTEL_PROFILE_DEFAULT = 'general';
+const INTEL_PIPELINE_OPTION_DEFAULTS = Object.freeze({
+  useCache: true,
+  skipDedup: false,
+  bulkFast: false,
+  kbEnabled: true,
+  persistToGraph: false,
+  augmentExtraction: false,
+  skipVerification: false
+});
+
+// ── Per-user session ──────────────────────────────────────────────
+function getDiscoveryUserId() {
+  let uid = localStorage.getItem('discoveryUserId');
+  if (!uid) {
+    uid = crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));
+  }
+  localStorage.setItem('discoveryUserId', uid);
+  return uid;
+}
+const DISCOVERY_USER_ID = getDiscoveryUserId();
+
+function normalizeIntelConcurrency(value) {
+  const n = Number.parseInt(String(value ?? ''), 10);
+  if (!Number.isFinite(n)) return INTEL_CONCURRENCY_DEFAULT;
+  return Math.min(INTEL_CONCURRENCY_MAX, Math.max(INTEL_CONCURRENCY_MIN, n));
+}
+
+function getIntelConcurrencySetting() {
+  const stored = localStorage.getItem(INTEL_CONCURRENCY_KEY);
+  return normalizeIntelConcurrency(stored);
+}
+
+function setIntelConcurrencySetting(value) {
+  const normalized = normalizeIntelConcurrency(value);
+  localStorage.setItem(INTEL_CONCURRENCY_KEY, String(normalized));
+  return normalized;
+}
+
+function initIntelConcurrencyControl() {
+  const input = document.getElementById('intelConcurrencyInput');
+  if (!input) return;
+
+  input.value = String(getIntelConcurrencySetting());
+
+  input.addEventListener('change', () => {
+    const saved = setIntelConcurrencySetting(input.value);
+    input.value = String(saved);
+  });
+
+  input.addEventListener('blur', () => {
+    const saved = setIntelConcurrencySetting(input.value);
+    input.value = String(saved);
+  });
+}
+
+function normalizeIntelBoolean(value, fallback = false) {
+  if (value === undefined || value === null || value === '') return Boolean(fallback);
+  if (typeof value === 'boolean') return value;
+  const text = String(value).trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(text)) return true;
+  if (['0', 'false', 'no', 'off'].includes(text)) return false;
+  return Boolean(fallback);
+}
+
+function normalizeIntelPipelineOptions(value) {
+  const source = value && typeof value === 'object' ? value : {};
+  return {
+    useCache: normalizeIntelBoolean(source.useCache, INTEL_PIPELINE_OPTION_DEFAULTS.useCache),
+    skipDedup: normalizeIntelBoolean(source.skipDedup, INTEL_PIPELINE_OPTION_DEFAULTS.skipDedup),
+    bulkFast: normalizeIntelBoolean(source.bulkFast, INTEL_PIPELINE_OPTION_DEFAULTS.bulkFast),
+    kbEnabled: normalizeIntelBoolean(source.kbEnabled, INTEL_PIPELINE_OPTION_DEFAULTS.kbEnabled),
+    persistToGraph: normalizeIntelBoolean(source.persistToGraph, INTEL_PIPELINE_OPTION_DEFAULTS.persistToGraph),
+    augmentExtraction: normalizeIntelBoolean(source.augmentExtraction, INTEL_PIPELINE_OPTION_DEFAULTS.augmentExtraction),
+    skipVerification: normalizeIntelBoolean(source.skipVerification, INTEL_PIPELINE_OPTION_DEFAULTS.skipVerification)
+  };
+}
+
+function getIntelPipelineOptionsSetting() {
+  const raw = localStorage.getItem(INTEL_PIPELINE_OPTIONS_KEY);
+  if (!raw) return normalizeIntelPipelineOptions(INTEL_PIPELINE_OPTION_DEFAULTS);
+  try {
+    return normalizeIntelPipelineOptions(JSON.parse(raw));
+  } catch {
+    return normalizeIntelPipelineOptions(INTEL_PIPELINE_OPTION_DEFAULTS);
+  }
+}
+
+function setIntelPipelineOptionsSetting(nextValue) {
+  const normalized = normalizeIntelPipelineOptions(nextValue);
+  localStorage.setItem(INTEL_PIPELINE_OPTIONS_KEY, JSON.stringify(normalized));
+  return normalized;
+}
+
+function getIntelPipelineOptionsFromUI() {
+  const stored = getIntelPipelineOptionsSetting();
+  const bindings = [
+    ['intelOptUseCache', 'useCache'],
+    ['intelOptSkipDedup', 'skipDedup'],
+    ['intelOptBulkFast', 'bulkFast'],
+    ['intelOptKbEnabled', 'kbEnabled'],
+    ['intelOptPersistGraph', 'persistToGraph'],
+    ['intelOptAugmentExtraction', 'augmentExtraction'],
+    ['intelOptSkipVerification', 'skipVerification']
+  ];
+
+  const merged = { ...stored };
+  for (const [id, key] of bindings) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    merged[key] = Boolean(el.checked);
+  }
+  return normalizeIntelPipelineOptions(merged);
+}
+
+function initIntelPipelineOptionsControls() {
+  const options = getIntelPipelineOptionsSetting();
+  const bindings = [
+    ['intelOptUseCache', 'useCache'],
+    ['intelOptSkipDedup', 'skipDedup'],
+    ['intelOptBulkFast', 'bulkFast'],
+    ['intelOptKbEnabled', 'kbEnabled'],
+    ['intelOptPersistGraph', 'persistToGraph'],
+    ['intelOptAugmentExtraction', 'augmentExtraction'],
+    ['intelOptSkipVerification', 'skipVerification']
+  ];
+
+  for (const [id, key] of bindings) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    el.checked = Boolean(options[key]);
+    el.addEventListener('change', () => {
+      const latest = getIntelPipelineOptionsFromUI();
+      setIntelPipelineOptionsSetting(latest);
+      syncIntelPipelineOptionDependencies();
+    });
+  }
+
+  syncIntelPipelineOptionDependencies();
+}
+
+function syncIntelPipelineOptionDependencies() {
+  const kbEnabled = document.getElementById('intelOptKbEnabled');
+  const persistToGraph = document.getElementById('intelOptPersistGraph');
+  const augmentExtraction = document.getElementById('intelOptAugmentExtraction');
+  const kbActive = kbEnabled ? kbEnabled.checked : true;
+
+  [persistToGraph, augmentExtraction].forEach((el) => {
+    if (!el) return;
+    el.disabled = !kbActive;
+    const wrapper = el.closest('.intel-option-item');
+    if (wrapper) wrapper.classList.toggle('disabled', !kbActive);
+  });
+}
+
+function normalizeIntelProfile(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  const allowed = new Set(['general', 'office', 'law-firm', 'business', 'legal']);
+  return allowed.has(raw) ? raw : INTEL_PROFILE_DEFAULT;
+}
+
+function getIntelProfileSetting() {
+  return normalizeIntelProfile(localStorage.getItem(INTEL_PROFILE_KEY));
+}
+
+function setIntelProfileSetting(value) {
+  const normalized = normalizeIntelProfile(value);
+  localStorage.setItem(INTEL_PROFILE_KEY, normalized);
+  return normalized;
+}
+
+function getIntelProfileConfig(profile) {
+  const selected = normalizeIntelProfile(profile);
+  const byProfile = {
+    general: {
+      heroTitle: 'Inteligência Geral do Workspace',
+      heroDesc: 'Visão ampla do corpus para operação diária: narrativa, achados, eventos e lacunas práticas.',
+      runLabel: 'Executar Análise Geral',
+      findingsLabel: 'Achados',
+      findingsTitle: 'Achados e Riscos',
+      findingsDesc: 'Sinais relevantes detectados nos documentos (operacionais, de processo ou regulatórios).'
+    },
+    office: {
+      heroTitle: 'Inteligência para Escritório',
+      heroDesc: 'Análise de documentos administrativos para organização, riscos de processo e oportunidades de melhoria.',
+      runLabel: 'Analisar Operação de Escritório',
+      findingsLabel: 'Achados',
+      findingsTitle: 'Achados Operacionais',
+      findingsDesc: 'Itens que impactam fluxo de trabalho, documentação e conformidade interna.'
+    },
+    'law-firm': {
+      heroTitle: 'Inteligência para Escritório de Advocacia',
+      heroDesc: 'Análise ampla para triagem documental, entendimento de contexto e priorização de revisão jurídica.',
+      runLabel: 'Analisar Base Jurídica Ampla',
+      findingsLabel: 'Achados',
+      findingsTitle: 'Achados para Triagem Jurídica',
+      findingsDesc: 'Sinais relevantes para organizar peças, evidências, eventos e pontos críticos.'
+    },
+    business: {
+      heroTitle: 'Inteligência para Empresa',
+      heroDesc: 'Análise de documentos corporativos com foco em processos, riscos e decisões orientadas por evidência.',
+      runLabel: 'Analisar Operação Empresarial',
+      findingsLabel: 'Achados',
+      findingsTitle: 'Achados de Negócio',
+      findingsDesc: 'Sinais de risco e oportunidades em contratos, comunicações, relatórios e dados internos.'
+    },
+    legal: {
+      heroTitle: 'Artefatos de Inteligência Jurídica',
+      heroDesc: 'Pipeline jurídico L5–L7: narrativa do caso, violações, eventos formalizados e lacunas de evidência.',
+      runLabel: 'Executar Pipeline Jurídico',
+      findingsLabel: 'Violações',
+      findingsTitle: 'Violações Identificadas',
+      findingsDesc: 'Infrações detectadas com referências legais e nível de confiança.'
+    }
+  };
+  return byProfile[selected];
+}
+
+function applyIntelProfileUI(profile) {
+  const config = getIntelProfileConfig(profile);
+  const title = document.getElementById('intelHeroTitle');
+  const desc = document.getElementById('intelHeroDesc');
+  const startRunBtn = document.getElementById('startIntelRunBtn');
+  const runBtn = document.getElementById('intelRunBtn');
+  const findingsTab = document.getElementById('intelSubFindingsBtn');
+  const findingsTitle = document.getElementById('intelFindingsTitle');
+  const findingsDesc = document.getElementById('intelFindingsDesc');
+
+  if (title) title.textContent = config.heroTitle;
+  if (desc) desc.textContent = config.heroDesc;
+  if (startRunBtn) startRunBtn.innerHTML = `<i class="fas fa-bolt"></i> ${esc(config.runLabel)}`;
+  if (runBtn) runBtn.innerHTML = `<i class="fas fa-bolt"></i> ${esc(config.runLabel)}`;
+  if (findingsTab) findingsTab.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${esc(config.findingsLabel)}`;
+  if (findingsTitle) findingsTitle.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${esc(config.findingsTitle)}`;
+  if (findingsDesc) findingsDesc.textContent = config.findingsDesc;
+}
+
+function initIntelProfileControl() {
+  const select = document.getElementById('intelProfileSelect');
+  if (!select) return;
+
+  select.value = getIntelProfileSetting();
+  applyIntelProfileUI(select.value);
+
+  select.addEventListener('change', () => {
+    const saved = setIntelProfileSetting(select.value);
+    select.value = saved;
+    applyIntelProfileUI(saved);
+  });
+}
+
+function getImportModeSetting() {
+  const stored = localStorage.getItem(IMPORT_MODE_KEY);
+  return stored === 'overwrite' ? 'overwrite' : 'add';
+}
+
+function setImportModeSetting(value) {
+  const normalized = value === 'overwrite' ? 'overwrite' : 'add';
+  localStorage.setItem(IMPORT_MODE_KEY, normalized);
+  return normalized;
+}
+
+function initImportModeControl() {
+  const select = document.getElementById('importModeSelect');
+  if (!select) return;
+
+  select.value = getImportModeSetting();
+  select.addEventListener('change', () => {
+    select.value = setImportModeSetting(select.value);
+  });
+}
+
+let allFiles = [];
+let categoriesData = {};
+let uploadFiles = [];  // staged files waiting to be uploaded
+let activeCategory = null;
+let currentModalFile = null;
+let chatOpen = false;
+let chatHistory = [];
+
+const IGNORED_UPLOAD_BASENAMES = new Set(['.ds_store']);
+
+function getUploadFilePath(file) {
+  return file?._relativePath || file?.webkitRelativePath || file?.name || '';
+}
+
+function isIgnoredUploadFile(file) {
+  const basename = getUploadFilePath(file).split(/[\\/]/).pop().toLowerCase();
+  return IGNORED_UPLOAD_BASENAMES.has(basename);
+}
+
+// Mapeamento de grupos de conteúdo para português
+const groupTranslations = {
+  document: 'documento', data: 'dados', code: 'código',
+  image: 'imagem', audio: 'áudio', video: 'vídeo',
+  archive: 'arquivo', config: 'configuração', other: 'outro'
+};
+
+const GROUP_ICONS = {
+  document:'fa-file-lines', data:'fa-table', code:'fa-code',
+  image:'fa-image', audio:'fa-headphones', video:'fa-film',
+  archive:'fa-file-zipper', config:'fa-sliders', other:'fa-file'
+};
+
+// ============================================================================
+// NAV — server status check
+// ============================================================================
+async function checkServer() {
+  const dot = document.getElementById('statusDot');
+  const label = document.getElementById('serverStatus');
+  if (!dot || !label) return;
+  try {
+    const r = await fetch(`${CASE_SERVER}/health`, { signal: AbortSignal.timeout(3000) });
+    if (r.ok) { dot.className='dot live'; label.innerHTML='<span class="dot live"></span> online'; }
+    else throw 0;
+  } catch { dot.className='dot'; label.innerHTML='<span class="dot"></span> offline'; }
+}
+
+// ============================================================================
+// START-HERE — toggle
+// ============================================================================
+document.getElementById('startHeader').addEventListener('click', () => {
+  document.getElementById('startBody').classList.toggle('closed');
+  document.getElementById('startHeader').classList.toggle('collapsed');
+});
+
+// ============================================================================
+// UPLOAD FILE COLLECTION
+// ============================================================================
+async function handleUploadDrop(event) {
+  const items = event.dataTransfer.items;
+  if (!items || !items.length) { handleUploadFiles(event.dataTransfer.files); return; }
+  const files = [];
+  const entries = [];
+  for (const item of items) {
+    const entry = item.webkitGetAsEntry && item.webkitGetAsEntry();
+    if (entry) entries.push(entry);
+  }
+  if (!entries.length) { handleUploadFiles(event.dataTransfer.files); return; }
+  async function readEntry(entry, pathPrefix) {
+    if (entry.isFile) {
+      return new Promise(resolve => entry.file(f => {
+        f._relativePath = pathPrefix + f.name; files.push(f); resolve();
+      }, () => resolve()));
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      const nextPrefix = pathPrefix + entry.name + '/';
+      while (true) {
+        const chunk = await new Promise(resolve => {
+          reader.readEntries(resolve, () => resolve([]));
+        });
+        if (!chunk.length) break;
+        for (const e of chunk) await readEntry(e, nextPrefix);
+      }
+    }
+  }
+  for (const entry of entries) await readEntry(entry, '');
+  handleUploadFiles(files);
+}
+
+function handleUploadFiles(fileList) {
+  let ignoredCount = 0;
+  for (const f of fileList) {
+    if (isIgnoredUploadFile(f)) {
+      ignoredCount += 1;
+      continue;
+    }
+    const relPath = getUploadFilePath(f);
+    if (!uploadFiles.find(x => getUploadFilePath(x) === relPath && x.size === f.size)) {
+      uploadFiles.push(f);
+    }
+  }
+  renderUploadFileList();
+  document.getElementById('organizeBtn').style.display = uploadFiles.length ? '' : 'none';
+  if (ignoredCount > 0) {
+    showAlert('info', `<i class="fas fa-filter"></i> Ignorados <strong>${ignoredCount}</strong> arquivo(s) de sistema (ex.: .DS_Store).`);
+  }
+}
+
+function renderUploadFileList() {
+  const container = document.getElementById('uploadFileList');
+  if (!uploadFiles.length) { container.innerHTML = ''; return; }
+  container.innerHTML = uploadFiles.slice(0, 20).map((f, i) => {
+    const name = getUploadFilePath(f);
+    const sz = f.size < 1024 ? f.size + 'B' : f.size < 1048576 ? (f.size/1024).toFixed(1) + 'KB' : (f.size/1048576).toFixed(1) + 'MB';
+    return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.04)">
+      <i class="fas fa-file" style="color:var(--amber);flex-shrink:0"></i>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--gray-hi);font-family:var(--mono)" title="${esc(name)}">${esc(name)}</span>
+      <span style="color:var(--gray);flex-shrink:0">${sz}</span>
+    </div>`;
+  }).join('') + (uploadFiles.length > 20 ? `<div style="font-size:11px;color:var(--gray);padding:4px 0">+ ${uploadFiles.length - 20} mais arquivos</div>` : '');
+  const hint = document.getElementById('browseHint');
+  hint.innerHTML = `Selecionados: <strong>${uploadFiles.length}</strong> arquivo(s) — clique <em>Organizar</em> para enviar`;
+  hint.style.display = 'block';
+}
+
+// ============================================================================
+// ORGANIZE — upload files to Awareness API, which saves and triggers rebuild
+// ============================================================================
+async function organize() {
+  if (!uploadFiles.length) return;
+  const uploadableFiles = uploadFiles.filter(f => !isIgnoredUploadFile(f));
+  if (!uploadableFiles.length) {
+    uploadFiles = [];
+    renderUploadFileList();
+    document.getElementById('organizeBtn').style.display = 'none';
+    showAlert('error', 'Nenhum arquivo valido para upload.');
+    return;
+  }
+  if (uploadableFiles.length !== uploadFiles.length) {
+    uploadFiles = uploadableFiles;
+    renderUploadFileList();
+  }
+
+  const btn = document.getElementById('organizeBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando…';
+  showAlert('info', '<i class="fas fa-spinner fa-spin"></i> Limpando sessão e organizando arquivos…');
+  try {
+    // Keep Discovery UI runs deterministic: every new upload starts from a clean workspace.
+    const resetResp = await fetch(`${DISCOVERY_UI_API}/api/discovery/reset-session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Discovery-User-Id': DISCOVERY_USER_ID,
+      },
+      body: JSON.stringify({ user_id: DISCOVERY_USER_ID, clear_files: true }),
+    });
+    if (!resetResp.ok) {
+      const err = await resetResp.text();
+      showAlert('error', `Falha ao limpar sessão: ${esc(err)}`);
+      return;
+    }
+
+    const formData = new FormData();
+    uploadableFiles.forEach(f => {
+      const name = getUploadFilePath(f);
+      formData.append('files', f, name);
+    });
+    const uploadResp = await fetch(`${DISCOVERY_UI_API}/api/discovery/upload`, { method: 'POST', body: formData, headers: { 'X-Discovery-User-Id': DISCOVERY_USER_ID } });
+    if (!uploadResp.ok) {
+      const err = await uploadResp.text();
+      showAlert('error', `Falha no envio: ${esc(err)}`);
+      return;
+    }
+    const uploadData = await uploadResp.json();
+    const rebuild = uploadData.rebuild;
+    const fileCount = uploadData.files ? uploadData.files.length : uploadableFiles.length;
+    showAlert('success', `<i class="fas fa-check-circle"></i> Organizados <strong>${rebuild ? rebuild.total_files : fileCount}</strong> arquivos em <strong>${rebuild ? Object.keys(rebuild.categories||{}).length : '?'}</strong> categorias`);
+    uploadFiles = [];
+    renderUploadFileList();
+    document.getElementById('organizeBtn').style.display = 'none';
+    document.getElementById('startBody').classList.add('closed');
+    document.getElementById('startHeader').classList.add('collapsed');
+    await loadDashboard();
+    organizeAndGreet();
+  } catch(e) {
+    showAlert('error', `Não foi possível enviar arquivos: ${esc(e.message || String(e))}`);
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Organizar';
+  }
+}
+
+// ============================================================================
+// LOAD DASHBOARD DATA
+// ============================================================================
+async function loadDashboard() {
+  try {
+    const [endpointsResp, catsResp] = await Promise.all([
+      fetch(`${CASE_SERVER}/api/endpoints`),
+      fetch(`${CASE_SERVER}/api/categories`),
+    ]);
+    allFiles = await endpointsResp.json();
+    categoriesData = (await catsResp.json()).categories || {};
+
+    document.getElementById('statFiles').textContent = allFiles.length;
+    document.getElementById('statCategories').textContent = Object.keys(categoriesData).length;
+    document.getElementById('statEndpoints').textContent = allFiles.length;
+    const types = new Set(allFiles.map(f=>f.extension).filter(Boolean));
+    document.getElementById('statTypes').textContent = types.size;
+    const totalBytes = allFiles.reduce((s,f)=>s+(f.size_bytes||0),0);
+    document.getElementById('statTotalSize').textContent = humanSize(totalBytes);
+    const root = allFiles.length ? allFiles[0].location?.split('/')[0]||'.' : '';
+    document.getElementById('statRoot').textContent = root;
+
+    ['Manifest','Endpoints','Files','Categories','Search','Tree'].forEach(name=>{
+      const el=document.getElementById('link'+name);
+      if(el) el.href=`${CASE_SERVER}/api/${name.toLowerCase()}`;
+    });
+    const psl=document.getElementById('linkPipeStats');
+    if(psl) psl.href=`${CASE_SERVER}/api/pipeline/stats`;
+    document.getElementById('curlExample').textContent=`curl ${CASE_SERVER}/api/manifest | python3 -m json.tool`;
+
+    renderOverview(); renderCategoryTags(); renderTable(allFiles); renderPipeline();
+    document.getElementById('dashboard').style.display='block';
+    document.getElementById('chatFab').classList.add('visible');
+    updateChatContext();
+    checkServer();
+  } catch { showAlert('error','Falha ao carregar dados do case-server'); }
+}
+
+// ============================================================================
+// OVERVIEW
+// ============================================================================
+function renderOverview() {
+  const grid=document.getElementById('catGrid');
+  const legend=document.getElementById('groupLegend');
+  grid.innerHTML='';
+  const groups=[...new Set(allFiles.map(f=>f.contentGroup).filter(Boolean))].sort();
+  legend.innerHTML=groups.map(g=>`<span class="group-dot ${g}">${groupTranslations[g]||g}</span>`).join('');
+  const maxCount=Math.max(...Object.values(categoriesData).map(c=>c.count),1);
+  for(const [cat,info] of Object.entries(categoriesData)){
+    const kinds=info.kinds?Object.entries(info.kinds).map(([k,v])=>`${k} (${v})`).join(' · '):'';
+    const pct=Math.round((info.count/maxCount)*100);
+    grid.innerHTML+=`<div class="cat-card" onclick="jumpToCategory('${esc(cat)}')">
+      <div class="cat-card-count">${info.count}</div>
+      <div class="cat-card-name">${esc(info.label||cat)}</div>
+      <div class="cat-card-kinds">${esc(kinds)}</div>
+      <div class="cat-card-bar"><div class="cat-card-bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }
+}
+function jumpToCategory(cat){
+  activeCategory=cat; switchTab('files'); filterFiles();
+  document.querySelectorAll('.cat-tag').forEach(t=>t.classList.toggle('active',t.dataset.cat===cat));
+}
+
+// ============================================================================
+// FILES TABLE — with clickable rows for preview
+// ============================================================================
+function renderCategoryTags(){
+  const container=document.getElementById('catTags'); container.innerHTML='';
+  let tags=`<span class="cat-tag active" data-cat="" onclick="setCategory(this,null)">Todos (${allFiles.length})</span>`;
+  for(const [cat,info] of Object.entries(categoriesData))
+    tags+=`<span class="cat-tag" data-cat="${esc(cat)}" onclick="setCategory(this,'${esc(cat)}')">${esc(info.label||cat)} (${info.count})</span>`;
+  container.innerHTML=tags;
+}
+function setCategory(el,cat){
+  activeCategory=cat;
+  document.querySelectorAll('.cat-tag').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active'); filterFiles();
+}
+function filterFiles(){
+  const q=(document.getElementById('searchInput').value||'').toLowerCase();
+  let filtered=allFiles;
+  if(activeCategory) filtered=filtered.filter(f=>f.category===activeCategory);
+  if(q) filtered=filtered.filter(f=>
+    (f.displayName||'').toLowerCase().includes(q)||(f.description||'').toLowerCase().includes(q)||
+    (f.file||'').toLowerCase().includes(q)||(f.kind||'').toLowerCase().includes(q)||
+    (f.category||'').toLowerCase().includes(q));
+  renderTable(filtered);
+}
+function renderTable(files){
+  const area=document.getElementById('fileTableArea');
+  if(!files.length){
+    area.innerHTML='<div class="empty-state"><i class="fas fa-search"></i><h3>Nenhum arquivo correspondente</h3><p>Tente uma busca diferente ou filtro de categoria</p></div>';
+    return;
+  }
+  let html=`<table class="api-table"><thead><tr>
+    <th>Arquivo</th><th>Tipo</th><th>Categoria</th><th>Tamanho</th><th>Endpoint</th>
+  </tr></thead><tbody>`;
+  for(const f of files){
+    html+=`<tr class="file-row-click" onclick="openFileModal(${JSON.stringify(JSON.stringify(f))})">
+      <td><span class="file-name">${esc(f.displayName||f.fileName)}</span><span class="file-desc">${esc(f.description||'')}</span></td>
+      <td><span class="file-kind">${esc(f.kind||f.extension||'—')}</span></td>
+      <td style="font-size:12px">${esc(f.categoryLabel||f.category||'')}</td>
+      <td style="font-size:12px;font-family:var(--mono);white-space:nowrap">${esc(f.size_human||'')}</td>
+      <td><a class="file-url" href="${esc(f.url)}" target="_blank" onclick="event.stopPropagation()">${shortenUrl(f.url)}</a></td>
+    </tr>`;
+  }
+  html+='</tbody></table>';
+  area.innerHTML=html;
+}
+
+// ============================================================================
+// PIPELINE — with thumbnail hover
+// ============================================================================
+function renderPipeline(){
+  const grid=document.getElementById('pipelineGrid');
+  const groups={};
+  allFiles.forEach(f=>{ const g=f.contentGroup||'other'; groups[g]=(groups[g]||0)+1; });
+
+  const pipeMap={
+    document:{icon:'fa-file-lines', title:'Documentos',    desc:'PDFs, Markdown, DOCX — prontos para extração de texto, chunking ou pipelines RAG'},
+    data:    {icon:'fa-table',      title:'Dados Estruturados', desc:'CSV, JSON, XLSX — prontos para carregamento em DataFrames, ETL ou importação em bancos de dados'},
+    code:    {icon:'fa-code',       title:'Código Fonte',  desc:'JavaScript, TypeScript, HTML e mais — prontos para análise AST, linting ou treinamento de agentes'},
+    image:   {icon:'fa-image',      title:'Imagens',       desc:'JPG, PNG, SVG — prontas para OCR, legendagem ou classificação visual'},
+    audio:   {icon:'fa-headphones', title:'Áudio',         desc:'MP3, WAV, M4A — prontos para transcrição ou diarização de falantes'},
+    video:   {icon:'fa-film',       title:'Vídeo',         desc:'MP4, AVI — prontos para extração de quadros ou análise de mídia'},
+    archive: {icon:'fa-file-zipper',title:'Arquivos Compactados', desc:'ZIP, TAR — podem ser descompactados e reorganizados'},
+    config:  {icon:'fa-sliders',    title:'Configurações', desc:'TOML, YAML, INI — prontos para extração de configurações ou migração'},
+    other:   {icon:'fa-file',       title:'Outros',        desc:'Identificados e catalogados'}
+  };
+
+  grid.innerHTML='';
+  for(const [g,count] of Object.entries(groups).sort((a,b)=>b[1]-a[1])){
+    const info=pipeMap[g]||{icon:'fa-file',title:groupTranslations[g]||g,desc:'Identificado e catalogado'};
+    // pick 3 sample files from this group
+    const samples=allFiles.filter(f=>(f.contentGroup||'other')===g).slice(0,3);
+    const totalInGroup=count;
+    const remaining=totalInGroup-samples.length;
+
+    let thumbsHtml=`<div class="pipeline-card-thumbs">
+      <div class="thumb-label">Exemplos</div>`;
+    for(const s of samples){
+      thumbsHtml+=`<div class="thumb-item" onclick="event.stopPropagation();openFileModal(${JSON.stringify(JSON.stringify(s))})">
+        <i class="fas ${info.icon} thumb-item-icon"></i>
+        <span class="thumb-item-name">${esc(s.displayName||s.fileName)}</span>
+        <span class="thumb-item-size">${esc(s.size_human||'')}</span>
+      </div>`;
+    }
+    if(remaining>0)
+      thumbsHtml+=`<div class="thumb-more" onclick="event.stopPropagation();switchTab('files');setGroupFilter('${g}')">+${remaining} mais — ver todos</div>`;
+    thumbsHtml+=`</div>`;
+
+    grid.innerHTML+=`<div class="pipeline-card">
+      ${thumbsHtml}
+      <div class="pipeline-card-icon"><i class="fas ${info.icon}"></i></div>
+      <div class="pipeline-card-title">${esc(info.title)}</div>
+      <div class="pipeline-card-count">${count}</div>
+      <div class="pipeline-card-desc">${esc(info.desc)}</div>
+    </div>`;
+  }
+
+  // Content groups visual
+  const groupGrid=document.getElementById('groupGrid');
+  groupGrid.innerHTML='';
+  for(const [g,count] of Object.entries(groups).sort((a,b)=>b[1]-a[1])){
+    const info=pipeMap[g]||{icon:'fa-file',title:groupTranslations[g]||g,desc:''};
+    const exts=[...new Set(allFiles.filter(f=>f.contentGroup===g).map(f=>f.extension))].join(', ');
+    groupGrid.innerHTML+=`<div class="cat-card">
+      <div class="cat-card-count">${count}</div>
+      <div class="cat-card-name">${esc(info.title)}</div>
+      <div class="cat-card-kinds">${esc(exts)}</div>
+    </div>`;
+  }
+}
+
+function setGroupFilter(group){
+  // jump to files tab and filter by group
+  const q=document.getElementById('searchInput');
+  q.value=groupTranslations[group]||group;
+  activeCategory=null;
+  document.querySelectorAll('.cat-tag').forEach(t=>t.classList.remove('active'));
+  document.querySelector('[data-cat=""]')?.classList.add('active');
+  filterFiles();
+}
+
+// ============================================================================
+// FILE PREVIEW MODAL
+// ============================================================================
+const TEXT_EXTS=new Set(['txt','md','markdown','json','csv','xml','yaml','yml','toml','ini','py','js','ts','html','htm','css','sh','bat','log','sql','env','conf','cfg']);
+const BINARY_GROUPS=new Set(['image','audio','video','archive']);
+
+async function openFileModal(fileJson){
+  const f = typeof fileJson==='string' ? JSON.parse(fileJson) : fileJson;
+  currentModalFile=f;
+
+  const modal=document.getElementById('fileModal');
+  modal.classList.remove('hidden');
+  setTimeout(()=>modal.classList.add('open'),10);
+
+  // Header
+  const g=f.contentGroup||'other';
+  document.getElementById('modalIcon').innerHTML=`<i class="fas ${GROUP_ICONS[g]||'fa-file'}"></i>`;
+  document.getElementById('modalName').textContent=f.displayName||f.fileName||f.file;
+  document.getElementById('modalChips').innerHTML=`
+    <span class="modal-chip kind">${esc(f.kind||f.extension||'—')}</span>
+    <span class="modal-chip">${esc(f.categoryLabel||f.category||'')}</span>
+    ${f.size_human?`<span class="modal-chip">${esc(f.size_human)}</span>`:''}
+    <span class="modal-chip">${esc(groupTranslations[g]||g)}</span>`;
+
+  // URL bar
+  const urlText=document.getElementById('modalUrlText');
+  const urlLink=document.getElementById('modalUrlLink');
+  const downloadBtn=document.getElementById('modalDownloadBtn');
+  urlText.textContent=f.url||'';
+  urlLink.href=f.url||'#';
+  downloadBtn.href=f.url||'#';
+
+  // Chat button visible if chat available
+  document.getElementById('modalChatBtn').style.display=allFiles.length?'':'none';
+
+  // Body — load content
+  const body=document.getElementById('modalBody');
+  body.innerHTML='<div class="modal-content-area"><div class="modal-loading"><i class="fas fa-spinner fa-spin"></i> Carregando conteúdo…</div></div>';
+
+  // Decide how to display
+  const ext=(f.extension||'').toLowerCase().replace('.','');
+  if(BINARY_GROUPS.has(g) && !TEXT_EXTS.has(ext)){
+    body.innerHTML=`<div class="modal-content-area"><div class="modal-binary">
+      <i class="fas ${GROUP_ICONS[g]||'fa-file'}"></i>
+      <h3>${esc(f.displayName||f.fileName)}</h3>
+      <p>Arquivo binário (${esc(f.kind||ext||g)}) — ${esc(f.size_human||'')}.<br>Use o link acima para abrir ou baixar.</p>
+      ${f.description?`<p style="margin-top:12px;font-style:italic">${esc(f.description)}</p>`:''}
+    </div></div>`;
+    return;
+  }
+
+  if(!f.url){ body.innerHTML='<div class="modal-content-area"><div class="modal-binary"><i class="fas fa-unlink"></i><h3>URL não disponível</h3></div></div>'; return; }
+
+  try{
+    const rawUrl=`${CASE_SERVER}/api/raw?file=${encodeURIComponent(f.file||f.url)}`;
+    const resp=await fetch(rawUrl);
+    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const text=await resp.text();
+
+    if(ext==='md'||ext==='markdown'){
+      body.innerHTML=`<div class="modal-content-area"><div class="modal-markdown">${renderMarkdown(text)}</div></div>`;
+    } else if(ext==='json'){
+      try{
+        const pretty=JSON.stringify(JSON.parse(text),null,2);
+        body.innerHTML=`<div class="modal-content-area"><pre class="modal-pre">${esc(pretty)}</pre></div>`;
+      } catch{ body.innerHTML=`<div class="modal-content-area"><pre class="modal-pre">${esc(text)}</pre></div>`; }
+    } else {
+      body.innerHTML=`<div class="modal-content-area"><pre class="modal-pre">${esc(text)}</pre></div>`;
+    }
+  } catch(err){
+    body.innerHTML=`<div class="modal-content-area"><div class="modal-binary">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h3>Não foi possível carregar</h3>
+      <p>${esc(err.message)}<br><br>Tente abrir diretamente pela URL acima.</p>
+    </div></div>`;
+  }
+}
+
+function closeFileModal(){
+  const modal=document.getElementById('fileModal');
+  modal.classList.remove('open');
+  setTimeout(()=>modal.classList.add('hidden'),180);
+}
+function closeModal(e){ if(e.target.id==='fileModal') closeFileModal(); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeFileModal(); });
+
+function copyModalUrl(){
+  const url=document.getElementById('modalUrlText').textContent;
+  navigator.clipboard.writeText(url).then(()=>{
+    const btn=document.getElementById('copyBtn');
+    btn.textContent='copiado!'; btn.style.color='var(--green)';
+    setTimeout(()=>{ btn.textContent='copiar'; btn.style.color=''; },1800);
+  });
+}
+
+function openInChat(){
+  closeFileModal();
+  if(!chatOpen) toggleChat();
+  const f=currentModalFile;
+  if(f){
+    const ta=document.getElementById('chatInput');
+    ta.value=`Me conte mais sobre o arquivo "${f.displayName||f.fileName}"`;
+    ta.focus();
+  }
+}
+
+// ─── Minimal Markdown renderer ───
+function renderMarkdown(text){
+  const src = String(text || '')
+    .replace(/^\s*<+>+\s*/, '')
+    .replace(/\s*<+>+\s*$/, '')
+    .replace(/\r\n?/g, '\n');
+
+  const lines = src.split('\n');
+  const out = [];
+  const paragraph = [];
+  const code = [];
+  const list = [];
+
+  let inCode = false;
+
+  function parseInline(s) {
+    let h = esc(s);
+    h = h.replace(/`([^`]+)`/g, '<code>$1</code>');
+    h = h.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    h = h.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    return h;
+  }
+
+  function flushParagraph() {
+    if (!paragraph.length) return;
+    out.push(`<p>${paragraph.map(parseInline).join('<br>')}</p>`);
+    paragraph.length = 0;
+  }
+
+  function flushList() {
+    if (!list.length) return;
+    const items = list.map((item) => `<li>${parseInline(item)}</li>`).join('');
+    out.push(`<ul>${items}</ul>`);
+    list.length = 0;
+  }
+
+  function flushCode() {
+    if (!code.length) return;
+    out.push(`<pre><code>${esc(code.join('\n'))}</code></pre>`);
+    code.length = 0;
+  }
+
+  function tryRenderTable(index) {
+    if (index + 1 >= lines.length) return null;
+    const headerLine = lines[index];
+    const sepLine = lines[index + 1];
+    const isPipeRow = headerLine.includes('|');
+    const isSep = /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?\s*$/.test(sepLine);
+    if (!isPipeRow || !isSep) return null;
+
+    const rows = [headerLine];
+    let i = index + 2;
+    while (i < lines.length && lines[i].includes('|') && lines[i].trim()) {
+      rows.push(lines[i]);
+      i += 1;
+    }
+
+    const splitRow = (row) => row
+      .trim()
+      .replace(/^\|/, '')
+      .replace(/\|$/, '')
+      .split('|')
+      .map((c) => c.trim());
+
+    const headers = splitRow(rows[0]);
+    const bodyRows = rows.slice(1).map(splitRow);
+
+    let html = '<table><thead><tr>';
+    html += headers.map((h) => `<th>${parseInline(h)}</th>`).join('');
+    html += '</tr></thead><tbody>';
+
+    for (const row of bodyRows) {
+      html += '<tr>' + row.map((c) => `<td>${parseInline(c)}</td>`).join('') + '</tr>';
+    }
+    html += '</tbody></table>';
+
+    return { html, nextIndex: i - 1 };
+  }
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    const t = line.trim();
+
+    if (/^```/.test(t)) {
+      if (inCode) {
+        flushCode();
+        inCode = false;
+      } else {
+        flushParagraph();
+        flushList();
+        inCode = true;
+      }
+      continue;
+    }
+
+    if (inCode) {
+      code.push(line);
+      continue;
+    }
+
+    if (!t) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    const table = tryRenderTable(i);
+    if (table) {
+      flushParagraph();
+      flushList();
+      out.push(table.html);
+      i = table.nextIndex;
+      continue;
+    }
+
+    if (/^---+$/.test(t)) {
+      flushParagraph();
+      flushList();
+      out.push('<hr>');
+      continue;
+    }
+
+    if (/^###\s+/.test(t) || /^##\s+/.test(t) || /^#\s+/.test(t)) {
+      flushParagraph();
+      flushList();
+      const depth = t.startsWith('### ') ? 'h3' : t.startsWith('## ') ? 'h2' : 'h1';
+      out.push(`<${depth}>${parseInline(t.replace(/^#{1,3}\s+/, ''))}</${depth}>`);
+      continue;
+    }
+
+    if (/^>\s+/.test(t)) {
+      flushParagraph();
+      flushList();
+      out.push(`<blockquote>${parseInline(t.replace(/^>\s+/, ''))}</blockquote>`);
+      continue;
+    }
+
+    const ul = t.match(/^[\-*]\s+(.+)$/);
+    const ol = t.match(/^\d+\.\s+(.+)$/);
+    if (ul || ol) {
+      flushParagraph();
+      list.push((ul || ol)[1]);
+      continue;
+    }
+
+    flushList();
+    paragraph.push(line);
+  }
+
+  if (inCode) flushCode();
+  flushList();
+  flushParagraph();
+
+  return out.join('');
+}
+
+// ============================================================================
+// LLM CHAT — Anthropic API
+// ============================================================================
+function toggleChat(){
+  chatOpen=!chatOpen;
+  document.getElementById('chatPanel').classList.toggle('open',chatOpen);
+  if(chatOpen){ document.getElementById('chatInput').focus(); updateChatContext(); }
+}
+
+function updateChatContext(){
+  const badge=document.getElementById('chatCtxBadge');
+  if(badge) badge.textContent=`${allFiles.length} arquivo${allFiles.length!==1?'s':''}`;
+  if(allFiles.length>0) updateChatSuggestions();
+}
+
+function buildSystemPrompt(){
+  const total=allFiles.length;
+  const profile = getIntelProfileSetting();
+  const profileConfig = getIntelProfileConfig(profile);
+  const cats=Object.entries(categoriesData).map(([k,v])=>`  - ${v.label||k}: ${v.count} arquivo(s)`).join('\n');
+  const groups={};
+  allFiles.forEach(f=>{ const g=f.contentGroup||'other'; groups[g]=(groups[g]||0)+1; });
+  const groupStr=Object.entries(groups).map(([g,c])=>`  - ${groupTranslations[g]||g}: ${c}`).join('\n');
+  const sample=allFiles.slice(0,40).map(f=>
+    `    • ${f.displayName||f.fileName} [${f.kind||f.extension||'?'}] ${f.size_human||''} — ${f.description||''}`
+  ).join('\n');
+  const more=total>40?`\n  ... e mais ${total-40} arquivos`:'';
+
+  const pipeReady = pipelineStats && !pipelineStats.error;
+  const intelReady = intelData && (intelData.narrative || intelData.violations || intelData.caseState);
+
+  return `Você é o Agente de Dados do Discovery (Awareness-AI).
+Você age como um consultor especializado de dados — não apenas responde perguntas, mas GUIA ativamente o usuário para extrair valor máximo dos dados organizados.
+
+════ DADOS CARREGADOS ════
+Total: ${total} arquivo(s) | Server: ${CASE_SERVER}
+
+Categorias:
+${cats||'  (nenhuma)'}
+
+Grupos de conteúdo:
+${groupStr||'  (nenhum)'}
+
+Amostra de arquivos (primeiros 40 de ${total}):
+${sample||'  (nenhum)'}${more}
+
+Status do Pipeline: ${pipeReady ? '✓ Rodou — dado enriquecido disponível' : '○ Ainda não executado (executa automaticamente ao organizar)'}
+Status da Inteligência L5–L7: ${intelReady ? '✓ Disponível — narrativa, achados, estado analítico' : '○ Não executado — requer API key'}
+Perfil de análise ativo: ${profileConfig.heroTitle}
+
+════ CATÁLOGO DE ENDPOINTS DA API (${CASE_SERVER}) ════
+Estes são TODOS os endpoints REST disponíveis para os dados carregados:
+
+─ Estrutura & Catálogo ─
+  GET  /api/manifest            → Manifesto completo: todos os arquivos com metadados, URLs e categorias
+  GET  /api/endpoints           → Array JSON de todos os endpoints de arquivo
+  GET  /api/files               → Listagem filtrável: ?category= ?ext= ?kind= ?group=
+  GET  /api/categories          → Resumo de categorias com contagens e tipos
+  GET  /api/tree                → Árvore de diretórios recursiva (estrutura JSON)
+  GET  /api/search?q=           → Busca textual em todos os metadados
+  GET  /api/raw?file=           → Acesso direto ao conteúdo de arquivo (caminho validado)
+  POST /api/rebuild             → Reindexa: body {"root_dir": "/caminho"}
+
+─ Dados Enriquecidos do Pipeline (L0–L4, automático) ─
+  GET  /api/pipeline/stats      → Idiomas, domínios, tags, contagem de palavras, entidades
+  GET  /api/pipeline/entities   → Índice de entidades: ?type=people|organizations|laws|locations|dates
+  GET  /api/pipeline/relationships → Conexões entre arquivos (entidades compartilhadas)
+  GET  /api/pipeline/timeline   → Linha do tempo de datas extraídas dos conteúdos
+  GET  /api/pipeline/search?q=  → Busca enriquecida — entidades, tags, domínios
+  GET  /api/file-detail?file=   → Metadados completos + enriquecimento de pipeline de um arquivo
+
+─ Inteligência por IA (L5–L7, requer API key) ─
+  POST /api/intelligence/run    → Executa pipeline completo: body {"api_key":"...","model":"...","concurrency":4,"bulk_fast":false,"use_cache":true,"skip_dedup":false,"kb_enabled":true,"persist_to_graph":false,"augment_extraction":false,"skip_verification":false,"analysis_profile":"general|office|law-firm|business|legal"}
+  GET  /api/intelligence/run-stream → SSE ao vivo durante execução do pipeline
+  GET  /api/intelligence/summary    → Resumo do pipeline de inteligência
+  GET  /api/intelligence/narrative  → Narrativa cronológica do caso gerada por IA (?format=md)
+  GET  /api/intelligence/violations → Achados/violações detectados (?severity=high|medium|low)
+  GET  /api/intelligence/gap-report → Lacunas: evidências ausentes, referências não resolvidas
+  GET  /api/intelligence/case-graph → Grafo de caso ontologia v2.4
+  GET  /api/intelligence/timeline   → Timeline de eventos formalizados
+  GET  /api/intelligence/law-registry → Referências legais resolvidas e não resolvidas
+  GET  /api/intelligence/dedup-report → Duplicatas e clusters de arquivos similares
+  GET  /api/events              → Eventos formalizados por tipo
+  GET  /api/case-state          → Estado do caso: fase, achados, próximos passos
+  GET  /api/comprehend/overview → Análise de IA sobre o que os dados contêm
+  GET  /api/comprehend/guide    → Guia de organização do corpus
+
+════ COMO PROPOR AÇÕES ════
+Quando quiser que o usuário veja algo ou execute uma ação, use este marcador EXATO no final da frase:
+  [[ACTION:Texto do Botão::id_da_acao]]
+
+IDs de ação disponíveis:
+  files          → Abre aba "Todos os Arquivos"
+  insights       → Abre aba "Insights" (pipeline stats, entidades, relações, timeline)
+  intelligence   → Abre aba "Inteligência" (artefatos L5–L7)
+  api            → Abre aba "API" (referência de endpoints)
+  pipeline       → Abre aba "Pronto para Pipeline" (grupos de conteúdo)
+  overview       → Abre aba "Visão Geral" (categorias)
+  workspace      → Abre o workspace guiado do agente em nova aba
+  awareness      → Abre o workspace Awareness/Manus em nova aba
+  residencia     → Abre o workspace da RMISFC (Residência Multiprofissional — UnirG/COREMU 2026), dedicado aos 10 residentes da turma 2026 e à equipe sênior (coordenação, tutoras, preceptores, SMS)
+  runIntelligence → Executa o pipeline L5–L7 de inteligência por IA
+  runComprehension → Executa análise de compreensão do corpus
+
+Exemplos:
+  "Você pode explorar as entidades aqui: [[ACTION:Ver Entidades::insights]]"
+  "Para narrativa do caso: [[ACTION:Executar Inteligência::runIntelligence]]"
+
+════ INSTRUÇÕES DE COMPORTAMENTO ════
+- Responda SEMPRE em português, de forma direta e consultiva
+- Aja como especialista: proponha próximos passos, não apenas responda
+- Quando relevante, cite endpoints concretos com exemplos curl
+- Inclua botões [[ACTION:...]] quando o usuário pode agir diretamente na UI
+- Mencione os endpoints mais úteis para o tipo de dado que o usuário tem
+- Nunca invente dados — apenas use o contexto acima
+- Para perguntas sobre conteúdo de arquivos, instrua a clicar no arquivo na tabela
+- Quando o usuário perguntar "o que posso fazer com meus dados", apresente o catálogo COMPLETO`;
+}
+
+function useSuggestion(el){
+  document.getElementById('chatInput').value=el.textContent;
+  document.getElementById('chatSuggestions').style.display='none';
+  sendChat();
+}
+
+function chatKeyDown(e){
+  if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendChat(); }
+}
+
+function autoResize(el){
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,96)+'px';
+}
+
+async function sendChat(){
+  const llm=window.DiscoveryLLM;
+  const ta=document.getElementById('chatInput');
+  const msg=ta.value.trim();
+  if(!msg) return;
+  if(!llm){
+    appendChatMsg('ai','A configura\u00e7\u00e3o compartilhada de IA n\u00e3o foi carregada.');
+    return;
+  }
+  if(!llm.hasApiKey()){
+    llm.openConfig();
+    appendChatMsg('ai','Configure o provider, o modelo e a API key no bot\u00e3o AA antes de usar o agente.');
+    return;
+  }
+
+  ta.value=''; ta.style.height='auto';
+  document.getElementById('chatSuggestions').style.display='none';
+  document.getElementById('chatSendBtn').disabled=true;
+
+  appendChatMsg('user',msg);
+  chatHistory.push({role:'user',content:msg});
+
+  const typingId='typing-'+Date.now();
+  appendTyping(typingId);
+
+  try{
+    const result=await llm.sendChat({
+      systemPrompt:buildSystemPrompt(),
+      messages:chatHistory,
+      maxTokens:1000,
+      temperature:0.2,
+    });
+    removeTyping(typingId);
+
+    const reply=result.text||'(sem resposta)';
+    chatHistory.push({role:'assistant',content:reply});
+    appendChatMsg('ai',reply);
+  } catch(err){
+    removeTyping(typingId);
+    appendChatMsg('ai',`Erro ao conectar com o agente: ${err.message}`);
+  } finally{
+    document.getElementById('chatSendBtn').disabled=false;
+    document.getElementById('chatInput').focus();
+  }
+}
+
+function appendChatMsg(role,text){
+  const msgs=document.getElementById('chatMessages');
+  const div=document.createElement('div');
+  div.className=`chat-msg chat-msg-${role}`;
+  const avatar=role==='user'?'<i class="fas fa-user"></i>':'<i class="fas fa-robot"></i>';
+
+  // Extract [[ACTION:label::id]] markers for buttons
+  const actionRe=/\[\[ACTION:([^\]]+?)::([a-zA-Z]+)\]\]/g;
+  const actions=[];
+  let match;
+  while((match=actionRe.exec(text))!==null) actions.push({label:match[1],id:match[2]});
+  const cleanText=text.replace(/\[\[ACTION:[^\]]+?\]\]/g,'').trim();
+
+  let actionsHtml='';
+  if(actions.length){
+    actionsHtml='<div class="chat-actions-row">';
+    for(const a of actions){
+      actionsHtml+=`<button class="chat-action-btn" onclick="doAction('${esc(a.id)}')" title="${esc(a.label)}">
+        <i class="fas fa-arrow-right"></i> ${esc(a.label)}</button>`;
+    }
+    actionsHtml+='</div>';
+  }
+
+  div.innerHTML=`<div class="chat-msg-avatar">${avatar}</div>
+    <div class="chat-msg-bubble">${formatChatText(cleanText)}${actionsHtml}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function appendTyping(id){
+  const msgs=document.getElementById('chatMessages');
+  const div=document.createElement('div');
+  div.className='chat-msg chat-msg-ai'; div.id=id;
+  div.innerHTML=`<div class="chat-msg-avatar"><i class="fas fa-robot"></i></div>
+    <div class="chat-msg-bubble"><div class="chat-typing"><span></span><span></span><span></span></div></div>`;
+  msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
+}
+
+function removeTyping(id){
+  document.getElementById(id)?.remove();
+}
+
+function formatChatText(text){
+  let h=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // code blocks
+  h=h.replace(/```([\s\S]*?)```/g,(_,c)=>`<pre style="background:var(--bg-code);border:1px solid var(--border);border-radius:5px;padding:9px 12px;margin:6px 0;font-family:var(--mono);font-size:11px;color:var(--gray-hi);white-space:pre-wrap;overflow-x:auto">${c}</pre>`);
+  h=h.replace(/`([^`]+)`/g,'<code style="font-family:var(--mono);font-size:11px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;color:var(--amber)">$1</code>');
+  h=h.replace(/\*\*([^*]+)\*\*/g,'<strong style="color:var(--white)">$1</strong>');
+  h=h.replace(/^\s*[-•]\s+(.+)$/gm,'<li style="margin-left:16px;list-style:disc;margin-bottom:2px">$1</li>');
+  h=h.replace(/\n/g,'<br>');
+  return h;
+}
+
+// ============================================================================
+// ACTION DISPATCHER — maps action IDs to UI operations
+// ============================================================================
+function doAction(id){
+  const map={
+    files:          ()=>switchTab('files'),
+    insights:       ()=>switchTab('insights'),
+    intelligence:   ()=>switchTab('intelligence'),
+    api:            ()=>switchTab('api'),
+    pipeline:       ()=>switchTab('pipeline'),
+    overview:       ()=>switchTab('overview'),
+    workspace:      ()=>openAgentWorkspace(),
+    awareness:      ()=>openAwarenessWorkspace(),
+    residencia:     ()=>openResidenciaWorkspace(),
+    runIntelligence:()=>{
+      switchTab('intelligence');
+      setIntelProfileSetting('legal');
+      const profileSelect = document.getElementById('intelProfileSelect');
+      if (profileSelect) profileSelect.value = 'legal';
+      applyIntelProfileUI('legal');
+      setTimeout(()=>runIntelligencePipeline('intelRunBtn'),300);
+    },
+    runComprehension:()=>{ switchTab('intelligence'); setTimeout(()=>{ switchIntelSub('comprehension'); runComprehension(); },300); },
+  };
+  const fn=map[id];
+  if(fn){ fn(); if(chatOpen) toggleChat(); }
+}
+
+function openAgentWorkspace(){
+  window.open(`${DISCOVERY_UI_API}/agent-workspace`, '_blank', 'noopener');
+}
+
+function openAwarenessWorkspace(){
+  window.open(`${DISCOVERY_UI_API}/awareness-agent-workspace`, '_blank', 'noopener');
+}
+
+function openResidenciaWorkspace(){
+  window.open(`${DISCOVERY_UI_API}/agent-residencia-unirg`, '_blank', 'noopener');
+}
+
+// ============================================================================
+// POST-ORGANIZE AGENT GREETING — proactive catalog presentation
+// ============================================================================
+async function organizeAndGreet(){
+  if(!allFiles.length) return;
+  // Wait a beat for dashboard to fully render
+  await new Promise(r=>setTimeout(r,500));
+  if(!chatOpen) toggleChat();
+  await new Promise(r=>setTimeout(r,200));
+
+  const total=allFiles.length;
+  const cats=Object.keys(categoriesData).length;
+  const groups={};
+  allFiles.forEach(f=>{ const g=f.contentGroup||'other'; groups[g]=(groups[g]||0)+1; });
+  const topGroups=Object.entries(groups).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([g,c])=>`**${c}** ${groupTranslations[g]||g}`).join(', ');
+  const hasDocs=groups.document>0;
+  const hasData=groups.data>0;
+  const hasCode=groups.code>0;
+
+  const greeting=[
+    `Pronto! Organizei **${total} arquivo${total!==1?'s':''}** em **${cats} categoria${cats!==1?'s':''}** — ${topGroups}.`,
+    ``,
+    `Aqui está o que você pode fazer com seus dados agora:`
+  ].join('\n');
+
+  const catalogLines=[
+    `**Entrar no workspace guiado**`,
+    `Abra a nova área de trabalho orientada para organizar memória, navegar artefatos, consultar inteligência e adicionar mais arquivos a partir do mesmo corpus. [[ACTION:Abrir Workspace do Agente::workspace]]`,
+    `Ou entre na experiência Awareness/Manus com streaming, pausa, retomada e trilha operacional do agente. [[ACTION:Abrir Workspace Awareness::awareness]]`,
+    `Há também um **workspace dedicado ao Programa de Residência Multiprofissional Integrada em Saúde da Família e Comunidade — UnirG/COREMU 2026**. Esse espaço foi criado especificamente para os **10 residentes da turma 2026** (Enfermagem, Farmácia, Fisioterapia, Odontologia e Psicologia) e para a **equipe sênior do programa** (coordenação COREMU, tutoras, preceptores e representante da Secretaria Municipal de Saúde). Cada residente tem um espaço personalizado — o agente já conhece o nome, a área e a classificação de cada um no processo seletivo (Edital nº 021/2026). A equipe de coordenação acessa uma visão consolidada do programa. [[ACTION:Abrir Workspace Residência RMISFC::residencia]]`,
+    ``,
+    `**Explorar sua estrutura**`,
+    `Navegue por categoria, tipo ou busca — cada arquivo tem sua própria URL REST. [[ACTION:Ver Arquivos::files]]`,
+    ``,
+    `**Insights do pipeline** (automático, sem API key)`,
+    `Idiomas detectados, entidades extraídas (pessoas, organizações, leis, localizações), relações entre arquivos, linha do tempo. [[ACTION:Ver Insights::insights]]`,
+  ];
+
+  if(hasDocs||hasData){
+    catalogLines.push('');
+    catalogLines.push(`**Pipeline de Inteligência L5–L7** (requer API key de IA)`);
+    catalogLines.push(`Narrativa cronológica, achados detectados, estado analítico, lacunas de evidência e grafo de ontologia. [[ACTION:Abrir Inteligência::intelligence]]`);
+    catalogLines.push(`Para executar: [[ACTION:Rodar Inteligência::runIntelligence]]`);
+  }
+
+  catalogLines.push('');
+  catalogLines.push(`**Integrar com outros sistemas**`);
+  catalogLines.push('Todos os endpoints são REST — use `curl`, Node.js, n8n ou qualquer cliente HTTP. [[ACTION:Ver API::api]]');
+
+  catalogLines.push('');
+  catalogLines.push(`Quer que eu explique um endpoint específico, mostre um exemplo de uso com seus dados, ou sugira o melhor fluxo para o que você precisa?`);
+
+  appendChatMsg('ai', greeting+'\n\n'+catalogLines.join('\n'));
+  updateChatSuggestions();
+}
+
+// ============================================================================
+// DYNAMIC CHAT SUGGESTIONS — update after data is loaded
+// ============================================================================
+function updateChatSuggestions(){
+  const sugg=document.getElementById('chatSuggestions');
+  if(!allFiles.length) return;
+  const hasEntities=pipelineStats && pipelineStats.files_with_entities>0;
+  const items=[
+    'Que endpoints posso usar com meus dados?',
+    'Explique o pipeline de inteligência',
+    hasEntities?'Quais entidades foram extraídas?':'Como usar meus dados com um agente?',
+    'Mostre um exemplo de curl para o manifesto',
+    'Quais arquivos têm mais conexões?',
+  ].slice(0,4);
+  sugg.innerHTML=items.map(s=>`<span class="chat-suggestion" onclick="useSuggestion(this)">${s}</span>`).join('');
+  sugg.style.display='';
+}
+
+// ============================================================================
+// PIPELINE INSIGHTS — Fetch & Render
+// ============================================================================
+let pipelineStats = null;
+let pipelineEntities = null;
+let pipelineTimeline = null;
+let currentEntityType = 'people';
+
+const ENTITY_ICONS = {
+  people: 'fa-users', organizations: 'fa-building', laws: 'fa-scale-balanced',
+  locations: 'fa-map-marker-alt', dates: 'fa-calendar-alt'
+};
+const ENTITY_LABELS = {
+  people: 'Pessoas', organizations: 'Organizações', laws: 'Referências Legais',
+  locations: 'Localizações', dates: 'Datas'
+};
+const LANG_LABELS = { pt: 'Português', es: 'Español', en: 'English', unknown: 'Desconhecido' };
+const LANG_CLASSES = { pt: 'lang-pt', es: 'lang-es', en: 'lang-en', unknown: 'lang-unknown' };
+
+async function loadInsights(){
+  const loading = document.getElementById('insightsLoading');
+  const content = document.getElementById('insightsContent');
+  loading.style.display = '';
+  content.style.display = 'none';
+
+  try {
+    const [statsResp, entResp, tlResp] = await Promise.all([
+      fetch(`${CASE_SERVER}/api/pipeline/stats`),
+      fetch(`${CASE_SERVER}/api/pipeline/entities`),
+      fetch(`${CASE_SERVER}/api/pipeline/timeline`)
+    ]);
+    pipelineStats = await statsResp.json();
+    pipelineEntities = await entResp.json();
+    pipelineTimeline = await tlResp.json();
+
+    if (pipelineStats.error) {
+      loading.innerHTML = '<div class="empty-state"><i class="fas fa-flask"></i><h3>Pipeline ainda não executado</h3><p>Organize uma pasta primeiro — o pipeline será executado automaticamente.</p></div>';
+      return;
+    }
+
+    loading.style.display = 'none';
+    content.style.display = '';
+
+    renderPipeStats();
+    renderPipeLangs();
+    renderPipeDomains();
+    renderPipeTags();
+    renderEntitySelector();
+    loadEntityType('people');
+    loadRelationships();
+    renderTimeline();
+  } catch(err) {
+    loading.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Erro ao carregar insights</h3><p>${esc(err.message)}</p></div>`;
+  }
+}
+
+function renderPipeStats(){
+  if (!pipelineStats) return;
+  const s = pipelineStats;
+  const ents = pipelineEntities?.entities || {};
+  const totalEntities = Object.values(ents).reduce((sum, e) => sum + (e.unique_count || 0), 0);
+  const totalMentions = Object.values(ents).reduce((sum, e) => sum + (e.total_mentions || 0), 0);
+
+  document.getElementById('pipeStatsGrid').innerHTML = `
+    <div class="pipe-stat"><span class="pipe-stat-num">${(s.files_enriched||0).toLocaleString()}</span><span class="pipe-stat-label">Arquivos Processados</span></div>
+    <div class="pipe-stat"><span class="pipe-stat-num">${(s.text_files||0).toLocaleString()}</span><span class="pipe-stat-label">Arquivos de Texto</span></div>
+    <div class="pipe-stat"><span class="pipe-stat-num">${(s.total_words||0).toLocaleString()}</span><span class="pipe-stat-label">Palavras Totais</span></div>
+    <div class="pipe-stat"><span class="pipe-stat-num">${(s.files_with_entities||0).toLocaleString()}</span><span class="pipe-stat-label">Com Entidades</span></div>
+    <div class="pipe-stat"><span class="pipe-stat-num">${totalEntities.toLocaleString()}</span><span class="pipe-stat-label">Entidades Únicas</span></div>
+    <div class="pipe-stat"><span class="pipe-stat-num">${totalMentions.toLocaleString()}</span><span class="pipe-stat-label">Menções Totais</span></div>
+  `;
+
+  // Update sub-tab counters
+  const el = (id, txt) => { const e = document.getElementById(id); if(e) e.textContent = txt; };
+  el('subCountStats', `${Object.keys(s.languages||{}).length} idiomas`);
+  el('subCountEntities', totalEntities.toLocaleString());
+  const tlTotal = pipelineTimeline?.total || 0;
+  el('subCountTimeline', tlTotal.toLocaleString());
+}
+
+function renderPipeLangs(){
+  const langs = pipelineStats?.languages || {};
+  const total = Object.values(langs).reduce((s,v) => s+v, 0) || 1;
+  const sorted = Object.entries(langs).sort((a,b) => b[1]-a[1]);
+  let html = '';
+  for (const [lang, count] of sorted) {
+    const pct = (count/total*100).toFixed(1);
+    const cls = LANG_CLASSES[lang] || 'lang-unknown';
+    html += `<div class="pipe-bar-row">
+      <span class="pipe-bar-label">${esc(LANG_LABELS[lang]||lang)}</span>
+      <div class="pipe-bar-track"><div class="pipe-bar-fill ${cls}" style="width:${pct}%"></div></div>
+      <span class="pipe-bar-count">${count} (${pct}%)</span>
+    </div>`;
+  }
+  document.getElementById('pipeLangBars').innerHTML = html || '<span style="color:var(--gray);font-size:12px">Nenhum idioma detectado</span>';
+}
+
+function renderPipeDomains(){
+  const doms = pipelineStats?.domains || {};
+  const total = Object.values(doms).reduce((s,v) => s+v, 0) || 1;
+  const sorted = Object.entries(doms).sort((a,b) => b[1]-a[1]);
+  let html = '';
+  for (const [dom, count] of sorted) {
+    const pct = (count/total*100).toFixed(1);
+    html += `<div class="pipe-bar-row">
+      <span class="pipe-bar-label">${esc(dom)}</span>
+      <div class="pipe-bar-track"><div class="pipe-bar-fill domain" style="width:${pct}%"></div></div>
+      <span class="pipe-bar-count">${count} (${pct}%)</span>
+    </div>`;
+  }
+  document.getElementById('pipeDomainBars').innerHTML = html || '<span style="color:var(--gray);font-size:12px">Nenhum domínio classificado</span>';
+}
+
+function renderPipeTags(){
+  const tags = pipelineStats?.top_tags || [];
+  if (!tags.length) { document.getElementById('pipeTagCloud').innerHTML = '<span style="color:var(--gray);font-size:12px">Nenhuma tag</span>'; return; }
+  const maxCount = tags[0][1] || 1;
+  let html = '';
+  for (const [tag, count] of tags) {
+    const size = 10 + Math.round((count/maxCount)*6);
+    html += `<span class="pipe-tag" style="font-size:${size}px" title="${count} arquivo(s)">${esc(tag)}</span>`;
+  }
+  document.getElementById('pipeTagCloud').innerHTML = html;
+}
+
+function renderEntitySelector(){
+  const ents = pipelineEntities?.entities || {};
+  let html = '';
+  for (const type of ['people','organizations','laws','locations','dates']) {
+    const data = ents[type];
+    const count = data ? data.unique_count : 0;
+    const icon = ENTITY_ICONS[type] || 'fa-tag';
+    const label = ENTITY_LABELS[type] || type;
+    const active = type === currentEntityType ? ' active' : '';
+    html += `<button class="entity-type-btn${active}" onclick="loadEntityType('${type}')">
+      <i class="fas ${icon}"></i> ${label} <span class="etype-count">${count}</span>
+    </button>`;
+  }
+  document.getElementById('entityTypeSelector').innerHTML = html;
+}
+
+async function loadEntityType(type){
+  currentEntityType = type;
+  // Update selector active state
+  document.querySelectorAll('.entity-type-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.includes(ENTITY_LABELS[type]));
+  });
+
+  const list = document.getElementById('entityList');
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray)"><i class="fas fa-spinner fa-spin"></i></div>';
+
+  try {
+    const resp = await fetch(`${CASE_SERVER}/api/pipeline/entities?type=${encodeURIComponent(type)}`);
+    const data = await resp.json();
+    const items = data.items || [];
+
+    if (!items.length) {
+      list.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><h3>Nenhuma entidade</h3><p>Nenhuma entidade deste tipo foi extraída.</p></div>';
+      return;
+    }
+
+    let html = '';
+    items.slice(0, 100).forEach((item, i) => {
+      html += `<div class="entity-item">
+        <span class="entity-rank">${i+1}</span>
+        <span class="entity-name">${esc(item.name)}</span>
+        <span class="entity-count">${item.file_count} arquivo${item.file_count!==1?'s':''}</span>
+        <button class="entity-files-btn" onclick="showEntityFiles(this, '${type}', ${JSON.stringify(item.name).replace(/'/g,"\\'")})" title="Ver arquivos">
+          <i class="fas fa-folder-open"></i> ver
+        </button>
+      </div>`;
+    });
+    if (items.length > 100) html += `<div style="text-align:center;padding:12px;color:var(--gray);font-size:12px">Mostrando 100 de ${items.length}</div>`;
+    list.innerHTML = html;
+  } catch(err) {
+    list.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Erro</h3><p>${esc(err.message)}</p></div>`;
+  }
+}
+
+function showEntityFiles(btn, type, name){
+  // Toggle inline file list
+  const existing = btn.parentElement.querySelector('.entity-files-inline');
+  if (existing) { existing.remove(); btn.innerHTML = '<i class="fas fa-folder-open"></i> ver'; return; }
+
+  // Find files from the summary data
+  fetch(`${CASE_SERVER}/api/pipeline/entities?type=${encodeURIComponent(type)}`)
+    .then(r => r.json())
+    .then(data => {
+      const item = (data.items||[]).find(i => i.name === name);
+      if (!item || !item.files) return;
+      const div = document.createElement('div');
+      div.className = 'entity-files-inline';
+      div.style.cssText = 'margin-top:6px;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:var(--mono);color:var(--gray-hi);grid-column:1/-1;width:100%';
+      div.innerHTML = item.files.slice(0, 20).map(f =>
+        `<div style="padding:2px 0;cursor:pointer;transition:color .15s" onmouseover="this.style.color='var(--amber)'" onmouseout="this.style.color=''" onclick="openPipelineFile('${f.replace(/'/g,"\\'")}')">${esc(f)}</div>`
+      ).join('') + (item.files.length > 20 ? `<div style="color:var(--gray);padding-top:4px">... e mais ${item.files.length-20}</div>` : '');
+      btn.parentElement.appendChild(div);
+      btn.innerHTML = '<i class="fas fa-folder-open"></i> ocultar';
+    });
+}
+
+function openPipelineFile(fileRef){
+  const f = allFiles.find(af => af.file === fileRef);
+  if (f) openFileModal(f);
+}
+
+async function loadRelationships(){
+  const slider = document.getElementById('relStrengthSlider');
+  const valSpan = document.getElementById('relStrengthVal');
+  const minStrength = parseInt(slider.value, 10);
+  valSpan.textContent = minStrength;
+
+  const list = document.getElementById('relList');
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray)"><i class="fas fa-spinner fa-spin"></i></div>';
+
+  try {
+    const resp = await fetch(`${CASE_SERVER}/api/pipeline/relationships?limit=200&min_strength=${minStrength}`);
+    const data = await resp.json();
+    const rels = data.relationships || [];
+
+    document.getElementById('subCountRels').textContent = rels.length.toLocaleString();
+
+    if (!rels.length) {
+      list.innerHTML = '<div class="empty-state"><i class="fas fa-link-slash"></i><h3>Nenhuma relação</h3><p>Aumente a sensibilidade reduzindo a força mínima.</p></div>';
+      return;
+    }
+
+    let html = '';
+    for (const r of rels) {
+      const shared = (r.shared_entities || []).slice(0, 5).join(', ');
+      html += `<div class="rel-card">
+        <span class="rel-file" title="${esc(r.source_file)}">${esc(shortenPath(r.source_file))}</span>
+        <span class="rel-arrow"><i class="fas fa-arrows-left-right"></i></span>
+        <span class="rel-file" title="${esc(r.target_file)}">${esc(shortenPath(r.target_file))}</span>
+        <span class="rel-strength" title="Entidades compartilhadas">${r.strength}</span>
+        ${shared ? `<span class="rel-shared" title="${esc(shared)}">${esc(shared)}</span>` : ''}
+      </div>`;
+    }
+    list.innerHTML = html;
+  } catch(err) {
+    list.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Erro</h3><p>${esc(err.message)}</p></div>`;
+  }
+}
+
+function shortenPath(p){
+  if (!p) return '';
+  const parts = p.split('/');
+  if (parts.length <= 3) return p;
+  return '…/' + parts.slice(-2).join('/');
+}
+
+function renderTimeline(){
+  const tl = pipelineTimeline?.timeline || [];
+  const container = document.getElementById('timelineContainer');
+
+  if (!tl.length) {
+    container.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-xmark"></i><h3>Nenhuma data</h3><p>Nenhuma referência temporal foi extraída dos arquivos.</p></div>';
+    return;
+  }
+
+  // Group by date
+  const byDate = {};
+  for (const entry of tl.slice(0, 300)) {
+    const d = entry.date || 'sem data';
+    if (!byDate[d]) byDate[d] = [];
+    byDate[d].push(entry);
+  }
+
+  const sortedDates = Object.keys(byDate).sort().reverse();
+  let html = '';
+  for (const date of sortedDates) {
+    const entries = byDate[date];
+    html += `<div class="timeline-entry">
+      <div class="timeline-date">${esc(date)}</div>`;
+    for (const e of entries.slice(0, 5)) {
+      html += `<div class="timeline-file" style="cursor:pointer" onclick="openPipelineFile('${(e.file_ref||'').replace(/'/g,"\\'")}')">${esc(shortenPath(e.file_ref||''))}</div>`;
+      if (e.context) html += `<div class="timeline-context">${esc(e.context)}</div>`;
+    }
+    if (entries.length > 5) html += `<div style="font-size:10px;color:var(--gray);margin-top:4px">... e mais ${entries.length-5} referência(s)</div>`;
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+}
+
+async function pipeSearch(){
+  const input = document.getElementById('pipeSearchInput');
+  const q = input.value.trim();
+  if (!q) return;
+
+  const results = document.getElementById('pipeSearchResults');
+  results.innerHTML = '<div style="text-align:center;padding:30px;color:var(--gray)"><i class="fas fa-spinner fa-spin" style="font-size:20px"></i></div>';
+
+  try {
+    const resp = await fetch(`${CASE_SERVER}/api/pipeline/search?q=${encodeURIComponent(q)}&limit=50`);
+    const data = await resp.json();
+    const items = data.results || [];
+
+    if (!items.length) {
+      results.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><h3>Nenhum resultado</h3><p>Tente termos diferentes ou mais gerais.</p></div>';
+      return;
+    }
+
+    let html = '';
+    for (const r of items) {
+      const matchTags = (r.matched_in || []).map(m => `<span class="pipe-result-match">${esc(m)}</span>`).join('');
+      html += `<div class="pipe-result" onclick="openPipelineFile('${(r.file||'').replace(/'/g,"\\'")}')">
+        <div class="pipe-result-name">${esc(r.displayName || r.fileName || r.file || 'arquivo')}</div>
+        <div class="pipe-result-meta">
+          ${r.score ? `<span>relevância: ${r.score}</span>` : ''}
+          ${r.language ? `<span>${esc(r.language)}</span>` : ''}
+          ${r.domain ? `<span>${esc(r.domain)}</span>` : ''}
+        </div>
+        ${matchTags ? `<div class="pipe-result-matches">${matchTags}</div>` : ''}
+      </div>`;
+    }
+    results.innerHTML = html;
+  } catch(err) {
+    results.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Erro</h3><p>${esc(err.message)}</p></div>`;
+  }
+}
+
+function switchPipeSub(id){
+  document.querySelectorAll('.pipeline-sub-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.pipeline-sub-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('pipesub-'+id).classList.add('active');
+  document.querySelector(`.pipeline-sub-btn[onclick*="${id}"]`).classList.add('active');
+}
+
+// ============================================================================
+// TABS
+// ============================================================================
+function switchTab(id){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  document.querySelector(`.tab-btn[onclick*="${id}"]`).classList.add('active');
+  if(id==='insights' && !pipelineStats) loadInsights();
+  if(id==='intelligence' && !intelData.summary && !intelData.narrative) loadIntelligence();
+}
+
+// ============================================================================
+// HELPERS
+// ============================================================================
+function showAlert(type,html){ const box=document.getElementById('alert-box'); box.className=`alert alert-${type}`; box.innerHTML=html; }
+function esc(s){ if(!s)return''; const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function shortenUrl(url){ if(!url)return''; try{return new URL(url).pathname;}catch{return url;} }
+function humanSize(bytes){ if(!bytes)return''; const u=['B','KB','MB','GB']; let i=0,s=bytes; while(s>=1024&&i<u.length-1){s/=1024;i++;} return `${s.toFixed(i===0?0:1)} ${u[i]}`; }
+
+// ============================================================================
+// EXPORT
+// ============================================================================
+async function exportData(){
+  showAlert('info','<i class="fas fa-spinner fa-spin"></i> Gerando exportacao completa do workspace...');
+  try {
+    const resp = await fetch(`${DISCOVERY_UI_API}/api/discovery/export-session`, {
+      headers: { 'X-Discovery-User-Id': DISCOVERY_USER_ID },
+    });
+    if (!resp.ok) {
+      const err = await resp.text();
+      showAlert('error', `Falha ao exportar workspace: ${esc(err)}`);
+      return;
+    }
+
+    const exportPayload = await resp.json();
+    if (!exportPayload || exportPayload._format !== 'awareness-discovery-workspace-export') {
+      showAlert('error', 'Falha ao exportar workspace: formato de exportacao inesperado');
+      return;
+    }
+
+    const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `discovery-workspace-export-${date}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    const workspaceFiles = Number(exportPayload.summary?.workspace_files || 0);
+    const generatedFiles = Number(exportPayload.summary?.generated_files || 0);
+    const endpointFiles = Number(exportPayload.summary?.endpoint_files || 0);
+    showAlert('success', `<i class="fas fa-check-circle"></i> Exportados <strong>${workspaceFiles}</strong> arquivos do workspace (${generatedFiles} gerados, ${endpointFiles} indexados com endpoint)`);
+  } catch (err) {
+    showAlert('error', `Falha ao exportar workspace: ${esc(err.message || String(err))}`);
+  }
+}
+
+// ============================================================================
+// IMPORT
+// ============================================================================
+function triggerImport(){ document.getElementById('importPicker').click(); }
+document.getElementById('importPicker').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  try {
+    const importMode = getImportModeSetting();
+    const overwriteExisting = importMode === 'overwrite';
+    const modeLabel = overwriteExisting ? 'Sobrescrever (substituir conflitos)' : 'Adicionar (renomear conflitos)';
+    showAlert('info', `<i class="fas fa-spinner fa-spin"></i> Importando workspace completo... Modo: <strong>${esc(modeLabel)}</strong>`);
+
+    const formData = new FormData();
+    formData.append('bundle', file, file.name);
+    formData.append('user_id', DISCOVERY_USER_ID);
+    formData.append('overwrite_existing', overwriteExisting ? 'true' : 'false');
+
+    const resp = await fetch(`${DISCOVERY_UI_API}/api/discovery/import-session`, {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Discovery-User-Id': DISCOVERY_USER_ID },
+    });
+
+    const payload = await resp.json().catch(() => null);
+    if (!resp.ok) {
+      const errMsg = payload && payload.error ? payload.error : `HTTP ${resp.status}`;
+      showAlert('error', `Falha ao importar workspace: ${esc(errMsg)}`);
+      return;
+    }
+
+    await loadDashboard();
+
+    const imported = Number(payload?.import?.imported_files || 0);
+    const overwritten = Number(payload?.import?.overwritten_files || 0);
+    const renamed = Number(payload?.import?.renamed_existing_files || 0);
+    const rebuiltTotal = Number(payload?.rebuild?.total_files || 0);
+    showAlert('success', `<i class="fas fa-check-circle"></i> Importados <strong>${imported}</strong> arquivos no workspace atual (${overwritten} sobrescritos, ${renamed} renomeados para evitar conflito). Modo usado: <strong>${esc(modeLabel)}</strong>. Total indexado: <strong>${rebuiltTotal}</strong>`);
+  } catch (err) {
+    showAlert('error', `Falha ao importar workspace: ${esc(err.message || String(err))}`);
+  } finally {
+    e.target.value = '';
+  }
+});
+
+async function detectChanges(importedFiles,rootPath){
+  try{
+    const resp=await fetch(`${CASE_SERVER}/api/rebuild`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({root_dir:rootPath})});
+    if(!resp.ok)return;
+    const currentResp=await fetch(`${CASE_SERVER}/api/endpoints`);
+    const currentFiles=await currentResp.json();
+    const catsResp=await fetch(`${CASE_SERVER}/api/categories`);
+    const currentCategories=(await catsResp.json()).categories||{};
+    const importedMap=new Map(importedFiles.map(f=>[f.file,f]));
+    const currentMap=new Map(currentFiles.map(f=>[f.file,f]));
+    const added=currentFiles.filter(f=>!importedMap.has(f.file));
+    const removed=importedFiles.filter(f=>!currentMap.has(f.file));
+    const changed=currentFiles.filter(f=>{ const p=importedMap.get(f.file); return p&&(p.size_bytes!==f.size_bytes||p.modified_at!==f.modified_at); });
+    if(!added.length&&!removed.length&&!changed.length){
+      showAlert('success','<i class="fas fa-check-circle"></i> Pasta inalterada desde a exportação — todos os arquivos correspondem');
+    } else { allFiles=currentFiles; categoriesData=currentCategories; refreshDashboard(); renderDiffPanel(added,removed,changed); }
+  } catch{}
+}
+
+function renderDiffPanel(added,removed,changed){
+  const panel=document.getElementById('diffPanel'); const total=added.length+removed.length+changed.length;
+  let html=`<div class="diff-panel-header"><h3><i class="fas fa-code-compare"></i> Alterações Detectadas (${total})</h3>
+    <button class="btn btn-sm" onclick="document.getElementById('diffPanel').style.display='none'"><i class="fas fa-times"></i> Dispensar</button></div>
+    <div class="diff-panel-body">`;
+  if(added.length) html+=`<div class="diff-section"><div class="diff-section-title added"><i class="fas fa-plus-circle"></i> Novos arquivos (${added.length})</div>
+    <ul class="diff-list">${added.map(f=>`<li class="added">${esc(f.file)}</li>`).join('')}</ul></div>`;
+  if(removed.length) html+=`<div class="diff-section"><div class="diff-section-title removed"><i class="fas fa-minus-circle"></i> Arquivos removidos (${removed.length})</div>
+    <ul class="diff-list">${removed.map(f=>`<li class="removed">${esc(f.file)}</li>`).join('')}</ul></div>`;
+  if(changed.length) html+=`<div class="diff-section"><div class="diff-section-title changed"><i class="fas fa-pen-circle"></i> Arquivos modificados (${changed.length})</div>
+    <ul class="diff-list">${changed.map(f=>`<li class="changed">${esc(f.file)}</li>`).join('')}</ul></div>`;
+  html+='</div>'; panel.innerHTML=html; panel.style.display='block';
+}
+
+function refreshDashboard(){
+  document.getElementById('statFiles').textContent=allFiles.length;
+  document.getElementById('statCategories').textContent=Object.keys(categoriesData).length;
+  document.getElementById('statEndpoints').textContent=allFiles.length;
+  const types=new Set(allFiles.map(f=>f.extension).filter(Boolean));
+  document.getElementById('statTypes').textContent=types.size;
+  const totalBytes=allFiles.reduce((s,f)=>s+(f.size_bytes||0),0);
+  document.getElementById('statTotalSize').textContent=humanSize(totalBytes);
+  renderOverview(); renderCategoryTags(); renderTable(allFiles); renderPipeline();
+  pipelineStats = null; // reset so Insights tab reloads fresh data
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('chatFab').classList.add('visible');
+  updateChatContext();
+  document.getElementById('startBody').classList.add('closed');
+  document.getElementById('startHeader').classList.add('collapsed');
+}
+
+// ============================================================================
+// INTELLIGENCE TAB — Fetch & Render Artifacts
+// ============================================================================
+let intelData = { narrative: null, violations: null, events: null, caseState: null, gaps: null, comprehension: null, summary: null };
+let intelAvailability = null;
+let activeViolSeverity = null;
+let activeEvtType = null;
+
+async function loadIntelligence() {
+  const statusRow = document.getElementById('intelStatusRow');
+  statusRow.innerHTML = '<span class="intel-status-chip pending"><i class="fas fa-spinner fa-spin"></i> verificando…</span>';
+
+  let statusPayload = null;
+  try {
+    const statusResp = await fetch(`${CASE_SERVER}/api/intelligence/status`);
+    if (statusResp.ok) statusPayload = await statusResp.json();
+  } catch {}
+
+  if (!statusPayload || !statusPayload.available) {
+    statusRow.innerHTML = '<span class="intel-status-chip error"><i class="fas fa-triangle-exclamation"></i> status indisponível</span>';
+    return;
+  }
+
+  intelAvailability = statusPayload.available || {};
+  const profile = getIntelProfileSetting();
+  const findingsLabel = profile === 'legal' ? 'Violações' : 'Achados';
+
+  const checks = [
+    { key: 'summary', url: '/api/intelligence/summary', label: 'Pipeline', enabled: !!intelAvailability.summary },
+    { key: 'narrative', url: '/api/intelligence/narrative', label: 'Narrativa', enabled: !!intelAvailability.narrative },
+    { key: 'violations', url: '/api/intelligence/violations', label: findingsLabel, enabled: !!intelAvailability.violations },
+    { key: 'events', url: '/api/events', label: 'Eventos', enabled: !!intelAvailability.events },
+    { key: 'caseState', url: '/api/case-state', label: 'Estado', enabled: !!intelAvailability.caseState },
+    { key: 'gaps', url: '/api/intelligence/gap-report', label: 'Lacunas', enabled: !!intelAvailability.gaps },
+    { key: 'comprehension', url: '/api/comprehend/overview', label: 'Compreensão', enabled: !!intelAvailability.comprehension },
+  ];
+
+  const activeChecks = checks.filter(c => c.enabled);
+  const results = await Promise.allSettled(
+    activeChecks.map(c => fetch(`${CASE_SERVER}${c.url}`).then(r => r.ok ? r.json() : null).catch(() => null))
+  );
+
+  intelData = { narrative: null, violations: null, events: null, caseState: null, gaps: null, comprehension: null, summary: null };
+
+  let chips = '';
+  checks.forEach((c) => {
+    let val = null;
+    if (c.enabled) {
+      const idx = activeChecks.findIndex(a => a.key === c.key);
+      if (idx >= 0 && results[idx].status === 'fulfilled') val = results[idx].value;
+      intelData[c.key] = val;
+    }
+    const cls = val ? 'ready' : 'pending';
+    const icon = val ? 'fa-check-circle' : 'fa-clock';
+    chips += `<span class="intel-status-chip ${cls}"><i class="fas ${icon}"></i> ${c.label}</span>`;
+  });
+  statusRow.innerHTML = chips;
+
+  // also try narrative as markdown
+  if (intelData.narrative && intelData.narrative.markdown) {
+    renderIntelNarrative(intelData.narrative.markdown);
+  } else if (intelAvailability.narrative) {
+    try {
+      const r = await fetch(`${CASE_SERVER}/api/intelligence/narrative?format=md`);
+      if (r.ok) { const md = await r.text(); intelData.narrative = { markdown: md }; renderIntelNarrative(md); }
+    } catch {}
+  }
+
+  if (intelData.violations) renderIntelViolations(intelData.violations);
+  if (intelData.events) renderIntelEvents(intelData.events);
+  if (intelData.caseState) renderIntelCaseState(intelData.caseState);
+  if (intelData.gaps) renderIntelGaps(intelData.gaps);
+  if (intelData.comprehension) renderIntelComprehension(intelData.comprehension);
+}
+
+function renderIntelNarrative(markdown) {
+  document.getElementById('intelNarrativeBody').innerHTML = `<div class="intel-narrative">${renderMarkdown(markdown)}</div>`;
+}
+
+function renderIntelViolations(data) {
+  const violations = data.violations || data.findings || [];
+  if (!violations.length) return;
+
+  // severity filters
+  const severities = [...new Set(violations.map(v => v.severity).filter(Boolean))];
+  let filterHtml = `<button class="intel-filter-btn active" onclick="filterViolations(null, this)">Todas (${violations.length})</button>`;
+  severities.forEach(s => {
+    const count = violations.filter(v => v.severity === s).length;
+    filterHtml += `<button class="intel-filter-btn" onclick="filterViolations('${s}', this)">${s} (${count})</button>`;
+  });
+  document.getElementById('violFilters').innerHTML = filterHtml;
+  renderViolationCards(violations);
+}
+
+function filterViolations(severity, btn) {
+  activeViolSeverity = severity;
+  document.querySelectorAll('#violFilters .intel-filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const all = (intelData.violations?.violations || intelData.violations?.findings || []);
+  const filtered = severity ? all.filter(v => v.severity === severity) : all;
+  renderViolationCards(filtered);
+}
+
+function renderViolationCards(violations) {
+  if (!violations.length) {
+    const emptyTitle = getIntelProfileSetting() === 'legal' ? 'Nenhuma violação neste filtro' : 'Nenhum achado neste filtro';
+    document.getElementById('intelViolationsBody').innerHTML = `<div class="empty-state"><i class="fas fa-check-circle"></i><h3>${esc(emptyTitle)}</h3></div>`;
+    return;
+  }
+  let html = '';
+  for (const v of violations) {
+    const sevClass = (v.severity || 'medium').toLowerCase();
+    const articles = (v.articles || []).map(a => a.eli_id || a.raw_text || '').filter(Boolean).join(', ');
+    const conf = v.confidence != null ? `${Math.round(v.confidence * 100)}%` : '';
+    html += `<div class="viol-card">
+      <div class="viol-header">
+        <span class="viol-severity ${sevClass}">${esc(v.severity || 'medium')}</span>
+        <span class="viol-category">${esc(v.category || '')}</span>
+        ${conf ? `<span class="viol-confidence">confiança: ${conf}</span>` : ''}
+      </div>
+      <div class="viol-desc">${esc(v.description || '')}</div>
+      ${articles ? `<div class="viol-articles"><i class="fas fa-scale-balanced"></i> ${esc(articles)}</div>` : ''}
+    </div>`;
+  }
+  document.getElementById('intelViolationsBody').innerHTML = html;
+}
+
+function renderIntelEvents(data) {
+  const events = data.events || [];
+  if (!events.length) return;
+
+  const types = [...new Set(events.map(e => e.type).filter(Boolean))];
+  let filterHtml = `<button class="intel-filter-btn active" onclick="filterEvents(null, this)">Todos (${events.length})</button>`;
+  types.forEach(t => {
+    const count = events.filter(e => e.type === t).length;
+    filterHtml += `<button class="intel-filter-btn" onclick="filterEvents('${t}', this)">${t.replace(/_/g,' ')} (${count})</button>`;
+  });
+  document.getElementById('evtFilters').innerHTML = filterHtml;
+  renderEventCards(events);
+}
+
+function filterEvents(type, btn) {
+  activeEvtType = type;
+  document.querySelectorAll('#evtFilters .intel-filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const all = (intelData.events?.events || []);
+  const filtered = type ? all.filter(e => e.type === type) : all;
+  renderEventCards(filtered);
+}
+
+function renderEventCards(events) {
+  if (!events.length) {
+    document.getElementById('intelEventsBody').innerHTML = '<div class="empty-state"><i class="fas fa-timeline"></i><h3>Nenhum evento neste filtro</h3></div>';
+    return;
+  }
+  let html = '';
+  for (const e of events.slice(0, 200)) {
+    const evidCount = (e.evidence || []).length;
+    html += `<div class="evt-card">
+      <span class="evt-type-badge">${esc(e.type || 'other')}</span>
+      ${e.date ? `<span style="font-size:11px;font-family:var(--mono);color:var(--amber)">${esc(e.date)}</span>` : ''}
+      ${e.confidence != null ? `<span style="font-size:10px;font-family:var(--mono);color:var(--gray);float:right">confiança: ${Math.round(e.confidence * 100)}%</span>` : ''}
+      <div class="evt-desc">${esc(e.description || '')}</div>
+      <div class="evt-meta">
+        ${e.location ? `<span><i class="fas fa-map-marker-alt"></i> ${esc(e.location)}</span>` : ''}
+        ${evidCount ? `<span><i class="fas fa-file-lines"></i> ${evidCount} fonte${evidCount !== 1 ? 's' : ''}</span>` : ''}
+      </div>
+    </div>`;
+  }
+  if (events.length > 200) html += `<div style="text-align:center;padding:12px;color:var(--gray);font-size:12px">Mostrando 200 de ${events.length}</div>`;
+  document.getElementById('intelEventsBody').innerHTML = html;
+}
+
+function renderIntelCaseState(data) {
+  const phases = ['incident_detected','complaint_filed','investigation_open','legal_proceedings','ruling_issued','case_closed'];
+  const phaseLabels = { incident_detected:'Incidente', complaint_filed:'Reclamação', investigation_open:'Investigação', legal_proceedings:'Processo', ruling_issued:'Decisão', case_closed:'Encerrado' };
+  const currentPhase = data.phase?.current_phase || '';
+  const reachedPhases = new Set(data.phase?.phases_reached || []);
+
+  let phaseHtml = '<div class="case-phase-bar">';
+  for (const p of phases) {
+    const isCurrent = p === currentPhase;
+    const isReached = reachedPhases.has(p);
+    const cls = isCurrent ? 'current' : isReached ? 'reached' : '';
+    phaseHtml += `<div class="phase-step ${cls}">${phaseLabels[p] || p}</div>`;
+  }
+  phaseHtml += '</div>';
+
+  // Findings
+  const findings = data.findings || [];
+  let findingsHtml = '';
+  if (findings.length) {
+    findingsHtml = '<div class="pipe-section"><div class="pipe-section-title"><i class="fas fa-magnifying-glass"></i> Achados</div>';
+    for (const f of findings) {
+      const typeClass = (f.type || 'flag').toLowerCase();
+      findingsHtml += `<div class="finding-card">
+        <span class="finding-type ${typeClass}">${esc(f.type || 'flag')}</span>
+        ${f.severity ? `<span style="font-size:10px;font-family:var(--mono);color:var(--gray);margin-left:8px">${esc(f.severity)}</span>` : ''}
+        <div class="finding-desc">${esc(f.description || f.message || '')}</div>
+      </div>`;
+    }
+    findingsHtml += '</div>';
+  }
+
+  // Next steps
+  const steps = data.next_steps || [];
+  let stepsHtml = '';
+  if (steps.length) {
+    stepsHtml = '<div class="pipe-section"><div class="pipe-section-title"><i class="fas fa-list-check"></i> Próximos Passos Recomendados</div>';
+    steps.forEach((s, i) => {
+      const text = typeof s === 'string' ? s : (s.description || s.action || JSON.stringify(s));
+      stepsHtml += `<div class="next-step-item"><span class="next-step-num">${i+1}</span><div class="next-step-text">${esc(text)}</div></div>`;
+    });
+    stepsHtml += '</div>';
+  }
+
+  document.getElementById('intelCaseStateBody').innerHTML = phaseHtml + findingsHtml + stepsHtml || '<div class="empty-state"><i class="fas fa-gavel"></i><h3>Sem dados de estado</h3></div>';
+}
+
+function renderIntelGaps(data) {
+  let html = '';
+  const sections = [
+    { key: 'missing_evidence', icon: 'fa-file-circle-question', label: 'Evidências Ausentes' },
+    { key: 'unresolved_references', icon: 'fa-link-slash', label: 'Referências Não Resolvidas' },
+    { key: 'contradictions', icon: 'fa-code-merge', label: 'Contradições' },
+    { key: 'weak_evidence', icon: 'fa-weight-hanging', label: 'Evidência Fraca' },
+    { key: 'temporal_gaps', icon: 'fa-calendar-xmark', label: 'Lacunas Temporais' },
+  ];
+
+  let hasContent = false;
+  for (const sec of sections) {
+    const items = data[sec.key] || data[sec.key.replace(/_/g, '')] || [];
+    if (!items.length) continue;
+    hasContent = true;
+    html += `<div class="gap-section">
+      <div class="gap-section-title"><i class="fas ${sec.icon}"></i> ${sec.label} (${items.length})</div>`;
+    for (const item of items) {
+      const text = typeof item === 'string' ? item : (item.description || item.message || JSON.stringify(item));
+      html += `<div class="gap-item">${esc(text)}</div>`;
+    }
+    html += '</div>';
+  }
+
+  // fallback: show whatever keys exist
+  if (!hasContent && typeof data === 'object') {
+    for (const [key, val] of Object.entries(data)) {
+      if (Array.isArray(val) && val.length) {
+        hasContent = true;
+        html += `<div class="gap-section"><div class="gap-section-title"><i class="fas fa-circle-info"></i> ${esc(key.replace(/_/g,' '))} (${val.length})</div>`;
+        for (const item of val) {
+          const text = typeof item === 'string' ? item : (item.description || JSON.stringify(item));
+          html += `<div class="gap-item">${esc(text)}</div>`;
+        }
+        html += '</div>';
+      } else if (typeof val === 'string' && val) {
+        hasContent = true;
+        html += `<div class="gap-section"><div class="gap-section-title"><i class="fas fa-circle-info"></i> ${esc(key.replace(/_/g,' '))}</div><div class="gap-item">${esc(val)}</div></div>`;
+      }
+    }
+  }
+
+  document.getElementById('intelGapsBody').innerHTML = hasContent ? html : '<div class="empty-state"><i class="fas fa-puzzle-piece"></i><h3>Sem lacunas identificadas</h3></div>';
+}
+
+function renderIntelComprehension(data) {
+  const synthesis = data?.synthesis || data || {};
+  const stats = data?.overall_stats || {};
+  let html = '';
+
+  if (synthesis.corpus_summary || synthesis.summary || synthesis.description) {
+    html += `<div class="pipe-section"><div class="pipe-section-title"><i class="fas fa-align-left"></i> Resumo</div>
+      <p style="font-size:13px;color:var(--gray-hi);line-height:1.7">${esc(synthesis.corpus_summary || synthesis.summary || synthesis.description || '')}</p></div>`;
+  }
+
+  if (Object.keys(stats).length) {
+    html += `<div class="pipe-section"><div class="pipe-section-title"><i class="fas fa-chart-simple"></i> Estatísticas do Corpus</div>
+      <div style="font-size:12px;color:var(--gray-hi);line-height:1.7">
+        <div><strong>Total de arquivos:</strong> ${esc(String(stats.total_files ?? 0))}</div>
+        <div><strong>Arquivos de texto:</strong> ${esc(String(stats.text_files ?? 0))}</div>
+        <div><strong>Total de palavras:</strong> ${esc(String(stats.total_words ?? 0))}</div>
+      </div></div>`;
+  }
+
+  if (synthesis.groups && typeof synthesis.groups === 'object') {
+    html += '<div class="pipe-section"><div class="pipe-section-title"><i class="fas fa-layer-group"></i> Grupos de Dados</div>';
+    for (const [key, group] of Object.entries(synthesis.groups)) {
+      const desc = typeof group === 'string' ? group : (group.description || group.summary || '');
+      html += `<div style="margin-bottom:10px;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r)">
+        <div style="font-size:13px;font-weight:500;color:var(--white);margin-bottom:4px">${esc(key.replace(/_/g,' '))}</div>
+        <div style="font-size:12px;color:var(--gray-hi);line-height:1.6">${esc(desc)}</div></div>`;
+    }
+    html += '</div>';
+  }
+
+  if (synthesis.temporal_narrative || synthesis.quality_assessment || synthesis.analysis_readiness || synthesis.case_nature) {
+    html += '<div class="pipe-section"><div class="pipe-section-title"><i class="fas fa-clipboard-check"></i> Qualidade & Narrativa</div>';
+    if (synthesis.case_nature) html += `<p style="font-size:12px;color:var(--gray-hi);line-height:1.7;margin-bottom:8px"><strong>Natureza do caso:</strong> ${esc(synthesis.case_nature)}</p>`;
+    if (synthesis.analysis_readiness) html += `<p style="font-size:12px;color:var(--gray-hi);line-height:1.7;margin-bottom:8px"><strong>Prontidão:</strong> ${esc(synthesis.analysis_readiness)}</p>`;
+    if (synthesis.temporal_narrative) html += `<p style="font-size:12px;color:var(--gray-hi);line-height:1.7;margin-bottom:8px">${esc(synthesis.temporal_narrative)}</p>`;
+    if (synthesis.quality_assessment) html += `<p style="font-size:12px;color:var(--gray-hi);line-height:1.7">${esc(typeof synthesis.quality_assessment === 'string' ? synthesis.quality_assessment : JSON.stringify(synthesis.quality_assessment))}</p>`;
+    html += '</div>';
+  }
+
+  // Load guide markdown only when the status endpoint says the guide exists.
+  if (intelAvailability && intelAvailability.comprehensionGuide) {
+    fetch(`${CASE_SERVER}/api/comprehend/guide?format=md`)
+      .then(r => r.ok ? r.text() : null)
+      .then(md => {
+        if (md) {
+          const guideHtml = `<div class="pipe-section" style="margin-top:18px"><div class="pipe-section-title"><i class="fas fa-map"></i> Guia do Corpus</div>
+            <div class="intel-narrative">${renderMarkdown(md)}</div></div>`;
+          document.getElementById('intelComprehensionBody').innerHTML += guideHtml;
+        }
+      })
+      .catch(() => {});
+  }
+
+  document.getElementById('intelComprehensionBody').innerHTML = html || '<div class="empty-state"><i class="fas fa-book-open"></i><h3>Compreensão não gerada</h3></div>';
+}
+
+function switchIntelSub(id) {
+  document.querySelectorAll('.intel-sub-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.intel-sub-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('intelsub-' + id).classList.add('active');
+  const btn = document.querySelector(`.intel-sub-btn[onclick*="'${id}'"]`);
+  if (btn) btn.classList.add('active');
+}
+
+async function runIntelligencePipeline(buttonId = 'intelRunBtn') {
+  if (buttonId === 'startIntelLegalBtn' || buttonId === 'intelLegalBtn') {
+    await runIntelligencePipelineWithButton(buttonId, 'Pipeline Jurídico', 'legal');
+    return;
+  }
+
+  const profile = getIntelProfileSetting();
+  const runConfig = getIntelProfileConfig(profile);
+  const btn = document.getElementById('intelRunBtn');
+  if (!btn) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Executando…';
+  if (profile !== 'legal') {
+    showAlert('info', '<i class="fas fa-circle-info"></i> Você está usando um perfil amplo. Para foco jurídico estrito, use o botão "Pipeline Jurídico".');
+  }
+  try {
+    await runIntelligencePipelineWithButton('intelRunBtn', runConfig.runLabel, profile);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fas fa-bolt"></i> ${esc(runConfig.runLabel)}`;
+  }
+}
+
+async function runSelectedAnalysis(buttonId = 'startIntelRunBtn') {
+  const profile = getIntelProfileSetting();
+  const runConfig = getIntelProfileConfig(profile);
+  if (profile === 'legal') {
+    await runIntelligencePipelineWithButton(buttonId, runConfig.runLabel, profile);
+    return;
+  }
+  await runComprehension(buttonId);
+}
+
+async function runIntelligencePipelineWithButton(buttonId = 'intelRunBtn', defaultLabel = 'Executar Pipeline Jurídico', analysisProfile = null) {
+  const llm = window.DiscoveryLLM;
+  if (!llm || !llm.hasApiKey()) {
+    if (llm) llm.openConfig();
+    showAlert('error', 'Configure a API key de IA antes de executar o pipeline.');
+    return;
+  }
+
+  const config = llm.getConfig();
+  const btn = document.getElementById(buttonId);
+  const progress = document.getElementById('intelRunProgress');
+  if (!btn) return;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Executando…';
+  progress.textContent = 'Iniciando pipeline jurídico L5–L7…';
+
+  try {
+    const apiKey = config.apiKey;
+    const model = config.model || undefined;
+    const concurrency = getIntelConcurrencySetting();
+    const profile = normalizeIntelProfile(analysisProfile || getIntelProfileSetting());
+    const pipelineOptions = getIntelPipelineOptionsFromUI();
+    setIntelPipelineOptionsSetting(pipelineOptions);
+
+    // Use SSE streaming endpoint
+    const params = new URLSearchParams({ api_key: apiKey });
+    if (model) params.set('model', model);
+    params.set('concurrency', String(concurrency));
+    params.set('analysis_profile', profile);
+    params.set('use_cache', String(pipelineOptions.useCache));
+    params.set('skip_dedup', String(pipelineOptions.skipDedup));
+    params.set('bulk_fast', String(pipelineOptions.bulkFast));
+    params.set('kb_enabled', String(pipelineOptions.kbEnabled));
+    params.set('persist_to_graph', String(pipelineOptions.persistToGraph));
+    params.set('augment_extraction', String(pipelineOptions.augmentExtraction));
+    params.set('skip_verification', String(pipelineOptions.skipVerification));
+
+    progress.textContent = `Iniciando pipeline L5–L8 (concorrência ${concurrency})…`;
+    const evtSource = new EventSource(`${CASE_SERVER}/api/intelligence/run-stream?${params}`);
+    let settled = false;
+
+    evtSource.addEventListener('progress', (e) => {
+      const data = JSON.parse(e.data);
+      progress.textContent = `${data.stage || ''}: ${data.detail || ''}`;
+    });
+
+    evtSource.addEventListener('complete', (e) => {
+      settled = true;
+      evtSource.close();
+      progress.textContent = 'Pipeline concluído!';
+      showAlert('success', '<i class="fas fa-check-circle"></i> Pipeline de inteligência executado com sucesso');
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fas fa-bolt"></i> ${esc(defaultLabel)}`;
+      loadIntelligence();
+    });
+
+    evtSource.addEventListener('error', (e) => {
+      settled = true;
+      let msg = 'desconhecido';
+      if (e.data) {
+        try {
+          const data = JSON.parse(e.data);
+          msg = data.error || data.message || msg;
+        } catch {
+          msg = String(e.data);
+        }
+      }
+      progress.textContent = `Erro: ${msg}`;
+      showAlert('error', `<i class="fas fa-triangle-exclamation"></i> Falha no pipeline de inteligência: ${esc(msg)}`);
+      evtSource.close();
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fas fa-bolt"></i> ${esc(defaultLabel)}`;
+    });
+
+    evtSource.onerror = () => {
+      if (settled) return;
+      if (evtSource.readyState === EventSource.CLOSED) return;
+      evtSource.close();
+      progress.textContent = 'Conexão perdida';
+      showAlert('error', '<i class="fas fa-triangle-exclamation"></i> Conexão SSE perdida durante a execução do pipeline.');
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fas fa-bolt"></i> ${esc(defaultLabel)}`;
+    };
+  } catch (err) {
+    progress.textContent = `Erro: ${err.message}`;
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fas fa-bolt"></i> ${esc(defaultLabel)}`;
+  }
+}
+
+async function runComprehension(buttonId = 'intelComprehendBtn') {
+  const llm = window.DiscoveryLLM;
+  if (!llm || !llm.hasApiKey()) {
+    if (llm) llm.openConfig();
+    showAlert('error', 'Configure a API key de IA antes de executar a compreensão.');
+    return;
+  }
+
+  const config = llm.getConfig();
+  const profile = getIntelProfileSetting();
+  const profileConfig = getIntelProfileConfig(profile);
+  const btn = document.getElementById(buttonId);
+  const progress = document.getElementById('intelRunProgress');
+  if (!btn) return;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisando…';
+  progress.textContent = profile === 'legal'
+    ? 'Executando compreensão do corpus jurídico…'
+    : `Executando análise de perfil: ${profileConfig.heroTitle}…`;
+
+  try {
+    const apiKey = config.apiKey;
+    const model = config.model || undefined;
+    const concurrency = getIntelConcurrencySetting();
+    const params = new URLSearchParams({ api_key: apiKey });
+    if (model) params.set('model', model);
+    params.set('concurrency', String(concurrency));
+    params.set('analysis_profile', profile);
+    const evtSource = new EventSource(`${CASE_SERVER}/api/comprehend/run-stream?${params}`);
+    let settled = false;
+
+    evtSource.addEventListener('progress', (e) => {
+      const data = JSON.parse(e.data);
+      progress.textContent = `${data.stage || ''}: ${data.detail || ''}`;
+    });
+
+    evtSource.addEventListener('complete', () => {
+      settled = true;
+      evtSource.close();
+      progress.textContent = 'Compreensão concluída!';
+      showAlert('success', '<i class="fas fa-check-circle"></i> Análise de compreensão concluída');
+      btn.disabled = false;
+      btn.innerHTML = (buttonId === 'intelRunBtn' || buttonId === 'startIntelRunBtn')
+        ? `<i class="fas fa-bolt"></i> ${esc(profileConfig.runLabel)}`
+        : '<i class="fas fa-book-open-reader"></i> Somente Compreensão';
+      loadIntelligence();
+    });
+
+    evtSource.addEventListener('error', (e) => {
+      settled = true;
+      let msg = 'desconhecido';
+      if (e.data) {
+        try {
+          const data = JSON.parse(e.data);
+          msg = data.error || data.message || msg;
+        } catch {
+          msg = String(e.data);
+        }
+      }
+      progress.textContent = `Erro: ${msg}`;
+      showAlert('error', `<i class="fas fa-triangle-exclamation"></i> Falha na compreensão do corpus: ${esc(msg)}`);
+      evtSource.close();
+      btn.disabled = false;
+      btn.innerHTML = (buttonId === 'intelRunBtn' || buttonId === 'startIntelRunBtn')
+        ? `<i class="fas fa-bolt"></i> ${esc(profileConfig.runLabel)}`
+        : '<i class="fas fa-book-open-reader"></i> Somente Compreensão';
+    });
+
+    evtSource.onerror = () => {
+      if (settled) return;
+      if (evtSource.readyState === EventSource.CLOSED) return;
+      evtSource.close();
+      progress.textContent = 'Conexão perdida';
+      showAlert('error', '<i class="fas fa-triangle-exclamation"></i> Conexão SSE perdida durante a compreensão.');
+      btn.disabled = false;
+      btn.innerHTML = (buttonId === 'intelRunBtn' || buttonId === 'startIntelRunBtn')
+        ? `<i class="fas fa-bolt"></i> ${esc(profileConfig.runLabel)}`
+        : '<i class="fas fa-book-open-reader"></i> Somente Compreensão';
+    };
+  } catch (err) {
+    progress.textContent = `Erro: ${err.message}`;
+    btn.disabled = false;
+    btn.innerHTML = (buttonId === 'intelRunBtn' || buttonId === 'startIntelRunBtn')
+      ? `<i class="fas fa-bolt"></i> ${esc(profileConfig.runLabel)}`
+      : '<i class="fas fa-book-open-reader"></i> Somente Compreensão';
+  }
+}
+
+// ============================================================================
+// INIT
+// ============================================================================
+(async()=>{
+  window.DiscoveryLLM?.mountConfigWidget({
+    title:'Configura\u00e7\u00e3o de IA',
+    subtitle:'Claude API e DeepSeek em uma integra\u00e7\u00e3o compartilhada para chat e futuras fun\u00e7\u00f5es de IA.'
+  });
+  initIntelConcurrencyControl();
+  initIntelPipelineOptionsControls();
+  initIntelProfileControl();
+  initImportModeControl();
+  checkServer();
+  // Initialize per-user workspace (starts from 0 — user only sees their own docs)
+  let sessionInitOk = false;
+  try {
+    const initResp = await fetch(`${DISCOVERY_UI_API}/api/discovery/init-session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Discovery-User-Id': DISCOVERY_USER_ID,
+      },
+      body: JSON.stringify({ user_id: DISCOVERY_USER_ID })
+    });
+    if (!initResp.ok) {
+      const detail = await initResp.text();
+      showAlert('error', `Falha ao inicializar sessão isolada: ${esc(detail)}`);
+      return;
+    }
+    sessionInitOk = true;
+  } catch(e) {
+    console.warn('init-session:', e);
+    showAlert('error', `Falha ao inicializar sessão isolada: ${esc(e.message || String(e))}`);
+    return;
+  }
+  if (!sessionInitOk) return;
+  try{
+    const r=await fetch(`${CASE_SERVER}/api/endpoints`);
+    const data=await r.json();
+    if(data.length>0) await loadDashboard();
+  } catch{}
+})();
+</script>
+</body>
+</html>
