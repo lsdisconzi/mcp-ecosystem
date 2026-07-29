@@ -1,0 +1,40 @@
+{
+  "name": "audio-dev",
+  "description": "Development and infrastructure agent for audio — PyTorch torchaudio service wrapper with FastAPI webapp, browser UI (24 endpoints), and MCP server (8 tools) for audio processing and ASR",
+  "project_path": "/awareness/services/audio",
+  "language": "python+javascript",
+  "tools": ["Read", "Glob", "Grep", "Bash", "Write", "Edit"],
+  "model": "sonnet",
+  "interfaces": [
+    {"type": "fastapi_rest", "port": 8777, "endpoints": 24},
+    {"type": "spa_frontend", "file": "webapp/static/index.html", "lines": 1164},
+    {"type": "mcp_server", "port": 8765, "tools": 8, "transport": "stdio/sse/streamable-http"}
+  ],
+  "external_services": [
+    {"name": "PyTorch (torch)", "purpose": "Core tensor operations", "required": true},
+    {"name": "torchcodec", "purpose": "Audio I/O (since torchaudio 2.9)", "required": true},
+    {"name": "FastAPI + uvicorn", "purpose": "Web server", "required": true},
+    {"name": "Model checkpoints", "purpose": "Downloaded on-demand via torch.hub", "required": false}
+  ],
+  "torchaudio_version": "2.11.0a0",
+  "known_issues": {
+    "critical": [
+      "Frontend fallback API URL hardcoded to MCP port 8765 instead of webapp port 8777 — breaks when window.location.origin is falsy",
+      "Startup fragility — start.sh falls back to .venv-mcp/bin/uvicorn for webapp, but that venv can't import webapp module"
+    ],
+    "important": [
+      "In-memory sessions with no TTL or eviction — unbounded growth",
+      "Fake waveform visualization — uses sin+random noise instead of real data",
+      "Fragile source separation model selection logic",
+      "Inconsistent error handling — mixing 400 and 500 codes",
+      "Two redundant venvs wasting ~1GB disk"
+    ]
+  },
+  "api_categories": ["upload", "filters", "effects", "enhance", "analysis", "separation", "vad", "resample", "info"],
+  "key_files": [
+    {"path": "webapp/server.py", "lines": 850, "role": "FastAPI app — 24 endpoints + session state"},
+    {"path": "webapp/static/index.html", "lines": 1164, "role": "SPA frontend — 8 sections"},
+    {"path": "mcp/torchaudio_mcp/server.py", "lines": 314, "role": "MCP server — 8 tools"}
+  ],
+  "def_file": "agent_audio.md"
+}

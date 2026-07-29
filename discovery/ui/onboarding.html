@@ -1,0 +1,2362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Discovery — Onboarding</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%23c4622d'/><text y='.85em' font-size='65' text-anchor='middle' x='50'>🌉</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --bg: #0e1116;
+    --panel: #161b22;
+    --panel-hi: #1d242d;
+    --border: #2c3340;
+    --text: #e6edf3;
+    --muted: #8b95a4;
+    --accent: #4f9bff;
+    --accent-soft: rgba(79,155,255,0.15);
+    --good: #57c168;
+    --warn: #e0b341;
+    --bad: #f47174;
+    --radius: 6px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, pre { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; }
+  pre { background: #0a0d12; border: 1px solid var(--border); padding: 10px; border-radius: var(--radius); overflow: auto; max-height: 320px; }
+  button { font: inherit; padding: 8px 14px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--panel-hi); color: var(--text); cursor: pointer; }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.primary { background: var(--accent); color: #0e1116; border-color: var(--accent); font-weight: 600; }
+  button.primary:hover:not(:disabled) { filter: brightness(1.1); }
+  button.ghost { background: transparent; }
+  input, textarea, select { font: inherit; padding: 7px 9px; border-radius: var(--radius); border: 1px solid var(--border); background: #0a0d12; color: var(--text); width: 100%; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 70px; }
+  label { display: block; margin-bottom: 4px; font-size: 12.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .row > .col { flex: 1 1 240px; }
+
+  header.topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 22px; border-bottom: 1px solid var(--border); background: var(--panel); }
+  header .brand { font-weight: 600; letter-spacing: 0.02em; }
+  header .brand small { color: var(--muted); font-weight: 400; margin-left: 6px; }
+  header .session { color: var(--muted); font-size: 12.5px; }
+  header .session code { color: var(--text); }
+
+  main { display: grid; grid-template-columns: 260px 1fr; gap: 0; min-height: calc(100vh - 56px); }
+
+  /* Stepper */
+  nav.stepper { padding: 22px 14px; border-right: 1px solid var(--border); background: var(--panel); }
+  nav.stepper ol { list-style: none; padding: 0; margin: 0; }
+  nav.stepper li { padding: 9px 11px; margin-bottom: 4px; border-radius: var(--radius); border: 1px solid transparent; color: var(--muted); display: flex; align-items: center; gap: 10px; cursor: default; }
+  nav.stepper li .num { width: 22px; height: 22px; border-radius: 50%; background: var(--panel-hi); border: 1px solid var(--border); display: inline-flex; align-items: center; justify-content: center; font-size: 11.5px; }
+  nav.stepper li.active { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
+  nav.stepper li.active .num { background: var(--accent); color: #0e1116; border-color: var(--accent); }
+  nav.stepper li.done { color: var(--text); }
+  nav.stepper li.done .num { background: var(--good); border-color: var(--good); color: #0e1116; }
+  nav.stepper li.disabled { opacity: 0.5; }
+  nav.stepper .label { font-size: 13px; }
+  nav.stepper .sub { color: var(--muted); font-size: 11.5px; margin-left: auto; }
+
+  section.workspace { padding: 28px 32px; min-width: 0; }
+  section.workspace h1 { margin: 0 0 4px; font-size: 22px; }
+  section.workspace .subtitle { color: var(--muted); margin: 0 0 24px; }
+
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 18px; }
+  .panel h2 { margin: 0 0 4px; font-size: 16px; }
+  .panel .panel-sub { color: var(--muted); margin: 0 0 14px; font-size: 13px; }
+
+  .field { margin-bottom: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { background: var(--panel-hi); border: 1px solid var(--border); padding: 4px 10px; border-radius: 999px; font-size: 12.5px; cursor: pointer; user-select: none; }
+  .chip.selected { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
+  .chip:hover { border-color: var(--accent); }
+
+  .actions { display: flex; gap: 10px; align-items: center; margin-top: 18px; }
+  .actions .spacer { flex: 1; }
+
+  .status { font-size: 12.5px; color: var(--muted); }
+  .status.ok { color: var(--good); }
+  .status.err { color: var(--bad); }
+
+  .tree { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.55; }
+  .tree details { margin-left: 0; }
+  .tree summary { cursor: pointer; padding: 2px 0; list-style: none; }
+  .tree summary::-webkit-details-marker { display: none; }
+  .tree summary::before { content: "▸ "; color: var(--muted); }
+  .tree details[open] > summary::before { content: "▾ "; }
+  .tree .node-leaf { padding: 2px 0 2px 16px; color: var(--text); }
+  .tree .node-leaf::before { content: "·  "; color: var(--muted); }
+  .tree .purpose { color: var(--muted); font-style: italic; margin-left: 8px; }
+  .tree .layers { color: var(--accent); margin-left: 8px; font-size: 11px; }
+  .tree details > .children { padding-left: 18px; border-left: 1px dashed var(--border); margin-left: 6px; }
+
+  .toggle { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+  .toggle input { width: auto; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--panel-hi); border: 1px solid var(--border); font-size: 11.5px; color: var(--muted); }
+  .badge.ok { color: var(--good); border-color: rgba(87,193,104,0.3); }
+  .badge.err { color: var(--bad); border-color: rgba(244,113,116,0.3); }
+
+  .hidden { display: none !important; }
+
+  /* Dropzone (Step 3) */
+  .dropzone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 30px; text-align: center; color: var(--muted); transition: border-color 0.15s, background 0.15s; }
+  .dropzone.over { border-color: var(--accent); background: var(--accent-soft); color: var(--text); }
+  .dropzone strong { color: var(--text); display: block; margin-bottom: 8px; }
+  .dropzone p { margin: 8px 0; }
+  .upload-buttons { display: inline-flex; gap: 10px; margin-top: 6px; }
+  .upload-btn { display: inline-block; padding: 7px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel-hi); cursor: pointer; color: var(--text); font-size: 13px; }
+  .upload-btn:hover { border-color: var(--accent); }
+
+  /* Diff grid (Step 4) */
+  .diff-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  @media (max-width: 900px) { .diff-grid { grid-template-columns: 1fr; } }
+  .diff-col { background: #0a0d12; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+  .diff-col h3 { margin: 0 0 8px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .diff-list { list-style: none; padding: 0; margin: 0; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; max-height: 300px; overflow: auto; }
+  .diff-list li { padding: 3px 0; border-bottom: 1px dotted var(--border); }
+  .diff-list li:last-child { border-bottom: none; }
+  .diff-list .count { color: var(--accent); margin-left: 6px; }
+  .diff-list .empty-msg { color: var(--muted); font-style: italic; padding: 6px 0; }
+
+  /* Plan tree edit (Step 5) */
+  .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; align-items: end; }
+  @media (max-width: 760px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+  .check { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+  .check input { width: auto; }
+  .tree-edit { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.6; }
+  .agent-transcript { max-height: 360px; overflow-y: auto; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .agent-msg { padding: 8px 10px; border-radius: 8px; line-height: 1.45; max-width: 86%; white-space: pre-wrap; word-wrap: break-word; font-size: 13.5px; }
+  .agent-msg.agent { background: var(--panel); border: 1px solid var(--border); margin-right: auto; }
+  .agent-msg.user { background: var(--accent); color: #fff; margin-left: auto; }
+  .agent-msg .role { display:block; font-size: 10.5px; color: var(--muted); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .agent-msg.user .role { color: rgba(255,255,255,0.7); }
+  .tree-edit details { margin: 2px 0; padding-left: 6px; border-left: 1px dotted var(--border); }
+  .tree-edit summary { cursor: pointer; padding: 3px 4px; border-radius: 4px; }
+  .tree-edit summary:hover { background: var(--panel-hi); }
+  .tree-edit .node-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .tree-edit .leaf-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 3px 4px; border-radius: 4px; }
+  .tree-edit .leaf-row:hover { background: var(--panel-hi); }
+  .tree-edit .node-name { font-weight: 600; color: var(--text); }
+  .tree-edit .node-purpose { color: var(--muted); font-weight: normal; font-size: 11.5px; }
+  .tree-edit .row-actions { margin-left: auto; display: inline-flex; gap: 4px; }
+  .tree-edit button.mini { padding: 2px 7px; font-size: 11px; background: var(--panel-hi); border: 1px solid var(--border); color: var(--muted); border-radius: 4px; cursor: pointer; }
+  .tree-edit button.mini:hover { border-color: var(--accent); color: var(--text); }
+  .tree-edit button.mini.danger:hover { border-color: var(--bad); color: var(--bad); }
+  .tree-edit .config-strip { margin: 4px 0 4px 14px; padding: 6px 10px; background: #0a0d12; border: 1px solid var(--border); border-radius: 6px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; font-family: system-ui, sans-serif; font-size: 11.5px; }
+  .tree-edit .config-strip .group { display: inline-flex; gap: 8px; align-items: center; }
+  .tree-edit .config-strip select, .tree-edit .config-strip input[type=number] { padding: 2px 5px; font-size: 11.5px; }
+  .badge.req { color: #f0b150; border-color: rgba(240,177,80,0.4); }
+  .badge.main { color: #6dafff; border-color: rgba(109,175,255,0.4); }
+  .badge.added { color: #b48cff; border-color: rgba(180,140,255,0.4); }
+  .badge.warn { color: var(--bad); border-color: rgba(244,113,116,0.4); }
+  .legend { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .deleted-list { margin: 8px 0 0; padding: 8px 12px; background: rgba(244,113,116,0.08); border: 1px solid rgba(244,113,116,0.3); border-radius: 6px; font-size: 12px; }
+  .deleted-list strong { display: block; margin-bottom: 4px; color: var(--bad); }
+
+  /* Reduce padding on small screens */
+  @media (max-width: 760px) {
+    main { grid-template-columns: 1fr; }
+    nav.stepper { border-right: none; border-bottom: 1px solid var(--border); }
+    section.workspace { padding: 20px 18px; }
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     AWARENESS-AI · DATA BRIDGE THEME OVERLAY
+     Re-skins the existing onboarding shell with the discovery_ui
+     amber/serif identity. Class hooks are preserved so all JS
+     interactions continue to work — only colors, fonts, and a few
+     accents change here.
+     ───────────────────────────────────────────────────────────────── */
+  :root {
+    --bg:        #191917;
+    --bg-card:   #1f1f1d;
+    --bg-code:   #161614;
+    --bg-input:  #171715;
+    --amber:     #c4622d;
+    --amber-lo:  rgba(196,98,45,0.10);
+    --white:     #ede8df;
+    --gray:      #6b6b68;
+    --gray-hi:   #9a9a96;
+    --green:     #4a9e70;
+    --red:       #9e4a4a;
+    --yellow:    #b8962e;
+    --serif:     'Lora', Georgia, serif;
+    --sans:      'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --mono:      'JetBrains Mono', "SF Mono", Menlo, Consolas, monospace;
+
+    /* remap legacy onboarding tokens to the amber palette */
+    --panel:       #1f1f1d;
+    --panel-hi:    #25251f;
+    --border:      #2a2a28;
+    --text:        #ede8df;
+    --muted:       #9a9a96;
+    --accent:      #c4622d;
+    --accent-soft: rgba(196,98,45,0.12);
+    --good:        #4a9e70;
+    --warn:        #b8962e;
+    --bad:         #9e4a4a;
+    --radius:      8px;
+  }
+
+  body { font-family: var(--sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  code, pre { font-family: var(--mono); }
+  pre { background: var(--bg-code); }
+
+  /* Topbar — match the data-bridge fixed nav */
+  header.topbar {
+    background: rgba(25,25,23,0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 22px;
+  }
+  header.topbar .brand {
+    display: flex; align-items: center; gap: 12px;
+    font-family: var(--serif); font-size: 18px; font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  header.topbar .brand .brand-icon {
+    width: 34px; height: 34px;
+    background: var(--amber-lo);
+    border: 1px solid rgba(196,98,45,0.3);
+    border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--amber); font-size: 14px;
+  }
+  header.topbar .brand .brand-text { display: inline-flex; flex-direction: column; line-height: 1.1; }
+  header.topbar .brand .brand-text .brand-title { font-family: var(--serif); }
+  header.topbar .brand .brand-text .brand-title em { color: var(--amber); font-style: normal; }
+  header.topbar .brand .brand-text small {
+    font-family: var(--sans); font-size: 10px; color: var(--gray);
+    font-weight: 400; letter-spacing: .08em; text-transform: uppercase;
+    margin: 2px 0 0;
+  }
+  header.topbar .session { color: var(--gray-hi); font-family: var(--mono); font-size: 11.5px; }
+  header.topbar .session code { color: var(--white); background: none; padding: 0; }
+  header.topbar .session a { color: var(--amber); }
+  header.topbar .session a:hover { color: #d4825a; }
+
+  /* Stepper — amber active marker, serif step labels */
+  nav.stepper { background: var(--panel); }
+  nav.stepper li { transition: background .15s, border-color .15s; }
+  nav.stepper li .num { font-family: var(--mono); font-weight: 500; }
+  nav.stepper li .label { font-family: var(--sans); font-weight: 500; letter-spacing: 0.01em; }
+  nav.stepper li:hover:not(.disabled):not(.active) { background: rgba(255,255,255,.03); color: var(--text); }
+  nav.stepper li.active { background: var(--amber-lo); border-color: var(--amber); color: var(--white); }
+  nav.stepper li.active .num { background: var(--amber); border-color: var(--amber); color: var(--bg); }
+  nav.stepper li.done .num { background: var(--good); border-color: var(--good); color: var(--bg); }
+
+  /* Workspace headings → serif, amber accents */
+  section.workspace h1 { font-family: var(--serif); font-weight: 600; letter-spacing: 0.005em; color: var(--white); }
+  section.workspace .subtitle { color: var(--gray-hi); }
+
+  /* Panels */
+  .panel { background: var(--bg-card); border-color: var(--border); transition: border-color .2s; }
+  .panel:hover { border-color: #363634; }
+  .panel h2 { font-family: var(--serif); font-weight: 500; color: var(--white); display: flex; align-items: center; gap: 8px; }
+  .panel h2 i { color: var(--amber); font-size: 13px; }
+  .panel .panel-sub { color: var(--gray-hi); }
+
+  /* Form controls */
+  label { font-family: var(--sans); color: var(--gray); letter-spacing: 0.06em; }
+  input, textarea, select { background: var(--bg-input); border-color: var(--border); font-family: var(--sans); }
+  input:focus, textarea:focus, select:focus { border-color: var(--amber); box-shadow: 0 0 0 3px rgba(196,98,45,0.12); }
+  select option { background: var(--bg-card); color: var(--white); }
+
+  /* Chips → amber selected */
+  .chip { background: rgba(255,255,255,.04); border-color: var(--border); color: var(--gray-hi); transition: all .15s; }
+  .chip:hover { border-color: var(--amber); color: var(--amber); background: var(--amber-lo); }
+  .chip.selected { background: var(--amber); border-color: var(--amber); color: var(--bg); font-weight: 600; }
+
+  /* Buttons */
+  button { background: transparent; border-color: #363634; color: var(--gray-hi); font-family: var(--sans); }
+  button:hover:not(:disabled) { border-color: var(--amber); color: var(--white); background: rgba(255,255,255,.04); }
+  button.primary { background: var(--amber); border-color: var(--amber); color: var(--bg); }
+  button.primary:hover:not(:disabled) { filter: brightness(1.08); }
+  button.ghost { background: transparent; border-color: var(--border); }
+  button.mini { font-family: var(--mono); }
+
+  /* Badges */
+  .badge { font-family: var(--mono); background: rgba(255,255,255,.04); border-color: var(--border); color: var(--gray-hi); }
+  .badge.ok { color: var(--good); border-color: rgba(74,158,112,0.35); background: rgba(74,158,112,0.08); }
+  .badge.err { color: var(--bad); border-color: rgba(158,74,74,0.35); background: rgba(158,74,74,0.08); }
+  .badge.req { color: var(--yellow); border-color: rgba(184,150,46,0.4); background: rgba(184,150,46,0.08); }
+  .badge.main { color: #7ab5cc; border-color: rgba(91,143,168,0.4); background: rgba(91,143,168,0.08); }
+  .badge.added { color: #c19fe6; border-color: rgba(180,140,255,0.35); background: rgba(180,140,255,0.08); }
+  .badge.warn { color: var(--bad); border-color: rgba(158,74,74,0.4); }
+
+  /* Status text */
+  .status.ok { color: var(--good); }
+  .status.err { color: var(--bad); }
+
+  /* Tree views — keep mono but recolor */
+  .tree, .tree-edit { font-family: var(--mono); }
+  .tree .layers { color: var(--amber); }
+  .tree .purpose, .tree-edit .node-purpose { color: var(--gray); font-style: italic; }
+  .tree-edit .node-name { color: var(--white); font-weight: 600; }
+  .tree-edit .config-strip { background: var(--bg-code); border-color: var(--border); font-family: var(--sans); }
+
+  /* Dropzone */
+  .dropzone { background: rgba(255,255,255,.01); border-color: #363634; }
+  .dropzone.over { border-color: var(--amber); background: var(--amber-lo); color: var(--white); }
+  .dropzone strong { font-family: var(--serif); font-weight: 500; color: var(--white); font-size: 16px; }
+  .upload-btn { background: var(--bg-code); border-color: var(--border); color: var(--gray-hi); transition: all .15s; }
+  .upload-btn:hover { border-color: var(--amber); color: var(--amber); background: var(--amber-lo); }
+
+  /* Diff cols */
+  .diff-col { background: var(--bg-code); border-color: var(--border); }
+  .diff-col h3 { font-family: var(--sans); color: var(--gray); }
+  .diff-list .count { color: var(--amber); }
+
+  /* Agent transcript */
+  .agent-transcript { background: var(--bg-code); border-color: var(--border); }
+  .agent-msg { font-family: var(--sans); }
+  .agent-msg.agent { background: var(--bg-card); border-color: var(--border); color: var(--white); }
+  .agent-msg.user { background: var(--amber); color: var(--bg); }
+  .agent-msg .role { font-family: var(--mono); color: var(--gray); }
+  .agent-msg.user .role { color: rgba(25,25,23,0.7); }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon"><i class="fas fa-compass"></i></span>
+      <span class="brand-text">
+        <span class="brand-title">Discov<em>ery</em></span>
+        <small>Awareness-AI · Onboarding</small>
+      </span>
+    </div>
+    <div class="session">session <code id="sessionLabel">…</code> · <a href="/" id="dashboardLink">dashboard <i class="fas fa-arrow-up-right-from-square" style="font-size:10px;margin-left:2px"></i></a></div>
+  </header>
+
+  <main>
+    <nav class="stepper" aria-label="Onboarding steps">
+      <ol id="stepperList">
+        <li data-step="0" class="active"><span class="num">1</span><span class="label">Intake</span></li>
+        <li data-step="1" class="disabled"><span class="num">2</span><span class="label">Skeleton</span></li>
+        <li data-step="2" class="disabled"><span class="num">3</span><span class="label">Ingest</span></li>
+        <li data-step="3" class="disabled"><span class="num">4</span><span class="label">Refine v2</span></li>
+        <li data-step="4" class="disabled"><span class="num">5</span><span class="label">Plan</span></li>
+        <li data-step="5" class="disabled"><span class="num">6</span><span class="label">Pilot</span></li>
+        <li data-step="6" class="disabled"><span class="num">7</span><span class="label">Full run</span></li>
+      </ol>
+    </nav>
+
+    <section class="workspace">
+      <!-- Step 1: Intake -->
+      <div id="step-intake">
+        <h1>Tell us about your corpus</h1>
+        <p class="subtitle">A few quick choices so the system can propose a starting directory structure. You'll refine it after the first ingestion run.</p>
+
+        <div class="panel">
+          <h2>Template & mode</h2>
+          <p class="panel-sub">Templates ship as starting points. Mode controls who fills out this form — you, an agent, or a hybrid.</p>
+          <div class="row">
+            <div class="col">
+              <div class="field">
+                <label for="templateSelect">Starting template</label>
+                <select id="templateSelect"></select>
+              </div>
+            </div>
+            <div class="col">
+              <div class="field">
+                <label>Intake mode</label>
+                <div class="chips" id="modeChips">
+                  <span class="chip selected" data-value="form">Form</span>
+                  <span class="chip" data-value="hybrid" title="You fill the form; an agent fills the gaps after">Hybrid</span>
+                  <span class="chip" data-value="agent" title="Agent dialogue drives intake one question at a time">Agent</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form-mode panels (hidden when intake_mode=agent) -->
+        <div id="intakeFormPanels">
+        <div class="panel">
+          <h2>What is this corpus about?</h2>
+          <p class="panel-sub">Domain decides which templates and prompts make sense. Goal is your one-paragraph statement of intent.</p>
+          <div class="row">
+            <div class="col">
+              <div class="field">
+                <label for="domainSelect">Domain</label>
+                <select id="domainSelect">
+                  <option value="legal_case">Legal case</option>
+                  <option value="research">Research</option>
+                  <option value="business_records">Business records</option>
+                  <option value="technical_docs">Technical docs</option>
+                  <option value="personal_archive">Personal archive</option>
+                  <option value="investigation">Investigation</option>
+                  <option value="mixed">Mixed</option>
+                  <option value="other">Other…</option>
+                </select>
+              </div>
+              <div class="field hidden" id="domainOtherField">
+                <label for="domainOther">Specify domain</label>
+                <input id="domainOther" placeholder="e.g. journalism investigation" />
+              </div>
+            </div>
+            <div class="col">
+              <div class="field">
+                <label for="privacyLevel">Privacy level</label>
+                <select id="privacyLevel">
+                  <option value="public">Public</option>
+                  <option value="confidential" selected>Confidential</option>
+                  <option value="privileged">Privileged</option>
+                  <option value="sealed">Sealed</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="goalSummary">Goal (one paragraph)</label>
+            <textarea id="goalSummary" placeholder="What do you want to do with this corpus? e.g. 'Prepare evidence bundles for a regulatory complaint covering events of April–July 2024.'"></textarea>
+          </div>
+        </div>
+
+        <div class="panel" id="legalFields">
+          <h2>Jurisdictions</h2>
+          <p class="panel-sub">Pick all that apply. Drives entity/law extraction priorities. Skip if not legal.</p>
+          <div class="chips" id="jurisdictionChips">
+            <span class="chip" data-value="BR">BR · Brazil</span>
+            <span class="chip" data-value="CL">CL · Chile</span>
+            <span class="chip" data-value="AR">AR · Argentina</span>
+            <span class="chip" data-value="US">US · United States</span>
+            <span class="chip" data-value="EU">EU · European Union</span>
+            <span class="chip" data-value="UK">UK · United Kingdom</span>
+            <span class="chip" data-value="MX">MX · Mexico</span>
+            <span class="chip" data-value="INT">INT · International</span>
+            <span class="chip" data-value="UN">UN · United Nations</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>What kinds of files will you upload?</h2>
+          <p class="panel-sub">Best guess is fine — refinement after ingestion will discover the rest.</p>
+          <div class="chips" id="fileKindsChips">
+            <span class="chip" data-value="transcripts">Transcripts</span>
+            <span class="chip" data-value="audio_recordings">Audio</span>
+            <span class="chip" data-value="video_recordings">Video</span>
+            <span class="chip" data-value="photos">Photos</span>
+            <span class="chip" data-value="screenshots">Screenshots</span>
+            <span class="chip" data-value="emails">Emails</span>
+            <span class="chip" data-value="chat_logs">Chat logs</span>
+            <span class="chip" data-value="contracts">Contracts</span>
+            <span class="chip" data-value="filings">Filings</span>
+            <span class="chip" data-value="court_documents">Court docs</span>
+            <span class="chip" data-value="regulatory_documents">Regulatory docs</span>
+            <span class="chip" data-value="law_texts">Law texts</span>
+            <span class="chip" data-value="case_law">Case law</span>
+            <span class="chip" data-value="reports">Reports</span>
+            <span class="chip" data-value="spreadsheets">Spreadsheets</span>
+            <span class="chip" data-value="structured_data">Structured data</span>
+            <span class="chip" data-value="boarding_passes_or_tickets">Boarding/tickets</span>
+            <span class="chip" data-value="id_documents">ID docs</span>
+            <span class="chip" data-value="personal_notes">Personal notes</span>
+            <span class="chip" data-value="other">Other</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Timeframe (optional)</h2>
+          <p class="panel-sub">If the corpus covers a known period, set the bounds. Helps the timeline view.</p>
+          <div class="row">
+            <div class="col">
+              <div class="field">
+                <label for="timeFrom">From</label>
+                <input id="timeFrom" type="date" />
+              </div>
+            </div>
+            <div class="col">
+              <div class="field">
+                <label for="timeTo">To</label>
+                <input id="timeTo" type="date" />
+              </div>
+            </div>
+            <div class="col" style="display:flex;align-items:flex-end;">
+              <label class="toggle"><input type="checkbox" id="ongoingCheck" /> Ongoing</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Tags (optional)</h2>
+          <p class="panel-sub">Press Enter to add. Removes on click.</p>
+          <input id="tagInput" placeholder="e.g. litigation, compliance-audit" />
+          <div class="chips" id="tagChips" style="margin-top:8px;"></div>
+        </div>
+
+        <div class="actions">
+          <span class="status" id="intakeStatus"></span>
+          <span class="spacer"></span>
+          <button id="resetBtn" class="ghost">Reset form</button>
+          <button id="submitIntakeBtn" class="primary">Save & generate blueprint v1 →</button>
+        </div>
+        </div><!-- /intakeFormPanels -->
+
+        <!-- Agent-mode panel (visible when intake_mode=agent) -->
+        <div id="intakeAgentPanel" class="hidden">
+          <div class="panel">
+            <h2>Agent dialogue</h2>
+            <p class="panel-sub">An agent will ask one question at a time and assemble your intake. You can switch back to <em>Form</em> at any moment without losing answers (each mode has its own draft).</p>
+            <div id="agentTranscript" class="agent-transcript" role="log" aria-live="polite"></div>
+            <div id="agentHints" class="node-purpose" style="margin:6px 0 10px 0;"></div>
+            <div class="actions" style="flex-wrap:wrap;gap:8px;">
+              <input id="agentReplyInput" type="text" style="flex:1;min-width:240px;" placeholder="Type your reply and press Enter…" />
+              <button id="agentSendBtn" class="primary">Send</button>
+            </div>
+            <div class="actions" style="margin-top:6px;">
+              <span class="status" id="agentStatus"></span>
+              <span class="spacer"></span>
+              <button id="agentRestartBtn" class="ghost">Restart dialogue</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Skeleton (Blueprint preview + materialize) -->
+      <div id="step-skeleton" class="hidden">
+        <h1>Initial blueprint</h1>
+        <p class="subtitle">Generated from your intake. Review the proposed tree, then materialize it into the session workspace.</p>
+
+        <div class="panel">
+          <h2>Blueprint v1 <span class="badge" id="bpVersionBadge">v1</span></h2>
+          <p class="panel-sub" id="bpNotes"></p>
+          <div class="tree" id="treeView"></div>
+        </div>
+
+        <div class="panel">
+          <h2>Materialize</h2>
+          <p class="panel-sub">Creates directories and per-folder README.md inside the session workspace. Files you upload later go through the discovery pipeline and land in the appropriate buckets.</p>
+          <div class="row">
+            <div class="col">
+              <div class="field">
+                <label>Collision policy</label>
+                <select id="collisionPolicy">
+                  <option value="merge" selected>Merge (default — keep existing READMEs)</option>
+                  <option value="overwrite">Overwrite existing READMEs</option>
+                  <option value="abort">Abort if any folder exists</option>
+                </select>
+              </div>
+            </div>
+            <div class="col" style="display:flex;align-items:flex-end;">
+              <label class="toggle"><input type="checkbox" id="dryRunCheck" /> Dry run (preview only)</label>
+            </div>
+          </div>
+          <div class="actions">
+            <span class="status" id="materializeStatus"></span>
+            <span class="spacer"></span>
+            <button id="backToIntakeBtn" class="ghost">← Back to intake</button>
+            <button id="materializeBtn" class="primary">Create skeleton in workspace</button>
+          </div>
+          <div id="materializeResult" class="hidden">
+            <h3 style="margin-top:18px;">Result</h3>
+            <pre id="materializeOutput"></pre>
+          </div>
+          <div class="actions">
+            <span class="spacer"></span>
+            <button id="goToIngestBtn" class="primary hidden">Continue to ingest →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Ingest -->
+      <div id="step-ingest" class="hidden">
+        <h1>Upload your corpus</h1>
+        <p class="subtitle">Drop in everything you have. Files go straight into the session workspace; the L1–L4 pipeline runs as part of refinement. You can come back and add more.</p>
+
+        <div class="panel">
+          <h2>Files</h2>
+          <p class="panel-sub">Folder uploads preserve relative paths. Mix folders and loose files freely.</p>
+          <div class="dropzone" id="dropZone">
+            <strong>Drop files or folders here</strong>
+            <p>or</p>
+            <div class="upload-buttons">
+              <label class="upload-btn">
+                <input type="file" id="filePicker" multiple hidden>
+                <span>Choose files</span>
+              </label>
+              <label class="upload-btn">
+                <input type="file" id="folderPicker" webkitdirectory directory multiple hidden>
+                <span>Choose folder</span>
+              </label>
+            </div>
+          </div>
+          <div id="pendingFiles" class="hidden">
+            <p class="panel-sub" style="margin-top:14px;"><span id="pendingCount">0</span> file(s) staged · <span id="pendingSize">0</span></p>
+            <pre id="pendingList" style="max-height: 180px;"></pre>
+          </div>
+          <div class="actions">
+            <span class="status" id="uploadStatus"></span>
+            <span class="spacer"></span>
+            <button id="clearPendingBtn" class="ghost" disabled>Clear</button>
+            <button id="uploadBtn" class="primary" disabled>Upload to workspace</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Already in workspace</h2>
+          <p class="panel-sub">Anything you've already uploaded across previous sessions of this browser.</p>
+          <pre id="existingFiles">Loading…</pre>
+          <div class="actions">
+            <span class="spacer"></span>
+            <button id="refreshFilesBtn" class="ghost">Refresh</button>
+            <button id="goToRefineBtn" class="primary">Continue to refine v2 →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Refine -->
+      <div id="step-refine" class="hidden">
+        <h1>Refine the structure</h1>
+        <p class="subtitle">The system reads your uploaded corpus and proposes a revised tree. Folders that have no matching files are flagged; files that don't fit anywhere become an UNCLASSIFIED bucket.</p>
+
+        <div class="panel">
+          <h2>Run refinement</h2>
+          <p class="panel-sub">Reads the L1–L4 pipeline output for the workspace. Safe to re-run after uploading more files.</p>
+          <div class="actions">
+            <span class="status" id="refineStatus"></span>
+            <span class="spacer"></span>
+            <button id="backToIngestBtn" class="ghost">← Back to ingest</button>
+            <button id="refineBtn" class="primary">Generate blueprint v2</button>
+          </div>
+        </div>
+
+        <div id="refineResult" class="hidden">
+          <div class="panel">
+            <h2>Diff <span class="badge" id="diffSummary"></span></h2>
+            <p class="panel-sub">What changed between v1 and v2.</p>
+            <div class="diff-grid">
+              <div class="diff-col">
+                <h3>Added</h3>
+                <ul id="diffAdded" class="diff-list"></ul>
+              </div>
+              <div class="diff-col">
+                <h3>Populated</h3>
+                <ul id="diffPopulated" class="diff-list"></ul>
+              </div>
+              <div class="diff-col">
+                <h3>Empty</h3>
+                <ul id="diffEmpty" class="diff-list"></ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Blueprint v2 <span class="badge" id="bpV2Badge">v2</span></h2>
+            <p class="panel-sub" id="bpV2Notes"></p>
+            <div class="tree" id="treeV2View"></div>
+            <div class="actions">
+              <span class="spacer"></span>
+              <button id="goToPlanBtn" class="primary">Continue to plan →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: Plan -->
+      <div id="step-plan" class="hidden">
+        <h1>Review &amp; configure pipelines</h1>
+        <p class="subtitle">Edit the tree, mark "main" directories (one file per main dir runs in the pilot), choose pipeline layers per directory, then pick a destination root.</p>
+
+        <div class="panel">
+          <h2>Destination root</h2>
+          <p class="panel-sub">Absolute filesystem path. Materialization at P6 will write here using the chosen collision policy.</p>
+          <div class="grid-2">
+            <label class="field">
+              <span>Destination root path</span>
+              <input id="planDestRoot" type="text" placeholder="/Users/you/cases/my-case" spellcheck="false" />
+            </label>
+            <label class="field">
+              <span>Collision policy</span>
+              <select id="planCollisionPolicy">
+                <option value="abort">abort — fail if path exists</option>
+                <option value="merge" selected>merge — create missing, leave existing</option>
+                <option value="rename_existing">rename_existing — back up existing</option>
+                <option value="overwrite">overwrite — replace existing</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Global options</h2>
+          <div class="grid-3">
+            <label class="field">
+              <span>LLM provider</span>
+              <input id="planLlmProvider" type="text" value="default" />
+            </label>
+            <label class="field">
+              <span>Max concurrency</span>
+              <input id="planMaxConcurrency" type="number" min="1" value="4" />
+            </label>
+            <label class="field">
+              <span>Cost ceiling (USD, optional)</span>
+              <input id="planCostCeiling" type="number" min="0" step="0.01" placeholder="" />
+            </label>
+            <label class="check">
+              <input id="planHaltOnError" type="checkbox" /> halt on error
+            </label>
+            <label class="check">
+              <input id="planDryRun" type="checkbox" /> dry run (skip LLM calls)
+            </label>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Tree &amp; per-directory pipelines</h2>
+          <p class="panel-sub">Click any folder to expand, edit, or configure. Folders flagged <em>required</em> warn before deletion. Top-level folders default to "main".</p>
+          <div class="tree-edit" id="treeEdit"></div>
+          <div class="legend">
+            <span class="badge req">required</span>
+            <span class="badge main">main</span>
+            <span class="badge ok">populated</span>
+            <span class="badge added">added</span>
+            <span class="badge warn">deleted-required</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="actions">
+            <span class="status" id="planStatus"></span>
+            <span class="spacer"></span>
+            <button id="backToRefineBtn" class="ghost">← Back to refine</button>
+            <button id="savePlanBtn" class="primary">Save plan</button>
+            <button id="goToPilotBtn" class="primary hidden">Continue to pilot →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6: Pilot -->
+      <div id="step-pilot" class="hidden">
+        <h1>Pilot run</h1>
+        <p class="subtitle">Sample one file per main directory (plus deeper-sample children where enabled) to validate the plan before the full run. This MVP runs no LLMs — it confirms coverage, sample availability, and layer config.</p>
+
+        <div class="panel">
+          <h2>Run pilot</h2>
+          <p class="panel-sub">Reads <code>pipeline_plan.json</code> and walks the workspace. Re-running picks fresh samples for <em>random</em> strategies.</p>
+          <div class="actions">
+            <span class="status" id="pilotStatus"></span>
+            <span class="spacer"></span>
+            <button id="backToPlanBtn" class="ghost">← Back to plan</button>
+            <button id="runPilotBtn" class="primary">Run pilot</button>
+          </div>
+        </div>
+
+        <div id="pilotResult" class="hidden">
+          <div class="panel">
+            <h2>Summary <span class="badge" id="pilotOkBadge"></span></h2>
+            <div class="grid-3" id="pilotSummaryGrid"></div>
+            <div id="pilotWarnings" class="deleted-list hidden"></div>
+          </div>
+
+          <div class="panel">
+            <h2>Sampled files</h2>
+            <p class="panel-sub">One row per sampled file. <span class="badge added">deeper</span> marks files added by the deeper-sample toggle.</p>
+            <div class="tree-edit" id="pilotSamples"></div>
+            <div class="actions">
+              <span class="spacer"></span>
+              <button id="goToFullRunBtn" class="primary">Continue to full run →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 7: Full run -->
+      <div id="step-fullrun" class="hidden">
+        <h1>Full run</h1>
+        <p class="subtitle">Materialize the blueprint at your destination root and copy every workspace file into its v2 location. The session workspace is preserved as a snapshot — nothing is moved or deleted. LLM-driven layer execution is not part of this step; trigger it separately against the destination.</p>
+
+        <div class="panel">
+          <h2>Plan summary</h2>
+          <div class="grid-3" id="fullRunPlanSummary"></div>
+        </div>
+
+        <div class="panel">
+          <h2>Run</h2>
+          <p class="panel-sub">Use <em>Dry run</em> first to preview the manifest without writing files. Re-running with the same destination uses the configured collision policy.</p>
+          <div class="actions">
+            <label class="check">
+              <input id="fullRunDryRun" type="checkbox" checked /> dry run
+            </label>
+            <span class="spacer"></span>
+            <span class="status" id="fullRunStatus"></span>
+            <button id="backToPilotBtn" class="ghost">← Back to pilot</button>
+            <button id="runFullBtn" class="primary">Execute</button>
+          </div>
+        </div>
+
+        <div id="fullRunResult" class="hidden">
+          <div class="panel">
+            <h2>Manifest <span class="badge" id="fullRunOkBadge"></span></h2>
+            <div class="grid-3" id="fullRunSummaryGrid"></div>
+            <div id="fullRunErrors" class="deleted-list hidden"></div>
+          </div>
+
+          <div class="panel">
+            <h2>Files copied</h2>
+            <p class="panel-sub">Top 200 entries shown. Each row maps a source file in the session workspace to its destination path under the chosen root.</p>
+            <div class="tree-edit" id="fullRunFiles"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script>
+(() => {
+  // ── session ────────────────────────────────────────────────────────
+  function getDiscoveryUserId() {
+    let uid = localStorage.getItem('discoveryUserId');
+    if (!uid) {
+      uid = (crypto && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : ('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            const r = Math.random()*16|0, v = c=='x'?r:(r&0x3|0x8); return v.toString(16); }));
+    }
+    localStorage.setItem('discoveryUserId', uid);
+    return uid;
+  }
+  const USER_ID = getDiscoveryUserId();
+  document.getElementById('sessionLabel').textContent = USER_ID.slice(0, 8) + '…';
+
+  // ── api ────────────────────────────────────────────────────────────
+  async function api(path, opts = {}) {
+    const headers = Object.assign({
+      'X-Discovery-User-Id': USER_ID,
+    }, opts.headers || {});
+    if (opts.body !== undefined && !(opts.body instanceof FormData) && typeof opts.body !== 'string') {
+      headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(opts.body);
+    }
+    const res = await fetch(path, Object.assign({}, opts, { headers }));
+    let data = null;
+    try { data = await res.json(); } catch (e) { /* non-json error */ }
+    if (!res.ok) {
+      const msg = (data && data.error) || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+    return data;
+  }
+
+  // ── stepper ────────────────────────────────────────────────────────
+  const stepperItems = document.querySelectorAll('#stepperList li');
+  const stepEls = {
+    0: document.getElementById('step-intake'),
+    1: document.getElementById('step-skeleton'),
+    2: document.getElementById('step-ingest'),
+    3: document.getElementById('step-refine'),
+    4: document.getElementById('step-plan'),
+    5: document.getElementById('step-pilot'),
+    6: document.getElementById('step-fullrun'),
+  };
+  let maxStepReached = 0;
+
+  function setStep(idx) {
+    if (idx > maxStepReached) maxStepReached = idx;
+    stepperItems.forEach((li, i) => {
+      li.classList.toggle('active', i === idx);
+      li.classList.toggle('done', i < idx);
+      // Allow navigation to any step at or before maxStepReached.
+      if (i <= maxStepReached && i <= 6) li.classList.remove('disabled');
+      else if (i > 6) li.classList.add('disabled');
+    });
+    Object.entries(stepEls).forEach(([k, el]) => {
+      el.classList.toggle('hidden', Number(k) !== idx);
+    });
+  }
+
+  // Make stepper items clickable for navigation back/forward (within reached steps).
+  stepperItems.forEach((li, i) => {
+    li.addEventListener('click', () => {
+      if (li.classList.contains('disabled')) return;
+      if (i <= maxStepReached && i <= 6) setStep(i);
+    });
+    li.style.cursor = 'pointer';
+  });
+
+  // ── chips helper ───────────────────────────────────────────────────
+  function setupSingleChip(containerId, defaultValue) {
+    const el = document.getElementById(containerId);
+    let value = defaultValue;
+    el.querySelectorAll('.chip').forEach(chip => {
+      chip.classList.toggle('selected', chip.dataset.value === defaultValue);
+      chip.addEventListener('click', () => {
+        value = chip.dataset.value;
+        el.querySelectorAll('.chip').forEach(c => c.classList.toggle('selected', c === chip));
+      });
+    });
+    return { get: () => value };
+  }
+
+  function setupMultiChip(containerId) {
+    const el = document.getElementById(containerId);
+    const set = new Set();
+    el.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const v = chip.dataset.value;
+        if (set.has(v)) set.delete(v); else set.add(v);
+        chip.classList.toggle('selected', set.has(v));
+      });
+    });
+    return { get: () => Array.from(set), clear: () => { set.clear(); el.querySelectorAll('.chip').forEach(c => c.classList.remove('selected')); } };
+  }
+
+  const modeCtl = setupSingleChip('modeChips', 'form');
+  const jurisdictionCtl = setupMultiChip('jurisdictionChips');
+  const fileKindsCtl = setupMultiChip('fileKindsChips');
+
+  // tags
+  const tagInput = document.getElementById('tagInput');
+  const tagChips = document.getElementById('tagChips');
+  const tagSet = new Set();
+  function renderTags() {
+    tagChips.innerHTML = '';
+    Array.from(tagSet).forEach(t => {
+      const span = document.createElement('span');
+      span.className = 'chip selected';
+      span.textContent = t + '  ✕';
+      span.title = 'Click to remove';
+      span.addEventListener('click', () => { tagSet.delete(t); renderTags(); });
+      tagChips.appendChild(span);
+    });
+  }
+  tagInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const v = tagInput.value.trim();
+      if (v) { tagSet.add(v); renderTags(); }
+      tagInput.value = '';
+    }
+  });
+
+  // domain "other" toggle
+  const domainSelect = document.getElementById('domainSelect');
+  const domainOtherField = document.getElementById('domainOtherField');
+  domainSelect.addEventListener('change', () => {
+    domainOtherField.classList.toggle('hidden', domainSelect.value !== 'other');
+  });
+
+  // ── load templates ────────────────────────────────────────────────
+  const templateSelect = document.getElementById('templateSelect');
+  let templatesById = {};
+  async function loadTemplates() {
+    const data = await api('/api/onboarding/templates');
+    templatesById = {};
+    templateSelect.innerHTML = '';
+    for (const tpl of data.templates) {
+      templatesById[tpl.id] = tpl;
+      const opt = document.createElement('option');
+      opt.value = tpl.id;
+      opt.textContent = `${tpl.label} (${tpl.id}) — ${tpl.node_count} nodes`;
+      opt.title = tpl.notes;
+      templateSelect.appendChild(opt);
+    }
+    // Default: legal-case if present
+    if (templatesById['legal-case']) templateSelect.value = 'legal-case';
+  }
+
+  // ── submit intake ─────────────────────────────────────────────────
+  const intakeStatus = document.getElementById('intakeStatus');
+  const submitBtn = document.getElementById('submitIntakeBtn');
+  const resetBtn = document.getElementById('resetBtn');
+
+  function buildIntakeSpec() {
+    const goal = document.getElementById('goalSummary').value.trim();
+    const domain = domainSelect.value;
+    const spec = {
+      intake_mode: modeCtl.get(),
+      template_id: templateSelect.value,
+      domain,
+      goal: { summary: goal, tags: Array.from(tagSet) },
+      jurisdictions: jurisdictionCtl.get(),
+      expected_file_kinds: fileKindsCtl.get(),
+      privacy_level: document.getElementById('privacyLevel').value,
+    };
+    if (domain === 'other') {
+      const dother = document.getElementById('domainOther').value.trim();
+      if (dother) spec.domain_other = dother;
+    }
+    const from = document.getElementById('timeFrom').value;
+    const to = document.getElementById('timeTo').value;
+    const ongoing = document.getElementById('ongoingCheck').checked;
+    if (from || to || ongoing) {
+      spec.timeframe = {};
+      if (from) spec.timeframe.from = from;
+      if (to) spec.timeframe.to = to;
+      if (ongoing) spec.timeframe.is_ongoing = true;
+    }
+    return spec;
+  }
+
+  let currentBlueprint = null;
+
+  submitBtn.addEventListener('click', async () => {
+    intakeStatus.className = 'status';
+    intakeStatus.textContent = 'Saving…';
+    submitBtn.disabled = true;
+    try {
+      const spec = buildIntakeSpec();
+      const resp = await api('/api/onboarding/intake', { method: 'POST', body: { intake_spec: spec } });
+      currentBlueprint = resp.blueprint;
+      renderBlueprint(currentBlueprint);
+      intakeStatus.className = 'status ok';
+      intakeStatus.textContent = 'Saved. Workspace at ' + resp.root_dir;
+      setStep(1);
+    } catch (err) {
+      intakeStatus.className = 'status err';
+      intakeStatus.textContent = 'Error: ' + err.message;
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  // ── intake mode switching (form ⇄ agent) ─────────────────────────
+  const intakeFormPanels = document.getElementById('intakeFormPanels');
+  const intakeAgentPanel = document.getElementById('intakeAgentPanel');
+  const modeChipsEl = document.getElementById('modeChips');
+  modeChipsEl.querySelectorAll('.chip').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      applyIntakeMode(chip.dataset.value);
+    });
+  });
+  function applyIntakeMode(mode) {
+    // Hybrid currently mirrors form-mode visually; the LLM-fill-gaps step
+    // is layered on top of refinement rather than the intake screen itself.
+    if (mode === 'agent') {
+      intakeFormPanels.classList.add('hidden');
+      intakeAgentPanel.classList.remove('hidden');
+      bootAgentSession();
+    } else {
+      intakeAgentPanel.classList.add('hidden');
+      intakeFormPanels.classList.remove('hidden');
+    }
+  }
+
+  // ── agent-driven intake ──────────────────────────────────────────
+  const agentTranscript = document.getElementById('agentTranscript');
+  const agentReplyInput = document.getElementById('agentReplyInput');
+  const agentSendBtn = document.getElementById('agentSendBtn');
+  const agentRestartBtn = document.getElementById('agentRestartBtn');
+  const agentStatus = document.getElementById('agentStatus');
+  const agentHints = document.getElementById('agentHints');
+  let agentBootstrapped = false;
+  let agentCompleted = false;
+  let currentAgentQuestion = null;
+
+  // ── LLM normalization (optional) ─────────────────────────────────
+  // When DiscoveryLLM has an API key, we ask the model to coerce the user's
+  // freeform reply into the exact canonical shape the current question
+  // expects (e.g. enum slug, list of jurisdiction codes, ISO date range).
+  // This runs entirely in the browser; the server-side deterministic
+  // parsers still validate and accept whatever we send.
+  function llmReady() {
+    return !!(window.DiscoveryLLM && window.DiscoveryLLM.hasApiKey && window.DiscoveryLLM.hasApiKey());
+  }
+
+  const NORMALIZATION_HINTS = {
+    goal: {
+      desc: "a clear one-paragraph statement of the corpus goal (preserve user intent, only fix grammar/clarity)",
+      example: '{"value":"Prepare evidence bundles for a regulatory complaint covering events of April–July 2024."}',
+    },
+    domain: {
+      desc: "exactly one of: legal_case, research, business_records, technical_docs, personal_archive, investigation, mixed, other",
+      example: '{"value":"legal_case"}',
+    },
+    jurisdictions: {
+      desc: "an array of zero or more codes from: BR, CL, AR, US, EU, UK, MX, INT, UN. Map free-text country names to codes (e.g. 'Brazil' -> 'BR').",
+      example: '{"value":["BR","US","EU"]}',
+    },
+    expected_file_kinds: {
+      desc: "an array of slugs from: transcripts, audio_recordings, video_recordings, photos, screenshots, emails, chat_logs, contracts, filings, court_documents, regulatory_documents, law_texts, case_law, reports, spreadsheets, structured_data, boarding_passes_or_tickets, id_documents, personal_notes, other. Empty array if user said skip/none.",
+      example: '{"value":["transcripts","emails","contracts","court_documents"]}',
+    },
+    timeframe: {
+      desc: "an object {from?:'YYYY-MM-DD', to?:'YYYY-MM-DD', is_ongoing?:bool}, or {skip:true} if user said skip/none. Convert any natural-language dates to ISO. Bare years become YYYY-01-01 / YYYY-12-31.",
+      example: '{"value":{"from":"2024-04-01","to":"2024-12-31"}}',
+    },
+    privacy_level: {
+      desc: "exactly one of: public, confidential, privileged, sealed. Default to confidential if user said default/skip.",
+      example: '{"value":"confidential"}',
+    },
+    tags: {
+      desc: "an array of short string tags (no leading #). Empty array if user said skip/none.",
+      example: '{"value":["litigation","q4-2024"]}',
+    },
+    template: {
+      desc: "exactly one of: legal-case, blank. If user agreed (yes/sure/ok/confirm), pick the template suggested in the agent's prompt.",
+      example: '{"value":"legal-case"}',
+    },
+    confirm: {
+      desc: "either 'yes' or 'no' based on user intent.",
+      example: '{"value":"yes"}',
+    },
+  };
+
+  async function normalizeReplyWithLLM(question, rawReply) {
+    if (!llmReady() || !question || !question.kind) return rawReply;
+    const hint = NORMALIZATION_HINTS[question.kind];
+    if (!hint) return rawReply;
+
+    const systemPrompt =
+      "You are a strict input normalizer for a structured intake form. " +
+      "Read the agent's question and the user's freeform reply, then return JSON only — no prose, no markdown fences. " +
+      'Output schema: {"value": <coerced>} where <coerced> matches the field requirement exactly. ' +
+      "If you cannot confidently coerce, return {\"value\":null}. Never invent information the user did not provide.";
+
+    const userMessage =
+      `AGENT QUESTION (kind=${question.kind}): ${question.prompt}\n\n` +
+      `FIELD REQUIREMENT: ${hint.desc}\n\n` +
+      `USER REPLY: ${String(rawReply || "")}\n\n` +
+      `Respond with JSON only. Example shape: ${hint.example}`;
+
+    let resp;
+    try {
+      resp = await window.DiscoveryLLM.sendChat({
+        systemPrompt,
+        messages: [{ role: "user", content: userMessage }],
+        maxTokens: 400,
+        temperature: 0,
+      });
+    } catch (err) {
+      console.warn("[agent] LLM normalize failed, falling back to raw reply:", err.message);
+      return rawReply;
+    }
+
+    const text = (resp && resp.text || "").trim();
+    if (!text) return rawReply;
+
+    // Strip accidental markdown fences.
+    const cleaned = text.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+    let parsed;
+    try { parsed = JSON.parse(cleaned); } catch { return rawReply; }
+    if (!parsed || parsed.value == null) return rawReply;
+
+    // Convert structured value back to a string the server parser accepts.
+    const v = parsed.value;
+    if (typeof v === "string") return v;
+    if (Array.isArray(v)) return v.join(", ");
+    if (typeof v === "object") {
+      // timeframe object → "YYYY-MM-DD to YYYY-MM-DD" or "ongoing" or "skip"
+      if (v.skip) return "skip";
+      if (v.is_ongoing) return [v.from, v.to].filter(Boolean).join(" to ") + " ongoing";
+      if (v.from || v.to) return [v.from, v.to].filter(Boolean).join(" to ");
+      return rawReply;
+    }
+    return String(v);
+  }
+
+  function appendAgentMsg(role, text) {
+    const div = document.createElement('div');
+    div.className = 'agent-msg ' + (role === 'user' ? 'user' : 'agent');
+    const r = document.createElement('span');
+    r.className = 'role';
+    r.textContent = role === 'user' ? 'you' : 'agent';
+    div.appendChild(r);
+    const body = document.createElement('span');
+    body.textContent = text;
+    div.appendChild(body);
+    agentTranscript.appendChild(div);
+    agentTranscript.scrollTop = agentTranscript.scrollHeight;
+  }
+
+  function renderAgentHints(question) {
+    agentHints.innerHTML = '';
+    if (!question) return;
+    const parts = [];
+    if (question.progress) {
+      parts.push(`step ${question.progress.step} of ${question.progress.total}`);
+    }
+    if (Array.isArray(question.hints)) {
+      for (const h of question.hints) parts.push(escapeHtml(h));
+    }
+    if (llmReady()) {
+      parts.push('<span class="badge ok">LLM normalize on</span>');
+    } else {
+      parts.push('<span class="badge" title="Configure an API key via the AA button to enable LLM-based reply normalization.">LLM normalize off</span>');
+    }
+    agentHints.innerHTML = parts.join(' · ');
+  }
+
+  function renderAgentTranscript(history) {
+    agentTranscript.innerHTML = '';
+    for (const msg of history || []) appendAgentMsg(msg.role, msg.text);
+  }
+
+  async function bootAgentSession() {
+    if (agentBootstrapped) return;
+    agentBootstrapped = true;
+    agentStatus.className = 'status';
+    agentStatus.textContent = 'Connecting agent…';
+    try {
+      // Try resume first, then start.
+      let data;
+      try {
+        data = await api('/api/onboarding/intake/agent');
+      } catch (_) { data = null; }
+      if (!data || !data.started) {
+        data = await api('/api/onboarding/intake/agent/start', { method: 'POST', body: {} });
+      }
+      renderAgentTranscript(data.history);
+      renderAgentHints(data.question);
+      currentAgentQuestion = data.question;
+      agentCompleted = !!data.completed;
+      agentStatus.className = 'status';
+      agentStatus.textContent = data.resumed ? 'Resumed previous dialogue.' : '';
+      agentReplyInput.disabled = agentCompleted;
+      agentSendBtn.disabled = agentCompleted;
+      if (!agentCompleted) agentReplyInput.focus();
+    } catch (err) {
+      agentStatus.className = 'status err';
+      agentStatus.textContent = 'Error: ' + err.message;
+    }
+  }
+
+  async function sendAgentReply() {
+    if (agentCompleted) return;
+    const text = agentReplyInput.value.trim();
+    if (!text) return;
+    agentReplyInput.value = '';
+    agentSendBtn.disabled = true;
+    agentReplyInput.disabled = true;
+    agentStatus.className = 'status';
+    agentStatus.textContent = llmReady() ? 'Normalizing with LLM…' : 'Thinking…';
+    try {
+      // Optional client-side LLM normalization of the freeform reply.
+      const payload = await normalizeReplyWithLLM(currentAgentQuestion, text);
+      const resp = await api('/api/onboarding/intake/agent/reply', {
+        method: 'POST',
+        body: { reply: payload },
+      });
+      renderAgentTranscript(resp.history);
+      renderAgentHints(resp.question);
+      currentAgentQuestion = resp.question;
+      agentCompleted = !!resp.completed;
+      if (resp.restarted) {
+        agentStatus.className = 'status';
+        agentStatus.textContent = 'Restarted from the top.';
+      } else if (resp.completed && resp.blueprint) {
+        currentBlueprint = resp.blueprint;
+        renderBlueprint(currentBlueprint);
+        agentStatus.className = 'status ok';
+        agentStatus.textContent = 'Intake complete. Blueprint v1 generated.';
+        setStep(1);
+      } else if (resp.completed) {
+        agentStatus.className = 'status ok';
+        agentStatus.textContent = 'Dialogue complete.';
+      } else {
+        agentStatus.textContent = '';
+      }
+    } catch (err) {
+      agentStatus.className = 'status err';
+      agentStatus.textContent = 'Error: ' + err.message;
+    } finally {
+      agentReplyInput.disabled = agentCompleted;
+      agentSendBtn.disabled = agentCompleted;
+      if (!agentCompleted) agentReplyInput.focus();
+    }
+  }
+
+  agentSendBtn.addEventListener('click', sendAgentReply);
+  agentReplyInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendAgentReply();
+    }
+  });
+  agentRestartBtn.addEventListener('click', async () => {
+    agentStatus.className = 'status';
+    agentStatus.textContent = 'Restarting…';
+    try {
+      const data = await api('/api/onboarding/intake/agent/start', { method: 'POST', body: { reset: true } });
+      renderAgentTranscript(data.history);
+      renderAgentHints(data.question);
+      currentAgentQuestion = data.question;
+      agentCompleted = !!data.completed;
+      agentReplyInput.disabled = false;
+      agentSendBtn.disabled = false;
+      agentStatus.className = 'status';
+      agentStatus.textContent = '';
+      agentReplyInput.focus();
+    } catch (err) {
+      agentStatus.className = 'status err';
+      agentStatus.textContent = 'Error: ' + err.message;
+    }
+  });
+
+  // Allow llm-provider config-change events to refresh the agent hint pill.
+  window.__discoveryAgentRefreshHints = () => renderAgentHints(currentAgentQuestion);
+
+  resetBtn.addEventListener('click', () => {
+    document.getElementById('goalSummary').value = '';
+    document.getElementById('domainOther').value = '';
+    document.getElementById('timeFrom').value = '';
+    document.getElementById('timeTo').value = '';
+    document.getElementById('ongoingCheck').checked = false;
+    domainSelect.value = 'legal_case';
+    domainOtherField.classList.add('hidden');
+    document.getElementById('privacyLevel').value = 'confidential';
+    jurisdictionCtl.clear(); fileKindsCtl.clear();
+    tagSet.clear(); renderTags();
+    intakeStatus.textContent = '';
+  });
+
+  // ── blueprint render ─────────────────────────────────────────────
+  function renderBlueprint(bp) {
+    document.getElementById('bpVersionBadge').textContent = bp.blueprint_version;
+    document.getElementById('bpNotes').textContent = bp.notes || '';
+    const root = document.getElementById('treeView');
+    root.innerHTML = '';
+    for (const n of bp.nodes) root.appendChild(renderNode(n));
+  }
+  function renderNode(node) {
+    const hasChildren = Array.isArray(node.children) && node.children.length;
+    if (hasChildren) {
+      const det = document.createElement('details');
+      det.open = true;
+      const sum = document.createElement('summary');
+      sum.innerHTML = `<strong>${escapeHtml(node.path)}</strong>` +
+        (node.required ? ' <span class="badge">required</span>' : '') +
+        ` <span class="purpose">— ${escapeHtml(node.purpose)}</span>` +
+        (node.pipeline_layers && node.pipeline_layers.length ? ` <span class="layers">[${node.pipeline_layers.join(', ')}]</span>` : '');
+      det.appendChild(sum);
+      const kids = document.createElement('div');
+      kids.className = 'children';
+      for (const c of node.children) kids.appendChild(renderNode(c));
+      det.appendChild(kids);
+      return det;
+    }
+    const leaf = document.createElement('div');
+    leaf.className = 'node-leaf';
+    leaf.innerHTML = `<strong>${escapeHtml(node.path)}</strong>` +
+      (node.required ? ' <span class="badge">required</span>' : '') +
+      ` <span class="purpose">— ${escapeHtml(node.purpose)}</span>` +
+      (node.pipeline_layers && node.pipeline_layers.length ? ` <span class="layers">[${node.pipeline_layers.join(', ')}]</span>` : '');
+    return leaf;
+  }
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ── materialize ──────────────────────────────────────────────────
+  const materializeBtn = document.getElementById('materializeBtn');
+  const materializeStatus = document.getElementById('materializeStatus');
+  const materializeResult = document.getElementById('materializeResult');
+  const materializeOutput = document.getElementById('materializeOutput');
+  const backBtn = document.getElementById('backToIntakeBtn');
+
+  backBtn.addEventListener('click', () => setStep(0));
+
+  materializeBtn.addEventListener('click', async () => {
+    materializeStatus.className = 'status';
+    materializeStatus.textContent = 'Working…';
+    materializeBtn.disabled = true;
+    materializeResult.classList.add('hidden');
+    try {
+      const body = {
+        target: 'workspace',
+        collision_policy: document.getElementById('collisionPolicy').value,
+        dry_run: document.getElementById('dryRunCheck').checked,
+      };
+      const resp = await api('/api/onboarding/blueprint/materialize', { method: 'POST', body });
+      const r = resp.result;
+      const summary = `${r.dry_run ? 'Dry run — ' : ''}${r.dirs_created.length} dir(s) created, ${r.readmes_written.length} README(s), ${r.skipped.length} skipped.`;
+      materializeStatus.className = 'status ok';
+      materializeStatus.textContent = summary;
+      materializeOutput.textContent = JSON.stringify(resp, null, 2);
+      materializeResult.classList.remove('hidden');
+      if (!r.dry_run) {
+        document.getElementById('goToIngestBtn').classList.remove('hidden');
+        maxStepReached = Math.max(maxStepReached, 2);
+      }
+    } catch (err) {
+      materializeStatus.className = 'status err';
+      materializeStatus.textContent = 'Error: ' + err.message;
+    } finally {
+      materializeBtn.disabled = false;
+    }
+  });
+
+  // ── ingest (Step 3) ──────────────────────────────────────────────
+  const dropZone = document.getElementById('dropZone');
+  const filePicker = document.getElementById('filePicker');
+  const folderPicker = document.getElementById('folderPicker');
+  const pendingFiles = document.getElementById('pendingFiles');
+  const pendingCount = document.getElementById('pendingCount');
+  const pendingSize = document.getElementById('pendingSize');
+  const pendingList = document.getElementById('pendingList');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const clearPendingBtn = document.getElementById('clearPendingBtn');
+  const uploadStatus = document.getElementById('uploadStatus');
+  const goToIngestBtn = document.getElementById('goToIngestBtn');
+  const goToRefineBtn = document.getElementById('goToRefineBtn');
+  const refreshFilesBtn = document.getElementById('refreshFilesBtn');
+  const existingFilesEl = document.getElementById('existingFiles');
+
+  goToIngestBtn.addEventListener('click', () => { setStep(2); refreshExistingFiles(); });
+  goToRefineBtn.addEventListener('click', () => { setStep(3); });
+
+  let staged = []; // { file, relativePath }
+
+  function humanSize(bytes) {
+    if (!bytes) return '0 B';
+    const u = ['B','KB','MB','GB','TB']; let i = 0; let n = bytes;
+    while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+    return n.toFixed(n < 10 && i ? 1 : 0) + ' ' + u[i];
+  }
+
+  function renderStaged() {
+    if (!staged.length) {
+      pendingFiles.classList.add('hidden');
+      uploadBtn.disabled = true;
+      clearPendingBtn.disabled = true;
+      return;
+    }
+    pendingFiles.classList.remove('hidden');
+    pendingCount.textContent = String(staged.length);
+    const total = staged.reduce((s, x) => s + (x.file.size || 0), 0);
+    pendingSize.textContent = humanSize(total);
+    pendingList.textContent = staged.slice(0, 200).map(x => `${humanSize(x.file.size || 0).padStart(8)}  ${x.relativePath}`).join('\n')
+      + (staged.length > 200 ? `\n… and ${staged.length - 200} more` : '');
+    uploadBtn.disabled = false;
+    clearPendingBtn.disabled = false;
+  }
+
+  function stageFiles(fileList) {
+    for (const f of fileList) {
+      const rel = f.webkitRelativePath || f.name;
+      staged.push({ file: f, relativePath: rel });
+    }
+    renderStaged();
+  }
+
+  filePicker.addEventListener('change', () => stageFiles(filePicker.files));
+  folderPicker.addEventListener('change', () => stageFiles(folderPicker.files));
+
+  ['dragenter', 'dragover'].forEach(ev => {
+    dropZone.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('over'); });
+  });
+  ['dragleave', 'drop'].forEach(ev => {
+    dropZone.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('over'); });
+  });
+  dropZone.addEventListener('drop', async (e) => {
+    const items = e.dataTransfer.items;
+    if (items && items.length && items[0].webkitGetAsEntry) {
+      const collected = [];
+      const tasks = [];
+      for (const it of items) {
+        const entry = it.webkitGetAsEntry();
+        if (entry) tasks.push(walkEntry(entry, '', collected));
+      }
+      await Promise.all(tasks);
+      for (const c of collected) staged.push(c);
+      renderStaged();
+    } else {
+      stageFiles(e.dataTransfer.files);
+    }
+  });
+
+  async function walkEntry(entry, parentPath, out) {
+    if (entry.isFile) {
+      await new Promise((res, rej) => entry.file(f => { out.push({ file: f, relativePath: parentPath + entry.name }); res(); }, rej));
+      return;
+    }
+    if (entry.isDirectory) {
+      const reader = entry.createReader();
+      const readBatch = () => new Promise((res, rej) => reader.readEntries(res, rej));
+      let entries;
+      do {
+        entries = await readBatch();
+        for (const e of entries) await walkEntry(e, parentPath + entry.name + '/', out);
+      } while (entries.length);
+    }
+  }
+
+  clearPendingBtn.addEventListener('click', () => { staged = []; renderStaged(); uploadStatus.textContent = ''; filePicker.value = ''; folderPicker.value = ''; });
+
+  uploadBtn.addEventListener('click', async () => {
+    if (!staged.length) return;
+    uploadStatus.className = 'status';
+    uploadBtn.disabled = true;
+    clearPendingBtn.disabled = true;
+
+    // Batch in groups of ~50 files / ~64 MB to avoid one giant request, and
+    // snapshot each File into an in-memory Blob *before* sending. This avoids
+    // Chrome's ERR_UPLOAD_FILE_CHANGED when the source file's mtime/size
+    // changes (sync apps, OS scans, the user editing alongside) between
+    // staging and the actual stream read.
+    const BATCH_BYTES = 64 * 1024 * 1024;
+    const BATCH_FILES = 50;
+    const batches = [];
+    let cur = []; let curBytes = 0;
+    for (const x of staged) {
+      const sz = x.file.size || 0;
+      if (cur.length && (cur.length >= BATCH_FILES || curBytes + sz > BATCH_BYTES)) {
+        batches.push(cur); cur = []; curBytes = 0;
+      }
+      cur.push(x); curBytes += sz;
+    }
+    if (cur.length) batches.push(cur);
+
+    let totalSaved = 0;
+    let lastError = null;
+    try {
+      for (let i = 0; i < batches.length; i++) {
+        const group = batches[i];
+        uploadStatus.textContent = `Uploading batch ${i + 1}/${batches.length} (${group.length} file(s))…`;
+
+        // Snapshot bytes synchronously before building FormData.
+        const fd = new FormData();
+        fd.append('user_id', USER_ID);
+        for (const x of group) {
+          let blob;
+          try {
+            const buf = await x.file.arrayBuffer();
+            blob = new Blob([buf], { type: x.file.type || 'application/octet-stream' });
+          } catch (readErr) {
+            lastError = `Could not read "${x.relativePath}" — ${readErr.message}. ` +
+              `If the file lives in a synced/cloud folder, copy it locally first.`;
+            continue;
+          }
+          fd.append('files', blob, x.relativePath);
+        }
+
+        let resp;
+        try {
+          resp = await fetch('/api/discovery/upload', {
+            method: 'POST',
+            headers: { 'X-Discovery-User-Id': USER_ID },
+            body: fd,
+          });
+        } catch (netErr) {
+          // Typical signature for ERR_UPLOAD_FILE_CHANGED / network abort.
+          throw new Error(
+            `Network error during upload: ${netErr.message}. ` +
+            `This usually means a file changed on disk while uploading. ` +
+            `Try again, or copy the source folder to a stable location first.`
+          );
+        }
+        let data = null;
+        try { data = await resp.json(); } catch (_) { /* non-json */ }
+        if (!resp.ok) {
+          throw new Error((data && data.error) || `HTTP ${resp.status} on batch ${i + 1}`);
+        }
+        totalSaved += (data.files || []).length;
+      }
+
+      if (totalSaved === 0 && lastError) throw new Error(lastError);
+
+      uploadStatus.className = 'status ok';
+      uploadStatus.textContent = lastError
+        ? `Uploaded ${totalSaved} file(s); some skipped — ${lastError}`
+        : `Uploaded ${totalSaved} file(s).`;
+      staged = []; renderStaged();
+      filePicker.value = ''; folderPicker.value = '';
+      refreshExistingFiles();
+    } catch (err) {
+      uploadStatus.className = 'status err';
+      uploadStatus.textContent = 'Upload failed: ' + err.message;
+    } finally {
+      uploadBtn.disabled = staged.length === 0;
+      clearPendingBtn.disabled = staged.length === 0;
+    }
+  });
+
+  refreshFilesBtn.addEventListener('click', refreshExistingFiles);
+
+  async function refreshExistingFiles() {
+    existingFilesEl.textContent = 'Loading…';
+    try {
+      const data = await api('/api/files');
+      if (!data.files || !data.files.length) {
+        existingFilesEl.textContent = '(no files yet — upload some above)';
+        return;
+      }
+      const lines = data.files.slice(0, 200).map(f => `${(f.category || '').padEnd(20)} ${f.file}`);
+      if (data.files.length > 200) lines.push(`… and ${data.files.length - 200} more`);
+      existingFilesEl.textContent = `${data.total} file(s)\n\n` + lines.join('\n');
+    } catch (err) {
+      existingFilesEl.textContent = 'Error: ' + err.message;
+    }
+  }
+
+  // ── refine (Step 4) ──────────────────────────────────────────────
+  const refineBtn = document.getElementById('refineBtn');
+  const refineStatus = document.getElementById('refineStatus');
+  const refineResult = document.getElementById('refineResult');
+  const backToIngestBtn = document.getElementById('backToIngestBtn');
+
+  backToIngestBtn.addEventListener('click', () => setStep(2));
+
+  refineBtn.addEventListener('click', async () => {
+    refineStatus.className = 'status';
+    refineStatus.textContent = 'Reading corpus and generating v2…';
+    refineBtn.disabled = true;
+    refineResult.classList.add('hidden');
+    try {
+      const resp = await api('/api/onboarding/refine', { method: 'POST', body: {} });
+      renderRefineResult(resp);
+      refineStatus.className = 'status ok';
+      const s = resp.refine_stats;
+      refineStatus.textContent = `${s.total_files} file(s) considered (${s.skeleton_artifacts_skipped} skeleton READMEs skipped). ${s.populated_v1_nodes} populated, ${s.empty_v1_nodes} empty, ${s.orphan_count} orphan.`;
+    } catch (err) {
+      refineStatus.className = 'status err';
+      refineStatus.textContent = 'Error: ' + err.message;
+    } finally {
+      refineBtn.disabled = false;
+    }
+  });
+
+  function renderRefineResult(resp) {
+    const diff = resp.diff;
+    const v2 = resp.blueprint;
+    document.getElementById('diffSummary').textContent = `+${diff.added.length} added · ${diff.populated_paths.length} populated · ${diff.empty_paths.length} empty`;
+    fillDiffList('diffAdded', diff.added.map(a => `${a.path} (${a.corpus_match_count})`));
+    fillDiffList('diffPopulated', diff.populated_paths);
+    fillDiffList('diffEmpty', diff.empty_paths);
+    document.getElementById('bpV2Notes').textContent = v2.notes || '';
+    document.getElementById('bpV2Badge').textContent = v2.blueprint_version;
+    const treeRoot = document.getElementById('treeV2View');
+    treeRoot.innerHTML = '';
+    for (const n of v2.nodes) treeRoot.appendChild(renderNodeWithCounts(n));
+    refineResult.classList.remove('hidden');
+  }
+
+  function fillDiffList(id, items) {
+    const el = document.getElementById(id);
+    el.innerHTML = '';
+    if (!items.length) {
+      const li = document.createElement('li');
+      li.className = 'empty-msg';
+      li.textContent = '(none)';
+      el.appendChild(li);
+      return;
+    }
+    for (const x of items) {
+      const li = document.createElement('li');
+      li.textContent = x;
+      el.appendChild(li);
+    }
+  }
+
+  function renderNodeWithCounts(node) {
+    const hasChildren = Array.isArray(node.children) && node.children.length;
+    const countBadge = typeof node.corpus_match_count === 'number'
+      ? ` <span class="badge ${node.corpus_match_count > 0 ? 'ok' : 'err'}">${node.corpus_match_count}</span>`
+      : '';
+    if (hasChildren) {
+      const det = document.createElement('details');
+      det.open = (node.corpus_match_count || 0) > 0 || (node.children || []).some(c => (c.corpus_match_count || 0) > 0);
+      const sum = document.createElement('summary');
+      sum.innerHTML = `<strong>${escapeHtml(node.path)}</strong>${countBadge}` +
+        ` <span class="purpose">— ${escapeHtml(node.purpose)}</span>`;
+      det.appendChild(sum);
+      const kids = document.createElement('div');
+      kids.className = 'children';
+      for (const c of node.children) kids.appendChild(renderNodeWithCounts(c));
+      det.appendChild(kids);
+      return det;
+    }
+    const leaf = document.createElement('div');
+    leaf.className = 'node-leaf';
+    const samples = (node.corpus_sample_files && node.corpus_sample_files.length)
+      ? ` <span class="purpose">[${node.corpus_sample_files.slice(0,3).join(', ')}${node.corpus_sample_files.length > 3 ? '…' : ''}]</span>`
+      : '';
+    leaf.innerHTML = `<strong>${escapeHtml(node.path)}</strong>${countBadge}` +
+      ` <span class="purpose">— ${escapeHtml(node.purpose)}</span>` + samples;
+    return leaf;
+  }
+
+  // ── plan (Step 5) ────────────────────────────────────────────────
+  // State: deep clone of v2 nodes, mutated in place by edit actions.
+  // Each node carries a `_plan` object: { is_main, layers[], pilot{} }.
+  // Original v2 (pre-edit) is kept as `originalV2Nodes` for guardrail diff.
+  let planEditedNodes = null;
+  let originalV2Nodes = null;
+
+  const goToPlanBtn = document.getElementById('goToPlanBtn');
+  const backToRefineBtn = document.getElementById('backToRefineBtn');
+  const savePlanBtn = document.getElementById('savePlanBtn');
+  const planStatus = document.getElementById('planStatus');
+  const treeEditEl = document.getElementById('treeEdit');
+
+  goToPlanBtn.addEventListener('click', () => {
+    // Use the v2 we just generated (refineResult holds it on screen).
+    api('/api/onboarding/blueprint?version=v2').then(d => {
+      if (!d || !d.blueprint) {
+        planStatus.className = 'status err';
+        planStatus.textContent = 'No blueprint v2 found. Run refine first.';
+        return;
+      }
+      originalV2Nodes = JSON.parse(JSON.stringify(d.blueprint.nodes));
+      planEditedNodes = JSON.parse(JSON.stringify(d.blueprint.nodes));
+      seedPlanDefaults(planEditedNodes, 0);
+      // Pre-fill destination root suggestion.
+      const dest = document.getElementById('planDestRoot');
+      if (!dest.value) {
+        dest.placeholder = `/Users/${(navigator.userAgent.match(/Mac/) ? 'you' : 'you')}/cases/${(d.blueprint.root_label || 'case').replace(/\s+/g,'_')}`;
+      }
+      // Try existing plan to pre-fill controls.
+      api('/api/onboarding/plan').then(pd => {
+        if (pd && pd.plan) prefillPlanControls(pd.plan);
+      }).catch(() => {});
+      renderPlanTree();
+      setStep(4);
+    }).catch(err => {
+      planStatus.className = 'status err';
+      planStatus.textContent = 'Error: ' + err.message;
+    });
+  });
+
+  backToRefineBtn.addEventListener('click', () => setStep(3));
+
+  function seedPlanDefaults(nodes, depth) {
+    for (const n of nodes) {
+      if (!n._plan) {
+        n._plan = {
+          is_main: depth === 0,
+          layers: Array.isArray(n.pipeline_layers) && n.pipeline_layers.length
+            ? [...n.pipeline_layers]
+            : ['L1-L3'],
+          pilot: { sample_strategy: 'random', sample_count: 1, deeper_sample: false },
+        };
+      }
+      if (Array.isArray(n.children) && n.children.length) seedPlanDefaults(n.children, depth + 1);
+    }
+  }
+
+  function prefillPlanControls(plan) {
+    document.getElementById('planDestRoot').value = plan.destination_root || '';
+    document.getElementById('planCollisionPolicy').value = plan.destination_collision_policy || 'merge';
+    const g = plan.global_options || {};
+    document.getElementById('planLlmProvider').value = g.llm_provider || 'default';
+    document.getElementById('planMaxConcurrency').value = g.max_concurrency || 4;
+    document.getElementById('planHaltOnError').checked = !!g.halt_on_error;
+    document.getElementById('planDryRun').checked = !!g.dry_run;
+    if (typeof g.cost_ceiling_usd === 'number') {
+      document.getElementById('planCostCeiling').value = g.cost_ceiling_usd;
+    }
+    // Apply per-path config from main_directories.
+    const byPath = new Map((plan.main_directories || []).map(md => [md.path, md]));
+    function walk(nodes, parent) {
+      for (const n of nodes) {
+        const full = parent ? `${parent}/${n.path}` : n.path;
+        const md = byPath.get(full);
+        if (md) {
+          n._plan = n._plan || {};
+          n._plan.is_main = true;
+          n._plan.layers = [...(md.layers || [])];
+          n._plan.pilot = Object.assign(
+            { sample_strategy: 'random', sample_count: 1, deeper_sample: false },
+            md.pilot || {}
+          );
+          if (md.options) n._plan.options = md.options;
+        }
+        if (Array.isArray(n.children)) walk(n.children, full);
+      }
+    }
+    walk(planEditedNodes, '');
+  }
+
+  function renderPlanTree() {
+    treeEditEl.innerHTML = '';
+    for (const n of planEditedNodes) treeEditEl.appendChild(renderEditableNode(n, '', planEditedNodes));
+  }
+
+  function renderEditableNode(node, parentPath, parentArray) {
+    const fullPath = parentPath ? `${parentPath}/${node.path}` : node.path;
+    const hasChildren = Array.isArray(node.children) && node.children.length > 0;
+    const det = document.createElement('details');
+    det.open = parentPath === ''; // top-level open by default
+
+    const sum = document.createElement('summary');
+    sum.appendChild(buildNodeHeader(node, fullPath, parentArray));
+    det.appendChild(sum);
+
+    // Per-node config strip
+    det.appendChild(buildConfigStrip(node));
+
+    // Children
+    if (hasChildren) {
+      const kids = document.createElement('div');
+      kids.style.marginLeft = '12px';
+      for (const c of node.children) kids.appendChild(renderEditableNode(c, fullPath, node.children));
+      det.appendChild(kids);
+    }
+
+    // "Add child" row
+    const addRow = document.createElement('div');
+    addRow.style.marginLeft = '12px';
+    addRow.style.padding = '2px 4px';
+    const addBtn = document.createElement('button');
+    addBtn.className = 'mini';
+    addBtn.textContent = '+ add subfolder';
+    addBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const seg = prompt('New subfolder name (single segment, no slashes):');
+      if (!seg) return;
+      if (/[\\/]/.test(seg) || seg === '.' || seg === '..' || !seg.trim()) {
+        alert('Invalid folder name.');
+        return;
+      }
+      const purpose = prompt('Purpose (one-line description):', 'User-added folder');
+      if (!purpose) return;
+      node.children = node.children || [];
+      const newNode = {
+        path: seg.trim(),
+        purpose: purpose.trim(),
+        children: [],
+        _plan: { is_main: false, layers: ['L1-L3'], pilot: { sample_strategy: 'random', sample_count: 1, deeper_sample: false } },
+      };
+      node.children.push(newNode);
+      renderPlanTree();
+    });
+    addRow.appendChild(addBtn);
+    det.appendChild(addRow);
+
+    return det;
+  }
+
+  function buildNodeHeader(node, fullPath, parentArray) {
+    const wrap = document.createElement('span');
+    wrap.className = 'node-row';
+    const name = document.createElement('span');
+    name.className = 'node-name';
+    name.textContent = node.path;
+    wrap.appendChild(name);
+
+    const purpose = document.createElement('span');
+    purpose.className = 'node-purpose';
+    purpose.textContent = `— ${node.purpose}`;
+    wrap.appendChild(purpose);
+
+    if (node.required) wrap.appendChild(makeBadge('required', 'req'));
+    if (node._plan && node._plan.is_main) wrap.appendChild(makeBadge('main', 'main'));
+    if (typeof node.corpus_match_count === 'number' && node.corpus_match_count > 0) {
+      wrap.appendChild(makeBadge(`${node.corpus_match_count} files`, 'ok'));
+    }
+    if (node.source && node.source.added_in === 'v2') wrap.appendChild(makeBadge('added', 'added'));
+
+    const actions = document.createElement('span');
+    actions.className = 'row-actions';
+    actions.appendChild(makeMini('rename', () => {
+      const next = prompt('New folder name:', node.path);
+      if (!next || next === node.path) return;
+      if (/[\\/]/.test(next) || next === '.' || next === '..') { alert('Invalid name.'); return; }
+      node.path = next.trim();
+      renderPlanTree();
+    }));
+    actions.appendChild(makeMini('edit purpose', () => {
+      const next = prompt('Purpose:', node.purpose || '');
+      if (next == null) return;
+      node.purpose = next.trim() || node.purpose;
+      renderPlanTree();
+    }));
+    actions.appendChild(makeMini('delete', () => {
+      const hasRequired = nodeHasRequiredDescendant(node);
+      if (node.required || hasRequired) {
+        const reason = prompt(
+          `This subtree contains required folder(s). Deleting will be recorded as a guardrail override.\n\nProvide a brief reason (or cancel):`,
+          ''
+        );
+        if (reason == null) return;
+        node._delete_reason = reason || 'No reason provided.';
+      } else {
+        if (!confirm(`Delete "${node.path}" and its subtree?`)) return;
+      }
+      const i = parentArray.indexOf(node);
+      if (i >= 0) parentArray.splice(i, 1);
+      renderPlanTree();
+    }, 'danger'));
+    wrap.appendChild(actions);
+    return wrap;
+  }
+
+  function buildConfigStrip(node) {
+    const strip = document.createElement('div');
+    strip.className = 'config-strip';
+    const plan = node._plan;
+
+    // Main toggle
+    const mainGroup = document.createElement('label');
+    mainGroup.className = 'group check';
+    const mainCb = document.createElement('input');
+    mainCb.type = 'checkbox';
+    mainCb.checked = !!plan.is_main;
+    mainCb.addEventListener('change', () => {
+      plan.is_main = mainCb.checked;
+      renderPlanTree();
+    });
+    mainGroup.appendChild(mainCb);
+    mainGroup.appendChild(document.createTextNode(' main directory'));
+    strip.appendChild(mainGroup);
+
+    // Layer checkboxes
+    const layersGroup = document.createElement('span');
+    layersGroup.className = 'group';
+    layersGroup.appendChild(document.createTextNode('layers:'));
+    for (const layer of ['L1-L3', 'L4', 'L5-L7', 'comprehend']) {
+      const lbl = document.createElement('label');
+      lbl.className = 'check';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = plan.layers.includes(layer);
+      cb.addEventListener('change', () => {
+        if (cb.checked) {
+          if (!plan.layers.includes(layer)) plan.layers.push(layer);
+        } else {
+          plan.layers = plan.layers.filter(l => l !== layer);
+        }
+      });
+      lbl.appendChild(cb);
+      lbl.appendChild(document.createTextNode(' ' + layer));
+      layersGroup.appendChild(lbl);
+    }
+    strip.appendChild(layersGroup);
+
+    // Pilot config (only meaningful when is_main)
+    const pilotGroup = document.createElement('span');
+    pilotGroup.className = 'group';
+    pilotGroup.appendChild(document.createTextNode('pilot:'));
+    const strat = document.createElement('select');
+    for (const s of ['first', 'random', 'largest', 'most_recent']) {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      if (plan.pilot.sample_strategy === s) opt.selected = true;
+      strat.appendChild(opt);
+    }
+    strat.addEventListener('change', () => { plan.pilot.sample_strategy = strat.value; });
+    pilotGroup.appendChild(strat);
+    const count = document.createElement('input');
+    count.type = 'number'; count.min = '1'; count.style.width = '52px';
+    count.value = plan.pilot.sample_count || 1;
+    count.addEventListener('change', () => {
+      const v = parseInt(count.value, 10);
+      plan.pilot.sample_count = (Number.isInteger(v) && v >= 1) ? v : 1;
+    });
+    pilotGroup.appendChild(count);
+    const deeper = document.createElement('label');
+    deeper.className = 'check';
+    const deeperCb = document.createElement('input');
+    deeperCb.type = 'checkbox';
+    deeperCb.checked = !!plan.pilot.deeper_sample;
+    deeperCb.addEventListener('change', () => { plan.pilot.deeper_sample = deeperCb.checked; });
+    deeper.appendChild(deeperCb);
+    deeper.appendChild(document.createTextNode(' deeper sample'));
+    pilotGroup.appendChild(deeper);
+    strip.appendChild(pilotGroup);
+
+    return strip;
+  }
+
+  function makeBadge(text, cls) {
+    const b = document.createElement('span');
+    b.className = 'badge ' + (cls || '');
+    b.textContent = text;
+    return b;
+  }
+  function makeMini(text, onClick, extra) {
+    const b = document.createElement('button');
+    b.className = 'mini' + (extra ? ' ' + extra : '');
+    b.textContent = text;
+    b.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); onClick(); });
+    return b;
+  }
+
+  function nodeHasRequiredDescendant(node) {
+    if (node.required) return true;
+    if (Array.isArray(node.children)) {
+      for (const c of node.children) if (nodeHasRequiredDescendant(c)) return true;
+    }
+    return false;
+  }
+
+  // Walk edited tree and produce { mainDirectories, cleanedNodes }.
+  // _plan / _delete_reason are stripped from the blueprint that gets persisted.
+  function buildPlanPayloadFromState() {
+    const mainDirectories = [];
+    function walk(nodes, parent) {
+      const out = [];
+      for (const n of nodes) {
+        const full = parent ? `${parent}/${n.path}` : n.path;
+        if (n._plan && n._plan.is_main) {
+          const md = { path: full, layers: [...n._plan.layers] };
+          if (n._plan.options) md.options = n._plan.options;
+          if (n._plan.pilot) md.pilot = { ...n._plan.pilot };
+          mainDirectories.push(md);
+        }
+        const cleaned = { ...n };
+        delete cleaned._plan;
+        delete cleaned._delete_reason;
+        if (Array.isArray(n.children)) cleaned.children = walk(n.children, full);
+        else delete cleaned.children;
+        out.push(cleaned);
+      }
+      return out;
+    }
+    const cleanedNodes = walk(planEditedNodes, '');
+    return { mainDirectories, cleanedNodes };
+  }
+
+  function collectGuardrailReasons() {
+    const reasons = {};
+    function walk(nodes, parent) {
+      for (const n of nodes) {
+        const full = parent ? `${parent}/${n.path}` : n.path;
+        if (n._delete_reason) reasons[full] = n._delete_reason;
+        if (Array.isArray(n.children)) walk(n.children, full);
+      }
+    }
+    // Reasons are attached on nodes that *still exist* only if user re-added — rare.
+    // For deleted nodes, we instead pass reasons keyed by original path. Walk originalV2Nodes
+    // and check what's missing from planEditedNodes.
+    const editedPaths = new Set();
+    function gather(nodes, parent) {
+      for (const n of nodes) {
+        const full = parent ? `${parent}/${n.path}` : n.path;
+        editedPaths.add(full);
+        if (Array.isArray(n.children)) gather(n.children, full);
+      }
+    }
+    gather(planEditedNodes, '');
+    // We don't have the reason once the node is spliced; this is a known limitation.
+    // For future: attach to a separate stash. For now, let backend default the reason text.
+    return reasons;
+  }
+
+  savePlanBtn.addEventListener('click', async () => {
+    planStatus.className = 'status';
+    planStatus.textContent = 'Saving…';
+    savePlanBtn.disabled = true;
+    try {
+      const dest = document.getElementById('planDestRoot').value.trim();
+      if (!dest) throw new Error('Destination root is required.');
+      const { mainDirectories, cleanedNodes } = buildPlanPayloadFromState();
+      if (!mainDirectories.length) throw new Error('At least one directory must be marked "main".');
+
+      const globalOptions = {
+        llm_provider: document.getElementById('planLlmProvider').value.trim() || 'default',
+        max_concurrency: parseInt(document.getElementById('planMaxConcurrency').value, 10) || 4,
+        halt_on_error: document.getElementById('planHaltOnError').checked,
+        dry_run: document.getElementById('planDryRun').checked,
+      };
+      const ceiling = parseFloat(document.getElementById('planCostCeiling').value);
+      if (!Number.isNaN(ceiling) && ceiling >= 0) globalOptions.cost_ceiling_usd = ceiling;
+
+      const resp = await api('/api/onboarding/plan', {
+        method: 'POST',
+        body: {
+          blueprint: { nodes: cleanedNodes },
+          destination_root: dest,
+          destination_collision_policy: document.getElementById('planCollisionPolicy').value,
+          main_directories: mainDirectories,
+          global_options: globalOptions,
+          guardrail_reasons: collectGuardrailReasons(),
+        },
+      });
+      const g = resp.plan.guardrails || {};
+      const deletedCount = (g.deleted_required_paths || []).length;
+      const renamedCount = (g.renamed_paths || []).length;
+      planStatus.className = 'status ok';
+      planStatus.textContent = `Saved · ${mainDirectories.length} main dir(s) · ${deletedCount} required override(s) · ${renamedCount} rename(s).`;
+      document.getElementById('goToPilotBtn').classList.remove('hidden');
+    } catch (err) {
+      planStatus.className = 'status err';
+      planStatus.textContent = 'Error: ' + err.message;
+    } finally {
+      savePlanBtn.disabled = false;
+    }
+  });
+
+  // ── pilot (Step 6) ───────────────────────────────────────────────
+  const goToPilotBtn = document.getElementById('goToPilotBtn');
+  const backToPlanBtn = document.getElementById('backToPlanBtn');
+  const runPilotBtn = document.getElementById('runPilotBtn');
+  const pilotStatus = document.getElementById('pilotStatus');
+  const pilotResult = document.getElementById('pilotResult');
+
+  goToPilotBtn.addEventListener('click', () => {
+    setStep(5);
+    // Auto-load any existing report so the user sees prior results.
+    api('/api/onboarding/pilot-run').then(d => {
+      if (d && d.report) renderPilotReport(d.report);
+    }).catch(() => {});
+  });
+  backToPlanBtn.addEventListener('click', () => setStep(4));
+
+  runPilotBtn.addEventListener('click', async () => {
+    pilotStatus.className = 'status';
+    pilotStatus.textContent = 'Sampling files and validating plan…';
+    runPilotBtn.disabled = true;
+    pilotResult.classList.add('hidden');
+    try {
+      const resp = await api('/api/onboarding/pilot-run', { method: 'POST', body: {} });
+      renderPilotReport(resp.report);
+      const s = resp.report.summary;
+      pilotStatus.className = 'status ' + (resp.report.ok ? 'ok' : 'err');
+      pilotStatus.textContent = resp.report.ok
+        ? `Pilot OK · ${s.sampled_files} sample(s) across ${s.main_directories_with_samples}/${s.main_directories} main dir(s).`
+        : `Pilot has issues — see warnings below.`;
+    } catch (err) {
+      pilotStatus.className = 'status err';
+      pilotStatus.textContent = 'Error: ' + err.message;
+    } finally {
+      runPilotBtn.disabled = false;
+    }
+  });
+
+  function renderPilotReport(report) {
+    const okBadge = document.getElementById('pilotOkBadge');
+    okBadge.textContent = report.ok ? 'OK' : 'has issues';
+    okBadge.className = 'badge ' + (report.ok ? 'ok' : 'warn');
+
+    const grid = document.getElementById('pilotSummaryGrid');
+    grid.innerHTML = '';
+    const stat = (label, value, warn) => {
+      const d = document.createElement('div');
+      d.className = 'field';
+      d.innerHTML = `<span style="color:var(--muted);font-size:11.5px;">${label}</span><strong style="display:block;font-size:18px;color:${warn ? 'var(--bad)' : 'var(--text)'};">${value}</strong>`;
+      grid.appendChild(d);
+    };
+    const s = report.summary;
+    stat('Main directories', s.main_directories);
+    stat('With samples', `${s.main_directories_with_samples}/${s.main_directories}`,
+      s.main_directories_empty > 0);
+    stat('Sampled files', s.sampled_files);
+    stat('Empty main dirs', s.main_directories_empty, s.main_directories_empty > 0);
+    stat('Files missing', s.files_missing, s.files_missing > 0);
+    stat('Unknown layers', s.layers_unknown, s.layers_unknown > 0);
+
+    const warnEl = document.getElementById('pilotWarnings');
+    if (report.warnings && report.warnings.length) {
+      warnEl.classList.remove('hidden');
+      warnEl.innerHTML = '<strong>Warnings</strong>' + report.warnings
+        .map(w => `<div>· <code>${escapeHtml(w.path || '')}</code> — ${escapeHtml(w.kind)}${w.message ? ': ' + escapeHtml(w.message) : ''}${w.layers ? ' (' + w.layers.join(', ') + ')' : ''}</div>`)
+        .join('');
+    } else {
+      warnEl.classList.add('hidden');
+      warnEl.innerHTML = '';
+    }
+
+    // Group samples by main_directory
+    const samplesEl = document.getElementById('pilotSamples');
+    samplesEl.innerHTML = '';
+    const byDir = new Map();
+    for (const sm of report.samples || []) {
+      if (!byDir.has(sm.main_directory)) byDir.set(sm.main_directory, []);
+      byDir.get(sm.main_directory).push(sm);
+    }
+    if (byDir.size === 0) {
+      const p = document.createElement('div');
+      p.className = 'node-purpose';
+      p.textContent = '(no samples — every main directory was empty)';
+      samplesEl.appendChild(p);
+    }
+    for (const [dir, items] of byDir) {
+      const det = document.createElement('details');
+      det.open = true;
+      const sum = document.createElement('summary');
+      sum.innerHTML = `<strong>${escapeHtml(dir)}</strong> <span class="badge ok">${items.length} sample(s)</span>`;
+      det.appendChild(sum);
+      for (const sm of items) {
+        const row = document.createElement('div');
+        row.className = 'leaf-row';
+        const status = sm.status === 'missing'
+          ? '<span class="badge warn">missing</span>'
+          : '<span class="badge ok">planned</span>';
+        const deeper = sm.deeper_extra ? '<span class="badge added">deeper</span>' : '';
+        const layers = (sm.layers || []).map(l => `<span class="badge">${escapeHtml(l)}</span>`).join(' ');
+        const sizeKb = sm.size ? `${(sm.size / 1024).toFixed(1)} KB` : '—';
+        row.innerHTML =
+          `<code>${escapeHtml(sm.file)}</code> ${status} ${deeper} ${layers}` +
+          ` <span class="node-purpose">${sizeKb} · ${escapeHtml(sm.pilot_strategy || '')}${sm.classify_reason ? ' · ' + escapeHtml(sm.classify_reason) : ''}</span>`;
+        det.appendChild(row);
+      }
+      samplesEl.appendChild(det);
+    }
+
+    pilotResult.classList.remove('hidden');
+  }
+
+  // ── full run (Step 7) ────────────────────────────────────────────
+  const goToFullRunBtn = document.getElementById('goToFullRunBtn');
+  const backToPilotBtn = document.getElementById('backToPilotBtn');
+  const runFullBtn = document.getElementById('runFullBtn');
+  const fullRunStatus = document.getElementById('fullRunStatus');
+  const fullRunResult = document.getElementById('fullRunResult');
+
+  goToFullRunBtn.addEventListener('click', () => {
+    setStep(6);
+    loadFullRunPlanSummary();
+    api('/api/onboarding/full-run').then(d => {
+      if (d && d.manifest) renderFullRunManifest(d.manifest);
+    }).catch(() => {});
+  });
+  backToPilotBtn.addEventListener('click', () => setStep(5));
+
+  async function loadFullRunPlanSummary() {
+    const grid = document.getElementById('fullRunPlanSummary');
+    grid.innerHTML = '<span class="node-purpose">Loading…</span>';
+    try {
+      const d = await api('/api/onboarding/plan');
+      if (!d || !d.plan) {
+        grid.innerHTML = '<span class="node-purpose err">No plan saved.</span>';
+        return;
+      }
+      grid.innerHTML = '';
+      const stat = (label, value, mono) => {
+        const div = document.createElement('div');
+        div.className = 'field';
+        div.innerHTML = `<span style="color:var(--muted);font-size:11.5px;">${label}</span>` +
+          `<strong style="display:block;${mono ? 'font-family:SF Mono,Menlo,monospace;font-size:12px;' : 'font-size:15px;'}">${escapeHtml(String(value))}</strong>`;
+        grid.appendChild(div);
+      };
+      stat('Destination root', d.plan.destination_root, true);
+      stat('Collision policy', d.plan.destination_collision_policy || 'abort');
+      stat('Main directories', (d.plan.main_directories || []).length);
+      stat('LLM provider', (d.plan.global_options || {}).llm_provider || '—');
+      stat('Renames', (d.plan.guardrails && d.plan.guardrails.renamed_paths || []).length);
+      stat('Deleted required', (d.plan.guardrails && d.plan.guardrails.deleted_required_paths || []).length);
+    } catch (err) {
+      grid.innerHTML = '<span class="node-purpose err">' + escapeHtml(err.message) + '</span>';
+    }
+  }
+
+  runFullBtn.addEventListener('click', async () => {
+    const dry = document.getElementById('fullRunDryRun').checked;
+    fullRunStatus.className = 'status';
+    fullRunStatus.textContent = dry ? 'Computing manifest (dry run)…' : 'Materializing & copying files…';
+    runFullBtn.disabled = true;
+    fullRunResult.classList.add('hidden');
+    try {
+      const resp = await api('/api/onboarding/full-run', {
+        method: 'POST',
+        body: { dry_run: dry },
+      });
+      renderFullRunManifest(resp.manifest);
+      const s = resp.manifest.summary;
+      const tag = dry ? 'dry run' : 'committed';
+      fullRunStatus.className = 'status ' + (s.errors ? 'err' : 'ok');
+      fullRunStatus.textContent = `${tag} · ${s.copied}/${s.total_files} file(s) ${dry ? 'planned' : 'copied'}, ${s.skipped} skipped, ${s.errors} error(s).`;
+    } catch (err) {
+      fullRunStatus.className = 'status err';
+      fullRunStatus.textContent = 'Error: ' + err.message;
+    } finally {
+      runFullBtn.disabled = false;
+    }
+  });
+
+  function renderFullRunManifest(m) {
+    const okBadge = document.getElementById('fullRunOkBadge');
+    okBadge.textContent = m.dry_run ? 'dry run' : (m.summary.errors ? 'with errors' : 'committed');
+    okBadge.className = 'badge ' + (m.dry_run ? 'added' : (m.summary.errors ? 'warn' : 'ok'));
+
+    const grid = document.getElementById('fullRunSummaryGrid');
+    grid.innerHTML = '';
+    const stat = (label, value, warn) => {
+      const div = document.createElement('div');
+      div.className = 'field';
+      div.innerHTML = `<span style="color:var(--muted);font-size:11.5px;">${label}</span>` +
+        `<strong style="display:block;font-size:18px;color:${warn ? 'var(--bad)' : 'var(--text)'};">${value}</strong>`;
+      grid.appendChild(div);
+    };
+    stat('Total files', m.summary.total_files);
+    stat(m.dry_run ? 'Planned' : 'Copied', m.summary.copied);
+    stat('Skipped', m.summary.skipped, m.summary.skipped > 0);
+    stat('Errors', m.summary.errors, m.summary.errors > 0);
+    stat('Orphans', m.summary.orphans, m.summary.orphans > 0);
+    stat('Renames applied', m.summary.renames_applied);
+
+    const errEl = document.getElementById('fullRunErrors');
+    if (m.errors && m.errors.length) {
+      errEl.classList.remove('hidden');
+      errEl.innerHTML = '<strong>Errors</strong>' + m.errors.slice(0, 50)
+        .map(e => `<div>· <code>${escapeHtml(e.source || '')}</code> → ${escapeHtml(e.error || '')}</div>`)
+        .join('');
+    } else {
+      errEl.classList.add('hidden');
+      errEl.innerHTML = '';
+    }
+
+    const filesEl = document.getElementById('fullRunFiles');
+    filesEl.innerHTML = '';
+    const items = (m.files || []).slice(0, 200);
+    for (const f of items) {
+      const row = document.createElement('div');
+      row.className = 'leaf-row';
+      const reason = f.reason === 'orphan' ? '<span class="badge warn">orphan</span>'
+        : f.reason === 'path-contained' ? '<span class="badge ok">contained</span>'
+        : `<span class="badge added">${escapeHtml(f.reason || '')}</span>`;
+      row.innerHTML =
+        `<code>${escapeHtml(f.source)}</code> → <code>${escapeHtml(f.target)}</code> ${reason}` +
+        ` <span class="node-purpose">node=${escapeHtml(f.node || '—')} · ${escapeHtml(f.status)}</span>`;
+      filesEl.appendChild(row);
+    }
+    if (m.files && m.files.length > 200) {
+      const more = document.createElement('div');
+      more.className = 'node-purpose';
+      more.textContent = `… and ${m.files.length - 200} more`;
+      filesEl.appendChild(more);
+    }
+    if (!items.length) {
+      const p = document.createElement('div');
+      p.className = 'node-purpose';
+      p.textContent = '(no files in workspace to copy)';
+      filesEl.appendChild(p);
+    }
+
+    fullRunResult.classList.remove('hidden');
+  }
+
+  // ── boot ─────────────────────────────────────────────────────────
+  loadTemplates().catch(err => {
+    intakeStatus.className = 'status err';
+    intakeStatus.textContent = 'Could not load templates: ' + err.message;
+  });
+
+  // If a blueprint already exists for this session, jump to step 2.
+  api('/api/onboarding/blueprint?version=v1').then(d => {
+    if (d && d.blueprint) {
+      currentBlueprint = d.blueprint;
+      renderBlueprint(currentBlueprint);
+      // Stay on intake by default; the user can advance manually if they like
+      // but show them they have one already.
+      intakeStatus.className = 'status';
+      intakeStatus.textContent = 'A blueprint v1 already exists for this session — submitting again will replace it.';
+    }
+  }).catch(() => {});
+})();
+</script>
+<script src="/assets/llm-provider.js"></script>
+<script>
+  // Mount the floating LLM provider config widget (top-right "AA" button).
+  if (window.DiscoveryLLM && typeof window.DiscoveryLLM.mountConfigWidget === "function") {
+    window.DiscoveryLLM.mountConfigWidget({
+      title: "Configure AI",
+      subtitle: "Used by the agent-driven intake to normalize freeform replies. Optional — the agent works without it.",
+    });
+    // Re-render the agent hint pill when the user saves a new key/provider.
+    if (typeof window.DiscoveryLLM.subscribe === "function") {
+      window.DiscoveryLLM.subscribe(() => {
+        const hintsEl = document.getElementById('agentHints');
+        if (!hintsEl) return;
+        // Re-trigger hint render if a question is currently displayed.
+        const evt = new CustomEvent('discovery-llm-config-changed');
+        document.dispatchEvent(evt);
+      });
+    }
+  }
+  // Hook the agent hint refresh.
+  document.addEventListener('discovery-llm-config-changed', () => {
+    if (window.__discoveryAgentRefreshHints) window.__discoveryAgentRefreshHints();
+  });
+</script>
+</body>
+</html>

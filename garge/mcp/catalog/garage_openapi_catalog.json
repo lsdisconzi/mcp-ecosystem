@@ -1,0 +1,2542 @@
+{
+  "generated_from": "http://127.0.0.1:8066/openapi.json",
+  "title": "Ollama-Compatible Assistants API",
+  "version": "1.0.0",
+  "tool_count": 113,
+  "tools": [
+    {
+      "tool_name": "get_audio_file_api_audio_filename_get",
+      "method": "GET",
+      "path": "/api/audio/{filename}",
+      "url": "http://127.0.0.1:8066/api/audio/{filename}",
+      "operation_id": "get_audio_file_api_audio__filename__get",
+      "summary": "Get Audio File",
+      "description": "",
+      "tags": [
+        "files"
+      ],
+      "parameters": [
+        {
+          "name": "filename",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "deepseek_gateway_delete",
+      "method": "DELETE",
+      "path": "/api/deepseek/{path}",
+      "url": "http://127.0.0.1:8066/api/deepseek/{path}",
+      "operation_id": "deepseek_gateway_delete",
+      "summary": "Deepseek Gateway",
+      "description": "Transparent proxy: /api/deepseek/{path} \u2192 http://localhost:11436/{path}\n\nRoutes all frontend AI requests to the local Ollama instance.",
+      "tags": [
+        "Gateway"
+      ],
+      "parameters": [
+        {
+          "name": "path",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Path"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "deepseek_gateway_get",
+      "method": "GET",
+      "path": "/api/deepseek/{path}",
+      "url": "http://127.0.0.1:8066/api/deepseek/{path}",
+      "operation_id": "deepseek_gateway_get",
+      "summary": "Deepseek Gateway",
+      "description": "Transparent proxy: /api/deepseek/{path} \u2192 http://localhost:11436/{path}\n\nRoutes all frontend AI requests to the local Ollama instance.",
+      "tags": [
+        "Gateway"
+      ],
+      "parameters": [
+        {
+          "name": "path",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Path"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "deepseek_gateway_post",
+      "method": "POST",
+      "path": "/api/deepseek/{path}",
+      "url": "http://127.0.0.1:8066/api/deepseek/{path}",
+      "operation_id": "deepseek_gateway_post",
+      "summary": "Deepseek Gateway",
+      "description": "Transparent proxy: /api/deepseek/{path} \u2192 http://localhost:11436/{path}\n\nRoutes all frontend AI requests to the local Ollama instance.",
+      "tags": [
+        "Gateway"
+      ],
+      "parameters": [
+        {
+          "name": "path",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Path"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "deepseek_gateway_put",
+      "method": "PUT",
+      "path": "/api/deepseek/{path}",
+      "url": "http://127.0.0.1:8066/api/deepseek/{path}",
+      "operation_id": "deepseek_gateway_put",
+      "summary": "Deepseek Gateway",
+      "description": "Transparent proxy: /api/deepseek/{path} \u2192 http://localhost:11436/{path}\n\nRoutes all frontend AI requests to the local Ollama instance.",
+      "tags": [
+        "Gateway"
+      ],
+      "parameters": [
+        {
+          "name": "path",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Path"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "regenerate_framework_list_api_frameworks_regenerate_list_post",
+      "method": "POST",
+      "path": "/api/frameworks/regenerate-list",
+      "url": "http://127.0.0.1:8066/api/frameworks/regenerate-list",
+      "operation_id": "regenerate_framework_list_api_frameworks_regenerate_list_post",
+      "summary": "Regenerate Framework List",
+      "description": "Regenerate static/js/legal_frameworks/framework_list.json on demand.",
+      "tags": [
+        "System"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "get_transcripts_api_transcripts_get",
+      "method": "GET",
+      "path": "/api/transcripts",
+      "url": "http://127.0.0.1:8066/api/transcripts",
+      "operation_id": "get_transcripts_api_transcripts_get",
+      "summary": "Get Transcripts",
+      "description": "Get all transcript JSON files and return as array",
+      "tags": [
+        "files"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "debug_routes_debug_routes_get",
+      "method": "GET",
+      "path": "/debug-routes",
+      "url": "http://127.0.0.1:8066/debug-routes",
+      "operation_id": "debug_routes_debug_routes_get",
+      "summary": "Debug Routes",
+      "description": "List all registered routes",
+      "tags": [
+        "Debug"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "debug_schema_debug_schema_get",
+      "method": "GET",
+      "path": "/debug-schema",
+      "url": "http://127.0.0.1:8066/debug-schema",
+      "operation_id": "debug_schema_debug_schema_get",
+      "summary": "Debug Schema",
+      "description": "Check if OpenAPI schema is generated correctly",
+      "tags": [
+        "Debug"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "health_check_health_get",
+      "method": "GET",
+      "path": "/health",
+      "url": "http://127.0.0.1:8066/health",
+      "operation_id": "health_check_health_get",
+      "summary": "Health Check",
+      "description": "System health check endpoint",
+      "tags": [
+        "System"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "delete_collection_legal_ingestion_collection_collection_name_delete",
+      "method": "DELETE",
+      "path": "/legal-ingestion/collection/{collection_name}",
+      "url": "http://127.0.0.1:8066/legal-ingestion/collection/{collection_name}",
+      "operation_id": "delete_collection_legal_ingestion_collection__collection_name__delete",
+      "summary": "Delete Collection",
+      "description": "Delete a collection from Qdrant.\n\nExample usage:\n```bash\ncurl -X DELETE http://localhost:8000/legal-ingestion/collection/jurisprudencia\n```",
+      "tags": [
+        "Legal Document Ingestion"
+      ],
+      "parameters": [
+        {
+          "name": "collection_name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "get_collection_info_legal_ingestion_collection_collection_name_info_get",
+      "method": "GET",
+      "path": "/legal-ingestion/collection/{collection_name}/info",
+      "url": "http://127.0.0.1:8066/legal-ingestion/collection/{collection_name}/info",
+      "operation_id": "get_collection_info_legal_ingestion_collection__collection_name__info_get",
+      "summary": "Get Collection Info",
+      "description": "Get information about a specific collection.\n\nExample usage:\n```bash\ncurl http://localhost:8000/legal-ingestion/collection/jurisprudencia/info\n```",
+      "tags": [
+        "Legal Document Ingestion"
+      ],
+      "parameters": [
+        {
+          "name": "collection_name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "list_collections_legal_ingestion_collections_get",
+      "method": "GET",
+      "path": "/legal-ingestion/collections",
+      "url": "http://127.0.0.1:8066/legal-ingestion/collections",
+      "operation_id": "list_collections_legal_ingestion_collections_get",
+      "summary": "List Collections",
+      "description": "List all available collections in Qdrant.\n\nExample usage:\n```bash\ncurl http://localhost:8000/legal-ingestion/collections\n```",
+      "tags": [
+        "Legal Document Ingestion"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "ingest_from_file_path_legal_ingestion_ingest_file_post",
+      "method": "POST",
+      "path": "/legal-ingestion/ingest-file",
+      "url": "http://127.0.0.1:8066/legal-ingestion/ingest-file",
+      "operation_id": "ingest_from_file_path_legal_ingestion_ingest_file_post",
+      "summary": "Ingest From File Path",
+      "description": "Ingest a CSV file from a server path.\n\nUseful for processing files already on the server without uploading.\n\nExample usage:\n```bash\ncurl -X POST \"http://localhost:8000/legal-ingestion/ingest-file?file_path=/data/jurisprudencia.csv\" \\\n     -H \"Content-Type: application/json\" \\\n     -d '{\"collection_name\": \"jurisprudencia\", \"recreate_collection\": true}'\n```",
+      "tags": [
+        "Legal Document Ingestion"
+      ],
+      "parameters": [
+        {
+          "name": "file_path",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "File Path",
+            "description": "Path to CSV file on server"
+          },
+          "description": "Path to CSV file on server"
+        }
+      ],
+      "request_schema": {
+        "$ref": "#/components/schemas/IngestionRequest"
+      }
+    },
+    {
+      "tool_name": "search_legal_documents_legal_ingestion_search_collection_name_post",
+      "method": "POST",
+      "path": "/legal-ingestion/search/{collection_name}",
+      "url": "http://127.0.0.1:8066/legal-ingestion/search/{collection_name}",
+      "operation_id": "search_legal_documents_legal_ingestion_search__collection_name__post",
+      "summary": "Search Legal Documents",
+      "description": "Search for legal documents in a collection.\n\nExample usage:\n```bash\ncurl -X POST \"http://localhost:8000/legal-ingestion/search/jurisprudencia\" \\\n     -H \"Content-Type: application/json\" \\\n     -d '{\n       \"query\": \"recurso de apela\u00e7\u00e3o c\u00edvel\",\n       \"limit\": 5,\n       \"filters\": {\"classe\": \"APELACAO\"}\n     }'\n```",
+      "tags": [
+        "Legal Document Ingestion"
+      ],
+      "parameters": [
+        {
+          "name": "collection_name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {
+        "$ref": "#/components/schemas/routes__legal_ingestion__SearchRequest"
+      }
+    },
+    {
+      "tool_name": "upload_and_ingest_csv_legal_ingestion_upload_csv_post",
+      "method": "POST",
+      "path": "/legal-ingestion/upload-csv",
+      "url": "http://127.0.0.1:8066/legal-ingestion/upload-csv",
+      "operation_id": "upload_and_ingest_csv_legal_ingestion_upload_csv_post",
+      "summary": "Upload And Ingest Csv",
+      "description": "Upload a CSV file and ingest legal documents into Qdrant.\n\nThe CSV file should contain:\n- `id`: Unique document identifier\n- `texto`: Legal document text (or specify different column name)\n- Optional: processo, relator, origem, classe, julgado_em, etc.\n\nExample usage:\n```bash\ncurl -X POST \"http://localhost:8000/legal-ingestion/upload-csv?collection_name=jurisprudencia\" \\\n     -F \"file=@jurisprudencia.csv\"\n```",
+      "tags": [
+        "Legal Document Ingestion"
+      ],
+      "parameters": [
+        {
+          "name": "collection_name",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name",
+            "description": "Name of the Qdrant collection"
+          },
+          "description": "Name of the Qdrant collection"
+        },
+        {
+          "name": "text_column",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "title": "Text Column",
+            "description": "Column containing legal text",
+            "default": "texto"
+          },
+          "description": "Column containing legal text"
+        },
+        {
+          "name": "recreate_collection",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean",
+            "title": "Recreate Collection",
+            "description": "Recreate collection if exists",
+            "default": false
+          },
+          "description": "Recreate collection if exists"
+        },
+        {
+          "name": "chunk_size",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "title": "Chunk Size",
+            "description": "Size of text chunks",
+            "default": 800
+          },
+          "description": "Size of text chunks"
+        },
+        {
+          "name": "chunk_overlap",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "title": "Chunk Overlap",
+            "description": "Overlap between chunks",
+            "default": 100
+          },
+          "description": "Overlap between chunks"
+        },
+        {
+          "name": "async_mode",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean",
+            "title": "Async Mode",
+            "description": "Process in background",
+            "default": false
+          },
+          "description": "Process in background"
+        }
+      ],
+      "request_schema": {
+        "$ref": "#/components/schemas/Body_upload_and_ingest_csv_legal_ingestion_upload_csv_post"
+      }
+    },
+    {
+      "tool_name": "list_assistants_v1_assistants_get",
+      "method": "GET",
+      "path": "/v1/assistants/",
+      "url": "http://127.0.0.1:8066/v1/assistants/",
+      "operation_id": "list_assistants_v1_assistants__get",
+      "summary": "List Assistants",
+      "description": "List all assistants",
+      "tags": [
+        "Assistants"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "create_assistant_v1_assistants_post",
+      "method": "POST",
+      "path": "/v1/assistants/",
+      "url": "http://127.0.0.1:8066/v1/assistants/",
+      "operation_id": "create_assistant_v1_assistants__post",
+      "summary": "Create Assistant",
+      "description": "Create a new assistant",
+      "tags": [
+        "Assistants"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/AssistantCreateRequest"
+      }
+    },
+    {
+      "tool_name": "deepseek_streaming_proxy_v1_assistants_deepseek_stream_proxy_post",
+      "method": "POST",
+      "path": "/v1/assistants/deepseek-stream-proxy",
+      "url": "http://127.0.0.1:8066/v1/assistants/deepseek-stream-proxy",
+      "operation_id": "deepseek_streaming_proxy_v1_assistants_deepseek_stream_proxy_post",
+      "summary": "Deepseek Streaming Proxy",
+      "description": "",
+      "tags": [],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "delete_assistant_v1_assistants_assistant_id_delete",
+      "method": "DELETE",
+      "path": "/v1/assistants/{assistant_id}",
+      "url": "http://127.0.0.1:8066/v1/assistants/{assistant_id}",
+      "operation_id": "delete_assistant_v1_assistants__assistant_id__delete",
+      "summary": "Delete Assistant",
+      "description": "Delete an assistant",
+      "tags": [
+        "Assistants"
+      ],
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Assistant Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "get_assistant_v1_assistants_assistant_id_get",
+      "method": "GET",
+      "path": "/v1/assistants/{assistant_id}",
+      "url": "http://127.0.0.1:8066/v1/assistants/{assistant_id}",
+      "operation_id": "get_assistant_v1_assistants__assistant_id__get",
+      "summary": "Get Assistant",
+      "description": "Get a specific assistant",
+      "tags": [
+        "Assistants"
+      ],
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Assistant Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "update_assistant_v1_assistants_assistant_id_patch",
+      "method": "PATCH",
+      "path": "/v1/assistants/{assistant_id}",
+      "url": "http://127.0.0.1:8066/v1/assistants/{assistant_id}",
+      "operation_id": "update_assistant_v1_assistants__assistant_id__patch",
+      "summary": "Update Assistant",
+      "description": "Update an assistant (partial update)",
+      "tags": [
+        "Assistants"
+      ],
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Assistant Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {
+        "$ref": "#/components/schemas/AssistantUpdateRequest"
+      }
+    },
+    {
+      "tool_name": "replace_assistant_v1_assistants_assistant_id_put",
+      "method": "PUT",
+      "path": "/v1/assistants/{assistant_id}",
+      "url": "http://127.0.0.1:8066/v1/assistants/{assistant_id}",
+      "operation_id": "replace_assistant_v1_assistants__assistant_id__put",
+      "summary": "Replace Assistant",
+      "description": "Update an assistant (full replacement)",
+      "tags": [
+        "Assistants"
+      ],
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Assistant Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {
+        "$ref": "#/components/schemas/AssistantUpdateRequest"
+      }
+    },
+    {
+      "tool_name": "chat_with_assistant_v1_assistants_assistant_id_chat_post",
+      "method": "POST",
+      "path": "/v1/assistants/{assistant_id}/chat",
+      "url": "http://127.0.0.1:8066/v1/assistants/{assistant_id}/chat",
+      "operation_id": "chat_with_assistant_v1_assistants__assistant_id__chat_post",
+      "summary": "Chat With Assistant",
+      "description": "Chat with an assistant",
+      "tags": [
+        "Assistants"
+      ],
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Assistant Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {
+        "$ref": "#/components/schemas/ChatRequest"
+      }
+    },
+    {
+      "tool_name": "deepseek_proxy_v1_assistants_assistant_id_deepseek_post",
+      "method": "POST",
+      "path": "/v1/assistants/{assistant_id}/deepseek",
+      "url": "http://127.0.0.1:8066/v1/assistants/{assistant_id}/deepseek",
+      "operation_id": "deepseek_proxy_v1_assistants__assistant_id__deepseek_post",
+      "summary": "Deepseek Proxy",
+      "description": "Proxy requests to DeepSeek API",
+      "tags": [
+        "DeepSeek"
+      ],
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Assistant Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "list_assistant_files_v1_assistants_assistant_id_files_get",
+      "method": "GET",
+      "path": "/v1/assistants/{assistant_id}/files",
+      "url": "http://127.0.0.1:8066/v1/assistants/{assistant_id}/files",
+      "operation_id": "list_assistant_files_v1_assistants__assistant_id__files_get",
+      "summary": "List Assistant Files",
+      "description": "List all files attached to an assistant",
+      "tags": [
+        "Assistants"
+      ],
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Assistant Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "attach_file_to_assistant_v1_assistants_assistant_id_files_post",
+      "method": "POST",
+      "path": "/v1/assistants/{assistant_id}/files",
+      "url": "http://127.0.0.1:8066/v1/assistants/{assistant_id}/files",
+      "operation_id": "attach_file_to_assistant_v1_assistants__assistant_id__files_post",
+      "summary": "Attach File To Assistant",
+      "description": "Attach an existing file to an assistant",
+      "tags": [
+        "Assistants"
+      ],
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Assistant Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "detach_file_from_assistant_v1_assistants_assistant_id_files_file_id_delete",
+      "method": "DELETE",
+      "path": "/v1/assistants/{assistant_id}/files/{file_id}",
+      "url": "http://127.0.0.1:8066/v1/assistants/{assistant_id}/files/{file_id}",
+      "operation_id": "detach_file_from_assistant_v1_assistants__assistant_id__files__file_id__delete",
+      "summary": "Detach File From Assistant",
+      "description": "Detach a file from an assistant",
+      "tags": [
+        "Assistants"
+      ],
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Assistant Id"
+          },
+          "description": ""
+        },
+        {
+          "name": "file_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "File Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "query_assistant_knowledge_v1_assistants_assistant_id_query_knowledge_post",
+      "method": "POST",
+      "path": "/v1/assistants/{assistant_id}/query-knowledge",
+      "url": "http://127.0.0.1:8066/v1/assistants/{assistant_id}/query-knowledge",
+      "operation_id": "query_assistant_knowledge_v1_assistants__assistant_id__query_knowledge_post",
+      "summary": "Query Assistant Knowledge",
+      "description": "Query the knowledge base of an assistant",
+      "tags": [
+        "Assistants"
+      ],
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Assistant Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "assign_tool_to_assistant_v1_assistants_assistant_id_tools_post",
+      "method": "POST",
+      "path": "/v1/assistants/{assistant_id}/tools",
+      "url": "http://127.0.0.1:8066/v1/assistants/{assistant_id}/tools",
+      "operation_id": "assign_tool_to_assistant_v1_assistants__assistant_id__tools_post",
+      "summary": "Assign Tool To Assistant",
+      "description": "Assign a tool to an assistant",
+      "tags": [
+        "Assistants"
+      ],
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Assistant Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {
+        "$ref": "#/components/schemas/AssignToolRequest"
+      }
+    },
+    {
+      "tool_name": "chat_completions_v1_chat_completions_post",
+      "method": "POST",
+      "path": "/v1/chat/completions",
+      "url": "http://127.0.0.1:8066/v1/chat/completions",
+      "operation_id": "chat_completions_v1_chat_completions_post",
+      "summary": "Chat Completions",
+      "description": "Enhanced chat completions \u2014 routes to local Ollama or external provider.",
+      "tags": [
+        "Chat"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/ChatRequest"
+      }
+    },
+    {
+      "tool_name": "deepseek_engineer_chat_v1_deepseek_engineer_chat_post",
+      "method": "POST",
+      "path": "/v1/deepseek-engineer/chat",
+      "url": "http://127.0.0.1:8066/v1/deepseek-engineer/chat",
+      "operation_id": "deepseek_engineer_chat_v1_deepseek_engineer_chat_post",
+      "summary": "Deepseek Engineer Chat",
+      "description": "DeepSeek Engineer Chat Endpoint",
+      "tags": [
+        "DeepSeek"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/DeepSeekRequest"
+      }
+    },
+    {
+      "tool_name": "list_files_v1_files_get",
+      "method": "GET",
+      "path": "/v1/files",
+      "url": "http://127.0.0.1:8066/v1/files",
+      "operation_id": "list_files_v1_files_get",
+      "summary": "List Files",
+      "description": "List all uploaded files",
+      "tags": [
+        "Files"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "upload_file_v1_files_post",
+      "method": "POST",
+      "path": "/v1/files",
+      "url": "http://127.0.0.1:8066/v1/files",
+      "operation_id": "upload_file_v1_files_post",
+      "summary": "Upload File",
+      "description": "Upload a file and return file ID",
+      "tags": [
+        "files"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/Body_upload_file_v1_files_post"
+      }
+    },
+    {
+      "tool_name": "list_law_files_v1_files_laws_get",
+      "method": "GET",
+      "path": "/v1/files/laws",
+      "url": "http://127.0.0.1:8066/v1/files/laws",
+      "operation_id": "list_law_files_v1_files_laws_get",
+      "summary": "List Law Files",
+      "description": "List all law/regulation files in the laws directory.",
+      "tags": [
+        "files"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "list_files_in_directory_v1_files_list_get",
+      "method": "GET",
+      "path": "/v1/files/list",
+      "url": "http://127.0.0.1:8066/v1/files/list",
+      "operation_id": "list_files_in_directory_v1_files_list_get",
+      "summary": "List Files In Directory",
+      "description": "List files in a directory \u2014 restricted to the project directory.",
+      "tags": [
+        "files"
+      ],
+      "parameters": [
+        {
+          "name": "path",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Path",
+            "description": "Directory path to list (relative to project root)"
+          },
+          "description": "Directory path to list (relative to project root)"
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "read_file_v1_files_read_get",
+      "method": "GET",
+      "path": "/v1/files/read",
+      "url": "http://127.0.0.1:8066/v1/files/read",
+      "operation_id": "read_file_v1_files_read_get",
+      "summary": "Read File",
+      "description": "Read file contents \u2014 restricted to the project directory (S1).",
+      "tags": [
+        "files"
+      ],
+      "parameters": [
+        {
+          "name": "path",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Path",
+            "description": "File path to read (relative to project root)"
+          },
+          "description": "File path to read (relative to project root)"
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "summarize_files_v1_files_summarize_post",
+      "method": "POST",
+      "path": "/v1/files/summarize",
+      "url": "http://127.0.0.1:8066/v1/files/summarize",
+      "operation_id": "summarize_files_v1_files_summarize_post",
+      "summary": "Summarize Files",
+      "description": "",
+      "tags": [
+        "files"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/SummarizeRequest"
+      }
+    },
+    {
+      "tool_name": "list_transcript_files_v1_files_transcripts_get",
+      "method": "GET",
+      "path": "/v1/files/transcripts",
+      "url": "http://127.0.0.1:8066/v1/files/transcripts",
+      "operation_id": "list_transcript_files_v1_files_transcripts_get",
+      "summary": "List Transcript Files",
+      "description": "List all transcript files in the evidence directory.",
+      "tags": [
+        "files"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "upload_law_file_v1_files_upload_law_post",
+      "method": "POST",
+      "path": "/v1/files/upload/law",
+      "url": "http://127.0.0.1:8066/v1/files/upload/law",
+      "operation_id": "upload_law_file_v1_files_upload_law_post",
+      "summary": "Upload Law File",
+      "description": "Upload a law/regulation file to the laws directory.",
+      "tags": [
+        "files"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/Body_upload_law_file_v1_files_upload_law_post"
+      }
+    },
+    {
+      "tool_name": "upload_transcript_file_v1_files_upload_transcript_post",
+      "method": "POST",
+      "path": "/v1/files/upload/transcript",
+      "url": "http://127.0.0.1:8066/v1/files/upload/transcript",
+      "operation_id": "upload_transcript_file_v1_files_upload_transcript_post",
+      "summary": "Upload Transcript File",
+      "description": "Upload a transcript file to the evidence directory.",
+      "tags": [
+        "files"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/Body_upload_transcript_file_v1_files_upload_transcript_post"
+      }
+    },
+    {
+      "tool_name": "delete_file_v1_files_file_id_delete",
+      "method": "DELETE",
+      "path": "/v1/files/{file_id}",
+      "url": "http://127.0.0.1:8066/v1/files/{file_id}",
+      "operation_id": "delete_file_v1_files__file_id__delete",
+      "summary": "Delete File",
+      "description": "Delete a file",
+      "tags": [
+        "Files"
+      ],
+      "parameters": [
+        {
+          "name": "file_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "File Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "get_file_content_v1_files_file_id_content_get",
+      "method": "GET",
+      "path": "/v1/files/{file_id}/content",
+      "url": "http://127.0.0.1:8066/v1/files/{file_id}/content",
+      "operation_id": "get_file_content_v1_files__file_id__content_get",
+      "summary": "Get File Content",
+      "description": "Download file content",
+      "tags": [
+        "Files"
+      ],
+      "parameters": [
+        {
+          "name": "file_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "File Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "analyze_document_structure_v1_ingestion_analyze_document_structure_post",
+      "method": "POST",
+      "path": "/v1/ingestion/analyze-document-structure",
+      "url": "http://127.0.0.1:8066/v1/ingestion/analyze-document-structure",
+      "operation_id": "analyze_document_structure_v1_ingestion_analyze_document_structure_post",
+      "summary": "Analyze Document Structure",
+      "description": "Analyze document structure without ingestion.",
+      "tags": [
+        "Ingestion"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/Body_analyze_document_structure_v1_ingestion_analyze_document_structure_post"
+      }
+    },
+    {
+      "tool_name": "get_collection_info_v1_ingestion_collections_collection_name_info_get",
+      "method": "GET",
+      "path": "/v1/ingestion/collections/{collection_name}/info",
+      "url": "http://127.0.0.1:8066/v1/ingestion/collections/{collection_name}/info",
+      "operation_id": "get_collection_info_v1_ingestion_collections__collection_name__info_get",
+      "summary": "Get Collection Info",
+      "description": "Get information about a collection.",
+      "tags": [
+        "Ingestion"
+      ],
+      "parameters": [
+        {
+          "name": "collection_name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "ingest_directory_v1_ingestion_ingest_directory_post",
+      "method": "POST",
+      "path": "/v1/ingestion/ingest-directory",
+      "url": "http://127.0.0.1:8066/v1/ingestion/ingest-directory",
+      "operation_id": "ingest_directory_v1_ingestion_ingest_directory_post",
+      "summary": "Ingest Directory",
+      "description": "Ingest all documents from a directory into vector database.",
+      "tags": [
+        "Ingestion"
+      ],
+      "parameters": [
+        {
+          "name": "directory_path",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Directory Path"
+          },
+          "description": ""
+        },
+        {
+          "name": "collection_name",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name"
+          },
+          "description": ""
+        },
+        {
+          "name": "force_recreate",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean",
+            "title": "Force Recreate",
+            "default": false
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {
+        "title": "Exclude Dirs"
+      }
+    },
+    {
+      "tool_name": "ingest_file_v1_ingestion_ingest_file_post",
+      "method": "POST",
+      "path": "/v1/ingestion/ingest-file",
+      "url": "http://127.0.0.1:8066/v1/ingestion/ingest-file",
+      "operation_id": "ingest_file_v1_ingestion_ingest_file_post",
+      "summary": "Ingest File",
+      "description": "Ingest a single uploaded file.",
+      "tags": [
+        "Ingestion"
+      ],
+      "parameters": [
+        {
+          "name": "collection_name",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name",
+            "default": "default_collection"
+          },
+          "description": ""
+        },
+        {
+          "name": "force_recreate",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean",
+            "title": "Force Recreate",
+            "default": false
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {
+        "$ref": "#/components/schemas/Body_ingest_file_v1_ingestion_ingest_file_post"
+      }
+    },
+    {
+      "tool_name": "ingest_legal_file_v1_ingestion_ingest_legal_file_post",
+      "method": "POST",
+      "path": "/v1/ingestion/ingest-legal-file",
+      "url": "http://127.0.0.1:8066/v1/ingestion/ingest-legal-file",
+      "operation_id": "ingest_legal_file_v1_ingestion_ingest_legal_file_post",
+      "summary": "Ingest Legal File",
+      "description": "Ingest a single legal DOC/DOCX file with legal-aware defaults.",
+      "tags": [
+        "Ingestion"
+      ],
+      "parameters": [
+        {
+          "name": "collection_name",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name",
+            "default": "legal_documents"
+          },
+          "description": ""
+        },
+        {
+          "name": "force_recreate",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean",
+            "title": "Force Recreate",
+            "default": false
+          },
+          "description": ""
+        },
+        {
+          "name": "model_name",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "title": "Model Name"
+          },
+          "description": ""
+        },
+        {
+          "name": "metadata_json",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "title": "Metadata Json"
+          },
+          "description": ""
+        },
+        {
+          "name": "enhanced",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean",
+            "title": "Enhanced",
+            "default": true
+          },
+          "description": ""
+        },
+        {
+          "name": "chunk_size",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "title": "Chunk Size"
+          },
+          "description": ""
+        },
+        {
+          "name": "chunk_overlap",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "title": "Chunk Overlap"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {
+        "$ref": "#/components/schemas/Body_ingest_legal_file_v1_ingestion_ingest_legal_file_post"
+      }
+    },
+    {
+      "tool_name": "search_documents_v1_ingestion_search_post",
+      "method": "POST",
+      "path": "/v1/ingestion/search",
+      "url": "http://127.0.0.1:8066/v1/ingestion/search",
+      "operation_id": "search_documents_v1_ingestion_search_post",
+      "summary": "Search Documents",
+      "description": "Search for documents similar to query.",
+      "tags": [
+        "Ingestion"
+      ],
+      "parameters": [
+        {
+          "name": "collection_name",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name"
+          },
+          "description": ""
+        },
+        {
+          "name": "query",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Query"
+          },
+          "description": ""
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "title": "Limit",
+            "default": 10
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "assistant_query_knowledge_v1_knowledge_assistant_assistant_id_query_post",
+      "method": "POST",
+      "path": "/v1/knowledge/assistant/{assistant_id}/query",
+      "url": "http://127.0.0.1:8066/v1/knowledge/assistant/{assistant_id}/query",
+      "operation_id": "assistant_query_knowledge_v1_knowledge_assistant__assistant_id__query_post",
+      "summary": "Assistant Query Knowledge",
+      "description": "Query all knowledge collections associated with an assistant.",
+      "tags": [
+        "knowledge"
+      ],
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Assistant Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {
+        "$ref": "#/components/schemas/KnowledgeQueryRequest"
+      }
+    },
+    {
+      "tool_name": "clear_collection_v1_knowledge_collection_collection_name_clear_delete",
+      "method": "DELETE",
+      "path": "/v1/knowledge/collection/{collection_name}/clear",
+      "url": "http://127.0.0.1:8066/v1/knowledge/collection/{collection_name}/clear",
+      "operation_id": "clear_collection_v1_knowledge_collection__collection_name__clear_delete",
+      "summary": "Clear Collection",
+      "description": "Clear all points from a collection.",
+      "tags": [
+        "knowledge"
+      ],
+      "parameters": [
+        {
+          "name": "collection_name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "get_collection_stats_v1_knowledge_collection_collection_name_stats_get",
+      "method": "GET",
+      "path": "/v1/knowledge/collection/{collection_name}/stats",
+      "url": "http://127.0.0.1:8066/v1/knowledge/collection/{collection_name}/stats",
+      "operation_id": "get_collection_stats_v1_knowledge_collection__collection_name__stats_get",
+      "summary": "Get Collection Stats",
+      "description": "Get statistics about a knowledge collection.",
+      "tags": [
+        "knowledge"
+      ],
+      "parameters": [
+        {
+          "name": "collection_name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "ingest_file_v1_knowledge_ingest_file_post",
+      "method": "POST",
+      "path": "/v1/knowledge/ingest/file",
+      "url": "http://127.0.0.1:8066/v1/knowledge/ingest/file",
+      "operation_id": "ingest_file_v1_knowledge_ingest_file_post",
+      "summary": "Ingest File",
+      "description": "Ingest a file into a knowledge base collection.\nSupports various file formats (PDF, TXT, MD, etc.).",
+      "tags": [
+        "knowledge"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/Body_ingest_file_v1_knowledge_ingest_file_post"
+      }
+    },
+    {
+      "tool_name": "knowledge_query_v1_knowledge_query_post",
+      "method": "POST",
+      "path": "/v1/knowledge/query",
+      "url": "http://127.0.0.1:8066/v1/knowledge/query",
+      "operation_id": "knowledge_query_v1_knowledge_query_post",
+      "summary": "Knowledge Query",
+      "description": "Query knowledge base with flexible field names.\nAccepts either 'query' or 'question' as the search text.",
+      "tags": [
+        "knowledge"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/KnowledgeQueryRequest"
+      }
+    },
+    {
+      "tool_name": "list_models_v1_models_get",
+      "method": "GET",
+      "path": "/v1/models",
+      "url": "http://127.0.0.1:8066/v1/models",
+      "operation_id": "list_models_v1_models_get",
+      "summary": "List Models",
+      "description": "List available local Ollama models, with llama3.1:8b pinned first.",
+      "tags": [
+        "Models"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "cypher_v1_neo4j_cypher_post",
+      "method": "POST",
+      "path": "/v1/neo4j/cypher",
+      "url": "http://127.0.0.1:8066/v1/neo4j/cypher",
+      "operation_id": "cypher_v1_neo4j_cypher_post",
+      "summary": "Cypher",
+      "description": "",
+      "tags": [
+        "neo4j"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/CypherRequest"
+      }
+    },
+    {
+      "tool_name": "health_v1_neo4j_health_get",
+      "method": "GET",
+      "path": "/v1/neo4j/health",
+      "url": "http://127.0.0.1:8066/v1/neo4j/health",
+      "operation_id": "health_v1_neo4j_health_get",
+      "summary": "Health",
+      "description": "Ping the Manus Neo4j stats endpoint as a liveness probe.",
+      "tags": [
+        "neo4j"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "rag_context_v1_neo4j_rag_context_post",
+      "method": "POST",
+      "path": "/v1/neo4j/rag-context",
+      "url": "http://127.0.0.1:8066/v1/neo4j/rag-context",
+      "operation_id": "rag_context_v1_neo4j_rag_context_post",
+      "summary": "Rag Context",
+      "description": "Run a Cypher query and return a text block ready for prompt injection.",
+      "tags": [
+        "neo4j"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/RagContextRequest"
+      }
+    },
+    {
+      "tool_name": "stats_v1_neo4j_stats_get",
+      "method": "GET",
+      "path": "/v1/neo4j/stats",
+      "url": "http://127.0.0.1:8066/v1/neo4j/stats",
+      "operation_id": "stats_v1_neo4j_stats_get",
+      "summary": "Stats",
+      "description": "",
+      "tags": [
+        "neo4j"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "list_agents_v1_openclaude_agents_get",
+      "method": "GET",
+      "path": "/v1/openclaude/agents",
+      "url": "http://127.0.0.1:8066/v1/openclaude/agents",
+      "operation_id": "list_agents_v1_openclaude_agents_get",
+      "summary": "List Agents",
+      "description": "List all agent markdown files with parsed frontmatter summaries.",
+      "tags": [
+        "OpenClaude"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "create_agent_v1_openclaude_agents_post",
+      "method": "POST",
+      "path": "/v1/openclaude/agents",
+      "url": "http://127.0.0.1:8066/v1/openclaude/agents",
+      "operation_id": "create_agent_v1_openclaude_agents_post",
+      "summary": "Create Agent",
+      "description": "Create a new agent markdown file.",
+      "tags": [
+        "OpenClaude"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/AgentCreateRequest"
+      }
+    },
+    {
+      "tool_name": "export_to_assistant_v1_openclaude_agents_export_to_assistant_name_post",
+      "method": "POST",
+      "path": "/v1/openclaude/agents/export-to-assistant/{name}",
+      "url": "http://127.0.0.1:8066/v1/openclaude/agents/export-to-assistant/{name}",
+      "operation_id": "export_to_assistant_v1_openclaude_agents_export_to_assistant__name__post",
+      "summary": "Export To Assistant",
+      "description": "Convert an OpenClaude markdown agent into a Garage assistant JSON file.",
+      "tags": [
+        "OpenClaude"
+      ],
+      "parameters": [
+        {
+          "name": "name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "import_from_assistant_v1_openclaude_agents_import_from_assistant_assistant_id_post",
+      "method": "POST",
+      "path": "/v1/openclaude/agents/import-from-assistant/{assistant_id}",
+      "url": "http://127.0.0.1:8066/v1/openclaude/agents/import-from-assistant/{assistant_id}",
+      "operation_id": "import_from_assistant_v1_openclaude_agents_import_from_assistant__assistant_id__post",
+      "summary": "Import From Assistant",
+      "description": "Convert an existing garage assistant (JSON) to an OpenClaude agent markdown file.",
+      "tags": [
+        "OpenClaude"
+      ],
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Assistant Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "import_from_catalog_v1_openclaude_agents_import_from_catalog_name_post",
+      "method": "POST",
+      "path": "/v1/openclaude/agents/import-from-catalog/{name}",
+      "url": "http://127.0.0.1:8066/v1/openclaude/agents/import-from-catalog/{name}",
+      "operation_id": "import_from_catalog_v1_openclaude_agents_import_from_catalog__name__post",
+      "summary": "Import From Catalog",
+      "description": "Fetch a specific agent from the remote catalog and save it locally.",
+      "tags": [
+        "OpenClaude"
+      ],
+      "parameters": [
+        {
+          "name": "name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "import_from_markdown_v1_openclaude_agents_import_markdown_post",
+      "method": "POST",
+      "path": "/v1/openclaude/agents/import-markdown",
+      "url": "http://127.0.0.1:8066/v1/openclaude/agents/import-markdown",
+      "operation_id": "import_from_markdown_v1_openclaude_agents_import_markdown_post",
+      "summary": "Import From Markdown",
+      "description": "Save an agent from raw markdown content (uploaded .md / .agent.md file).",
+      "tags": [
+        "OpenClaude"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/AgentImportMarkdownRequest"
+      }
+    },
+    {
+      "tool_name": "validate_agent_v1_openclaude_agents_validate_post",
+      "method": "POST",
+      "path": "/v1/openclaude/agents/validate",
+      "url": "http://127.0.0.1:8066/v1/openclaude/agents/validate",
+      "operation_id": "validate_agent_v1_openclaude_agents_validate_post",
+      "summary": "Validate Agent",
+      "description": "Validate agent markdown content without saving.",
+      "tags": [
+        "OpenClaude"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/AgentValidateRequest"
+      }
+    },
+    {
+      "tool_name": "delete_agent_v1_openclaude_agents_name_delete",
+      "method": "DELETE",
+      "path": "/v1/openclaude/agents/{name}",
+      "url": "http://127.0.0.1:8066/v1/openclaude/agents/{name}",
+      "operation_id": "delete_agent_v1_openclaude_agents__name__delete",
+      "summary": "Delete Agent",
+      "description": "Delete an agent markdown file.",
+      "tags": [
+        "OpenClaude"
+      ],
+      "parameters": [
+        {
+          "name": "name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "get_agent_v1_openclaude_agents_name_get",
+      "method": "GET",
+      "path": "/v1/openclaude/agents/{name}",
+      "url": "http://127.0.0.1:8066/v1/openclaude/agents/{name}",
+      "operation_id": "get_agent_v1_openclaude_agents__name__get",
+      "summary": "Get Agent",
+      "description": "Get full agent details including body content.",
+      "tags": [
+        "OpenClaude"
+      ],
+      "parameters": [
+        {
+          "name": "name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "update_agent_v1_openclaude_agents_name_put",
+      "method": "PUT",
+      "path": "/v1/openclaude/agents/{name}",
+      "url": "http://127.0.0.1:8066/v1/openclaude/agents/{name}",
+      "operation_id": "update_agent_v1_openclaude_agents__name__put",
+      "summary": "Update Agent",
+      "description": "Update an existing agent markdown file. Merges with existing frontmatter to preserve unedited fields.",
+      "tags": [
+        "OpenClaude"
+      ],
+      "parameters": [
+        {
+          "name": "name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {
+        "$ref": "#/components/schemas/AgentCreateRequest"
+      }
+    },
+    {
+      "tool_name": "run_agent_v1_openclaude_agents_name_run_post",
+      "method": "POST",
+      "path": "/v1/openclaude/agents/{name}/run",
+      "url": "http://127.0.0.1:8066/v1/openclaude/agents/{name}/run",
+      "operation_id": "run_agent_v1_openclaude_agents__name__run_post",
+      "summary": "Run Agent",
+      "description": "Execute an agent via the openclaude CLI and stream output.",
+      "tags": [
+        "OpenClaude"
+      ],
+      "parameters": [
+        {
+          "name": "name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {
+        "$ref": "#/components/schemas/AgentRunRequest"
+      }
+    },
+    {
+      "tool_name": "catalog_list_agents_v1_openclaude_catalog_agents_get",
+      "method": "GET",
+      "path": "/v1/openclaude/catalog/agents",
+      "url": "http://127.0.0.1:8066/v1/openclaude/catalog/agents",
+      "operation_id": "catalog_list_agents_v1_openclaude_catalog_agents_get",
+      "summary": "Catalog List Agents",
+      "description": "Proxy: list all agents available in the remote catalog (port 8120).\nFirst tries OpenClaude API routes; if unavailable, falls back to static\nAgent Architecture manifests/files served by port 8120.",
+      "tags": [
+        "OpenClaude"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "catalog_get_agent_v1_openclaude_catalog_agents_name_get",
+      "method": "GET",
+      "path": "/v1/openclaude/catalog/agents/{name}",
+      "url": "http://127.0.0.1:8066/v1/openclaude/catalog/agents/{name}",
+      "operation_id": "catalog_get_agent_v1_openclaude_catalog_agents__name__get",
+      "summary": "Catalog Get Agent",
+      "description": "Proxy: fetch full agent detail from remote catalog (API first, static fallback second).",
+      "tags": [
+        "OpenClaude"
+      ],
+      "parameters": [
+        {
+          "name": "name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "analyze_needs_v1_prompt_engineer_analyze_post",
+      "method": "POST",
+      "path": "/v1/prompt-engineer/analyze",
+      "url": "http://127.0.0.1:8066/v1/prompt-engineer/analyze",
+      "operation_id": "analyze_needs_v1_prompt_engineer_analyze_post",
+      "summary": "Analyze Needs",
+      "description": "Analyze user needs to understand what kind of prompt is needed.",
+      "tags": [
+        "Prompt Engineer"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/AnalysisRequest"
+      }
+    },
+    {
+      "tool_name": "evaluate_prompt_v1_prompt_engineer_evaluate_post",
+      "method": "POST",
+      "path": "/v1/prompt-engineer/evaluate",
+      "url": "http://127.0.0.1:8066/v1/prompt-engineer/evaluate",
+      "operation_id": "evaluate_prompt_v1_prompt_engineer_evaluate_post",
+      "summary": "Evaluate Prompt",
+      "description": "Evaluate prompt quality across multiple dimensions.",
+      "tags": [
+        "Prompt Engineer"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/EvaluationRequest"
+      }
+    },
+    {
+      "tool_name": "get_prompt_examples_v1_prompt_engineer_examples_get",
+      "method": "GET",
+      "path": "/v1/prompt-engineer/examples",
+      "url": "http://127.0.0.1:8066/v1/prompt-engineer/examples",
+      "operation_id": "get_prompt_examples_v1_prompt_engineer_examples_get",
+      "summary": "Get Prompt Examples",
+      "description": "Get example prompts by category to inspire users.",
+      "tags": [
+        "Prompt Engineer"
+      ],
+      "parameters": [
+        {
+          "name": "category",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "title": "Category",
+            "default": "general"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "generate_prompt_v1_prompt_engineer_generate_post",
+      "method": "POST",
+      "path": "/v1/prompt-engineer/generate",
+      "url": "http://127.0.0.1:8066/v1/prompt-engineer/generate",
+      "operation_id": "generate_prompt_v1_prompt_engineer_generate_post",
+      "summary": "Generate Prompt",
+      "description": "Generate a high-quality prompt based on user input and context.\n\nIf assistant_id is provided, the assistant's configuration and context will be used.",
+      "tags": [
+        "Prompt Engineer"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/PromptGenerationRequest"
+      }
+    },
+    {
+      "tool_name": "suggest_improvements_v1_prompt_engineer_improve_post",
+      "method": "POST",
+      "path": "/v1/prompt-engineer/improve",
+      "url": "http://127.0.0.1:8066/v1/prompt-engineer/improve",
+      "operation_id": "suggest_improvements_v1_prompt_engineer_improve_post",
+      "summary": "Suggest Improvements",
+      "description": "Suggest specific improvements to a prompt based on quality metrics.",
+      "tags": [
+        "Prompt Engineer"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/ImprovementRequest"
+      }
+    },
+    {
+      "tool_name": "optimize_prompt_v1_prompt_engineer_optimize_post",
+      "method": "POST",
+      "path": "/v1/prompt-engineer/optimize",
+      "url": "http://127.0.0.1:8066/v1/prompt-engineer/optimize",
+      "operation_id": "optimize_prompt_v1_prompt_engineer_optimize_post",
+      "summary": "Optimize Prompt",
+      "description": "Optimize a prompt based on quality metrics.",
+      "tags": [
+        "Prompt Engineer"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/OptimizationRequest"
+      }
+    },
+    {
+      "tool_name": "generate_variations_v1_prompt_engineer_variations_post",
+      "method": "POST",
+      "path": "/v1/prompt-engineer/variations",
+      "url": "http://127.0.0.1:8066/v1/prompt-engineer/variations",
+      "operation_id": "generate_variations_v1_prompt_engineer_variations_post",
+      "summary": "Generate Variations",
+      "description": "Generate multiple variations of a prompt with different styles or approaches.",
+      "tags": [
+        "Prompt Engineer"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/VariationRequest"
+      }
+    },
+    {
+      "tool_name": "list_collections_v1_qdrant_collections_get",
+      "method": "GET",
+      "path": "/v1/qdrant/collections",
+      "url": "http://127.0.0.1:8066/v1/qdrant/collections",
+      "operation_id": "list_collections_v1_qdrant_collections_get",
+      "summary": "List All Collections",
+      "description": "Retrieves a list of all collections in the Qdrant database.",
+      "tags": [
+        "Qdrant"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "create_collection_v1_qdrant_collections_post",
+      "method": "POST",
+      "path": "/v1/qdrant/collections",
+      "url": "http://127.0.0.1:8066/v1/qdrant/collections",
+      "operation_id": "create_collection_v1_qdrant_collections_post",
+      "summary": "Create a New Collection",
+      "description": "Creates a new vector collection.",
+      "tags": [
+        "Qdrant"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/CreateCollectionRequest"
+      }
+    },
+    {
+      "tool_name": "structured_ingest_v1_qdrant_collections_structured_ingest_post",
+      "method": "POST",
+      "path": "/v1/qdrant/collections/structured_ingest",
+      "url": "http://127.0.0.1:8066/v1/qdrant/collections/structured_ingest",
+      "operation_id": "structured_ingest_v1_qdrant_collections_structured_ingest_post",
+      "summary": "Ingest structured data",
+      "description": "Ingest structured data with automatic embedding and type-specific processing.\n\nSupported data_types:\n    - transcript: Speaker segments with timestamps\n    - violation: Legal violation analyses  \n    - law: Regulations and legal frameworks\n    - generic: Any JSON data with string representation\n\nExample Request:\n    {\n        \"collection_name\": \"violations\",\n        \"data_type\": \"violation\",\n        \"items\": [...violation objects...]\n    }",
+      "tags": [
+        "Qdrant"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/StructuredIngestRequest"
+      }
+    },
+    {
+      "tool_name": "delete_collection_v1_qdrant_collections_collection_name_delete",
+      "method": "DELETE",
+      "path": "/v1/qdrant/collections/{collection_name}",
+      "url": "http://127.0.0.1:8066/v1/qdrant/collections/{collection_name}",
+      "operation_id": "delete_collection_v1_qdrant_collections__collection_name__delete",
+      "summary": "Delete a Collection",
+      "description": "Deletes a specified vector collection.",
+      "tags": [
+        "Qdrant"
+      ],
+      "parameters": [
+        {
+          "name": "collection_name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "ensure_legal_indexes_v1_qdrant_collections_collection_name_ensure_indexes_post",
+      "method": "POST",
+      "path": "/v1/qdrant/collections/{collection_name}/ensure-indexes",
+      "url": "http://127.0.0.1:8066/v1/qdrant/collections/{collection_name}/ensure-indexes",
+      "operation_id": "ensure_legal_indexes_v1_qdrant_collections__collection_name__ensure_indexes_post",
+      "summary": "Ensure Legal Indexes",
+      "description": "Ensures all required legal metadata indexes exist for a collection.",
+      "tags": [
+        "Qdrant"
+      ],
+      "parameters": [
+        {
+          "name": "collection_name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "ingest_files_v1_qdrant_collections_collection_name_ingest_post",
+      "method": "POST",
+      "path": "/v1/qdrant/collections/{collection_name}/ingest",
+      "url": "http://127.0.0.1:8066/v1/qdrant/collections/{collection_name}/ingest",
+      "operation_id": "ingest_files_v1_qdrant_collections__collection_name__ingest_post",
+      "summary": "Ingest Files into a Collection",
+      "description": "Enhanced endpoint to ingest files with automatic document type detection\nand smart chunking strategy. Embedding model is selected based on the\ncollection's vector dimension.",
+      "tags": [
+        "Qdrant"
+      ],
+      "parameters": [
+        {
+          "name": "collection_name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {
+        "$ref": "#/components/schemas/Body_ingest_files_v1_qdrant_collections__collection_name__ingest_post"
+      }
+    },
+    {
+      "tool_name": "query_with_vector_v1_qdrant_collections_collection_name_query_vector_post",
+      "method": "POST",
+      "path": "/v1/qdrant/collections/{collection_name}/query/vector",
+      "url": "http://127.0.0.1:8066/v1/qdrant/collections/{collection_name}/query/vector",
+      "operation_id": "query_with_vector_v1_qdrant_collections__collection_name__query_vector_post",
+      "summary": "Query with Vector",
+      "description": "Direct vector similarity search or text-to-vector search.\n\nAccepts:\n  - A numeric vector (list of floats)\n  - A single query string (will be encoded)\n  - A list of query strings (will be encoded and results aggregated)",
+      "tags": [
+        "Qdrant"
+      ],
+      "parameters": [
+        {
+          "name": "collection_name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {
+        "$ref": "#/components/schemas/QueryVectorRequest"
+      }
+    },
+    {
+      "tool_name": "get_collection_summary_v1_qdrant_collections_collection_name_summary_get",
+      "method": "GET",
+      "path": "/v1/qdrant/collections/{collection_name}/summary",
+      "url": "http://127.0.0.1:8066/v1/qdrant/collections/{collection_name}/summary",
+      "operation_id": "get_collection_summary_v1_qdrant_collections__collection_name__summary_get",
+      "summary": "Get Collection Statistics",
+      "description": "Calculates and returns detailed statistics for a given collection.\n\nReturns:\n    - points_count: Total number of vectors\n    - frameworks_count: Number of distinct frameworks\n    - doc_type_counts: Distribution of document types\n\nExample Response:\n    {\n        \"points_count\": 1500,\n        \"frameworks_count\": 5,\n        \"doc_type_counts\": {\n            \"transcripts\": 800,\n            \"violations\": 400,\n            \"laws\": 300\n        }\n    }",
+      "tags": [
+        "Qdrant"
+      ],
+      "parameters": [
+        {
+          "name": "collection_name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "connect_to_qdrant_v1_qdrant_connect_post",
+      "method": "POST",
+      "path": "/v1/qdrant/connect",
+      "url": "http://127.0.0.1:8066/v1/qdrant/connect",
+      "operation_id": "connect_to_qdrant_v1_qdrant_connect_post",
+      "summary": "Check Qdrant Connection",
+      "description": "Verifies the connection to the Qdrant instance.",
+      "tags": [
+        "Qdrant"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "embed_case_directory_v1_qdrant_embed_case_directory_post",
+      "method": "POST",
+      "path": "/v1/qdrant/embed-case-directory",
+      "url": "http://127.0.0.1:8066/v1/qdrant/embed-case-directory",
+      "operation_id": "embed_case_directory_v1_qdrant_embed_case_directory_post",
+      "summary": "Scan, create, and embed a full case directory",
+      "description": "Creates a new collection and ingests all files from a specified case directory.\n\nExample Request:\n    {\n        \"case_directory\": \"case_001\",\n        \"collection_name\": \"case_001_collection\", \n        \"embedding_dim\": 384\n    }",
+      "tags": [
+        "Qdrant"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/EmbedCaseDirectoryRequest"
+      }
+    },
+    {
+      "tool_name": "search_qdrant_v1_qdrant_qdrant_search_post",
+      "method": "POST",
+      "path": "/v1/qdrant/qdrant/search",
+      "url": "http://127.0.0.1:8066/v1/qdrant/qdrant/search",
+      "operation_id": "search_qdrant_v1_qdrant_qdrant_search_post",
+      "summary": "Search Qdrant",
+      "description": "Direct search endpoint for Qdrant.",
+      "tags": [
+        "Qdrant"
+      ],
+      "parameters": [
+        {
+          "name": "collection_name",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Collection Name"
+          },
+          "description": ""
+        },
+        {
+          "name": "query_text",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Query Text"
+          },
+          "description": ""
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "title": "Limit",
+            "default": 5
+          },
+          "description": ""
+        },
+        {
+          "name": "score_threshold",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "number",
+            "title": "Score Threshold",
+            "default": 0.5
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "query_points_v1_qdrant_query_post",
+      "method": "POST",
+      "path": "/v1/qdrant/query",
+      "url": "http://127.0.0.1:8066/v1/qdrant/query",
+      "operation_id": "query_points_v1_qdrant_query_post",
+      "summary": "Query a Collection with Vector",
+      "description": "Performs a vector search on a collection.",
+      "tags": [
+        "Qdrant"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/QueryRequest"
+      }
+    },
+    {
+      "tool_name": "search_with_text_v1_qdrant_search_post",
+      "method": "POST",
+      "path": "/v1/qdrant/search",
+      "url": "http://127.0.0.1:8066/v1/qdrant/search",
+      "operation_id": "search_with_text_v1_qdrant_search_post",
+      "summary": "Search a Collection with Text",
+      "description": "Supports multiple query input formats:\n  - single string: \"text\"\n  - list of strings: [\"text1\", \"text2\"] (will run each query and aggregate results)\n  - object: {\"text\": \"...\"} or {\"query\": \"...\"}\n\nAggregation strategy: when multiple queries are provided we take the maximum score per result id\n(i.e., OR semantics with best-match ranking). You can extend this to average or weighted aggregation.",
+      "tags": [
+        "Qdrant"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/routes__qdrant_router__SearchRequest"
+      }
+    },
+    {
+      "tool_name": "list_threads_v1_threads_get",
+      "method": "GET",
+      "path": "/v1/threads/",
+      "url": "http://127.0.0.1:8066/v1/threads/",
+      "operation_id": "list_threads_v1_threads__get",
+      "summary": "List Threads",
+      "description": "List all threads.",
+      "tags": [
+        "Threads"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "create_thread_v1_threads_post",
+      "method": "POST",
+      "path": "/v1/threads/",
+      "url": "http://127.0.0.1:8066/v1/threads/",
+      "operation_id": "create_thread_v1_threads__post",
+      "summary": "Create Thread",
+      "description": "Create a new thread.",
+      "tags": [
+        "Threads"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "title": "Request",
+        "default": {
+          "metadata": {}
+        }
+      }
+    },
+    {
+      "tool_name": "delete_thread_v1_threads_thread_id_delete",
+      "method": "DELETE",
+      "path": "/v1/threads/{thread_id}",
+      "url": "http://127.0.0.1:8066/v1/threads/{thread_id}",
+      "operation_id": "delete_thread_v1_threads__thread_id__delete",
+      "summary": "Delete Thread",
+      "description": "Delete a thread.",
+      "tags": [
+        "Threads"
+      ],
+      "parameters": [
+        {
+          "name": "thread_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Thread Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "get_thread_v1_threads_thread_id_get",
+      "method": "GET",
+      "path": "/v1/threads/{thread_id}",
+      "url": "http://127.0.0.1:8066/v1/threads/{thread_id}",
+      "operation_id": "get_thread_v1_threads__thread_id__get",
+      "summary": "Get Thread",
+      "description": "Get information about a specific thread.",
+      "tags": [
+        "Threads"
+      ],
+      "parameters": [
+        {
+          "name": "thread_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Thread Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "attach_file_to_thread_v1_threads_thread_id_files_post",
+      "method": "POST",
+      "path": "/v1/threads/{thread_id}/files",
+      "url": "http://127.0.0.1:8066/v1/threads/{thread_id}/files",
+      "operation_id": "attach_file_to_thread_v1_threads__thread_id__files_post",
+      "summary": "Attach File To Thread",
+      "description": "",
+      "tags": [
+        "Threads"
+      ],
+      "parameters": [
+        {
+          "name": "thread_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Thread Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {
+        "type": "object",
+        "title": "Body"
+      }
+    },
+    {
+      "tool_name": "list_messages_v1_threads_thread_id_messages_get",
+      "method": "GET",
+      "path": "/v1/threads/{thread_id}/messages",
+      "url": "http://127.0.0.1:8066/v1/threads/{thread_id}/messages",
+      "operation_id": "list_messages_v1_threads__thread_id__messages_get",
+      "summary": "List Messages",
+      "description": "List all messages in a thread.",
+      "tags": [
+        "Threads"
+      ],
+      "parameters": [
+        {
+          "name": "thread_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Thread Id"
+          },
+          "description": ""
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "title": "Limit",
+            "default": 20
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "add_message_v1_threads_thread_id_messages_post",
+      "method": "POST",
+      "path": "/v1/threads/{thread_id}/messages",
+      "url": "http://127.0.0.1:8066/v1/threads/{thread_id}/messages",
+      "operation_id": "add_message_v1_threads__thread_id__messages_post",
+      "summary": "Add Message",
+      "description": "Add a message to a thread.",
+      "tags": [
+        "Threads"
+      ],
+      "parameters": [
+        {
+          "name": "thread_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Thread Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {
+        "$ref": "#/components/schemas/MessageCreateRequest"
+      }
+    },
+    {
+      "tool_name": "create_run_v1_threads_thread_id_runs_post",
+      "method": "POST",
+      "path": "/v1/threads/{thread_id}/runs",
+      "url": "http://127.0.0.1:8066/v1/threads/{thread_id}/runs",
+      "operation_id": "create_run_v1_threads__thread_id__runs_post",
+      "summary": "Create Run",
+      "description": "Run an assistant on a thread.",
+      "tags": [
+        "Threads"
+      ],
+      "parameters": [
+        {
+          "name": "thread_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Thread Id"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {
+        "$ref": "#/components/schemas/RunCreateRequest"
+      }
+    },
+    {
+      "tool_name": "list_tools_v1_tools_get",
+      "method": "GET",
+      "path": "/v1/tools",
+      "url": "http://127.0.0.1:8066/v1/tools",
+      "operation_id": "list_tools_v1_tools_get",
+      "summary": "List Tools",
+      "description": "List all registered tools in OpenAI format.",
+      "tags": [],
+      "parameters": [],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "deep_reasoning_v1_tools_deep_reasoning_post",
+      "method": "POST",
+      "path": "/v1/tools/deep_reasoning",
+      "url": "http://127.0.0.1:8066/v1/tools/deep_reasoning",
+      "operation_id": "deep_reasoning_v1_tools_deep_reasoning_post",
+      "summary": "Deep Reasoning",
+      "description": "Execute deep reasoning tool directly.",
+      "tags": [],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/Body_deep_reasoning_v1_tools_deep_reasoning_post"
+      }
+    },
+    {
+      "tool_name": "execute_tool_by_name_v1_tools_execute_post",
+      "method": "POST",
+      "path": "/v1/tools/execute",
+      "url": "http://127.0.0.1:8066/v1/tools/execute",
+      "operation_id": "execute_tool_by_name_v1_tools_execute_post",
+      "summary": "Execute Tool By Name",
+      "description": "Execute a tool using request body for tool name.",
+      "tags": [],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/ToolExecuteRequest"
+      }
+    },
+    {
+      "tool_name": "delete_tool_v1_tools_tool_name_delete",
+      "method": "DELETE",
+      "path": "/v1/tools/{tool_name}",
+      "url": "http://127.0.0.1:8066/v1/tools/{tool_name}",
+      "operation_id": "delete_tool_v1_tools__tool_name__delete",
+      "summary": "Delete Tool",
+      "description": "Delete a user-defined tool.",
+      "tags": [],
+      "parameters": [
+        {
+          "name": "tool_name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Tool Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "get_tool_v1_tools_tool_name_get",
+      "method": "GET",
+      "path": "/v1/tools/{tool_name}",
+      "url": "http://127.0.0.1:8066/v1/tools/{tool_name}",
+      "operation_id": "get_tool_v1_tools__tool_name__get",
+      "summary": "Get Tool",
+      "description": "Get a specific tool by name.",
+      "tags": [],
+      "parameters": [
+        {
+          "name": "tool_name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Tool Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "execute_tool_v1_tools_tool_name_execute_post",
+      "method": "POST",
+      "path": "/v1/tools/{tool_name}/execute",
+      "url": "http://127.0.0.1:8066/v1/tools/{tool_name}/execute",
+      "operation_id": "execute_tool_v1_tools__tool_name__execute_post",
+      "summary": "Execute Tool",
+      "description": "Execute a specific tool by name.",
+      "tags": [],
+      "parameters": [
+        {
+          "name": "tool_name",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Tool Name"
+          },
+          "description": ""
+        }
+      ],
+      "request_schema": {}
+    },
+    {
+      "tool_name": "create_tool_v1_v1_tools_post",
+      "method": "POST",
+      "path": "/v1/v1/tools",
+      "url": "http://127.0.0.1:8066/v1/v1/tools",
+      "operation_id": "create_tool_v1_v1_tools_post",
+      "summary": "Create Tool",
+      "description": "Create a new user-defined tool.",
+      "tags": [],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/ToolCreateRequest"
+      }
+    },
+    {
+      "tool_name": "analyze_document_structure_v2_legal_ingestion_analyze_document_structure_post",
+      "method": "POST",
+      "path": "/v2/legal-ingestion/analyze-document-structure",
+      "url": "http://127.0.0.1:8066/v2/legal-ingestion/analyze-document-structure",
+      "operation_id": "analyze_document_structure_v2_legal_ingestion_analyze_document_structure_post",
+      "summary": "Analyze Document Structure",
+      "description": "Analyze document structure without ingestion",
+      "tags": [
+        "Legal Document Ingestion V2"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/Body_analyze_document_structure_v2_legal_ingestion_analyze_document_structure_post"
+      }
+    },
+    {
+      "tool_name": "ingest_legal_file_enhanced_v2_legal_ingestion_ingest_legal_file_enhanced_post",
+      "method": "POST",
+      "path": "/v2/legal-ingestion/ingest-legal-file-enhanced",
+      "url": "http://127.0.0.1:8066/v2/legal-ingestion/ingest-legal-file-enhanced",
+      "operation_id": "ingest_legal_file_enhanced_v2_legal_ingestion_ingest_legal_file_enhanced_post",
+      "summary": "Ingest Legal File Enhanced",
+      "description": "Enhanced ingestion with section preservation for multiple files",
+      "tags": [
+        "Legal Document Ingestion V2"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/Body_ingest_legal_file_enhanced_v2_legal_ingestion_ingest_legal_file_enhanced_post"
+      }
+    },
+    {
+      "tool_name": "ingest_legal_folder_v2_legal_ingestion_ingest_legal_folder_post",
+      "method": "POST",
+      "path": "/v2/legal-ingestion/ingest-legal-folder",
+      "url": "http://127.0.0.1:8066/v2/legal-ingestion/ingest-legal-folder",
+      "operation_id": "ingest_legal_folder_v2_legal_ingestion_ingest_legal_folder_post",
+      "summary": "Ingest Legal Folder",
+      "description": "Ingest all legal documents from a local folder path",
+      "tags": [
+        "Legal Document Ingestion V2"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/FolderIngestionRequest"
+      }
+    },
+    {
+      "tool_name": "analyze_transcript_structure_v2_transcripts_analyze_post",
+      "method": "POST",
+      "path": "/v2/transcripts/analyze",
+      "url": "http://127.0.0.1:8066/v2/transcripts/analyze",
+      "operation_id": "analyze_transcript_structure_v2_transcripts_analyze_post",
+      "summary": "Analyze Transcript Structure",
+      "description": "Analyze transcript structure and suggest optimal ingestion parameters.",
+      "tags": [
+        "Transcript Ingestion"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/Body_analyze_transcript_structure_v2_transcripts_analyze_post"
+      }
+    },
+    {
+      "tool_name": "ingest_transcript_enhanced_v2_transcripts_ingest_enhanced_post",
+      "method": "POST",
+      "path": "/v2/transcripts/ingest-enhanced",
+      "url": "http://127.0.0.1:8066/v2/transcripts/ingest-enhanced",
+      "operation_id": "ingest_transcript_enhanced_v2_transcripts_ingest_enhanced_post",
+      "summary": "Ingest Transcript Enhanced",
+      "description": "Enhanced transcript ingestion with speaker-aware chunking.",
+      "tags": [
+        "Transcript Ingestion"
+      ],
+      "parameters": [],
+      "request_schema": {
+        "$ref": "#/components/schemas/Body_ingest_transcript_enhanced_v2_transcripts_ingest_enhanced_post"
+      }
+    },
+    {
+      "tool_name": "ingest_transcript_json_v2_transcripts_ingest_json_post",
+      "method": "POST",
+      "path": "/v2/transcripts/ingest-json",
+      "url": "http://127.0.0.1:8066/v2/transcripts/ingest-json",
+      "operation_id": "ingest_transcript_json_v2_transcripts_ingest_json_post",
+      "summary": "Ingest Transcript Json",
+      "description": "Ingest transcript provided as JSON body (alternative to file upload).",
+      "tags": [
+        "Transcript Ingestion"
+      ],
+      "parameters": [],
+      "request_schema": {}
+    }
+  ]
+}

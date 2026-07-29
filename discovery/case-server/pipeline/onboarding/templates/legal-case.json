@@ -1,0 +1,155 @@
+{
+  "spec_version": "1.0.0",
+  "blueprint_version": "template",
+  "root_label": "Legal Case",
+  "generated_at": "2026-05-06T00:00:00Z",
+  "source": {
+    "kind": "template",
+    "template_id": "legal-case"
+  },
+  "notes": "Multi-jurisdictional legal case template. Derived from the LATAM LA8159 discovery strategy. Use for litigation, regulatory complaints, and incident-driven cases with cross-cutting law and personnel.",
+  "nodes": [
+    {
+      "path": "CASE_MANAGEMENT",
+      "purpose": "Cross-incident control plane. The dashboard directory — first thing humans and agents read.",
+      "required": true,
+      "expected_contents": [
+        "README.md — case overview with quick navigation",
+        "master_timeline.md — composite timeline across all incidents",
+        "cross_references.md — cross-jurisdictional links",
+        "evidence_tracking.md — chain-of-custody log",
+        "incident_metadata.json — high-level case metadata",
+        "discovery_strategy.md — pipeline strategy doc"
+      ],
+      "pipeline_layers": ["L1-L3", "L4", "comprehend"],
+      "pipeline_hints": {
+        "entity_priorities": ["people", "organizations", "laws", "events"],
+        "intelligence_focus": ["timeline", "narrative"]
+      },
+      "tags": ["control-plane"]
+    },
+    {
+      "path": "INCIDENTS",
+      "purpose": "Per-incident folders. Each incident gets its own subdirectory named INCIDENT_YYYY-MM-DD.",
+      "required": true,
+      "expected_contents": [
+        "One INCIDENT_YYYY-MM-DD/ subdirectory per discrete event"
+      ],
+      "naming_convention": "INCIDENT_YYYY-MM-DD",
+      "tags": ["incidents"],
+      "children": [
+        {
+          "path": "INCIDENT_TEMPLATE",
+          "purpose": "Template for a single incident. Clone, rename to INCIDENT_<date>, then populate.",
+          "required": false,
+          "tags": ["template"],
+          "children": [
+            {
+              "path": "evidence",
+              "purpose": "Raw and multimedia evidence for this incident.",
+              "required": true,
+              "pipeline_layers": ["L1-L3", "L4"],
+              "children": [
+                { "path": "raw", "purpose": "Screenshots, photos, source documents, boarding passes.", "pipeline_layers": ["L1-L3", "L4"] },
+                { "path": "audio", "purpose": "Original audio recordings. Index-only; transcripts live separately.", "pipeline_layers": ["L1-L3"], "pipeline_hints": { "skip_binary_extraction": true } },
+                { "path": "video", "purpose": "Video evidence.", "pipeline_layers": ["L1-L3"], "pipeline_hints": { "skip_binary_extraction": true } },
+                { "path": "structured_data", "purpose": "Manifests, records, exports — anything with rows/fields.", "pipeline_layers": ["L1-L3", "L4"] }
+              ]
+            },
+            {
+              "path": "transcripts",
+              "purpose": "Three-layer transcript pipeline.",
+              "pipeline_layers": ["L1-L3", "L4", "L5-L7"],
+              "children": [
+                { "path": "raw", "purpose": "Original ASR/diarization JSON.", "pipeline_layers": ["L1-L3", "L4"] },
+                { "path": "speaker_mapped", "purpose": "JSON with real speaker identities mapped.", "pipeline_layers": ["L4", "L5-L7"] },
+                { "path": "rendered", "purpose": "Generated HTML/MD timeline views.", "pipeline_layers": ["L1-L3"] }
+              ]
+            },
+            {
+              "path": "analysis",
+              "purpose": "Processed analysis for this incident.",
+              "pipeline_layers": ["L4", "L5-L7"],
+              "pipeline_hints": { "intelligence_focus": ["violations", "timeline", "gaps"] },
+              "children": [
+                { "path": "findings", "purpose": "Segment-by-segment findings." },
+                { "path": "composite_timeline", "purpose": "All sources merged chronologically.", "pipeline_hints": { "intelligence_focus": ["timeline"] } }
+              ]
+            },
+            {
+              "path": "violations",
+              "purpose": "Validated violation catalog for this incident.",
+              "pipeline_layers": ["L5-L7"],
+              "pipeline_hints": { "intelligence_focus": ["violations", "law_registry"] },
+              "children": [
+                { "path": "validated", "purpose": "JSON violation files." }
+              ]
+            },
+            {
+              "path": "sub_incidents",
+              "purpose": "Time-stamped sub-events for granular chronology. One folder per HH_MM moment.",
+              "naming_convention": "HH_MM"
+            },
+            {
+              "path": "communications",
+              "purpose": "Formal correspondence — emails, letters, official replies.",
+              "pipeline_layers": ["L1-L3", "L4"]
+            },
+            {
+              "path": "outputs",
+              "purpose": "Final deliverables produced from this incident: complaints, reports, formal filings."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "LEGAL_FRAMEWORK",
+      "purpose": "Cross-cutting legal context shared by all incidents — grounding agents, source law, jurisprudence, violation definitions. Kept once to prevent drift.",
+      "required": true,
+      "tags": ["shared"],
+      "children": [
+        {
+          "path": "agents",
+          "purpose": "Grounding agents per jurisdiction.",
+          "pipeline_layers": ["L1-L3", "L4"]
+        },
+        {
+          "path": "source_laws",
+          "purpose": "Original full texts of statutes, regulations, and codes.",
+          "pipeline_layers": ["L1-L3", "L4"]
+        },
+        {
+          "path": "violations_catalog",
+          "purpose": "Definitions of each violation type and its mapping to law and agent.",
+          "children": [
+            { "path": "definitions", "purpose": "What each violation means legally." },
+            { "path": "mapping", "purpose": "Violation → law → agent mapping." }
+          ]
+        },
+        {
+          "path": "jurisprudence",
+          "purpose": "Related case law and precedents.",
+          "pipeline_layers": ["L1-L3", "L4"]
+        }
+      ]
+    },
+    {
+      "path": "PERSONNEL",
+      "purpose": "Structured data about every person and entity involved in the case.",
+      "required": true,
+      "pipeline_layers": ["L1-L3", "L4"],
+      "pipeline_hints": { "entity_priorities": ["people", "organizations"] },
+      "children": [
+        { "path": "dossiers", "purpose": "Per-person dossiers." }
+      ]
+    },
+    {
+      "path": "ARCHIVE",
+      "purpose": "Deprecated and superseded artifacts. Kept for audit; deduped against active material.",
+      "required": false,
+      "pipeline_layers": ["L1-L3"],
+      "tags": ["archive"]
+    }
+  ]
+}

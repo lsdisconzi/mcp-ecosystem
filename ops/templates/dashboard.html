@@ -1,0 +1,3242 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+===================================================================================
+OPS DASHBOARD — Awareness-AI Ecosystem
+
+Cleanup note (2026-07-29):
+The Deploy, Contracts, Ontology, and API Diagnostics sections have been
+commented out as they referenced legacy projects or infrastructure that
+is no longer part of the 7-project ecosystem. They remain in the file as
+reference for potential future restoration.
+===================================================================================
+-->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Awareness-AI · Ops Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#111110;--bg2:#191917;--bg3:#1f1f1d;--bg4:#262624;
+  --border:#2a2a28;--border-hi:#3a3a38;
+  --gray:#6a6a66;--gray-hi:#9a9a96;--white:#e8e6e1;
+  --amber:#c4622d;--amber-dim:#924a22;
+  --green:#4a9e70;--green-dim:#2d6b47;
+  --red:#c44a4a;--red-dim:#8b3333;
+  --blue:#4a7ec4;--blue-dim:#33578b;
+  --yellow:#c4a84a;
+  --font:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--white);min-height:100vh;line-height:1.5}
+a{color:var(--amber);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── HEADER ── */
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.header-brand{display:flex;align-items:center;gap:14px}
+.header-brand svg{width:32px;height:32px}
+.header-brand h1{font-size:18px;font-weight:600;letter-spacing:-.02em}
+.header-brand h1 span{color:var(--amber);font-weight:700}
+.header-meta{display:flex;align-items:center;gap:18px;font-size:12px;color:var(--gray-hi)}
+.header-meta .dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:4px}
+.mode-badge{font-size:10px;font-weight:600;padding:3px 10px;border-radius:99px;text-transform:uppercase;letter-spacing:.06em;background:rgba(196,98,45,.15);color:var(--amber);border:1px solid var(--amber-dim);font-family:var(--mono)}
+.mode-switch{display:inline-flex;align-items:center;background:var(--bg4);border:1px solid var(--border);border-radius:999px;overflow:hidden}
+.mode-switch-btn{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;color:var(--gray-hi);text-decoration:none}
+.mode-switch-btn:hover{text-decoration:none;color:var(--white)}
+.mode-switch-btn.active{background:var(--amber-dim);color:var(--white)}
+#sysTime{font-family:var(--mono);font-size:11px}
+
+/* ── SYSTEM BAR ── */
+.sys-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 28px;display:flex;gap:28px;flex-wrap:wrap;align-items:center}
+.sys-stat{display:flex;flex-direction:column;gap:2px;min-width:110px}
+.sys-stat .sys-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--gray)}
+.sys-stat .sys-val{font-size:15px;font-weight:600;font-family:var(--mono)}
+.sys-bar-meter{flex:1;min-width:200px;display:flex;align-items:center;gap:10px}
+.meter-track{height:6px;flex:1;background:var(--bg4);border-radius:3px;overflow:hidden}
+.meter-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.meter-fill.cpu{background:var(--amber)}
+.meter-fill.mem{background:var(--blue)}
+.meter-fill.disk{background:var(--green)}
+
+/* ── MAIN LAYOUT ── */
+.main{padding:24px 28px;display:flex;flex-direction:column;gap:24px}
+.section-title{font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:var(--gray);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.section-title i{color:var(--amber);font-size:11px}
+
+/* ── SERVICE CARDS ── */
+.svc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.svc-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:18px 20px;position:relative;transition:border-color .2s}
+.svc-card:hover{border-color:var(--border-hi)}
+.svc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.svc-name{font-size:15px;font-weight:600}
+.svc-desc{font-size:12px;color:var(--gray-hi);margin-bottom:12px}
+.svc-meta{display:flex;gap:14px;font-size:11px;color:var(--gray);font-family:var(--mono);margin-bottom:14px}
+.svc-meta span i{margin-right:4px}
+
+/* status badges */
+.badge{font-size:10px;font-weight:600;padding:3px 10px;border-radius:99px;text-transform:uppercase;letter-spacing:.05em}
+.badge-running{background:var(--green-dim);color:#a8e6c3}
+.badge-exited,.badge-stopped{background:var(--red-dim);color:#e6a8a8}
+.badge-paused{background:var(--amber-dim);color:#e6cca8}
+.badge-healthy{background:var(--green-dim);color:#a8e6c3}
+.badge-unknown{background:var(--bg4);color:var(--gray)}
+.badge-type{background:var(--bg4);color:var(--gray-hi)}
+
+/* action buttons */
+.svc-actions{display:flex;gap:6px;flex-wrap:wrap}
+.btn{font-family:var(--font);font-size:11px;font-weight:500;padding:6px 14px;border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;background:var(--bg4);color:var(--gray-hi)}
+.btn:hover{border-color:var(--gray);color:var(--white)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-restart{border-color:var(--amber-dim);color:var(--amber)}
+.btn-restart:hover{background:var(--amber-dim);color:var(--white);border-color:var(--amber)}
+.btn-stop{border-color:var(--red-dim);color:var(--red)}
+.btn-stop:hover{background:var(--red-dim);color:var(--white);border-color:var(--red)}
+.btn-start{border-color:var(--green-dim);color:var(--green)}
+.btn-start:hover{background:var(--green-dim);color:var(--white);border-color:var(--green)}
+.btn-log{border-color:var(--blue-dim);color:var(--blue)}
+.btn-log:hover{background:var(--blue-dim);color:var(--white);border-color:var(--blue)}
+
+/* ── LOG MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:14px;width:min(900px,95vw);max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-head h3{font-size:15px;font-weight:600}
+.modal-close{background:none;border:none;color:var(--gray);font-size:18px;cursor:pointer;padding:4px 8px}
+.modal-close:hover{color:var(--white)}
+.modal-body{padding:0;overflow:auto;flex:1}
+.log-pre{font-family:var(--mono);font-size:11px;line-height:1.6;color:var(--gray-hi);padding:16px 20px;white-space:pre-wrap;word-break:break-all;margin:0}
+.modal-foot{padding:10px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+
+/* ── PROJECT CARDS ── */
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.proj-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:18px 20px;transition:border-color .2s}
+.proj-card:hover{border-color:var(--border-hi)}
+.proj-name{font-size:15px;font-weight:600;margin-bottom:4px}
+.proj-path{font-size:11px;color:var(--gray);font-family:var(--mono);margin-bottom:12px}
+.proj-last{font-size:11px;color:var(--amber);margin-bottom:12px}
+.proj-last i{margin-right:5px}
+.file-list{list-style:none}
+.file-item{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+.file-item:last-child{border:none}
+.file-name{color:var(--gray-hi);font-family:var(--mono);font-size:11px}
+.file-meta{text-align:right;color:var(--gray);font-size:10px;font-family:var(--mono)}
+.file-meta .file-time{color:var(--gray-hi)}
+
+/* ── REFRESH BAR ── */
+.refresh-bar{display:flex;align-items:center;gap:14px;margin-bottom:4px}
+.refresh-bar .auto-lbl{font-size:11px;color:var(--gray)}
+.refresh-bar select{font-family:var(--font);font-size:11px;background:var(--bg4);color:var(--gray-hi);border:1px solid var(--border);border-radius:4px;padding:3px 8px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:700px){
+  .header{padding:12px 16px;flex-direction:column;gap:10px}
+  .sys-bar{padding:10px 16px;gap:16px}
+  .main{padding:16px}
+  .svc-grid,.proj-grid{grid-template-columns:1fr}
+}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 20px;font-size:13px;z-index:300;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:360px}
+.toast.show{display:flex;align-items:center;gap:10px;animation:slideIn .3s ease}
+.toast i{font-size:14px}
+.toast.ok i{color:var(--green)}
+.toast.err i{color:var(--red)}
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* spinner */
+.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── TABS ── */
+.tab-nav{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 28px;display:flex;gap:0;position:sticky;top:65px;z-index:99}
+.tab-btn{font-family:var(--font);font-size:13px;font-weight:500;padding:11px 20px;background:none;border:none;border-bottom:2px solid transparent;color:var(--gray);cursor:pointer;transition:color .15s,border-color .15s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tab-btn:hover{color:var(--white)}
+.tab-btn.active{color:var(--amber);border-bottom-color:var(--amber)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── ECOSYSTEM ── */
+.eco-stat{text-align:center}
+.eco-stat .ev{font-size:26px;font-weight:700;font-family:var(--mono);color:var(--amber)}
+.eco-stat .el{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--gray);margin-top:2px}
+.eco-filter{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.eco-tag{font-size:10px;padding:4px 10px;border-radius:99px;border:1px solid var(--border);background:var(--bg4);color:var(--gray-hi);cursor:pointer;transition:all .15s;font-family:var(--font)}
+.eco-tag:hover{border-color:var(--amber-dim);color:var(--amber)}
+.eco-tag.active{background:var(--amber-dim);border-color:var(--amber);color:var(--white)}
+.eco-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px}
+.eco-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:18px 20px;transition:border-color .2s}
+.eco-card:hover{border-color:var(--border-hi)}
+.eco-card.hidden{display:none}
+.eco-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;gap:10px}
+.eco-card-name{font-size:15px;font-weight:600;flex:1}
+.eco-card-port{font-family:var(--mono);font-size:12px;color:var(--amber);background:var(--bg4);padding:3px 8px;border-radius:4px;white-space:nowrap}
+.eco-card-desc{font-size:12px;color:var(--gray-hi);margin-bottom:10px;line-height:1.5}
+.eco-card-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.eco-badge{font-size:10px;padding:2px 8px;border-radius:4px;background:var(--bg4);color:var(--gray-hi);border:1px solid var(--border)}
+.eco-badge.framework{color:var(--blue);border-color:var(--blue-dim)}
+.eco-badge.language{color:var(--yellow);border-color:#6b5a20}
+.eco-badge.status-production{color:var(--green);border-color:var(--green-dim)}
+.eco-badge.status-documentation{color:var(--gray-hi);border-color:var(--border)}
+.eco-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.eco-tag-pill{font-size:9px;padding:2px 7px;border-radius:99px;background:rgba(196,98,45,.12);color:var(--amber-dim);border:1px solid rgba(196,98,45,.2)}
+.eco-endpoints{border-top:1px solid var(--border);padding-top:10px}
+.eco-ep-toggle{background:none;border:none;color:var(--gray-hi);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:0;font-family:var(--font);transition:color .15s;width:100%}
+.eco-ep-toggle:hover{color:var(--white)}
+.eco-ep-toggle .chevron{transition:transform .2s}
+.eco-ep-toggle.expanded .chevron{transform:rotate(180deg)}
+.eco-ep-list{margin-top:8px;display:none;flex-direction:column;gap:4px}
+.eco-ep-list.show{display:flex}
+.eco-ep{font-size:11px;font-family:var(--mono);color:var(--gray-hi);padding:4px 8px;background:var(--bg4);border-radius:4px;line-height:1.5;display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.eco-ep .method{min-width:38px;color:var(--amber);font-weight:600;flex-shrink:0}
+.eco-ep .path{color:var(--white);flex-shrink:0}
+.eco-ep .ep-desc{color:var(--gray);font-size:10px;flex:1}
+.eco-card-footer{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.eco-status-dot{width:8px;height:8px;border-radius:50%;background:var(--gray);display:inline-block;flex-shrink:0;margin-top:3px}
+.eco-status-dot.up{background:var(--green)}
+.eco-status-dot.down{background:var(--red)}
+.eco-infra-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:12px}
+.eco-infra-card{background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:14px}
+.eco-infra-name{font-size:13px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.eco-infra-port{font-family:var(--mono);font-size:11px;color:var(--amber)}
+.eco-infra-desc{font-size:11px;color:var(--gray);line-height:1.4}
+
+/* ── QUICK LINKS ── */
+.links-groups{display:flex;flex-direction:column;gap:18px}
+.links-group-title{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--gray);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.links-group-title i{color:var(--amber);font-size:9px}
+.links-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.link-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:13px 14px;display:flex;flex-direction:column;gap:6px;text-decoration:none;transition:border-color .2s,background .2s;cursor:pointer;position:relative}
+.link-card:hover{border-color:var(--amber-dim);background:rgba(196,98,45,.04);text-decoration:none}
+.link-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.link-card-icon{width:28px;height:28px;border-radius:6px;background:var(--bg4);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.link-card-icon i{font-size:13px;color:var(--amber)}
+.link-card-status{width:7px;height:7px;border-radius:50%;background:var(--gray);flex-shrink:0}
+.link-card-status.up{background:var(--green)}
+.link-card-status.down{background:var(--red)}
+.link-card-name{font-size:13px;font-weight:600;color:var(--white);margin-top:2px}
+.link-card-desc{font-size:11px;color:var(--gray);line-height:1.4}
+.link-card-path{font-size:10px;color:var(--amber-dim);font-family:var(--mono);margin-top:2px}
+.link-open{position:absolute;top:10px;right:10px;font-size:10px;color:var(--gray);opacity:0;transition:opacity .2s}
+.link-card:hover .link-open{opacity:1}
+
+/* DEPRECATED: Contracts & Ontology CSS — legal contract browsing, not part of 7-project ecosystem */
+/* ── CONTRACTS & ONTOLOGY ── */
+.contracts-layout{display:flex;gap:0;min-height:calc(100vh - 200px)}
+.contracts-sidebar{width:340px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;max-height:calc(100vh - 180px);position:sticky;top:130px}
+.contracts-main{flex:1;overflow-y:auto;padding:24px 28px;min-width:0}
+.cs-search{padding:12px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2);z-index:2}
+.cs-search input{width:100%;font-family:var(--font);font-size:12px;padding:8px 12px 8px 32px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);outline:none}
+.cs-search input:focus{border-color:var(--amber-dim)}
+.cs-search i{position:absolute;left:24px;top:22px;font-size:12px;color:var(--gray)}
+.cs-group-title{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--gray);padding:14px 14px 6px;display:flex;align-items:center;gap:6px}
+.cs-group-title i{color:var(--amber);font-size:9px}
+.cs-item{display:flex;flex-direction:column;gap:2px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.cs-item:hover{background:var(--bg4)}
+.cs-item.active{background:rgba(196,98,45,.08);border-left:3px solid var(--amber)}
+.cs-item-name{font-size:13px;font-weight:500;color:var(--white)}
+.cs-item-meta{font-size:10px;color:var(--gray);font-family:var(--mono);display:flex;gap:10px}
+.cs-item-purpose{font-size:11px;color:var(--gray-hi);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.contract-content{max-width:900px}
+.contract-header{margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.contract-header h2{font-size:20px;font-weight:700;margin-bottom:6px}
+.contract-header-meta{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--gray)}
+.contract-header-meta span{display:flex;align-items:center;gap:4px}
+.contract-header-meta i{color:var(--amber);font-size:10px}
+.md-body{font-size:13px;line-height:1.7;color:var(--gray-hi)}
+.md-body h1{font-size:18px;font-weight:700;color:var(--white);margin:24px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.md-body h2{font-size:16px;font-weight:600;color:var(--white);margin:20px 0 10px}
+.md-body h3{font-size:14px;font-weight:600;color:var(--amber);margin:16px 0 8px}
+.md-body h4{font-size:13px;font-weight:600;color:var(--gray-hi);margin:12px 0 6px}
+.md-body p{margin:8px 0}
+.md-body ul,.md-body ol{margin:8px 0 8px 20px}
+.md-body li{margin:4px 0}
+.md-body code{font-family:var(--mono);font-size:12px;background:var(--bg4);padding:2px 6px;border-radius:3px;color:var(--amber)}
+.md-body pre{background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:12px 0}
+.md-body pre code{background:none;padding:0;color:var(--gray-hi);font-size:11px;line-height:1.6}
+.md-body table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px}
+.md-body th{text-align:left;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);color:var(--white);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.md-body td{padding:8px 10px;border:1px solid var(--border);color:var(--gray-hi);vertical-align:top}
+.md-body tr:hover td{background:rgba(196,98,45,.03)}
+.md-body blockquote{border-left:3px solid var(--amber);padding:8px 14px;margin:12px 0;color:var(--gray-hi);background:rgba(196,98,45,.04);border-radius:0 6px 6px 0}
+.md-body hr{border:none;border-top:1px solid var(--border);margin:20px 0}
+.md-body a{color:var(--amber)}
+.ont-layer-diagram{display:flex;flex-direction:column;align-items:center;gap:0;margin:20px 0}
+.ont-layer{border:1px solid var(--border);border-radius:8px;padding:12px 20px;text-align:center;width:100%;max-width:600px;transition:border-color .2s}
+.ont-layer:hover{border-color:var(--amber-dim)}
+.ont-layer-num{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--gray);margin-bottom:2px}
+.ont-layer-name{font-size:14px;font-weight:600;color:var(--white)}
+.ont-layer-nodes{font-size:11px;color:var(--gray-hi);font-family:var(--mono);margin-top:4px}
+.ont-layer.l4{background:rgba(74,126,196,.06);border-color:var(--blue-dim)}
+.ont-layer.l3{background:rgba(196,168,74,.06);border-color:#6b5a20}
+.ont-layer.l2{background:rgba(196,74,74,.06);border-color:var(--red-dim)}
+.ont-layer.l1{background:rgba(196,98,45,.06);border-color:var(--amber-dim)}
+.ont-arrow{color:var(--gray);font-size:16px;padding:2px 0}
+.cs-subtab-bar{display:flex;gap:0;padding:0 14px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:3}
+.cs-subtab{font-family:var(--font);font-size:12px;font-weight:500;padding:10px 16px;background:none;border:none;border-bottom:2px solid transparent;color:var(--gray);cursor:pointer;transition:color .15s}
+.cs-subtab:hover{color:var(--white)}
+.cs-subtab.active{color:var(--amber);border-bottom-color:var(--amber)}
+@media(max-width:900px){
+  .contracts-layout{flex-direction:column}
+  .contracts-sidebar{width:100%;max-height:40vh;position:static}
+}
+/* END DEPRECATED */
+
+/* DEPRECATED: Deploy/Infra CSS — VPS infrastructure management, not part of 7-project ecosystem */
+/* ── DEPLOY TAB ── */
+.infra-class-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:4px}
+.infra-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.infra-card-top{display:flex;align-items:center;gap:12px}
+.infra-card-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
+.infra-card-icon.cloud{background:rgba(74,126,196,.15);color:var(--blue)}
+.infra-card-icon.docker{background:rgba(196,98,45,.12);color:var(--amber)}
+.infra-card-icon.local{background:rgba(74,158,112,.12);color:var(--green)}
+.infra-card-name{font-size:14px;font-weight:600;color:var(--white)}
+.infra-card-type{font-size:9px;text-transform:uppercase;letter-spacing:.1em;padding:2px 8px;border-radius:99px;font-weight:600;margin-top:2px;display:inline-block}
+.infra-card-type.cloud{background:rgba(74,126,196,.15);color:var(--blue)}
+.infra-card-type.docker{background:rgba(196,98,45,.12);color:var(--amber)}
+.infra-card-type.local{background:rgba(74,158,112,.12);color:var(--green)}
+.infra-card-env{font-size:10px;font-family:var(--mono);color:var(--amber);background:var(--bg4);padding:3px 8px;border-radius:4px;border:1px solid var(--border);display:inline-block;margin-top:2px}
+.infra-card-note{font-size:11px;color:var(--gray);line-height:1.5}
+.infra-card-loc{font-size:11px;color:var(--gray-hi);font-family:var(--mono)}
+.deploy-git-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px 22px}
+.deploy-commit-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.deploy-commit{flex:1;min-width:220px}
+.deploy-commit-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--gray);margin-bottom:4px}
+.deploy-commit-hash{font-family:var(--mono);font-size:13px;color:var(--white)}
+.deploy-status-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 14px;border-radius:99px;margin-bottom:12px}
+.deploy-status-badge.up-to-date{background:rgba(74,158,112,.15);color:var(--green);border:1px solid var(--green-dim)}
+.deploy-status-badge.behind{background:rgba(196,98,45,.15);color:var(--amber);border:1px solid var(--amber-dim)}
+.deploy-files-list{display:flex;flex-direction:column;gap:4px;margin-top:10px}
+.deploy-file-row{display:flex;align-items:center;gap:10px;font-size:11px;font-family:var(--mono);padding:5px 8px;background:var(--bg4);border-radius:4px}
+.deploy-file-status{min-width:14px;font-weight:700;font-size:12px}
+.deploy-file-status.M{color:var(--amber)}.deploy-file-status.A{color:var(--green)}.deploy-file-status.D{color:var(--red)}.deploy-file-status.R{color:var(--blue)}
+.btn-deploy-pull{border-color:var(--amber-dim);color:var(--amber);font-size:12px;padding:8px 18px}
+.btn-deploy-pull:hover{background:var(--amber-dim);color:var(--white);border-color:var(--amber)}
+.btn-deploy-restart{border-color:var(--blue-dim);color:var(--blue);font-size:12px;padding:8px 18px}
+.btn-deploy-restart:hover{background:var(--blue-dim);color:var(--white);border-color:var(--blue)}
+.deploy-output{font-family:var(--mono);font-size:11px;line-height:1.6;color:var(--gray-hi);background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px 20px;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto}
+.restart-service-list{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+.restart-svc-chip{display:flex;align-items:center;gap:6px;font-size:11px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;transition:all .15s}
+.restart-svc-chip:hover{border-color:var(--amber-dim);color:var(--amber)}
+.restart-svc-chip input[type=checkbox]{accent-color:var(--amber);cursor:pointer}
+/* END DEPRECATED */
+
+/* DEPRECATED: API Test Tab CSS — generic API test runner, not part of 7-project ecosystem */
+/* ── API TEST TAB ── */
+.test-stats-bar{display:flex;gap:24px;flex-wrap:wrap;padding:14px 20px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-bottom:4px;align-items:center}
+.test-stat-block{text-align:center}
+.test-stat-num{font-size:24px;font-weight:700;font-family:var(--mono)}
+.test-stat-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--gray);margin-top:2px}
+.test-stat-num.pass{color:var(--green)}.test-stat-num.fail{color:var(--red)}.test-stat-num.total{color:var(--amber)}
+.btn-run-tests{font-size:13px;padding:10px 22px;background:var(--amber-dim);border-color:var(--amber);color:var(--white);font-weight:600}
+.btn-run-tests:hover{background:var(--amber);border-color:var(--amber);color:var(--white)}
+.test-group{margin-bottom:18px}
+.test-group-title{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--gray);padding:12px 0 8px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);margin-bottom:10px}
+.test-group-title i{color:var(--amber);font-size:9px}
+.test-results-list{display:flex;flex-direction:column;gap:6px}
+.test-result-row{background:var(--bg3);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:border-color .15s}
+.test-result-row:hover{border-color:var(--border-hi)}
+.test-result-row.pass{border-left:3px solid var(--green)}
+.test-result-row.fail{border-left:3px solid var(--red)}
+.test-result-head{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;flex-wrap:wrap}
+.test-result-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.test-result-icon.pass{background:rgba(74,158,112,.2);color:var(--green)}
+.test-result-icon.fail{background:rgba(196,74,74,.2);color:var(--red)}
+.test-result-name{font-size:13px;font-weight:600;flex:1;min-width:120px}
+.test-result-method{font-size:10px;font-family:var(--mono);font-weight:700;color:var(--amber);background:var(--bg4);padding:2px 6px;border-radius:3px}
+.test-result-url{font-size:11px;font-family:var(--mono);color:var(--gray);flex:2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.test-result-status{font-size:12px;font-weight:700;font-family:var(--mono);padding:2px 8px;border-radius:4px}
+.test-result-status.ok{background:rgba(74,158,112,.15);color:var(--green)}
+.test-result-status.err{background:rgba(196,74,74,.15);color:var(--red)}
+.test-result-ms{font-size:11px;font-family:var(--mono);color:var(--gray);min-width:50px;text-align:right}
+.test-result-body{display:none;border-top:1px solid var(--border);background:var(--bg2)}
+.test-result-body.show{display:block}
+.test-result-body-inner{padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+.test-detail-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--gray);margin-bottom:4px}
+.test-detail-pre{font-family:var(--mono);font-size:11px;color:var(--gray-hi);background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:10px 12px;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;line-height:1.5}
+.test-from-badge{font-size:10px;background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:2px 8px;color:var(--gray-hi);font-family:var(--mono)}
+/* END DEPRECATED */
+
+/* DEPRECATED: AI Diagnostics Chat CSS — in-dashboard chat feature, not part of 7-project ecosystem */
+/* ── AI DIAGNOSTICS CHAT ── */
+.diag-panel{background:var(--bg3);border:1px solid var(--border);border-radius:12px;margin-top:20px;overflow:hidden;display:none}
+.diag-panel.visible{display:block}
+.diag-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.diag-header-left{display:flex;align-items:center;gap:10px}
+.diag-header-left i{color:var(--amber);font-size:14px}
+.diag-header-left h3{font-size:14px;font-weight:600}
+.diag-header-left .diag-badge{font-size:9px;background:var(--amber-dim);color:var(--white);padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.diag-header-right{display:flex;align-items:center;gap:8px}
+.diag-provider-info{font-size:10px;color:var(--gray);font-family:var(--mono);display:flex;align-items:center;gap:6px}
+.diag-provider-dot{width:6px;height:6px;border-radius:50%;background:var(--gray)}
+.diag-provider-dot.ready{background:var(--green)}
+.diag-messages{max-height:480px;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.diag-msg{max-width:88%;padding:12px 14px;border-radius:10px;font-size:13px;line-height:1.6}
+.diag-msg.system{background:rgba(196,98,45,.06);border:1px solid rgba(196,98,45,.15);color:var(--gray-hi);align-self:center;max-width:100%;text-align:center;font-size:12px}
+.diag-msg.user{background:var(--bg4);border:1px solid var(--border);align-self:flex-end;color:var(--white)}
+.diag-msg.assistant{background:var(--bg2);border:1px solid var(--border);align-self:flex-start;color:var(--gray-hi)}
+.diag-msg.assistant .md-body{font-size:13px}
+.diag-msg.assistant .md-body h1,.diag-msg.assistant .md-body h2,.diag-msg.assistant .md-body h3{margin-top:12px}
+.diag-msg.assistant .md-body pre{margin:8px 0}
+.diag-msg.assistant .md-body p{margin:6px 0}
+.diag-msg .msg-meta{font-size:9px;color:var(--gray);margin-top:6px;font-family:var(--mono)}
+.diag-msg.thinking{color:var(--gray);font-style:italic;font-size:12px;align-self:flex-start;padding:8px 14px}
+.diag-msg.thinking i{animation:spin 1s linear infinite;margin-right:6px}
+.diag-input-bar{display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--border);background:var(--bg2)}
+.diag-input{flex:1;font-family:var(--font);font-size:13px;padding:10px 14px;background:var(--bg4);border:1px solid var(--border);border-radius:8px;color:var(--white);outline:none;resize:none;min-height:40px;max-height:120px}
+.diag-input:focus{border-color:var(--amber-dim)}
+.diag-input::placeholder{color:var(--gray)}
+.diag-send{background:var(--amber-dim);border:1px solid var(--amber);border-radius:8px;padding:10px 16px;color:var(--white);cursor:pointer;font-family:var(--font);font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;transition:background .15s}
+.diag-send:hover{background:var(--amber)}
+.diag-send:disabled{opacity:.4;cursor:not-allowed}
+.diag-quick-actions{display:flex;gap:6px;flex-wrap:wrap;padding:0 18px 12px;background:var(--bg2)}
+.diag-quick{font-family:var(--font);font-size:10px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg4);color:var(--gray-hi);cursor:pointer;transition:all .15s}
+.diag-quick:hover{border-color:var(--amber-dim);color:var(--amber)}
+.diag-config-bar{display:flex;gap:8px;padding:8px 18px;border-top:1px solid var(--border);background:var(--bg);align-items:center;flex-wrap:wrap}
+.diag-config-bar select{font-family:var(--font);font-size:11px;background:var(--bg4);color:var(--gray-hi);border:1px solid var(--border);border-radius:4px;padding:4px 8px}
+.diag-config-bar label{font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.diag-config-bar input[type=password]{font-family:var(--mono);font-size:11px;background:var(--bg4);color:var(--gray-hi);border:1px solid var(--border);border-radius:4px;padding:4px 8px;width:180px}
+.diag-config-bar input[type=password]:focus{border-color:var(--amber-dim);outline:none}
+.diag-config-bar .key-hint{font-size:9px;color:var(--gray);font-style:italic}
+/* END DEPRECATED */
+
+/* ── CARD EDITOR MODAL ── */
+.card-editor-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:250;display:none;align-items:center;justify-content:center;padding:20px}
+.card-editor-modal.show{display:flex}
+.card-editor-box{background:var(--bg2);border:1px solid var(--border);border-radius:14px;width:min(560px,95vw);max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.card-editor-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--bg3)}
+.card-editor-header h3{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px}
+.card-editor-header h3 i{color:var(--amber)}
+.card-editor-body{padding:20px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:16px}
+.editor-field{display:flex;flex-direction:column;gap:4px}
+.editor-field label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);font-weight:600}
+.editor-field input,.editor-field select,.editor-field textarea{font-family:var(--font);font-size:13px;padding:10px 12px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--white);outline:none;transition:border-color .15s}
+.editor-field input:focus,.editor-field select:focus,.editor-field textarea:focus{border-color:var(--amber-dim)}
+.editor-field textarea{min-height:60px;resize:vertical}
+.editor-field .field-hint{font-size:10px;color:var(--gray);margin-top:2px}
+.editor-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.icon-picker{display:flex;gap:6px;flex-wrap:wrap;max-height:120px;overflow-y:auto;padding:8px;background:var(--bg4);border:1px solid var(--border);border-radius:6px}
+.icon-pick{width:32px;height:32px;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid transparent;color:var(--gray-hi);transition:all .15s}
+.icon-pick:hover{background:rgba(196,98,45,.1);color:var(--amber);border-color:var(--amber-dim)}
+.icon-pick.selected{background:var(--amber-dim);color:var(--white);border-color:var(--amber)}
+.card-editor-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:space-between;background:var(--bg3)}
+.card-editor-footer .btn-group{display:flex;gap:8px}
+.btn-save{background:var(--amber-dim);border-color:var(--amber);color:var(--white)}
+.btn-save:hover{background:var(--amber)}
+.btn-delete{border-color:var(--red-dim);color:var(--red)}
+.btn-delete:hover{background:var(--red-dim);color:var(--white);border-color:var(--red)}
+.status-trigger-row{display:flex;gap:8px;align-items:flex-end}
+.status-trigger-row input{flex:1}
+.status-trigger-row .btn{padding:10px 12px}
+.admin-badge{font-size:9px;background:var(--amber-dim);color:var(--white);padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;vertical-align:middle;margin-left:8px}
+.links-admin-bar{display:flex;gap:8px;align-items:center;margin-top:8px}
+.link-card-edit{position:absolute;bottom:8px;right:8px;font-size:10px;color:var(--amber);transition:all .2s;cursor:pointer;background:var(--bg4);padding:4px 8px;border-radius:4px;border:1px solid var(--amber-dim);opacity:1}
+.link-card:hover .link-card-edit{background:var(--amber-dim);color:var(--white)}
+.link-card-edit:hover{background:var(--amber);border-color:var(--amber)}
+.builtin-tag{font-size:8px;background:var(--bg4);color:var(--gray);padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.04em;margin-left:6px}
+/* DEPRECATED: Page Deployer CSS — VPS-specific page deployment functionality, not part of 7-project ecosystem */
+/* ── PAGE DEPLOYER ── */
+.deployer-tabs{display:flex;gap:4px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.dtab{background:var(--bg4);border:1px solid var(--border);color:var(--gray-hi);font-size:12px;padding:8px 14px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s}
+.dtab:hover{border-color:var(--amber-dim);color:var(--white)}
+.dtab.active{background:var(--amber-dim);border-color:var(--amber);color:var(--white)}
+.file-drop-zone{border:2px dashed var(--border);border-radius:10px;padding:30px 20px;text-align:center;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative}
+.file-drop-zone.sm{padding:18px 16px}
+.file-drop-zone i{font-size:28px;color:var(--amber-dim)}
+.file-drop-zone.sm i{font-size:20px}
+.file-drop-zone span{font-size:12px;color:var(--gray)}
+.file-drop-zone:hover{border-color:var(--amber-dim);background:rgba(196,98,45,.05)}
+.file-drop-zone.dragover{border-color:var(--amber);background:rgba(196,98,45,.1)}
+.file-drop-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.file-selected{font-size:11px;color:var(--green);margin-top:4px;display:flex;align-items:center;gap:6px}
+.file-selected:empty{display:none}
+.file-selected i{color:var(--green)}
+.btn-wide{width:100%;justify-content:center;padding:14px;font-size:14px;gap:8px}
+.staged-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:8px}
+.staged-item .staged-info{flex:1}
+.staged-item .staged-name{font-size:13px;font-weight:600;color:var(--white)}
+.staged-item .staged-meta{font-size:10px;color:var(--gray);margin-top:2px}
+.staged-item .staged-actions{display:flex;gap:6px}
+.staged-item .btn{padding:6px 10px;font-size:11px}
+.staged-item.deployed{border-color:var(--green-dim);background:rgba(74,222,128,.05)}
+.staged-item.deployed .staged-name::after{content:'deployed';font-size:9px;background:var(--green-dim);color:var(--green);padding:2px 6px;border-radius:3px;margin-left:8px;font-weight:400;text-transform:uppercase;letter-spacing:.04em}
+.existing-page{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px}
+.existing-page .ep-name{flex:1;font-size:12px;color:var(--white);font-family:var(--mono)}
+.existing-page .ep-size{font-size:10px;color:var(--gray);width:60px}
+.existing-page .ep-date{font-size:10px;color:var(--gray);width:90px}
+.deploy-preview-box{padding:12px;background:var(--bg4);border:1px solid var(--border);border-radius:8px;margin-bottom:12px;font-size:12px}
+.deploy-preview-box .dpb-title{font-weight:600;color:var(--white);margin-bottom:4px}
+.deploy-preview-box .dpb-file{font-family:var(--mono);color:var(--amber);font-size:11px}
+/* ── VPS DEPLOYER ── */
+.vps-status-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg4);border:1px solid var(--border);border-radius:8px;margin-bottom:12px}
+.vps-status-dot{width:10px;height:10px;border-radius:50%;background:var(--gray)}
+.vps-status-dot.connected{background:var(--green);box-shadow:0 0 8px var(--green)}
+.vps-status-dot.error{background:var(--red);box-shadow:0 0 8px var(--red)}
+#vpsStatusText{font-size:12px;color:var(--gray-hi);flex:1}
+.vps-info{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:12px}
+.vps-info-item{font-size:11px;color:var(--gray)}
+.vps-info-item strong{color:var(--white);margin-right:4px}
+.vps-info-item a{color:var(--amber);text-decoration:none}
+.vps-info-item a:hover{text-decoration:underline}
+.vps-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.vps-pages-list{max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--bg3)}
+.vps-page-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.vps-page-item:last-child{border-bottom:none}
+.vps-page-item:hover{background:var(--bg4)}
+.vps-page-item .vp-name{flex:1;font-size:12px;color:var(--white);font-family:var(--mono)}
+.vps-page-item .vp-size{font-size:10px;color:var(--gray);width:60px}
+.vps-page-item .vp-actions{display:flex;gap:4px}
+.vps-page-item .vp-actions a,.vps-page-item .vp-actions button{font-size:10px;padding:4px 8px;border-radius:4px;text-decoration:none;border:1px solid var(--border);background:var(--bg4);color:var(--gray);cursor:pointer;transition:all .15s}
+.vps-page-item .vp-actions a:hover,.vps-page-item .vp-actions button:hover{border-color:var(--amber);color:var(--amber)}
+.vps-page-item .vp-actions button.danger:hover{border-color:var(--red);color:var(--red)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--gray-hi)}
+.btn-outline:hover{border-color:var(--amber);color:var(--amber);background:rgba(196,98,45,.1)}
+.btn-sm{font-size:10px;padding:4px 8px;border-radius:4px;background:var(--bg4);border:1px solid var(--border);color:var(--gray);cursor:pointer}
+.btn-sm:hover{border-color:var(--amber);color:var(--amber)}
+/* END DEPRECATED */
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-brand">
+    <svg viewBox="0 0 32 32"><rect width="32" height="32" rx="4" fill="#c4622d"/><rect x="8" y="8" width="16" height="16" rx="2" fill="#191917"/></svg>
+    <h1>Awareness-AI · <span>Ops</span></h1>
+  </div>
+  <div class="header-meta">
+    <span class="mode-badge">Mode: {{ ops_mode|upper }}</span>
+    <span class="mode-switch" aria-label="Dashboard mode switch">
+      <a class="mode-switch-btn {% if ops_mode == 'local' %}active{% endif %}" href="/ops/mode/local?next={{ request.path }}">Local</a>
+      <a class="mode-switch-btn {% if ops_mode == 'vps' %}active{% endif %}" href="/ops/mode/vps?next={{ request.path }}">VPS</a>
+    </span>
+    <span><span class="dot" id="dotStatus"></span><span id="statusText">Connecting…</span></span>
+    <span id="sysTime">—</span>
+  </div>
+</div>
+
+<!-- SYSTEM BAR -->
+<div class="sys-bar" id="sysBar">
+  <div class="sys-stat"><span class="sys-label">Uptime</span><span class="sys-val" id="sysUptime">—</span></div>
+  <div class="sys-stat"><span class="sys-label">Load</span><span class="sys-val" id="sysLoad">—</span></div>
+  <div class="sys-bar-meter">
+    <span style="font-size:10px;color:var(--gray);min-width:28px">CPU</span>
+    <div class="meter-track"><div class="meter-fill cpu" id="cpuBar" style="width:0%"></div></div>
+    <span style="font-size:11px;font-family:var(--mono);min-width:36px" id="cpuPct">—</span>
+  </div>
+  <div class="sys-bar-meter">
+    <span style="font-size:10px;color:var(--gray);min-width:28px">MEM</span>
+    <div class="meter-track"><div class="meter-fill mem" id="memBar" style="width:0%"></div></div>
+    <span style="font-size:11px;font-family:var(--mono);min-width:56px" id="memPct">—</span>
+  </div>
+  <div class="sys-bar-meter">
+    <span style="font-size:10px;color:var(--gray);min-width:28px">DISK</span>
+    <div class="meter-track"><div class="meter-fill disk" id="diskBar" style="width:0%"></div></div>
+    <span style="font-size:11px;font-family:var(--mono);min-width:56px" id="diskPct">—</span>
+  </div>
+</div>
+
+<!-- TAB NAV -->
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')"><i class="fas fa-tachometer-alt"></i> Dashboard</button>
+  <button class="tab-btn" data-tab="api" onclick="switchTab('api')"><i class="fas fa-plug"></i> API Ecosystem</button>
+  <!-- DEPRECATED: Contracts & Ontology tab — legal contract browsing, replaced by 7-project ecosystem view -->
+  <!-- <button class="tab-btn" data-tab="contracts" onclick="switchTab('contracts')"><i class="fas fa-file-contract"></i> Contracts &amp; Ontology</button> -->
+  <!-- DEPRECATED: Deploy tab — VPS infrastructure management, not part of 7-project ecosystem -->
+  <!-- <button class="tab-btn" data-tab="deploy" onclick="switchTab('deploy')"><i class="fas fa-rocket"></i> Deploy</button> -->
+  <!-- DEPRECATED: API Tests tab — generic test runner, not part of 7-project ecosystem -->
+  <!-- <button class="tab-btn" data-tab="apitests" onclick="switchTab('apitests')"><i class="fas fa-vial"></i> API Tests</button> -->
+</nav>
+
+<!-- TAB: DASHBOARD -->
+<div id="tab-dashboard" class="tab-panel active">
+<div class="main">
+
+  <!-- BOOKMARK PROMPT -->
+  {% if show_bookmark %}
+  <div id="bookmarkBanner" style="background:#1a2e1a;border:1px solid #2a5a2a;border-radius:10px;padding:16px 22px;display:flex;align-items:center;gap:14px;font-size:13px;color:#a8e6a8;margin-bottom:4px">
+    <i class="fas fa-bookmark" style="font-size:18px;color:#4a9e70;flex-shrink:0"></i>
+    <div style="flex:1;line-height:1.6">
+      <strong style="color:#d0f0d0">Save this page as a bookmark</strong> for quick access.
+      Press <kbd style="background:#191917;border:1px solid #2a2a28;border-radius:4px;padding:2px 6px;font-family:var(--mono);font-size:11px;color:#e8e6e1">Ctrl+D</kbd>
+      (<kbd style="background:#191917;border:1px solid #2a2a28;border-radius:4px;padding:2px 6px;font-family:var(--mono);font-size:11px;color:#e8e6e1">&#8984;+D</kbd> on Mac) to bookmark this dashboard.
+    </div>
+    <button onclick="document.getElementById('bookmarkBanner').remove()" style="background:transparent;border:1px solid #2a5a2a;border-radius:6px;padding:6px 12px;color:#a8e6a8;cursor:pointer;font-size:12px;white-space:nowrap;font-family:var(--font)">Got it</button>
+  </div>
+  {% endif %}
+
+  <!-- QUICK LINKS -->
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <div class="section-title"><i class="fas fa-external-link-alt"></i> Quick Links <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--gray);margin-left:6px">— frontend pages only</span><span class="admin-badge">Admin</span></div>
+      <div class="links-admin-bar">
+        <button class="btn" onclick="openCardEditor(null)"><i class="fas fa-plus"></i> Add Link</button>
+        <!-- DEPRECATED: Page Deployer button — VPS-specific page deployment, not part of 7-project ecosystem -->
+        <!-- <button class="btn" onclick="openPageDeployer()"><i class="fas fa-upload"></i> Page Deployer</button> -->
+      </div>
+    </div>
+    <div id="quickLinksArea"><div style="color:var(--gray);font-size:13px;padding:20px;">Loading links…</div></div>
+  </div>
+
+  <!-- SERVICES -->
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <div class="section-title"><i class="fas fa-server"></i> Services</div>
+      <div class="refresh-bar">
+        <button class="btn" onclick="refreshAll()" id="btnRefresh"><i class="fas fa-sync-alt"></i> Refresh</button>
+        <span class="auto-lbl">Auto:</span>
+        <select id="autoInterval" onchange="setAutoRefresh()">
+          <option value="0">Off</option>
+          <option value="10" selected>10s</option>
+          <option value="30">30s</option>
+          <option value="60">60s</option>
+        </select>
+      </div>
+    </div>
+    <div class="svc-grid" id="svcGrid">
+      <div style="color:var(--gray);font-size:13px;padding:20px;">Loading services…</div>
+    </div>
+  </div>
+
+  <!-- PROJECTS -->
+  <div>
+    <div class="section-title"><i class="fas fa-folder-open"></i> Projects &amp; File Timestamps</div>
+    <div class="proj-grid" id="projGrid">
+      <div style="color:var(--gray);font-size:13px;padding:20px;">Loading projects…</div>
+    </div>
+  </div>
+
+</div><!-- /.main --></div><!-- /tab-dashboard -->
+
+<!-- TAB: API ECOSYSTEM -->
+<div id="tab-api" class="tab-panel">
+  <div class="main">
+
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:4px">
+        <div class="section-title"><i class="fas fa-plug"></i> API Ecosystem <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--gray);margin-left:6px">— live spec registry</span></div>
+        <div style="display:flex;gap:6px">
+          <button class="btn" onclick="loadEcosystem()"><i class="fas fa-sync-alt"></i> Refresh</button>
+          <button class="btn" onclick="viewEcosystemReport()"><i class="fas fa-file-alt"></i> Report</button>
+        </div>
+      </div>
+      <div id="ecoStats"></div>
+    </div>
+
+    <div>
+      <div id="ecoFilter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
+      <div class="eco-grid" id="ecoGrid">
+        <div style="color:var(--gray);font-size:13px;padding:20px;">Loading ecosystem…</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title"><i class="fas fa-layer-group"></i> Infrastructure</div>
+      <div id="ecoInfra"><div style="color:var(--gray);font-size:13px;padding:10px;">Loading…</div></div>
+    </div>
+
+  </div>
+</div><!-- /tab-api -->
+
+<!-- TAB: CONTRACTS & ONTOLOGY -->
+<!-- DEPRECATED: Contracts & Ontology tab panel — legacy legal contract browsing, not part of 7-project ecosystem -->
+<div id="tab-contracts" class="tab-panel">
+  <div class="contracts-layout">
+    <!-- Sidebar -->
+    <div class="contracts-sidebar">
+      <div class="cs-subtab-bar">
+        <button class="cs-subtab active" onclick="switchContractView('contracts',this)"><i class="fas fa-file-contract" style="margin-right:4px;font-size:10px"></i> Contracts</button>
+        <button class="cs-subtab" onclick="switchContractView('ontology',this)"><i class="fas fa-project-diagram" style="margin-right:4px;font-size:10px"></i> Ontology</button>
+      </div>
+      <div class="cs-search" style="position:relative">
+        <i class="fas fa-search"></i>
+        <input type="text" id="contractSearch" placeholder="Search contracts…" oninput="filterContracts()">
+      </div>
+      <div id="contractsList">
+        <div style="color:var(--gray);font-size:13px;padding:20px">Loading…</div>
+      </div>
+    </div>
+    <!-- Main content -->
+    <div class="contracts-main">
+      <div id="contractContent">
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;color:var(--gray)">
+          <i class="fas fa-file-contract" style="font-size:48px;color:var(--bg4);margin-bottom:16px"></i>
+          <div style="font-size:15px;font-weight:500;color:var(--gray-hi);margin-bottom:6px">Select a contract to view</div>
+          <div style="font-size:12px;max-width:360px;line-height:1.6">Browse the contract registry on the left. Each contract defines a data schema, obligation, or protocol for the Awareness-AI ecosystem.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- /tab-contracts -->
+<!-- END DEPRECATED -->
+
+<!-- TAB: DEPLOY -->
+<!-- DEPRECATED: Deploy tab panel — VPS infrastructure management, not part of 7-project ecosystem -->
+<div id="tab-deploy" class="tab-panel">
+  <div class="main">
+
+    <!-- ── ONE-CLICK VPS CONTROLS ── -->
+    <div>
+      <div class="section-title"><i class="fas fa-bolt"></i> VPS Quick Controls</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+        <button class="btn btn-deploy-restart" style="font-size:13px;padding:10px 22px;border-color:var(--green-dim);color:var(--green)" onclick="runRestartAll()" id="btnRestartAll">
+          <i class="fas fa-redo"></i> Restart All Services
+        </button>
+        <button class="btn btn-deploy-pull" style="font-size:13px;padding:10px 22px" onclick="runPullAndRestart()" id="btnPullRestart">
+          <i class="fas fa-sync-alt"></i> Pull + Restart All
+        </button>
+        <button class="btn" style="font-size:13px;padding:10px 22px" onclick="runDeployPull()" id="btnDeployPullOnly">
+          <i class="fas fa-cloud-download-alt"></i> Git Pull Only
+        </button>
+      </div>
+      <pre class="deploy-output" id="quickActionOutput" style="display:none;margin-top:14px"></pre>
+    </div>
+    <div>
+      <div class="section-title"><i class="fas fa-layer-group"></i> Infrastructure Classification <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--gray);margin-left:6px">— cloud vs docker vs local</span></div>
+      <div class="infra-class-grid" id="deployInfraGrid">
+        <div style="color:var(--gray);font-size:13px;padding:20px">Loading…</div>
+      </div>
+    </div>
+
+    <!-- Git Status -->
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:4px">
+        <div class="section-title"><i class="fas fa-code-branch"></i> VPS Deploy Status <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--gray);margin-left:6px">— GitHub main branch</span></div>
+        <button class="btn" onclick="checkDeployStatus()"><i class="fas fa-search"></i> Check Status</button>
+      </div>
+      <div id="deployStatusArea">
+        <div style="color:var(--gray);font-size:13px;padding:20px;text-align:center"><i class="fas fa-circle-info" style="margin-right:6px"></i>Click Check Status to compare local vs VPS state</div>
+      </div>
+    </div>
+
+    <!-- Deploy Action -->
+    <div id="deployActionArea" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px">
+        <div class="section-title"><i class="fas fa-upload"></i> Deploy to VPS</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-deploy-pull" onclick="runDeployPull()" id="btnDeployPull"><i class="fas fa-cloud-download-alt"></i> Git Pull on VPS</button>
+          <button class="btn btn-deploy-restart" onclick="selectServicesToRestart()" id="btnDeployRestart" style="display:none"><i class="fas fa-redo"></i> Restart Changed Services</button>
+        </div>
+      </div>
+      <div id="deployChangedFiles"></div>
+    </div>
+
+    <!-- Deploy Output -->
+    <div id="deployOutputWrap" style="display:none">
+      <div class="section-title" style="margin-bottom:8px"><i class="fas fa-terminal"></i> Deploy Output</div>
+      <pre class="deploy-output" id="deployOutput"></pre>
+    </div>
+
+  </div>
+</div><!-- /tab-deploy -->
+<!-- END DEPRECATED -->
+
+<!-- TAB: API TESTS -->
+<!-- DEPRECATED: API Tests tab panel (includes AI Diagnostics Chat) — generic API test runner and in-dashboard chat, not part of 7-project ecosystem -->
+<div id="tab-apitests" class="tab-panel">
+  <div class="main">
+
+    <!-- Header / Stats -->
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:10px">
+        <div>
+          <div class="section-title"><i class="fas fa-vial"></i> Full API Test Suite <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--gray);margin-left:6px">— live discovery via map_endpoints.py</span></div>
+          <div id="testCatalogMeta" style="font-size:11px;color:var(--gray);margin-top:3px">Loading catalog…</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:6px">
+            <i class="fas fa-folder-open" style="font-size:11px;color:var(--gray)" title="Directory to scan with map_endpoints.py"></i>
+            <input type="text" id="scanDir" value="." placeholder="Scan directory (e.g. . or awareness/)" title="Directory passed to map_endpoints.py for dynamic endpoint discovery" style="width:180px;font-size:11px;padding:4px 8px;background:var(--bg2);border:1px solid var(--border);color:var(--white);border-radius:4px;font-family:var(--mono)">
+          </div>
+          <button class="btn" style="font-size:11px;padding:5px 12px" onclick="reloadEndpointCatalog()" title="Reload endpoints.json from disk (without rescanning)"><i class="fas fa-sync-alt"></i> Reload Catalog</button>
+          <button class="btn btn-run-tests" onclick="runAllTests()" id="btnRunTests" title="Scan directory with map_endpoints.py then test all discovered endpoints"><i class="fas fa-play-circle"></i> Scan &amp; Run Tests</button>
+          <button class="btn" id="btnDownloadReport" style="display:none;font-size:11px;padding:5px 12px;background:var(--green,#4caf50);color:#fff;border-color:transparent" onclick="downloadTestReport()" title="Download full test report as JSON"><i class="fas fa-download"></i> Download JSON</button>
+        </div>
+      </div>
+      <div id="testStatsBar" style="display:none"></div>
+      <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
+        <div class="section-title"><i class="fas fa-upload"></i> Test from Custom JSON</div>
+        <div style="display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;">
+          <div style="flex:1; min-width: 260px;">
+            <label for="customJsonFile" style="font-size:11px; color:var(--gray); display:block; margin-bottom:4px">JSON File</label>
+            <input type="file" id="customJsonFile" accept=".json" style="width:100%; font-size:12px; background:var(--bg3); border:1px solid var(--border); padding:6px 10px; border-radius:6px; color:var(--white)">
+          </div>
+          <div style="flex:2; min-width: 260px;">
+            <label for="customJsonBaseUrl" style="font-size:11px; color:var(--gray); display:block; margin-bottom:4px">Base URL (optional)</label>
+            <input type="text" id="customJsonBaseUrl" style="width:100%; font-size:12px; background:var(--bg3); border:1px solid var(--border); padding:6px 10px; border-radius:6px; color:var(--white)" placeholder="http://localhost:8080">
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <label style="font-size:11px; color:var(--gray); white-space: nowrap">
+              <input type="checkbox" id="customJsonPerServicePort"> Use per-service ports (direct access)
+            </label>
+            <button class="btn" id="btnTestJson" onclick="testFromJson()"><i class="fas fa-vial"></i> Test from JSON</button>
+          </div>
+        </div>
+        <div id="jsonTestInfo" style="font-size:11px; color:var(--gray); margin-top:8px"></div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="testResultsArea">
+      <div style="color:var(--gray);font-size:13px;padding:20px;text-align:center"><i class="fas fa-circle-info" style="margin-right:6px"></i>Click <strong>Scan &amp; Run Tests</strong> to discover and test all project APIs dynamically</div>
+    </div>
+
+    <!-- AI Diagnostics Chat -->
+    <div class="diag-panel" id="diagPanel">
+      <div class="diag-header">
+        <div class="diag-header-left">
+          <i class="fas fa-robot"></i>
+          <h3>AI Diagnostics</h3>
+          <span class="diag-badge">test context loaded</span>
+        </div>
+        <div class="diag-header-right">
+          <span class="diag-provider-info">
+            <span class="diag-provider-dot" id="diagProviderDot"></span>
+            <span id="diagProviderLabel">No provider</span>
+          </span>
+          <button class="btn" style="font-size:10px;padding:4px 10px" onclick="diagToggleConfig()"><i class="fas fa-cog"></i></button>
+        </div>
+      </div>
+      <div class="diag-config-bar" id="diagConfigBar" style="display:none">
+        <label for="diagProvider">Provider</label>
+        <select id="diagProvider" onchange="diagProviderChanged()">
+          <option value="groq">Groq API</option>
+          <option value="anthropic">Anthropic-Compatible API</option>
+          <option value="deepseek">DeepSeek API</option>
+        </select>
+        <label for="diagModel">Model</label>
+        <select id="diagModel"></select>
+        <label for="diagApiKey">API Key</label>
+        <input type="password" id="diagApiKey" placeholder="Paste key here" autocomplete="off">
+        <button class="btn" style="font-size:10px;padding:4px 10px" onclick="diagSaveConfig()"><i class="fas fa-save"></i> Save</button>
+        <span class="key-hint">Stored in this browser only</span>
+      </div>
+      <div class="diag-messages" id="diagMessages"></div>
+      <div class="diag-quick-actions" id="diagQuickActions">
+        <button class="diag-quick" onclick="diagAsk('summary')"><i class="fas fa-list-check" style="margin-right:4px"></i>Summarize failures</button>
+        <button class="diag-quick" onclick="diagAsk('root-cause')"><i class="fas fa-search" style="margin-right:4px"></i>Root cause analysis</button>
+        <button class="diag-quick" onclick="diagAsk('fix-plan')"><i class="fas fa-wrench" style="margin-right:4px"></i>Fix plan</button>
+        <button class="diag-quick" onclick="diagAsk('health-check')"><i class="fas fa-heartbeat" style="margin-right:4px"></i>Service health report</button>
+        <button class="diag-quick" onclick="diagAsk('nginx-debug')"><i class="fas fa-server" style="margin-right:4px"></i>Debug routing</button>
+      </div>
+      <div class="diag-input-bar">
+        <textarea class="diag-input" id="diagInput" placeholder="Ask about test failures, endpoints, or architecture…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();diagSend()}"></textarea>
+        <button class="diag-send" id="diagSendBtn" onclick="diagSend()"><i class="fas fa-paper-plane"></i> Send</button>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /tab-apitests -->
+<!-- END DEPRECATED -->
+
+<!-- LOG MODAL -->
+<div class="modal-bg" id="logModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3><i class="fas fa-terminal" style="color:var(--amber);margin-right:8px;font-size:13px"></i><span id="logTitle">Logs</span></h3>
+      <button class="modal-close" onclick="closeLog()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <pre class="log-pre" id="logContent">Loading…</pre>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="loadMoreLog()"><i class="fas fa-arrow-down"></i> Load 200 lines</button>
+      <button class="btn" onclick="refreshLog()"><i class="fas fa-sync-alt"></i> Refresh</button>
+      <button class="btn" onclick="closeLog()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- CARD EDITOR MODAL -->
+<div class="card-editor-modal" id="cardEditorModal">
+  <div class="card-editor-box">
+    <div class="card-editor-header">
+      <h3><i class="fas fa-edit"></i> <span id="editorTitle">Edit Quick Link</span></h3>
+      <button class="modal-close" onclick="closeCardEditor()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="card-editor-body">
+      <input type="hidden" id="editLinkId">
+      <input type="hidden" id="editLinkBuiltin">
+      
+      <div class="editor-row">
+        <div class="editor-field">
+          <label for="editLinkName">Name</label>
+          <input type="text" id="editLinkName" placeholder="Dashboard Name">
+        </div>
+        <div class="editor-field">
+          <label for="editLinkGroup">Group</label>
+          <select id="editLinkGroup">
+            <option value="Core">Core</option>
+            <option value="Legal">Legal</option>
+            <option value="Engines">Engines</option>
+            <option value="Tools">Tools</option>
+            <option value="Admin">Admin</option>
+            <option value="Custom">Custom</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="editor-field">
+        <label for="editLinkDesc">Description</label>
+        <textarea id="editLinkDesc" placeholder="Brief description of this link"></textarea>
+      </div>
+      
+      <div class="editor-row">
+        <div class="editor-field">
+          <label for="editLinkPath">Path (relative)</label>
+          <input type="text" id="editLinkPath" placeholder="/api/something">
+          <span class="field-hint">Relative path on the domain (e.g., /garage)</span>
+        </div>
+        <div class="editor-field">
+          <label for="editLinkCustomUrl">Custom URL (optional)</label>
+          <input type="text" id="editLinkCustomUrl" placeholder="https://...">
+          <span class="field-hint">Override with full URL if needed</span>
+        </div>
+      </div>
+      
+      <div class="editor-row">
+        <div class="editor-field">
+          <label for="editLinkService">Service (for status)</label>
+          <select id="editLinkService">
+            <option value="">— None —</option>
+            <option value="api-gateway">api-gateway</option>
+            <option value="manus">manus</option>
+            <option value="garage-api">garage-api</option>
+            <option value="argus">argus</option>
+            <option value="legal">legal</option>
+            <option value="qdrant">qdrant</option>
+            <option value="thebridge">thebridge</option>
+            <option value="ollama">ollama</option>
+          </select>
+          <span class="field-hint">Link status dot to a service</span>
+        </div>
+        <div class="editor-field">
+          <label for="editLinkTrigger">Status Trigger URL</label>
+          <div class="status-trigger-row">
+            <input type="text" id="editLinkTrigger" placeholder="http://localhost:8080/health">
+            <button class="btn" onclick="testStatusTrigger()" title="Test URL"><i class="fas fa-bolt"></i></button>
+          </div>
+          <span class="field-hint">URL to ping for custom status check</span>
+        </div>
+      </div>
+      
+      <div class="editor-field">
+        <span class="editor-field-label">Icon</span>
+        <div class="icon-picker" id="iconPicker"></div>
+      </div>
+    </div>
+    <div class="card-editor-footer">
+      <div class="btn-group">
+        <button class="btn btn-delete" id="btnDeleteLink" onclick="deleteQuickLink()"><i class="fas fa-trash"></i> Delete</button>
+      </div>
+      <div class="btn-group">
+        <button class="btn" onclick="closeCardEditor()">Cancel</button>
+        <button class="btn btn-save" onclick="saveQuickLink()"><i class="fas fa-save"></i> Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DEPRECATED: Page Deployer modal — VPS-specific page deployment, not part of 7-project ecosystem -->
+<!-- PAGE DEPLOYER MODAL -->
+<div class="card-editor-modal" id="pageDeployerModal">
+  <div class="card-editor-box" style="max-width:680px">
+    <div class="card-editor-header">
+      <h3><i class="fas fa-upload"></i> Page Deployer</h3>
+      <button class="modal-close" onclick="closePageDeployer()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="card-editor-body">
+
+      <div class="deployer-tabs">
+        <button class="dtab active" data-tab="upload" onclick="switchDeployerTab('upload')"><i class="fas fa-cloud-upload-alt"></i> Upload</button>
+        <button class="dtab" data-tab="staged" onclick="switchDeployerTab('staged')"><i class="fas fa-file-archive"></i> Staged</button>
+        <button class="dtab" data-tab="existing" onclick="switchDeployerTab('existing')"><i class="fas fa-folder-open"></i> Existing</button>
+        <button class="dtab" data-tab="vps" onclick="switchDeployerTab('vps')"><i class="fas fa-server"></i> VPS</button>
+      </div>
+
+      <!-- Upload Tab -->
+      <div id="dtab-upload" class="deployer-tab-content">
+        <div class="editor-field">
+          <label for="htmlFileInput">HTML Page File</label>
+          <div class="file-drop-zone" id="htmlDropZone">
+            <i class="fas fa-file-code"></i>
+            <span>Drop .html file here or click to browse</span>
+            <input type="file" id="htmlFileInput" accept=".html" onchange="handleFileSelect('html', this)">
+          </div>
+          <div class="file-selected" id="htmlFileSelected"></div>
+        </div>
+
+        <div class="editor-field">
+          <label for="brandFileInput">Branding Definition (optional)</label>
+          <div class="file-drop-zone sm" id="brandDropZone">
+            <i class="fas fa-palette"></i>
+            <span>Drop .md branding file or click to browse</span>
+            <input type="file" id="brandFileInput" accept=".md" onchange="handleFileSelect('brand', this)">
+          </div>
+          <div class="file-selected" id="brandFileSelected"></div>
+        </div>
+
+        <button class="btn btn-wide" onclick="uploadPageFiles()" id="btnUploadPage"><i class="fas fa-upload"></i> Upload &amp; Stage</button>
+      </div>
+
+      <!-- Staged Tab -->
+      <div id="dtab-staged" class="deployer-tab-content" style="display:none">
+        <div id="stagedList"><div style="color:var(--gray);padding:12px 0">No staged uploads. Upload a page first.</div></div>
+      </div>
+
+      <!-- Existing Tab -->
+      <div id="dtab-existing" class="deployer-tab-content" style="display:none">
+        <div class="editor-field">
+          <label for="existingTarget">Target Location</label>
+          <select id="existingTarget" onchange="loadExistingPages()">
+            <option value="">— Select target —</option>
+          </select>
+        </div>
+        <div id="existingPagesList"><div style="color:var(--gray);padding:12px 0">Select a target to see existing pages.</div></div>
+      </div>
+
+      <!-- VPS Tab -->
+      <div id="dtab-vps" class="deployer-tab-content" style="display:none">
+        <div class="vps-status-bar" id="vpsStatusBar">
+          <span class="vps-status-dot" id="vpsStatusDot"></span>
+          <span id="vpsStatusText">Checking VPS connection...</span>
+          <button class="btn-sm" onclick="checkVpsStatus()"><i class="fas fa-sync-alt"></i></button>
+        </div>
+
+        <div class="vps-info" id="vpsInfo" style="display:none">
+          <div class="vps-info-item"><strong>Host:</strong> <span id="vpsHost"></span></div>
+          <div class="vps-info-item"><strong>Domain:</strong> <a id="vpsDomain" href="#" target="_blank"></a></div>
+          <div class="vps-info-item"><strong>Pages:</strong> <span id="vpsPageCount">0</span></div>
+        </div>
+
+        <div class="vps-actions">
+          <button class="btn" onclick="syncAllToVps()"><i class="fas fa-sync"></i> Sync All Pages to VPS</button>
+          <button class="btn btn-outline" onclick="loadVpsPages()"><i class="fas fa-list"></i> Refresh List</button>
+          <a href="/pages-index.html" target="_blank" class="btn btn-outline"><i class="fas fa-external-link-alt"></i> Page Index</a>
+        </div>
+
+        <div class="editor-field" style="margin-top:16px">
+          <label for="vpsSearch">Pages on VPS</label>
+          <input type="text" id="vpsSearch" placeholder="Search pages..." oninput="filterVpsPages()">
+        </div>
+
+        <div id="vpsPagesList" class="vps-pages-list">
+          <div style="color:var(--gray);padding:12px 0">Loading pages...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- END DEPRECATED -->
+
+<!-- DEPRECATED: Deploy Confirm modal — VPS page deployment, not part of 7-project ecosystem -->
+<!-- DEPLOY CONFIRM MODAL -->
+<div class="card-editor-modal" id="deployConfirmModal">
+  <div class="card-editor-box" style="max-width:520px">
+    <div class="card-editor-header">
+      <h3><i class="fas fa-rocket"></i> Deploy Page</h3>
+      <button class="modal-close" onclick="closeDeployConfirm()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="card-editor-body">
+      <input type="hidden" id="deployUploadId">
+
+      <div class="deploy-preview-box" id="deployPreviewBox"></div>
+
+      <div class="editor-field">
+        <label for="deployTarget">Deploy To</label>
+        <select id="deployTarget" onchange="updateDeployHint()"></select>
+      </div>
+
+      <div class="editor-field">
+        <label for="deployFilename">Filename</label>
+        <input type="text" id="deployFilename" onchange="updateDeployHint()">
+        <span class="field-hint" id="deployUrlHint">URL: /...</span>
+      </div>
+
+      <!-- VPS-only: nginx clean URL route -->
+      <div id="nginxRouteRow" style="display:none">
+        <div class="editor-field">
+          <label for="deployNginxRoute"><i class="fas fa-route" style="color:var(--amber)"></i> Clean URL (optional)</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" id="deployNginxRoute" placeholder="e.g. /my-page" style="flex:1" oninput="updateDeployHint()">
+            <span style="font-size:11px;color:var(--gray)">Registers nginx location block</span>
+          </div>
+          <span class="field-hint" id="nginxRouteHint"></span>
+        </div>
+      </div>
+
+      <div class="editor-row">
+        <div class="editor-field" style="flex:0 0 auto">
+          <label><input type="checkbox" id="deployCopyBrand" checked> Copy brand file</label>
+        </div>
+        <div class="editor-field" style="flex:0 0 auto">
+          <label><input type="checkbox" id="deployAddQuicklink"> Add to Quick Links</label>
+        </div>
+      </div>
+
+      <div id="quicklinkFields" style="display:none">
+        <div class="editor-row">
+          <div class="editor-field">
+            <label for="qlName">Quick Link Name</label>
+            <input type="text" id="qlName" placeholder="Page Name">
+          </div>
+          <div class="editor-field">
+            <label for="qlGroup">Group</label>
+            <select id="qlGroup">
+              <option value="Core">Core</option>
+              <option value="Custom" selected>Custom</option>
+              <option value="Tools">Tools</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="editor-field">
+          <label for="qlDesc">Description</label>
+          <input type="text" id="qlDesc" placeholder="Brief description">
+        </div>
+      </div>
+
+    </div>
+    <div class="card-editor-footer">
+      <button class="btn" onclick="closeDeployConfirm()">Cancel</button>
+      <button class="btn btn-save" onclick="deployPage()"><i class="fas fa-rocket"></i> Deploy</button>
+    </div>
+  </div>
+</div>
+<!-- END DEPRECATED -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
+
+<script>
+var autoTimer=null, currentLogSvc=null, currentLogLines=80;
+var BASE = location.pathname.startsWith('/ops') ? '/ops' : '';
+
+var OPS_MODE = '{{ ops_mode }}';
+var DEFAULT_BASE_URL = OPS_MODE === 'vps' 
+  ? 'https://awareness-ai.com.br' 
+  : 'http://localhost:8080';
+
+function toast(msg,type){
+  var t=document.getElementById('toast');
+  t.className='toast show '+(type||'ok');
+  t.querySelector('i').className='fas fa-'+(type==='err'?'exclamation-circle':'check-circle');
+  document.getElementById('toastMsg').textContent=msg;
+  setTimeout(function(){t.classList.remove('show')},3500);
+}
+
+/* ── SYSTEM ── */
+function loadSystem(){
+  fetch(BASE+'/api/system').then(function(r){return r.json()}).then(function(d){
+    document.getElementById('sysUptime').textContent=d.uptime;
+    document.getElementById('sysLoad').textContent=d.load_avg.map(function(v){return v.toFixed(1)}).join(' / ');
+    document.getElementById('cpuBar').style.width=d.cpu_pct+'%';
+    document.getElementById('cpuPct').textContent=d.cpu_pct+'%';
+    document.getElementById('memBar').style.width=d.mem_pct+'%';
+    document.getElementById('memPct').textContent=d.mem_used_gb+'G / '+d.mem_total_gb+'G';
+    document.getElementById('diskBar').style.width=d.disk_pct+'%';
+    document.getElementById('diskPct').textContent=d.disk_used_gb+'G / '+d.disk_total_gb+'G';
+    document.getElementById('sysTime').textContent=new Date(d.timestamp).toLocaleString('pt-BR');
+    document.getElementById('dotStatus').style.background='var(--green)';
+    document.getElementById('statusText').textContent='Connected';
+  }).catch(function(){
+    document.getElementById('dotStatus').style.background='var(--red)';
+    document.getElementById('statusText').textContent='Offline';
+  });
+}
+
+/* ── SERVICES ── */
+var _lastServices = [];
+var _svcStatusMap = {};
+var _serviceAliasMap = {};
+var _knownServiceNames = [];
+
+function _normalizeSvcKey(v){
+  return String(v||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+}
+
+function _registerServiceAlias(name, alias){
+  var n=_normalizeSvcKey(name), a=_normalizeSvcKey(alias);
+  if(!n || !a || n===a) return;
+  if(!_serviceAliasMap[n]) _serviceAliasMap[n]=new Set();
+  if(!_serviceAliasMap[a]) _serviceAliasMap[a]=new Set();
+  _serviceAliasMap[n].add(a);
+  _serviceAliasMap[a].add(n);
+}
+
+function _buildServiceIndexes(svcs){
+  _svcStatusMap = {};
+  _serviceAliasMap = {};
+  _knownServiceNames = [];
+
+  var discoveredNames = new Set();
+  (svcs||[]).forEach(function(s){
+    var key = _normalizeSvcKey(s.name);
+    if(key) _svcStatusMap[key] = s.status;
+    if(s.name) discoveredNames.add(s.name);
+
+    (s.aliases||[]).forEach(function(alias){
+      _registerServiceAlias(s.name, alias);
+      discoveredNames.add(alias);
+    });
+  });
+
+  [
+    ['awareness','manus'],
+    ['awareness','agents'],
+    ['awarenessqdrant','qdrant'],
+    ['awarenessqdrant','qdrantapi'],
+    ['garage','garageapi'],
+    ['pinocchio','legal'],
+    ['legalpipeline','pipeline'],
+    ['legalpipeline','legalpipelinedashboard'],
+    ['thebridge','bridge'],
+    ['opsdashboard','ops'],
+    ['tjrsservice','jurisprudence'],
+    ['tjrsservice','tjrs']
+  ].forEach(function(pair){ _registerServiceAlias(pair[0], pair[1]); });
+
+  Object.keys(_serviceAliasMap).forEach(function(key){
+    if(_svcStatusMap[key]) return;
+    var aliases = Array.from(_serviceAliasMap[key]);
+    for(var i=0;i<aliases.length;i++){
+      if(_svcStatusMap[aliases[i]]){
+        _svcStatusMap[key]=_svcStatusMap[aliases[i]];
+        break;
+      }
+    }
+  });
+
+  _knownServiceNames = Array.from(discoveredNames).sort();
+}
+
+function _resolveServiceStatus(serviceName){
+  var key = _normalizeSvcKey(serviceName);
+  if(!key) return null;
+  if(_svcStatusMap[key]) return _svcStatusMap[key];
+  var aliases = _serviceAliasMap[key] ? Array.from(_serviceAliasMap[key]) : [];
+  for(var i=0;i<aliases.length;i++){
+    if(_svcStatusMap[aliases[i]]) return _svcStatusMap[aliases[i]];
+  }
+  return null;
+}
+
+function _refreshQuickLinkEditorServices(){
+  var sel = document.getElementById('editLinkService');
+  if(!sel) return;
+  var current = sel.value || '';
+  var options = ['<option value="">— None —</option>'];
+  _knownServiceNames.forEach(function(name){
+    options.push('<option value="'+name+'">'+name+'</option>');
+  });
+  sel.innerHTML = options.join('');
+  if(current){
+    sel.value = current;
+    if(sel.value !== current){
+      var custom = document.createElement('option');
+      custom.value = current;
+      custom.textContent = current;
+      sel.appendChild(custom);
+      sel.value = current;
+    }
+  }
+}
+
+function loadServices(){
+  fetch(BASE+'/api/services').then(function(r){return r.json()}).then(function(svcs){
+    _lastServices = svcs || [];
+    _buildServiceIndexes(_lastServices);
+    _refreshQuickLinkEditorServices();
+
+    var html='';
+    svcs.forEach(function(s){
+      var bc='badge-unknown';
+      if(s.status==='running') bc='badge-running';
+      else if(s.status==='exited'||s.status==='stopped') bc='badge-exited';
+      else if(s.status==='paused') bc='badge-paused';
+
+      var hb='';
+      if(s.health && s.health!=='—') hb=' <span class="badge badge-healthy">'+s.health+'</span>';
+
+      var isCompose=s.compose!==null;
+      var cid=s.compose||s.name;
+
+      html+='<div class="svc-card">';
+      html+='<div class="svc-top"><div><span class="svc-name">'+s.name+'</span> <span class="badge '+bc+'">'+s.status+'</span>'+hb+'</div>';
+      html+='<span class="badge badge-type">'+s.type+'</span></div>';
+      html+='<div class="svc-desc">'+s.desc+'</div>';
+      html+='<div class="svc-meta"><span><i class="fas fa-plug"></i>'+s.port+'</span>';
+      if(s.uptime && s.uptime!=='—') html+='<span><i class="fas fa-clock"></i>'+s.uptime+'</span>';
+      html+='</div>';
+      html+='<div class="svc-actions">';
+      html+='<button class="btn btn-log" onclick="openLog(\''+cid+'\')"><i class="fas fa-terminal"></i> Logs</button>';
+      html+='<button class="btn btn-restart" onclick="svcAction(\''+cid+'\',\'restart\',this)"><i class="fas fa-redo"></i> Restart</button>';
+      html+='<button class="btn btn-stop" onclick="svcAction(\''+cid+'\',\'stop\',this)"><i class="fas fa-stop"></i> Stop</button>';
+      html+='</div></div>';
+    });
+    document.getElementById('svcGrid').innerHTML=html;
+    syncLinkStatuses(_lastServices);
+    syncEcoStatuses(_lastServices);
+  }).catch(function(e){
+    document.getElementById('svcGrid').innerHTML='<div style="color:var(--red)">Failed to load services: '+e.message+'</div>';
+  });
+}
+
+/* ── SERVICE ACTIONS ── */
+function svcAction(svc,action,btn){
+  if(!confirm((action==='stop'?'Stop':'Restart')+' '+svc+'?')) return;
+  var orig=btn.innerHTML;
+  btn.innerHTML='<i class="fas fa-spinner spin"></i> '+action+'…';
+  btn.disabled=true;
+  fetch(BASE+'/api/services/'+svc+'/'+action,{method:'POST'})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      toast(d.message||d.error, d.ok?'ok':'err');
+      btn.innerHTML=orig;btn.disabled=false;
+      setTimeout(loadServices,2000);
+    })
+    .catch(function(e){
+      toast('Error: '+e.message,'err');
+      btn.innerHTML=orig;btn.disabled=false;
+    });
+}
+
+/* ── LOGS ── */
+function openLog(svc){
+  currentLogSvc=svc;currentLogLines=80;
+  document.getElementById('logTitle').textContent=svc+' — Logs';
+  document.getElementById('logContent').textContent='Loading…';
+  document.getElementById('logModal').classList.add('show');
+  refreshLog();
+}
+function closeLog(){document.getElementById('logModal').classList.remove('show');currentLogSvc=null}
+function refreshLog(){
+  if(!currentLogSvc) return;
+  fetch(BASE+'/api/services/'+currentLogSvc+'/logs?lines='+currentLogLines)
+    .then(function(r){return r.json()})
+    .then(function(d){
+      document.getElementById('logContent').textContent=d.logs||'(no output)';
+      var body=document.querySelector('.modal-body');
+      body.scrollTop=body.scrollHeight;
+    })
+    .catch(function(e){document.getElementById('logContent').textContent='Error: '+e.message});
+}
+function loadMoreLog(){currentLogLines=200;refreshLog()}
+
+/* ── QUICK LINKS ── */
+var _quickLinksData = [];
+var _availableIcons = ['home','robot','tools','terminal','database','gavel','balance-scale','user-secret','sitemap','project-diagram','microphone','brain','shield-alt','magic','chart-network','user-cog','linkedin','bridge','search','tachometer-alt','heartbeat','link','globe','file','folder','cog','server','cloud','code','book','graduation-cap','briefcase','sparkles','seedling','users','chart-line','plug','rocket','bolt','star','play','check','info-circle','question-circle','exclamation-triangle','eye','lock','unlock','key','edit','trash','plus','minus','times','external-link-alt','arrow-right','arrow-left','arrow-up','arrow-down'];
+
+function _refreshQuickLinkEditorGroups(){
+  var sel = document.getElementById('editLinkGroup');
+  if(!sel) return;
+  var current = sel.value || '';
+  var defaults = ['Core','Legal','Engines','Tools','Ops','Olivia','Agents','Admin','Custom'];
+  var fromLinks = Array.from(new Set(_quickLinksData.map(function(l){ return l.group; }).filter(Boolean))).sort();
+  var groups = defaults.slice();
+  fromLinks.forEach(function(g){ if(groups.indexOf(g) < 0) groups.push(g); });
+  sel.innerHTML = groups.map(function(g){ return '<option value="'+g+'">'+g+'</option>'; }).join('');
+  if(current){
+    sel.value = current;
+    if(sel.value !== current){
+      var custom = document.createElement('option');
+      custom.value = current;
+      custom.textContent = current;
+      sel.appendChild(custom);
+      sel.value = current;
+    }
+  }
+}
+
+function loadQuickLinks(){
+  fetch(BASE+'/api/quicklinks/manage').then(function(r){return r.json()}).then(function(links){
+    _quickLinksData = links;
+    // Group by group key
+    var groups = {};
+    links.forEach(function(l){
+      if(!groups[l.group]) groups[l.group]=[];
+      groups[l.group].push(l);
+    });
+    var preferredOrder = ['Core','Legal','Engines','Tools','Ops','Olivia','Agents','Admin','Custom'];
+    var groupOrder = Object.keys(groups).sort(function(a,b){
+      var ai = preferredOrder.indexOf(a);
+      var bi = preferredOrder.indexOf(b);
+      if(ai === -1 && bi === -1) return a.localeCompare(b);
+      if(ai === -1) return 1;
+      if(bi === -1) return -1;
+      return ai - bi;
+    });
+
+    var html = '<div class="links-groups">';
+    groupOrder.forEach(function(g){
+      if(!groups[g]) return;
+      html += '<div>';
+      html += '<div class="links-group-title"><i class="fas fa-circle"></i> '+g+'</div>';
+      html += '<div class="links-grid">';
+      groups[g].forEach(function(l){
+        var fallbackPath = l.path || '/';
+        var linkUrl = l.url || l.custom_url || (fallbackPath.indexOf('http://')===0 || fallbackPath.indexOf('https://')===0 ? fallbackPath : (DEFAULT_BASE_URL + fallbackPath));
+        var status = l.service ? _resolveServiceStatus(l.service) : null;
+        var statusClass = l.service ? (status==='running' ? 'up' : status ? 'down' : '') : '';
+        var linkId = l.id || ('builtin_' + l.name.toLowerCase().replace(/\s+/g,'_'));
+        html += '<div class="link-card" onclick="window.open(\''+linkUrl+'\',\'_blank\')" data-link-id="'+linkId+'">';
+        html += '<div class="link-card-top">';
+        html += '<div class="link-card-icon"><i class="fas fa-'+(l.icon||'link')+'"></i></div>';
+        if(l.service) html += '<div class="link-card-status '+statusClass+'" title="Service: '+l.service+'"></div>';
+        html += '</div>';
+        html += '<div class="link-card-name">'+l.name;
+        if(l.builtin) html += '<span class="builtin-tag">builtin</span>';
+        html += '</div>';
+        html += '<div class="link-card-desc">'+(l.desc||'')+'</div>';
+        html += '<div class="link-card-path">'+(l.path||l.custom_url||'/')+'</div>';
+        html += '<i class="fas fa-arrow-up-right-from-square link-open"></i>';
+        html += '<span class="link-card-edit" onclick="event.stopPropagation();openCardEditor(\''+linkId+'\')"><i class="fas fa-edit"></i> Edit</span>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    });
+    html += '</div>';
+    document.getElementById('quickLinksArea').innerHTML = html;
+    _refreshQuickLinkEditorGroups();
+    _refreshQuickLinkEditorServices();
+  }).catch(function(e){
+    document.getElementById('quickLinksArea').innerHTML='<div style="color:var(--red)">Failed: '+e.message+'</div>';
+  });
+}
+
+function syncLinkStatuses(svcs){
+  if(svcs && svcs.length){
+    _buildServiceIndexes(svcs);
+  }
+  document.querySelectorAll('.link-card-status[title]').forEach(function(dot){
+    var svcName = dot.title.replace('Service: ','');
+    var st = _resolveServiceStatus(svcName);
+    dot.className = 'link-card-status ' + (st==='running' ? 'up' : st ? 'down' : '');
+  });
+}
+
+/* ── CARD EDITOR ── */
+var _editingLinkId = null;
+
+function initIconPicker(){
+  var picker = document.getElementById('iconPicker');
+  var html = '';
+  _availableIcons.forEach(function(icon){
+    html += '<div class="icon-pick" data-icon="'+icon+'" onclick="selectIcon(\''+icon+'\')"><i class="fas fa-'+icon+'"></i></div>';
+  });
+  picker.innerHTML = html;
+}
+
+function selectIcon(icon){
+  document.querySelectorAll('.icon-pick').forEach(function(el){el.classList.remove('selected')});
+  var el = document.querySelector('.icon-pick[data-icon="'+icon+'"]');
+  if(el) {
+    el.classList.add('selected');
+  } else {
+    // Icon not in picker, select first one as fallback
+    var first = document.querySelector('.icon-pick');
+    if(first) first.classList.add('selected');
+  }
+}
+
+function openCardEditor(linkId){
+  initIconPicker();
+  _editingLinkId = linkId;
+  
+  if(linkId){
+    // Editing existing link
+    var link = _quickLinksData.find(function(l){
+      return l.id === linkId || ('builtin_' + l.name.toLowerCase().replace(/\s+/g,'_')) === linkId;
+    });
+    if(!link){
+      toast('Link not found','err');
+      return;
+    }
+    document.getElementById('editorTitle').textContent = 'Edit Quick Link';
+    document.getElementById('editLinkId').value = linkId;
+    document.getElementById('editLinkBuiltin').value = link.builtin ? '1' : '0';
+    document.getElementById('editLinkName').value = link.name || '';
+    document.getElementById('editLinkGroup').value = link.group || 'Custom';
+    document.getElementById('editLinkDesc').value = link.desc || '';
+    document.getElementById('editLinkPath').value = link.path || '';
+    document.getElementById('editLinkCustomUrl').value = link.custom_url || '';
+    document.getElementById('editLinkService').value = link.service || '';
+    document.getElementById('editLinkTrigger').value = link.status_trigger || '';
+    selectIcon(link.icon || 'link');
+    document.getElementById('btnDeleteLink').style.display = link.builtin ? 'none' : 'inline-flex';
+  } else {
+    // Creating new link
+    document.getElementById('editorTitle').textContent = 'Add Quick Link';
+    document.getElementById('editLinkId').value = '';
+    document.getElementById('editLinkBuiltin').value = '0';
+    document.getElementById('editLinkName').value = '';
+    document.getElementById('editLinkGroup').value = 'Custom';
+    document.getElementById('editLinkDesc').value = '';
+    document.getElementById('editLinkPath').value = '/';
+    document.getElementById('editLinkCustomUrl').value = '';
+    document.getElementById('editLinkService').value = '';
+    document.getElementById('editLinkTrigger').value = '';
+    selectIcon('link');
+    document.getElementById('btnDeleteLink').style.display = 'none';
+  }
+  
+  document.getElementById('cardEditorModal').classList.add('show');
+}
+
+function closeCardEditor(){
+  document.getElementById('cardEditorModal').classList.remove('show');
+  _editingLinkId = null;
+}
+
+function getSelectedIcon(){
+  var selected = document.querySelector('.icon-pick.selected');
+  return selected ? selected.dataset.icon : 'link';
+}
+
+function saveQuickLink(){
+  var linkId = document.getElementById('editLinkId').value;
+  var isBuiltin = document.getElementById('editLinkBuiltin').value === '1';
+  
+  var data = {
+    name: document.getElementById('editLinkName').value.trim(),
+    group: document.getElementById('editLinkGroup').value,
+    desc: document.getElementById('editLinkDesc').value.trim(),
+    path: document.getElementById('editLinkPath').value.trim() || '/',
+    custom_url: document.getElementById('editLinkCustomUrl').value.trim(),
+    icon: getSelectedIcon(),
+    service: document.getElementById('editLinkService').value || null,
+    status_trigger: document.getElementById('editLinkTrigger').value.trim() || null
+  };
+  
+  if(!data.name){
+    toast('Name is required','err');
+    return;
+  }
+  
+  var method, url;
+  if(linkId){
+    // Update existing
+    method = 'PUT';
+    url = BASE + '/api/quicklinks/' + linkId;
+  } else {
+    // Create new
+    method = 'POST';
+    url = BASE + '/api/quicklinks';
+  }
+  
+  fetch(url, {
+    method: method,
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  })
+  .then(function(r){ return r.json().then(function(d){ return {ok:r.ok,data:d}; }); })
+  .then(function(result){
+    if(result.ok || result.data.ok){
+      toast('Quick link saved','ok');
+      closeCardEditor();
+      loadQuickLinks();
+    } else {
+      toast(result.data.error || 'Failed to save','err');
+    }
+  })
+  .catch(function(e){
+    toast('Error: '+e.message,'err');
+  });
+}
+
+function deleteQuickLink(){
+  var linkId = document.getElementById('editLinkId').value;
+  if(!linkId){
+    toast('No link selected','err');
+    return;
+  }
+  
+  var linkName = document.getElementById('editLinkName').value;
+  if(!confirm('Delete "'+linkName+'"? This cannot be undone.')) return;
+  
+  fetch(BASE + '/api/quicklinks/' + linkId, {method:'DELETE'})
+  .then(function(r){ return r.json().then(function(d){ return {ok:r.ok,data:d}; }); })
+  .then(function(result){
+    if(result.ok || result.data.ok){
+      toast('Quick link deleted','ok');
+      closeCardEditor();
+      loadQuickLinks();
+    } else {
+      toast(result.data.error || 'Failed to delete','err');
+    }
+  })
+  .catch(function(e){
+    toast('Error: '+e.message,'err');
+  });
+}
+
+function testStatusTrigger(){
+  var url = document.getElementById('editLinkTrigger').value.trim();
+  if(!url){
+    toast('Enter a status trigger URL first','err');
+    return;
+  }
+  
+  // Simple fetch test
+  fetch(url, {mode:'no-cors'})
+  .then(function(){
+    toast('URL appears reachable (no-cors mode)','ok');
+  })
+  .catch(function(e){
+    toast('URL test failed: '+e.message,'err');
+  });
+}
+
+/* DEPRECATED: Page Deployer JS — VPS-specific page deployment functionality, not part of 7-project ecosystem */
+/* ── PAGE DEPLOYER ── */
+var deployTargets = [];
+var stagedUploads = [];
+
+function openPageDeployer(){
+  document.getElementById('pageDeployerModal').classList.add('show');
+  loadDeployTargets();
+  switchDeployerTab('upload');
+  clearFileSelections();
+}
+
+function closePageDeployer(){
+  document.getElementById('pageDeployerModal').classList.remove('show');
+}
+
+function switchDeployerTab(tab){
+  // Update tab buttons
+  document.querySelectorAll('.dtab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelector('.dtab[data-tab="'+tab+'"]').classList.add('active');
+  // Update tab content
+  document.querySelectorAll('.deployer-tab-content').forEach(function(c){ c.style.display='none'; });
+  document.getElementById('dtab-'+tab).style.display='block';
+  // Load data for tab
+  if(tab==='staged') loadStagedUploads();
+  if(tab==='existing') loadExistingTargetOptions();
+  if(tab==='vps') checkVpsStatus();
+}
+
+function loadDeployTargets(){
+  fetch(BASE+'/api/page-deployer/targets')
+  .then(function(r){ return r.json(); })
+  .then(function(targets){
+    deployTargets = targets;
+    var sel = document.getElementById('deployTarget');
+    var selEx = document.getElementById('existingTarget');
+    sel.innerHTML = '';
+    selEx.innerHTML = '<option value="">— Select target —</option>';
+    targets.forEach(function(t){
+      sel.innerHTML += '<option value="'+t.id+'">'+t.name+' — '+t.description+'</option>';
+      selEx.innerHTML += '<option value="'+t.id+'">'+t.name+'</option>';
+    });
+  });
+}
+
+function loadExistingTargetOptions(){
+  loadDeployTargets();
+}
+
+function clearFileSelections(){
+  document.getElementById('htmlFileInput').value = '';
+  document.getElementById('brandFileInput').value = '';
+  document.getElementById('htmlFileSelected').innerHTML = '';
+  document.getElementById('brandFileSelected').innerHTML = '';
+}
+
+function handleFileSelect(type, input){
+  var file = input.files[0];
+  if(!file) return;
+  var label = document.getElementById(type+'FileSelected');
+  label.innerHTML = '<i class="fas fa-check-circle"></i> '+file.name+' ('+Math.round(file.size/1024)+'KB)';
+}
+
+// Drag and drop
+['htmlDropZone','brandDropZone'].forEach(function(id){
+  var zone = document.getElementById(id);
+  if(!zone) return;
+  zone.addEventListener('dragover', function(e){
+    e.preventDefault();
+    zone.classList.add('dragover');
+  });
+  zone.addEventListener('dragleave', function(){
+    zone.classList.remove('dragover');
+  });
+  zone.addEventListener('drop', function(e){
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    var input = zone.querySelector('input[type="file"]');
+    if(e.dataTransfer.files.length){
+      input.files = e.dataTransfer.files;
+      var type = id.replace('DropZone','').toLowerCase();
+      handleFileSelect(type, input);
+    }
+  });
+});
+
+function uploadPageFiles(){
+  var htmlInput = document.getElementById('htmlFileInput');
+  var brandInput = document.getElementById('brandFileInput');
+  
+  if(!htmlInput.files.length){
+    toast('Please select an HTML file','err');
+    return;
+  }
+  
+  var fd = new FormData();
+  fd.append('html_file', htmlInput.files[0]);
+  if(brandInput.files.length){
+    fd.append('brand_file', brandInput.files[0]);
+  }
+  
+  document.getElementById('btnUploadPage').disabled = true;
+  document.getElementById('btnUploadPage').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+  
+  fetch(BASE+'/api/page-deployer/upload', {method:'POST', body: fd})
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.ok){
+      toast('File staged! Ready to deploy.','ok');
+      clearFileSelections();
+      switchDeployerTab('staged');
+    } else {
+      toast(data.error || 'Upload failed','err');
+    }
+  })
+  .catch(function(e){
+    toast('Error: '+e.message,'err');
+  })
+  .finally(function(){
+    document.getElementById('btnUploadPage').disabled = false;
+    document.getElementById('btnUploadPage').innerHTML = '<i class="fas fa-upload"></i> Upload & Stage';
+  });
+}
+
+function loadStagedUploads(){
+  fetch(BASE+'/api/page-deployer/uploads')
+  .then(function(r){ return r.json(); })
+  .then(function(uploads){
+    stagedUploads = uploads;
+    var container = document.getElementById('stagedList');
+    if(!uploads.length){
+      container.innerHTML = '<div style="color:var(--gray);padding:12px 0">No staged uploads. Upload a page first.</div>';
+      return;
+    }
+    var html = '';
+    uploads.forEach(function(u){
+      html += '<div class="staged-item'+(u.deployed?' deployed':'')+'">';
+      html += '<i class="fas fa-file-code" style="font-size:22px;color:var(--amber)"></i>';
+      html += '<div class="staged-info">';
+      html += '<div class="staged-name">'+u.html_filename+'</div>';
+      html += '<div class="staged-meta">';
+      if(u.brand_filename) html += '<i class="fas fa-palette"></i> '+u.brand_filename+' · ';
+      html += 'Staged: '+new Date(u.uploaded_at).toLocaleString();
+      if(u.deployed_to) html += ' · <span style="color:var(--green)">Deployed to '+u.deployed_to+'</span>';
+      html += '</div></div>';
+      html += '<div class="staged-actions">';
+      html += '<button class="btn" onclick="previewStagedPage(\''+u.upload_id+'\')"><i class="fas fa-eye"></i></button>';
+      if(!u.deployed) html += '<button class="btn btn-save" onclick="openDeployConfirm(\''+u.upload_id+'\')"><i class="fas fa-rocket"></i> Deploy</button>';
+      html += '<button class="btn btn-delete" onclick="deleteStagedUpload(\''+u.upload_id+'\')"><i class="fas fa-trash"></i></button>';
+      html += '</div></div>';
+    });
+    container.innerHTML = html;
+  });
+}
+
+function previewStagedPage(uploadId){
+  window.open(BASE+'/api/page-deployer/preview/'+uploadId, '_blank');
+}
+
+function deleteStagedUpload(uploadId){
+  if(!confirm('Delete this staged upload?')) return;
+  fetch(BASE+'/api/page-deployer/uploads/'+uploadId, {method:'DELETE'})
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.ok){
+      toast('Staged upload deleted','ok');
+      loadStagedUploads();
+    } else {
+      toast(data.error || 'Delete failed','err');
+    }
+  });
+}
+
+function openDeployConfirm(uploadId){
+  var upload = stagedUploads.find(function(u){ return u.upload_id === uploadId; });
+  if(!upload){
+    toast('Upload not found','err');
+    return;
+  }
+  
+  document.getElementById('deployUploadId').value = uploadId;
+  document.getElementById('deployFilename').value = upload.html_filename;
+  
+  var preview = document.getElementById('deployPreviewBox');
+  preview.innerHTML = '<div class="dpb-title">Deploying:</div><div class="dpb-file"><i class="fas fa-file-code"></i> '+upload.html_filename;
+  if(upload.brand_filename) preview.innerHTML += ' + <i class="fas fa-palette"></i> '+upload.brand_filename;
+  preview.innerHTML += '</div>';
+  
+  document.getElementById('qlName').value = upload.html_filename.replace('.html','').replace(/-/g,' ').replace(/_/g,' ');
+  document.getElementById('deployCopyBrand').checked = !!upload.brand_filename;
+  document.getElementById('deployAddQuicklink').checked = false;
+  document.getElementById('deployNginxRoute').value = '';
+  document.getElementById('nginxRouteHint').textContent = '';
+  document.getElementById('quicklinkFields').style.display = 'none';
+  
+  loadDeployTargets();
+  updateDeployHint();
+  
+  document.getElementById('deployConfirmModal').classList.add('show');
+}
+
+function closeDeployConfirm(){
+  document.getElementById('deployConfirmModal').classList.remove('show');
+}
+
+document.getElementById('deployAddQuicklink').addEventListener('change', function(){
+  document.getElementById('quicklinkFields').style.display = this.checked ? 'block' : 'none';
+});
+
+function updateDeployHint(){
+  var targetId = document.getElementById('deployTarget').value;
+  var filename = document.getElementById('deployFilename').value;
+  var target = deployTargets.find(function(t){ return t.id === targetId; });
+  var hint = document.getElementById('deployUrlHint');
+  var nginxRow = document.getElementById('nginxRouteRow');
+  var nginxHint = document.getElementById('nginxRouteHint');
+
+  // Show VPS nginx route field only when VPS target selected
+  if(target && target.is_vps){
+    nginxRow.style.display = 'block';
+    var cleanUrl = (document.getElementById('deployNginxRoute').value || '').trim();
+    if(cleanUrl){
+      nginxHint.textContent = 'Live at: https://awareness-ai.com.br' + (cleanUrl.startsWith('/') ? cleanUrl : '/'+cleanUrl);
+    } else {
+      nginxHint.textContent = 'No clean URL — page will be at /' + filename;
+    }
+    hint.textContent = 'VPS: ' + VPS_CONFIG.remote_pages_dir + '/' + filename;
+  } else {
+    nginxRow.style.display = 'none';
+    if(target && target.nginx_location){
+      hint.textContent = 'URL: ' + target.nginx_location + filename;
+    } else {
+      hint.textContent = 'URL: /' + filename;
+    }
+  }
+}
+
+function deployPage(){
+  var uploadId = document.getElementById('deployUploadId').value;
+  var targetId = document.getElementById('deployTarget').value;
+  var filename = document.getElementById('deployFilename').value;
+  var copyBrand = document.getElementById('deployCopyBrand').checked;
+  var addQuicklink = document.getElementById('deployAddQuicklink').checked;
+  var nginxRoute = document.getElementById('deployNginxRoute').value.trim();
+  
+  var payload = {
+    upload_id: uploadId,
+    target: targetId,
+    filename: filename,
+    copy_brand: copyBrand,
+    add_to_quicklinks: addQuicklink,
+    nginx_route: nginxRoute || null
+  };
+  
+  if(addQuicklink){
+    payload.quicklink_name = document.getElementById('qlName').value;
+    payload.quicklink_group = document.getElementById('qlGroup').value;
+    payload.quicklink_desc = document.getElementById('qlDesc').value;
+  }
+
+  // Show progress for VPS deploys (can take a few seconds)
+  var btn = document.querySelector('#deployConfirmModal .btn-save');
+  var origHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deploying...';
+  
+  fetch(BASE+'/api/page-deployer/deploy', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.ok){
+      var msg = data.message || 'Page deployed!';
+      if(data.nginx_route) msg += ' · Clean URL: '+data.nginx_route;
+      if(data.url) msg += ' · '+data.url;
+      toast(msg,'ok');
+      closeDeployConfirm();
+      loadStagedUploads();
+      if(addQuicklink) loadQuickLinks();
+      if(targetId === 'vps') loadVpsPages();
+    } else {
+      var errMsg = data.errors && data.errors.length ? data.errors[0] : (data.error || 'Deploy failed');
+      toast(errMsg,'err');
+    }
+  })
+  .catch(function(e){
+    toast('Error: '+e.message,'err');
+  })
+  .finally(function(){
+    btn.disabled = false;
+    btn.innerHTML = origHtml;
+  });
+}
+
+function loadExistingPages(){
+  var targetId = document.getElementById('existingTarget').value;
+  var container = document.getElementById('existingPagesList');
+  
+  if(!targetId){
+    container.innerHTML = '<div style="color:var(--gray);padding:12px 0">Select a target to see existing pages.</div>';
+    return;
+  }
+  
+  fetch(BASE+'/api/page-deployer/existing/'+targetId)
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(!data.exists){
+      container.innerHTML = '<div style="color:var(--red);padding:12px 0">Target directory does not exist.</div>';
+      return;
+    }
+    if(!data.pages.length){
+      container.innerHTML = '<div style="color:var(--gray);padding:12px 0">No HTML files in this location.</div>';
+      return;
+    }
+    var html = '';
+    data.pages.forEach(function(p){
+      html += '<div class="existing-page">';
+      html += '<i class="fas fa-file-code" style="color:var(--amber)"></i>';
+      html += '<span class="ep-name">'+p.filename+'</span>';
+      html += '<span class="ep-size">'+p.size_kb+' KB</span>';
+      html += '<span class="ep-date">'+new Date(p.modified).toLocaleDateString()+'</span>';
+      html += '</div>';
+    });
+    container.innerHTML = html;
+  });
+}
+
+/* ── VPS DEPLOYER ── */
+var _vpsPages = [];
+
+function checkVpsStatus(){
+  var dot = document.getElementById('vpsStatusDot');
+  var text = document.getElementById('vpsStatusText');
+  var info = document.getElementById('vpsInfo');
+  
+  dot.className = 'vps-status-dot';
+  text.textContent = 'Checking VPS connection...';
+  info.style.display = 'none';
+  
+  fetch(BASE+'/api/page-deployer/vps/status')
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.status === 'connected'){
+      dot.classList.add('connected');
+      text.textContent = 'Connected to VPS';
+      info.style.display = 'grid';
+      document.getElementById('vpsHost').textContent = data.host;
+      var domainLink = document.getElementById('vpsDomain');
+      domainLink.textContent = data.domain;
+      domainLink.href = 'https://' + data.domain;
+      loadVpsPages();
+    } else {
+      dot.classList.add('error');
+      text.textContent = 'VPS connection failed: ' + (data.error || data.status);
+    }
+  })
+  .catch(function(e){
+    dot.classList.add('error');
+    text.textContent = 'Error: ' + e.message;
+  });
+}
+
+function loadVpsPages(){
+  var container = document.getElementById('vpsPagesList');
+  container.innerHTML = '<div style="color:var(--gray);padding:12px">Loading pages from VPS...</div>';
+  
+  fetch(BASE+'/api/page-deployer/vps/pages')
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    _vpsPages = data.pages || [];
+    document.getElementById('vpsPageCount').textContent = data.count || _vpsPages.length;
+    renderVpsPages(_vpsPages);
+  })
+  .catch(function(e){
+    container.innerHTML = '<div style="color:var(--red);padding:12px">Error: '+e.message+'</div>';
+  });
+}
+
+function renderVpsPages(pages){
+  var container = document.getElementById('vpsPagesList');
+  if(!pages.length){
+    container.innerHTML = '<div style="color:var(--gray);padding:12px">No pages found on VPS.</div>';
+    return;
+  }
+  
+  var html = '';
+  pages.forEach(function(p){
+    html += '<div class="vps-page-item">';
+    html += '<i class="fas fa-file-code" style="color:var(--amber)"></i>';
+    html += '<span class="vp-name">'+p.filename+'</span>';
+    html += '<span class="vp-size">'+p.size_kb+' KB</span>';
+    html += '<span class="vp-actions">';
+    html += '<a href="'+p.url+'" target="_blank" title="Open"><i class="fas fa-external-link-alt"></i></a>';
+    html += '<button onclick="copyVpsUrl(\''+p.url+'\')" title="Copy URL"><i class="fas fa-copy"></i></button>';
+    html += '<button class="danger" onclick="deleteVpsPage(\''+p.filename+'\')" title="Delete"><i class="fas fa-trash"></i></button>';
+    html += '</span>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function filterVpsPages(){
+  var q = document.getElementById('vpsSearch').value.toLowerCase();
+  if(!q){
+    renderVpsPages(_vpsPages);
+    return;
+  }
+  var filtered = _vpsPages.filter(function(p){ return p.filename.toLowerCase().includes(q); });
+  renderVpsPages(filtered);
+}
+
+function copyVpsUrl(url){
+  navigator.clipboard.writeText(url).then(function(){
+    toast('URL copied','ok');
+  });
+}
+
+function syncAllToVps(){
+  if(!confirm('Sync all local pages to VPS? This may take a moment.')) return;
+  
+  toast('Syncing pages to VPS...','info');
+  
+  fetch(BASE+'/api/page-deployer/vps/sync', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.ok){
+      toast('Synced '+(data.synced?.length || 0)+' pages to VPS','ok');
+      loadVpsPages();
+    } else if(data.errors?.length){
+      toast('Sync completed with errors','err');
+      console.error('Sync errors:', data.errors);
+    } else {
+      toast(data.error || 'Sync failed','err');
+    }
+  })
+  .catch(function(e){
+    toast('Sync error: '+e.message,'err');
+  });
+}
+
+function syncSingleToVps(filename){
+  toast('Syncing '+filename+'...','info');
+  
+  fetch(BASE+'/api/page-deployer/vps/sync', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({files: [filename]})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.ok && data.synced?.length){
+      toast(filename+' synced to VPS','ok');
+      loadVpsPages();
+    } else {
+      toast(data.errors?.[0]?.error || 'Sync failed','err');
+    }
+  })
+  .catch(function(e){
+    toast('Sync error: '+e.message,'err');
+  });
+}
+
+function deleteVpsPage(filename){
+  if(!confirm('Delete '+filename+' from VPS? This cannot be undone.')) return;
+  
+  fetch(BASE+'/api/page-deployer/vps/delete', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({filename: filename})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.ok){
+      toast(filename+' deleted from VPS','ok');
+      loadVpsPages();
+    } else {
+      toast(data.error || 'Delete failed','err');
+    }
+  })
+  .catch(function(e){
+    toast('Delete error: '+e.message,'err');
+  });
+}
+/* END DEPRECATED */
+
+
+/* ── TAB SWITCHING ── */
+function switchTab(tabId){
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active')});
+  document.querySelector('[data-tab="'+tabId+'"]').classList.add('active');
+  document.getElementById('tab-'+tabId).classList.add('active');
+  if(tabId==='api'&&!_ecoData) loadEcosystem();
+  /* DEPRECATED: lazy-load for removed tabs */
+  /* if(tabId==='contracts'&&!_contractsData) loadContracts();
+  if(tabId==='deploy'&&!_deployInfraLoaded) loadDeployInfra();
+  if(tabId==='apitests'&&!_testLastLoaded) loadLastTestReport(); */
+}
+
+/* ── ECOSYSTEM ── */
+var _ecoData=null, _ecoSvcMap={};
+
+function loadEcosystem(){
+  var g=document.getElementById('ecoGrid');
+  if(g) g.innerHTML='<div style="color:var(--gray);font-size:13px;padding:20px;">Loading…</div>';
+  fetch(BASE+'/api/ecosystem').then(function(r){return r.json()}).then(function(data){
+    _ecoData=data;
+    renderEcoStats(data);
+    renderEcoFilter(data);
+    renderEcoGrid(data.services);
+    renderEcoInfra(data.infrastructure);
+  }).catch(function(e){
+    document.getElementById('ecoGrid').innerHTML='<div style="color:var(--red)">Failed: '+e.message+'</div>';
+  });
+}
+
+function renderEcoStats(data){
+  var api=data.services.filter(function(s){return s.endpoint_count>0});
+  var up=data.services.filter(function(s){return s.status==='UP'});
+  var html='<div style="display:flex;gap:28px;flex-wrap:wrap;padding:14px 0 16px;border-bottom:1px solid var(--border);margin-bottom:16px">';
+  html+='<div class="eco-stat"><div class="ev">'+data.services.length+'</div><div class="el">Projects</div></div>';
+  html+='<div class="eco-stat"><div class="ev">'+up.length+'</div><div class="el">UP</div></div>';
+  html+='<div class="eco-stat"><div class="ev">'+(data.summary.total_tools||'—')+'</div><div class="el">MCP Tools</div></div>';
+  html+='<div class="eco-stat"><div class="ev">'+data.summary.total_endpoints+'</div><div class="el">Endpoints</div></div>';
+  html+='<div style="flex:1;min-width:200px;font-size:12px;color:var(--gray);align-self:center">'+data.description+'</div>';
+  html+='</div>';
+  document.getElementById('ecoStats').innerHTML=html;
+}
+
+function renderEcoFilter(data){
+  var tags={};
+  data.services.forEach(function(s){(s.tags||[]).forEach(function(t){tags[t]=(tags[t]||0)+1;});});
+  var sorted=Object.keys(tags).sort(function(a,b){return tags[b]-tags[a];});
+  var html='<button class="eco-tag active" onclick="filterEco(\'all\',this)">All ('+data.services.length+')</button>';
+  sorted.forEach(function(t){html+='<button class="eco-tag" onclick="filterEco(\''+t+'\',this)">'+t+' ('+tags[t]+')</button>';});
+  document.getElementById('ecoFilter').innerHTML=html;
+}
+
+function filterEco(tag,btn){
+  document.querySelectorAll('#ecoFilter .eco-tag').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.querySelectorAll('.eco-card').forEach(function(card){
+    if(tag==='all'){card.classList.remove('hidden');return;}
+    card.classList.toggle('hidden',!(card.dataset.tags||'').split(',').includes(tag));
+  });
+}
+
+function renderEcoGrid(services){
+  if(!services||!services.length){document.getElementById('ecoGrid').innerHTML='<div style="color:var(--gray)">No services found.</div>';return;}
+  var html='';
+  services.forEach(function(s){
+    var dc=s.status==='UP'?'up':s.status==='DOWN'?'down':'';
+    html+='<div class="eco-card" data-id="'+s.id+'" data-name="'+(s.name||'')+'" data-tags="'+(s.tags||[]).join(',')+'">';
+    html+='<div class="eco-card-top"><div style="display:flex;gap:8px;align-items:flex-start;flex:1">';
+    html+='<div class="eco-status-dot '+dc+'" title="'+(s.status||'unknown')+'"></div>';
+    html+='<div class="eco-card-name">'+s.name+'</div></div>';
+    html+='<div style="display:flex;gap:6px;align-items:center">';
+    if(s.port) html+='<div class="eco-card-port">:'+s.port+'</div>';
+    if(s.total_tools) html+='<div class="eco-card-port" style="color:var(--green-dim);font-size:10px">'+s.total_tools+' tools</div>';
+    html+='</div></div>';
+    html+='<div class="eco-card-desc">'+s.description+'</div>';
+    html+='<div class="eco-card-meta">';
+    if(s.framework) html+='<span class="eco-badge framework">'+s.framework+'</span>';
+    html+='<span class="eco-badge status-'+(s.status||'unknown').toLowerCase()+'">'+(s.status||'—')+'</span>';
+    if(s.up_count!==undefined&&s.total_components) html+='<span class="eco-badge" style="'+((s.up_count===s.total_components)?'color:var(--green);border-color:var(--green-dim)':'color:var(--amber);border-color:var(--amber-dim)')+'">'+s.up_count+'/'+s.total_components+' components</span>';
+    html+='</div>';
+    // Component-level status breakdown
+    if(s.components&&s.components.length){
+      html+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">';
+      s.components.forEach(function(c){
+        var cClass=c.status==='UP'?'up':'down';
+        html+='<span class="eco-tag-pill" style="display:flex;align-items:center;gap:4px;padding:3px 8px;font-size:9px">';
+        html+='<span class="eco-status-dot '+cClass+'" style="width:5px;height:5px;margin:0"></span>';
+        html+=c.type+':'+c.port+' <span style="color:'+(c.status==='UP'?'var(--green)':'var(--red)')+'">'+c.status+'</span>';
+        html+='</span>';
+      });
+      html+='</div>';
+    }
+    if(s.tags&&s.tags.length){
+      html+='<div class="eco-tags">';
+      s.tags.forEach(function(t){html+='<span class="eco-tag-pill">'+t+'</span>';});
+      html+='</div>';
+    }
+    html+='<div class="eco-card-footer">';
+    if(s.project_path) html+='<span style="font-size:9px;color:var(--gray);font-family:var(--mono);align-self:center;margin-right:auto" title="'+s.project_path+'">'+s.project_path.split('/').pop()+'</span>';
+    if(s.api_spec&&s.api_spec.endsWith('.json')) html+='<button class="btn btn-log" onclick="viewSpec(\''+s.id+'\')" ><i class="fas fa-file-code"></i> Spec</button>';
+    if(s.docs_url) html+='<a class="btn" href="'+s.docs_url+'" target="_blank" rel="noopener"><i class="fas fa-book"></i> Docs</a>';
+    html+='</div></div>';
+  });
+  document.getElementById('ecoGrid').innerHTML=html;
+}
+
+function renderEcoInfra(infra){
+  if(!infra) return;
+  var html='<div class="eco-infra-grid">';
+  Object.keys(infra).forEach(function(k){
+    var svc=infra[k];
+    html+='<div class="eco-infra-card">';
+    html+='<div class="eco-infra-name">'+k.charAt(0).toUpperCase()+k.slice(1)+' <span class="eco-infra-port">:'+svc.port+'</span></div>';
+    html+='<div class="eco-infra-desc">'+svc.description+'</div>';
+    if(svc.collections){html+='<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">';svc.collections.forEach(function(c){html+='<span class="eco-tag-pill">'+c+'</span>';});html+='</div>';}
+    if(svc.node_types){html+='<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">';svc.node_types.forEach(function(n){html+='<span class="eco-tag-pill">'+n+'</span>';});html+='</div>';}
+    html+='</div>';
+  });
+  html+='</div>';
+  document.getElementById('ecoInfra').innerHTML=html;
+}
+
+function viewEcosystemReport(){
+  document.getElementById('logTitle').textContent='Ecosystem Orchestration Report';
+  document.getElementById('logContent').textContent='Loading…';
+  document.getElementById('logModal').classList.add('show');
+  fetch(BASE+'/api/ecosystem/report')
+    .then(function(r){
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.text();
+    })
+    .then(function(md){
+      if(typeof marked!=='undefined') document.getElementById('logContent').innerHTML=marked.parse(md);
+      else document.getElementById('logContent').textContent=md;
+    })
+    .catch(function(e){
+      document.getElementById('logContent').textContent='Error: '+e.message;
+    });
+}
+
+function toggleEp(id,btn){
+  document.getElementById(id).classList.toggle('show');
+  btn.classList.toggle('expanded');
+}
+
+function viewSpec(svcId){
+  document.getElementById('logTitle').textContent=svcId+' — API Spec';
+  document.getElementById('logContent').textContent='Loading…';
+  document.getElementById('logModal').classList.add('show');
+  currentLogSvc=null;
+  fetch(BASE+'/api/ecosystem/'+svcId+'/spec')
+    .then(function(r){return r.json();})
+    .then(function(spec){document.getElementById('logContent').textContent=JSON.stringify(spec,null,2);})
+    .catch(function(e){document.getElementById('logContent').textContent='Error: '+e.message;});
+}
+
+function syncEcoStatuses(svcs){
+  if(svcs && svcs.length){
+    _buildServiceIndexes(svcs);
+  }
+  if(!_ecoData) return;
+  document.querySelectorAll('.eco-card').forEach(function(card){
+    var dot=card.querySelector('.eco-status-dot');
+    if(!dot) return;
+    var st=_resolveServiceStatus(card.dataset.id)||_resolveServiceStatus(card.dataset.name);
+    dot.className='eco-status-dot '+(st==='running'?'up':st?'down':'');
+    dot.title=st||'unknown';
+  });
+}
+
+/* ── AUTO REFRESH ── */
+function setAutoRefresh(){
+  if(autoTimer){clearInterval(autoTimer);autoTimer=null}
+  var s=parseInt(document.getElementById('autoInterval').value);
+  if(s>0) autoTimer=setInterval(refreshAll,s*1000);
+}
+
+function refreshAll(){
+  var i=document.querySelector('#btnRefresh i');
+  if(i)i.classList.add('spin');
+  loadSystem();
+  loadServices();
+  setTimeout(function(){if(i)i.classList.remove('spin')},1000);
+}
+
+/* DEPRECATED: Contracts & Ontology JS — legacy legal contract browsing, not part of 7-project ecosystem */
+/* ── CONTRACTS & ONTOLOGY ── */
+var _contractsData=null, _ontologyData=null, _contractView='contracts', _activeContractId=null;
+
+function loadContracts(){
+  document.getElementById('contractsList').innerHTML='<div style="color:var(--gray);font-size:13px;padding:20px">Loading…</div>';
+  fetch(BASE+'/api/contracts').then(function(r){return r.json()}).then(function(data){
+    _contractsData=data;
+    renderContractsList(data);
+  }).catch(function(e){
+    document.getElementById('contractsList').innerHTML='<div style="color:var(--red);padding:20px;font-size:13px">Failed: '+e.message+'</div>';
+  });
+}
+
+function renderContractsList(contracts){
+  // Group contracts by category
+  var groups={};
+  contracts.forEach(function(c){
+    var cat='General';
+    var id=c.id.toUpperCase();
+    if(id.indexOf('ONTOLOGY')>=0) cat='Ontology';
+    else if(id.indexOf('LEGAL')>=0||id.indexOf('LAW')>=0) cat='Legal Domain';
+    else if(id.indexOf('PIPELINE')>=0||id.indexOf('VALIDATION')>=0) cat='Pipeline';
+    else if(id.indexOf('AGENT')>=0||id.indexOf('LLM')>=0) cat='Agents & LLM';
+    else if(id.indexOf('API')>=0||id.indexOf('PINOCCHIO')>=0||id.indexOf('ARGUS')>=0) cat='API & Services';
+    if(!groups[cat]) groups[cat]=[];
+    groups[cat].push(c);
+  });
+  var order=['Ontology','Legal Domain','Pipeline','Agents & LLM','API & Services','General'];
+  var html='';
+  order.forEach(function(g){
+    if(!groups[g]) return;
+    html+='<div class="cs-group-title"><i class="fas fa-circle"></i> '+g+' <span style="margin-left:auto;font-weight:400">('+groups[g].length+')</span></div>';
+    groups[g].forEach(function(c){
+      var active=_activeContractId===c.id?' active':'';
+      html+='<div class="cs-item'+active+'" onclick="viewContract(\''+c.id+'\')" data-contract="'+c.id+'">';
+      html+='<div class="cs-item-name">'+c.title+'</div>';
+      html+='<div class="cs-item-meta">';
+      if(c.version) html+='<span><i class="fas fa-tag" style="margin-right:3px;font-size:8px;color:var(--amber)"></i>'+c.version+'</span>';
+      html+='<span>'+c.size_kb+' KB</span>';
+      html+='<span>'+c.modified+'</span>';
+      html+='</div>';
+      if(c.purpose) html+='<div class="cs-item-purpose">'+c.purpose+'</div>';
+      html+='</div>';
+    });
+  });
+  document.getElementById('contractsList').innerHTML=html;
+}
+
+function viewContract(id){
+  _activeContractId=id;
+  // Highlight active sidebar item
+  document.querySelectorAll('.cs-item').forEach(function(el){el.classList.remove('active')});
+  var sel=document.querySelector('.cs-item[data-contract="'+id+'"]');
+  if(sel) sel.classList.add('active');
+  // Load content
+  document.getElementById('contractContent').innerHTML='<div style="color:var(--gray);font-size:13px;padding:40px;text-align:center"><i class="fas fa-spinner spin" style="font-size:20px;color:var(--amber)"></i><br><br>Loading contract…</div>';
+  fetch(BASE+'/api/contracts/'+id).then(function(r){return r.json()}).then(function(data){
+    if(data.error){document.getElementById('contractContent').innerHTML='<div style="color:var(--red);padding:20px">'+data.error+'</div>';return;}
+    var html='<div class="contract-content">';
+    html+='<div class="contract-header">';
+    html+='<h2>'+data.filename.replace('.md','').replace(/_/g,' ')+'</h2>';
+    html+='<div class="contract-header-meta">';
+    html+='<span><i class="fas fa-file"></i> '+data.filename+'</span>';
+    html+='<span><i class="fas fa-fingerprint"></i> '+data.id+'</span>';
+    html+='</div></div>';
+    html+='<div class="md-body">'+renderMd(data.content)+'</div>';
+    html+='</div>';
+    document.getElementById('contractContent').innerHTML=html;
+  }).catch(function(e){
+    document.getElementById('contractContent').innerHTML='<div style="color:var(--red);padding:20px">Error: '+e.message+'</div>';
+  });
+}
+
+function loadOntologyView(){
+  document.getElementById('contractsList').innerHTML='<div style="color:var(--gray);font-size:13px;padding:20px">Loading ontology…</div>';
+  if(_ontologyData){
+    renderOntologySidebar(_ontologyData);
+    renderOntologyContent(_ontologyData);
+    return;
+  }
+  fetch(BASE+'/api/ontology').then(function(r){return r.json()}).then(function(data){
+    _ontologyData=data;
+    renderOntologySidebar(data);
+    renderOntologyContent(data);
+  }).catch(function(e){
+    document.getElementById('contractsList').innerHTML='<div style="color:var(--red);padding:20px;font-size:13px">Failed: '+e.message+'</div>';
+  });
+}
+
+function renderOntologySidebar(specs){
+  var html='<div class="cs-group-title"><i class="fas fa-circle"></i> Ontology Specifications <span style="margin-left:auto;font-weight:400">('+specs.length+')</span></div>';
+  specs.forEach(function(s,i){
+    html+='<div class="cs-item'+(i===0?' active':'')+'" onclick="viewOntologySpec('+i+')" data-ont="'+i+'">';
+    html+='<div class="cs-item-name">'+s.title+'</div>';
+    html+='<div class="cs-item-meta"><span>'+s.size_kb+' KB</span><span>'+s.filename+'</span></div>';
+    html+='</div>';
+  });
+  document.getElementById('contractsList').innerHTML=html;
+}
+
+function renderOntologyContent(specs){
+  if(!specs.length) return;
+  viewOntologySpec(0);
+}
+
+function viewOntologySpec(idx){
+  var s=_ontologyData[idx];
+  document.querySelectorAll('.cs-item').forEach(function(el){el.classList.remove('active')});
+  var sel=document.querySelector('.cs-item[data-ont="'+idx+'"]');
+  if(sel) sel.classList.add('active');
+  var html='<div class="contract-content">';
+  html+='<div class="contract-header">';
+  html+='<h2><i class="fas fa-project-diagram" style="color:var(--amber);margin-right:8px"></i>'+s.title+'</h2>';
+  html+='<div class="contract-header-meta">';
+  html+='<span><i class="fas fa-file"></i> '+s.filename+'</span>';
+  html+='<span><i class="fas fa-weight-hanging"></i> '+s.size_kb+' KB</span>';
+  html+='</div></div>';
+  // Ontology layer diagram
+  html+='<div class="ont-layer-diagram">';
+  html+='<div class="ont-layer l4"><div class="ont-layer-num">Layer 4</div><div class="ont-layer-name">Provenance & Applicability</div><div class="ont-layer-nodes">SourcePack · SourceFile · MediaAsset · Transcript · LLMRun · ApplicabilityBasis</div></div>';
+  html+='<div class="ont-arrow">▼</div>';
+  html+='<div class="ont-layer l3"><div class="ont-layer-num">Layer 3</div><div class="ont-layer-name">Legal Domain</div><div class="ont-layer-nodes">LegalFramework · LegalArticle</div></div>';
+  html+='<div class="ont-arrow">▼</div>';
+  html+='<div class="ont-layer l2"><div class="ont-layer-num">Layer 2</div><div class="ont-layer-name">Allegations</div><div class="ont-layer-nodes">Violation</div></div>';
+  html+='<div class="ont-arrow">▼</div>';
+  html+='<div class="ont-layer l1"><div class="ont-layer-num">Layer 1 — Core Domain</div><div class="ont-layer-name">Facts</div><div class="ont-layer-nodes">Action · Evidence · Segment · ActorRole · Case</div></div>';
+  html+='</div>';
+  html+='<div style="text-align:center;font-size:11px;color:var(--gray);margin:-8px 0 20px">Dependencies flow inward only — outer layers depend on inner layers</div>';
+  html+='<div class="md-body">'+renderMd(s.content)+'</div>';
+  html+='</div>';
+  document.getElementById('contractContent').innerHTML=html;
+}
+
+function switchContractView(view,btn){
+  _contractView=view;
+  document.querySelectorAll('.cs-subtab').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  _activeContractId=null;
+  document.getElementById('contractSearch').value='';
+  if(view==='contracts'){
+    document.getElementById('contractSearch').placeholder='Search contracts…';
+    if(_contractsData) renderContractsList(_contractsData);
+    else loadContracts();
+    // Reset main content
+    document.getElementById('contractContent').innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;color:var(--gray)"><i class="fas fa-file-contract" style="font-size:48px;color:var(--bg4);margin-bottom:16px"></i><div style="font-size:15px;font-weight:500;color:var(--gray-hi);margin-bottom:6px">Select a contract to view</div><div style="font-size:12px;max-width:360px;line-height:1.6">Browse the contract registry on the left. Each contract defines a data schema, obligation, or protocol for the Awareness-AI ecosystem.</div></div>';
+  } else {
+    document.getElementById('contractSearch').placeholder='Search ontology…';
+    loadOntologyView();
+  }
+}
+
+function filterContracts(){
+  var q=document.getElementById('contractSearch').value.toLowerCase();
+  document.querySelectorAll('.cs-item').forEach(function(el){
+    var name=(el.querySelector('.cs-item-name')||{}).textContent||'';
+    var purpose=(el.querySelector('.cs-item-purpose')||{}).textContent||'';
+    var match=!q||name.toLowerCase().indexOf(q)>=0||purpose.toLowerCase().indexOf(q)>=0;
+    el.style.display=match?'':'none';
+  });
+}
+
+/* ── MARKDOWN RENDERER ── */
+function renderMd(src){
+  if(typeof marked!=='undefined'){
+    marked.setOptions({breaks:true,gfm:true});
+    return marked.parse(src);
+  }
+  // Fallback: basic conversion
+  var h=src
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/^[-*] (.+)$/gm,'<li>$1</li>')
+    .replace(/^---$/gm,'<hr>')
+    .replace(/\n\n/g,'</p><p>')
+    .replace(/\n/g,'<br>');
+  return '<p>'+h+'</p>';
+}
+/* END DEPRECATED */
+
+/* DEPRECATED: Deploy JS — VPS infrastructure management, not part of 7-project ecosystem */
+/* ── DEPLOY ── */
+var _deployInfraLoaded=false, _deployCommitsBehind=0;
+
+function loadDeployInfra(){
+  _deployInfraLoaded=true;
+  fetch(BASE+'/api/deploy/infra').then(function(r){return r.json()}).then(function(data){
+    var html='';
+    data.forEach(function(item){
+      var tp=item.type;
+      html+='<div class="infra-card">';
+      html+='<div class="infra-card-top">';
+      html+='<div class="infra-card-icon '+tp+'"><i class="fas fa-'+item.icon+'"></i></div>';
+      html+='<div><div class="infra-card-name">'+item.name+'</div><span class="infra-card-type '+tp+'">'+tp.toUpperCase()+'</span></div>';
+      html+='</div>';
+      html+='<div class="infra-card-loc"><i class="fas fa-map-marker-alt" style="margin-right:5px;color:var(--gray)"></i>'+item.location+'</div>';
+      if(item.env_var) html+='<div><span class="infra-card-env">'+item.env_var+'</span></div>';
+      html+='<div class="infra-card-note">'+item.note+'</div>';
+      html+='</div>';
+    });
+    document.getElementById('deployInfraGrid').innerHTML=html;
+  }).catch(function(e){
+    document.getElementById('deployInfraGrid').innerHTML='<div style="color:var(--red)">Failed: '+e.message+'</div>';
+  });
+}
+
+function checkDeployStatus(){
+  var area=document.getElementById('deployStatusArea');
+  area.innerHTML='<div style="color:var(--gray);font-size:13px;padding:20px;text-align:center"><i class="fas fa-spinner spin" style="margin-right:6px;color:var(--amber)"></i>Fetching git status…</div>';
+  fetch(BASE+'/api/deploy/status').then(function(r){return r.json()}).then(function(d){
+    if(d.error){area.innerHTML='<div style="color:var(--red);padding:20px">'+d.error+'</div>';return;}
+    _deployCommitsBehind=d.commits_behind||0;
+    var upToDate=d.up_to_date;
+    var html='<div class="deploy-git-card">';
+    var badgeCls=upToDate?'up-to-date':'behind';
+    var badgeIcon=upToDate?'check-circle':'exclamation-triangle';
+    var badgeText=upToDate?'Up to date':''+_deployCommitsBehind+' commit(s) behind';
+    html+='<div class="deploy-status-badge '+badgeCls+'"><i class="fas fa-'+badgeIcon+'"></i>'+badgeText+'</div>';
+    html+='<div class="deploy-commit-row">';
+    html+='<div class="deploy-commit"><div class="deploy-commit-label">VPS (current)</div><div class="deploy-commit-hash">'+d.current_commit+'</div></div>';
+    html+='<div class="deploy-commit"><div class="deploy-commit-label">GitHub origin/main</div><div class="deploy-commit-hash">'+d.remote_commit+'</div></div>';
+    html+='<div class="deploy-commit"><div class="deploy-commit-label">Branch</div><div class="deploy-commit-hash">'+d.branch+'</div></div>';
+    html+='</div>';
+    if(d.changed_files&&d.changed_files.length){
+      html+='<div style="font-size:12px;font-weight:600;color:var(--white);margin-bottom:8px">'+d.changed_files.length+' file(s) changed:</div>';
+      html+='<div class="deploy-files-list">';
+      d.changed_files.slice(0,20).forEach(function(f){
+        var sc=(f.status||'?').charAt(0);
+        html+='<div class="deploy-file-row"><span class="deploy-file-status '+sc+'">'+sc+'</span><span>'+f.file+'</span></div>';
+      });
+      if(d.changed_files.length>20) html+='<div style="color:var(--gray);font-size:11px;padding:4px 8px">… and '+(d.changed_files.length-20)+' more</div>';
+      html+='</div>';
+    }
+    html+='</div>';
+    area.innerHTML=html;
+    var actionArea=document.getElementById('deployActionArea');
+    actionArea.style.display='block';
+    var pullBtn=document.getElementById('btnDeployPull');
+    if(upToDate){
+      pullBtn.innerHTML='<i class="fas fa-check"></i> Already up to date';
+      pullBtn.disabled=true;
+    } else {
+      pullBtn.innerHTML='<i class="fas fa-cloud-download-alt"></i> Git Pull on VPS ('+_deployCommitsBehind+' commits)';
+      pullBtn.disabled=false;
+    }
+  }).catch(function(e){
+    area.innerHTML='<div style="color:var(--red);padding:20px">Error: '+e.message+'</div>';
+  });
+}
+
+function runDeployPull(){
+  var btn=document.getElementById('btnDeployPull') || document.getElementById('btnDeployPullOnly');
+  var orig=btn.innerHTML;
+  btn.innerHTML='<i class="fas fa-spinner spin"></i> Pulling…';
+  btn.disabled=true;
+  document.getElementById('deployOutputWrap').style.display='block';
+  document.getElementById('deployOutput').textContent='Running git pull on VPS…\n';
+  fetch(BASE+'/api/deploy/pull',{method:'POST'})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      document.getElementById('deployOutput').textContent=d.output||'(no output)';
+      if(d.ok){
+        toast('Git pull successful','ok');
+        btn.innerHTML='<i class="fas fa-check"></i> Pulled successfully';
+        btn.disabled=true;
+        document.getElementById('btnDeployRestart').style.display='inline-flex';
+        checkDeployStatus();
+      } else {
+        toast('Git pull failed','err');
+        btn.innerHTML=orig;
+        btn.disabled=false;
+      }
+    })
+    .catch(function(e){
+      document.getElementById('deployOutput').textContent='Error: '+e.message;
+      toast('Error: '+e.message,'err');
+      btn.innerHTML=orig;btn.disabled=false;
+    });
+}
+
+function _runQuickAction(endpoint, btnId, label){
+  var btn = document.getElementById(btnId);
+  var out = document.getElementById('quickActionOutput');
+  var orig = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner spin"></i> ' + label + '…';
+  btn.disabled = true;
+  out.style.display = 'block';
+  out.textContent = label + '…\n';
+  fetch(BASE + endpoint, {method:'POST'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      out.textContent = d.output || '(no output)';
+      if(d.ok){
+        toast(label + ' complete ✓', 'ok');
+        btn.innerHTML = '<i class="fas fa-check"></i> Done';
+        setTimeout(function(){ btn.innerHTML = orig; btn.disabled = false; }, 3000);
+        loadServices();
+      } else {
+        toast(label + ' failed', 'err');
+        btn.innerHTML = orig;
+        btn.disabled = false;
+      }
+    })
+    .catch(function(e){
+      out.textContent = 'Error: ' + e.message;
+      toast('Error: ' + e.message, 'err');
+      btn.innerHTML = orig;
+      btn.disabled = false;
+    });
+}
+
+function runRestartAll(){
+  if(!confirm('Restart all docker-compose services? There will be a brief downtime.')) return;
+  _runQuickAction('/api/deploy/restart-all', 'btnRestartAll', 'Restart All');
+}
+
+function runPullAndRestart(){
+  if(!confirm('Git pull from main and restart all services? This will cause a brief downtime.')) return;
+  _runQuickAction('/api/deploy/pull-and-restart', 'btnPullRestart', 'Pull + Restart All');
+}
+
+function selectServicesToRestart(){
+  // Build service selection chips based on common compose services
+  var services=['manus','garage-api','argus','legal','api-gateway'];
+  var changed=document.getElementById('deployChangedFiles');
+  var html='<div style="font-size:12px;font-weight:600;color:var(--white);margin-bottom:8px">Select services to restart:</div>';
+  html+='<div class="restart-service-list">';
+  services.forEach(function(s){
+    html+='<label class="restart-svc-chip"><input type="checkbox" id="rsvc-'+s+'" checked value="'+s+'"><i class="fas fa-box" style="color:var(--amber);font-size:10px"></i>'+s+'</label>';
+  });
+  html+='</div>';
+  html+='<button class="btn btn-deploy-restart" onclick="doRestartServices()"><i class="fas fa-redo"></i> Restart Selected</button>';
+  changed.innerHTML=html;
+}
+
+function doRestartServices(){
+  var selected=[];
+  document.querySelectorAll('.restart-service-list input:checked').forEach(function(cb){selected.push(cb.value);});
+  if(!selected.length){toast('No services selected','err');return;}
+  if(!confirm('Restart: '+selected.join(', ')+'?')) return;
+  document.getElementById('deployOutputWrap').style.display='block';
+  document.getElementById('deployOutput').textContent='Restarting: '+selected.join(', ')+'…\n';
+  fetch(BASE+'/api/deploy/restart',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({services:selected})})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      document.getElementById('deployOutput').textContent=d.output||'';
+      if(d.ok) toast('Services restarted','ok');
+      else toast('Restart failed','err');
+      setTimeout(loadServices,3000);
+    })
+    .catch(function(e){document.getElementById('deployOutput').textContent='Error: '+e.message;toast('Error','err');});
+}
+/* END DEPRECATED */
+
+/* DEPRECATED: API Tests JS — generic API test runner, not part of 7-project ecosystem */
+/* ── API TESTS ── */
+var _testLastLoaded=false, _testRunning=false, _testReport=null;
+
+function loadTestCatalogMeta(){
+  fetch(BASE+'/api/test/endpoints').then(function(r){return r.json()}).then(function(data){
+    var arr=Array.isArray(data)?data:[];
+    var groups={};
+    arr.forEach(function(e){groups[e.group]=(groups[e.group]||0)+1;});
+    var gCount=Object.keys(groups).length;
+    document.getElementById('testCatalogMeta').innerHTML=
+      '<i class="fas fa-plug" style="margin-right:4px;color:var(--amber)"></i>'+
+      arr.length+' endpoints · '+gCount+' groups · <span style="color:var(--white)">scan with map_endpoints.py on run</span>';
+  }).catch(function(){
+    document.getElementById('testCatalogMeta').textContent='Could not load catalog';
+  });
+}
+
+function reloadEndpointCatalog(){
+  fetch(BASE+'/api/endpoints/catalog/reload',{method:'POST'}).then(function(r){return r.json()}).then(function(data){
+    toast('Catalog reloaded — '+data.loaded+' endpoints','ok');
+    loadTestCatalogMeta();
+  }).catch(function(e){toast('Reload failed: '+e.message,'err');});
+}
+
+function loadLastTestReport(){
+  _testLastLoaded=true;
+  loadTestCatalogMeta();
+  fetch(BASE+'/api/test/last').then(function(r){if(!r.ok) throw new Error('No report');return r.json()}).then(function(data){
+    _testReport=data;
+    renderTestReport(data, true);
+    document.getElementById('btnDownloadReport').style.display='inline-flex';
+  }).catch(function(){
+    // No report yet — that's fine, show the prompt
+  });
+}
+
+function runAllTests(){
+  if(_testRunning) return;
+  _testRunning=true;
+  var btn=document.getElementById('btnRunTests');
+  btn.innerHTML='<i class="fas fa-spinner spin"></i> Scanning & Running…';
+  btn.disabled=true;
+  document.getElementById('btnDownloadReport').style.display='none';
+  document.getElementById('testResultsArea').innerHTML='<div style="color:var(--gray);padding:30px;text-align:center"><i class="fas fa-spinner spin" style="font-size:24px;color:var(--amber)"></i><br><br>Discovering endpoints with map_endpoints.py, then testing… this may take up to 60 seconds.</div>';
+  document.getElementById('testStatsBar').style.display='none';
+  var scanDir=(document.getElementById('scanDir').value||'.').trim();
+  fetch(BASE+'/api/test/scan-and-run',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({directory:scanDir})
+  }).then(function(r){return r.json()}).then(function(data){
+    _testReport=data;
+    renderTestReport(data, false);
+    var scanInfo=data.scan_meta?(' · discovered '+data.scan_meta.discovered+' endpoints from '+data.scan_meta.directory):'';
+    toast('Tests complete: '+data.passed+'/'+data.total+' passed'+scanInfo, data.failed>0?'err':'ok');
+    var catMeta=document.getElementById('testCatalogMeta');
+    if(data.scan_meta){
+      var sm=data.scan_meta;
+      catMeta.innerHTML='<i class="fas fa-plug" style="margin-right:4px;color:var(--amber)"></i>'+
+        sm.discovered+' endpoints discovered · scanned: <span style="color:var(--white)">'+sm.directory+'</span>'+
+        (sm.map_endpoints_ok?'':' <span style="color:var(--red)"> · scan warning</span>');
+    }
+    document.getElementById('btnDownloadReport').style.display='inline-flex';
+  }).catch(function(e){
+    document.getElementById('testResultsArea').innerHTML='<div style="color:var(--red);padding:20px">Error: '+e.message+'</div>';
+    toast('Test run failed','err');
+  }).finally(function(){
+    _testRunning=false;
+    btn.innerHTML='<i class="fas fa-play-circle"></i> Scan &amp; Run Tests';
+    btn.disabled=false;
+  });
+}
+
+function downloadTestReport(){
+  if(!_testReport) return;
+  var blob=new Blob([JSON.stringify(_testReport, null, 2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download='api_test_report_'+new Date().toISOString().replace(/[:.]/g,'-').slice(0,19)+'.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function renderTestReport(data, isOld){
+  // Stats bar
+  var sb=document.getElementById('testStatsBar');
+  var pct=data.total?Math.round(data.passed/data.total*100):0;
+  var allPass=data.failed===0;
+  var tsLabel=isOld?'Last run: '+new Date(data.timestamp).toLocaleString('pt-BR'):'Just now';
+  sb.className='test-stats-bar';
+  sb.innerHTML=
+    '<div class="test-stat-block"><div class="test-stat-num total">'+data.total+'</div><div class="test-stat-lbl">Total</div></div>'+
+    '<div class="test-stat-block"><div class="test-stat-num pass">'+data.passed+'</div><div class="test-stat-lbl">Passed</div></div>'+
+    '<div class="test-stat-block"><div class="test-stat-num fail">'+data.failed+'</div><div class="test-stat-lbl">Failed</div></div>'+
+    '<div class="test-stat-block"><div class="test-stat-num" style="color:var(--'+(allPass?'green':'yellow')+')">'+pct+'%</div><div class="test-stat-lbl">Pass Rate</div></div>'+
+    '<div style="flex:1;min-width:160px;font-size:11px;color:var(--gray);font-family:var(--mono);align-self:center">'+tsLabel+'</div>';
+  sb.style.display='flex';
+
+  // Group results
+  var groups={};
+  data.results.forEach(function(r){
+    var g=r.group||'Other';
+    if(!groups[g]) groups[g]=[];
+    groups[g].push(r);
+  });
+  var html='';
+  Object.keys(groups).forEach(function(g){
+    var gResults=groups[g];
+    var gPass=gResults.filter(function(r){return r.passed}).length;
+    html+='<div class="test-group">';
+    html+='<div class="test-group-title"><i class="fas fa-circle"></i>'+g+'<span style="margin-left:auto;font-size:10px;color:var(--gray-hi)">'+gPass+'/'+gResults.length+' passed</span></div>';
+    html+='<div class="test-results-list">';
+    gResults.forEach(function(r,idx){
+      var rid='tr-'+g.replace(/\s+/g,'_')+'-'+idx;
+      var passCls=r.passed?'pass':'fail';
+      var statusHtml=r.status?'<span class="test-result-status '+(r.passed?'ok':'err')+'">'+r.status+'</span>':'<span class="test-result-status err">ERR</span>';
+      var msHtml=r.elapsed_ms!=null?'<span class="test-result-ms">'+r.elapsed_ms+'ms</span>':'';
+      html+='<div class="test-result-row '+passCls+'">';
+      html+='<div class="test-result-head" onclick="toggleTestDetail(\''+rid+'\')">'+
+        '<div class="test-result-icon '+passCls+'"><i class="fas fa-'+(r.passed?'check':'times')+'"></i></div>'+
+        '<span class="test-result-method">'+r.method+'</span>'+
+        '<span class="test-result-name">'+r.name+'</span>'+
+        '<span class="test-result-url" title="'+r.url+'">'+r.url+'</span>'+
+        statusHtml+msHtml+
+        '<i class="fas fa-chevron-down" style="font-size:9px;color:var(--gray);margin-left:4px"></i>'+
+      '</div>';
+      // Detail panel
+      html+='<div class="test-result-body" id="'+rid+'">';
+      html+='<div class="test-result-body-inner">';
+      // Diagnostic row
+      html+='<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">';
+      html+='<span class="test-from-badge"><i class="fas fa-server" style="margin-right:4px"></i>from: ops-dashboard (VPS)</span>';
+      html+='<span class="test-from-badge"><i class="fas fa-globe" style="margin-right:4px"></i>target: '+r.url+'</span>';
+      if(r.service) html+='<span class="test-from-badge"><i class="fas fa-box" style="margin-right:4px"></i>service: '+r.service+'</span>';
+      if(r.elapsed_ms!=null) html+='<span class="test-from-badge"><i class="fas fa-clock" style="margin-right:4px"></i>'+r.elapsed_ms+'ms</span>';
+      html+='</div>';
+      // Error
+      if(r.error){
+        html+='<div><div class="test-detail-label">Error</div><div class="test-detail-pre" style="color:var(--red)">'+escHtml(r.error)+'</div></div>';
+      }
+      // Response body
+      if(r.body){
+        html+='<div><div class="test-detail-label">Response Body</div><div class="test-detail-pre">'+escHtml(r.body)+'</div></div>';
+      }
+      // Response headers
+      if(r.headers&&Object.keys(r.headers).length){
+        var hdrs=Object.entries(r.headers).map(function(kv){return kv[0]+': '+kv[1]}).join('\n');
+        html+='<div><div class="test-detail-label">Response Headers</div><div class="test-detail-pre">'+escHtml(hdrs)+'</div></div>';
+      }
+      html+='</div></div>'; // body-inner / body
+      html+='</div>'; // row
+    });
+    html+='</div></div>';
+  });
+  document.getElementById('testResultsArea').innerHTML=html;
+
+  // Show AI diagnostics panel with test context
+  diagShowPanel(data);
+}
+
+function toggleTestDetail(id){
+  var el=document.getElementById(id);
+  if(el) el.classList.toggle('show');
+}
+
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function testFromJson() {
+  var fileInput = document.getElementById('customJsonFile');
+  var file = fileInput.files[0];
+  if (!file) {
+    toast('Select a JSON file first', 'err');
+    return;
+  }
+
+  var fd = new FormData();
+  fd.append('file', file);
+
+  var btn = document.getElementById('btnTestJson');
+  var orig = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner spin"></i> Testing...';
+  btn.disabled = true;
+  document.getElementById('testStatsBar').style.display = 'none';
+  document.getElementById('testResultsArea').innerHTML = '<div style="color:var(--gray);padding:30px;text-align:center"><i class="fas fa-spinner spin" style="font-size:24px;color:var(--amber)"></i><br><br>Testing endpoints from JSON...</div>';
+
+  fetch(BASE + '/api/test/from-json', {
+    method: 'POST',
+    body: fd
+  })
+  .then(r => r.json())
+  .then(data => {
+    _testReport = data;
+    renderTestReport(data, false);
+    document.getElementById('btnDownloadReport').style.display = 'inline-flex';
+    toast('Tests complete: ' + data.passed + '/' + data.total + ' passed', data.failed > 0 ? 'err' : 'ok');
+    document.getElementById('jsonTestInfo').innerHTML = '<i class="fas fa-check-circle"></i> Tested ' + data.total + ' endpoints from ' + file.name;
+  })
+  .catch(e => {
+    document.getElementById('testResultsArea').innerHTML = '<div style="color:var(--red);padding:20px">Error: ' + e.message + '</div>';
+    toast('Test failed', 'err');
+  })
+  .finally(() => {
+    btn.innerHTML = orig;
+    btn.disabled = false;
+  });
+}
+/* END DEPRECATED */
+
+/* DEPRECATED: AI Diagnostics Chat JS — in-dashboard LLM chat, not part of 7-project ecosystem */
+/* ══════════════════════════════════════════════════════════════════════════
+   AI DIAGNOSTICS CHAT — LLM-powered test failure analysis
+   Uses browser-direct LLM calls (Groq/Anthropic/DeepSeek).
+   API key stored in localStorage only — never sent to ops-dashboard backend.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+var _diagStorageKey = 'ops-dashboard.llm.config.v1';
+var _diagHistory = [];     // {role:'user'|'assistant', content:string}
+var _diagTestContext = '';  // built from last test results
+var _diagSending = false;
+
+var _diagProviders = {
+  groq: {
+    label: 'Groq API',
+    endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+    models: [
+      {value:'llama-3.3-70b-versatile', label:'Llama 3.3 70B Versatile'},
+      {value:'llama-3.1-8b-instant', label:'Llama 3.1 8B Instant'},
+      {value:'mixtral-8x7b-32768', label:'Mixtral 8x7B'}
+    ],
+    buildHeaders: function(key){ return {'Content-Type':'application/json','Authorization':'Bearer '+key}; },
+    buildBody: function(model,sys,msgs,maxTok){ return {model:model,max_tokens:maxTok,temperature:0.3,messages:[{role:'system',content:sys}].concat(msgs)}; },
+    readText: function(d){ return d&&d.choices&&d.choices[0]&&d.choices[0].message?d.choices[0].message.content:''; },
+    readError: function(d,s){ return (d&&d.error&&d.error.message)||s||'Groq request failed'; }
+  },
+  anthropic: {
+    label: 'Anthropic-Compatible API',
+    endpoint: 'https://api.deepseek.com/anthropic/v1/messages',
+    models: [
+      {value:'deepseek-v4-pro', label:'DeepSeek V4 Pro'},
+      {value:'deepseek-v4-flash', label:'DeepSeek V4 Flash'}
+    ],
+    buildHeaders: function(key){ return {'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}; },
+    buildBody: function(model,sys,msgs,maxTok){ return {model:model,max_tokens:maxTok,system:sys,messages:msgs}; },
+    readText: function(d){ if(!d||!d.content) return ''; return d.content.map(function(b){return b.text||''}).join(''); },
+    readError: function(d,s){ return (d&&d.error&&d.error.message)||s||'Anthropic-compatible request failed'; }
+  },
+  deepseek: {
+    label: 'DeepSeek API',
+    endpoint: 'https://api.deepseek.com/v1/chat/completions',
+    models: [
+      {value:'deepseek-v4-pro', label:'DeepSeek V4 Pro'},
+      {value:'deepseek-v4-flash', label:'DeepSeek V4 Flash'}
+    ],
+    buildHeaders: function(key){ return {'Content-Type':'application/json','Authorization':'Bearer '+key}; },
+    buildBody: function(model,sys,msgs,maxTok){ return {model:model,max_tokens:maxTok,temperature:0.3,messages:[{role:'system',content:sys}].concat(msgs)}; },
+    readText: function(d){ return d&&d.choices&&d.choices[0]&&d.choices[0].message?d.choices[0].message.content:''; },
+    readError: function(d,s){ return (d&&d.error&&d.error.message)||s||'DeepSeek request failed'; }
+  }
+};
+
+/* Architecture context — static reference for the AI */
+var _ARCH_CONTEXT = [
+  '## Awareness-AI Platform Architecture',
+  'Services: Awareness/Manus (port 8078, FastAPI, AI agent runtime), Garage (8066, assistants/models/Qdrant), Argus (8029, legal framework analyzer),',
+  'Pinocchio/Legal (8019, audio transcription/diarization), LegalPipeline (8020, ontology pipeline),',
+  'TheBridge (3010, Node.js case intelligence), Nginx API Gateway (80/443 reverse proxy + TLS), Qdrant (6333, vector DB), Ollama (11434, local LLM).',
+  '',
+  '## Nginx Routing (api-gateway)',
+  '/api/manus/* → manus:8078, /garage/* → garage-api:8066, /api/garage/* → garage-api:8066,',
+  '/api/argus/* → argus:8029, /api/law/* → argus:8029, /api/legal/* → legal:8019,',
+  '/api/dashboard/* → legalpipeline:8020, /ops/* → ops-dashboard:9000,',
+  '/api/bridge/* and /api/files etc → thebridge:3010.',
+  '',
+  '## Common Failure Patterns',
+  '- 502 Bad Gateway: container is down or crashing. Check docker logs.',
+  '- 404 Not Found: route not registered in nginx or the service. Check nginx.conf location blocks.',
+  '- 400/422 on POST: expected — proves route exists but needs a valid request body.',
+  '- Connection refused / timeout: service not started or wrong port binding.',
+  '- 403 Forbidden: likely auth middleware blocking. Check session/token requirements.',
+  '',
+  '## Docker Compose Stack',
+  'All services run via docker compose in awareness-frontend/docker-compose.yml.',
+  'Container naming: awareness-frontend-{service}-1. Restart: docker compose restart {service}.',
+  '',
+  '## Ops Dashboard Test Runner',
+  'Tests run from the VPS (ops-dashboard, port 9000) via urllib to the public domain.',
+  'A pass means the endpoint responded with an expected HTTP status code.',
+  'A fail means the status was unexpected OR the connection failed entirely.',
+].join('\n');
+
+function _diagGetConfig(){
+  try {
+    var raw = localStorage.getItem(_diagStorageKey);
+    var c = raw ? JSON.parse(raw) : {};
+    if(!_diagProviders[c.provider]) c.provider='groq';
+    var p = _diagProviders[c.provider];
+    if(!p.models.some(function(m){return m.value===c.model})) c.model=p.models[0].value;
+    c.apiKey = typeof c.apiKey==='string' ? c.apiKey : '';
+    return c;
+  } catch(e){ return {provider:'groq',model:'llama-3.3-70b-versatile',apiKey:''}; }
+}
+
+function _diagSaveConfigToStorage(cfg){
+  localStorage.setItem(_diagStorageKey, JSON.stringify(cfg));
+}
+
+function diagToggleConfig(){
+  var bar = document.getElementById('diagConfigBar');
+  if(bar.style.display==='none'){
+    bar.style.display='flex';
+    var cfg = _diagGetConfig();
+    document.getElementById('diagProvider').value=cfg.provider;
+    diagPopulateModels(cfg.provider, cfg.model);
+    document.getElementById('diagApiKey').value=cfg.apiKey;
+  } else {
+    bar.style.display='none';
+  }
+}
+
+function diagPopulateModels(providerId, selectedModel){
+  var p = _diagProviders[providerId];
+  var sel = document.getElementById('diagModel');
+  sel.innerHTML = p.models.map(function(m){return '<option value="'+m.value+'">'+m.label+'</option>'}).join('');
+  if(selectedModel && p.models.some(function(m){return m.value===selectedModel})){
+    sel.value = selectedModel;
+  }
+}
+
+function diagProviderChanged(){
+  var pid = document.getElementById('diagProvider').value;
+  diagPopulateModels(pid, null);
+}
+
+function diagSaveConfig(){
+  var cfg = {
+    provider: document.getElementById('diagProvider').value,
+    model: document.getElementById('diagModel').value,
+    apiKey: document.getElementById('diagApiKey').value.trim()
+  };
+  _diagSaveConfigToStorage(cfg);
+  diagSyncStatus();
+  document.getElementById('diagConfigBar').style.display='none';
+  toast('AI config saved','ok');
+}
+
+function diagSyncStatus(){
+  var cfg = _diagGetConfig();
+  var dot = document.getElementById('diagProviderDot');
+  var lbl = document.getElementById('diagProviderLabel');
+  var p = _diagProviders[cfg.provider];
+  if(cfg.apiKey){
+    dot.className='diag-provider-dot ready';
+    lbl.textContent=p.label+' · '+cfg.model.split('-').slice(0,3).join('-');
+  } else {
+    dot.className='diag-provider-dot';
+    lbl.textContent='No API key — click ⚙';
+  }
+}
+
+function _diagBuildTestContext(report){
+  if(!report || !report.results) return '';
+  var lines = ['## API Test Results ('+new Date(report.timestamp).toLocaleString('pt-BR')+')'];
+  lines.push('Total: '+report.total+' | Passed: '+report.passed+' | Failed: '+report.failed);
+  lines.push('');
+
+  var failed = report.results.filter(function(r){return !r.passed});
+  if(failed.length){
+    lines.push('### Failed Endpoints ('+failed.length+')');
+    failed.forEach(function(r){
+      lines.push('- **'+r.method+' '+r.name+'** (service: '+r.service+')');
+      lines.push('  URL: '+r.url);
+      lines.push('  Status: '+(r.status||'N/A')+' (expected: '+(Array.isArray(r.expected_status)?r.expected_status.join('/'):r.expected_status)+')');
+      if(r.error) lines.push('  Error: '+r.error);
+      if(r.body) lines.push('  Body: '+r.body.substring(0,300));
+      lines.push('');
+    });
+  }
+
+  var passed = report.results.filter(function(r){return r.passed});
+  if(passed.length){
+    lines.push('### Passed Endpoints ('+passed.length+')');
+    passed.forEach(function(r){
+      lines.push('- '+r.method+' '+r.name+' ('+r.service+') → '+r.status+' ['+r.elapsed_ms+'ms]');
+    });
+  }
+  return lines.join('\n');
+}
+
+function _diagBuildSystemPrompt(){
+  return [
+    'You are the Awareness-AI Ops Diagnostics Agent. You analyze API test results and propose actionable solutions.',
+    'You have access to the full test report and platform architecture context below.',
+    'When failures are found, provide:',
+    '1. Root cause analysis — why each endpoint failed',
+    '2. Concrete fix steps — exact commands, config changes, or code edits needed',
+    '3. Priority order — fix the most critical/blocking issues first',
+    '4. Verification steps — how to confirm the fix worked',
+    '',
+    'Be concise and technical. Use markdown formatting. Reference specific services, ports, and nginx routes.',
+    'If a POST endpoint returns 400/422, that usually means the route exists but needs a valid body — this is typically a PASS.',
+    'If an endpoint returns 502, the backing container is likely down.',
+    'If an endpoint returns 404, the route may not be registered in nginx or the service.',
+    '',
+    '--- PLATFORM ARCHITECTURE ---',
+    _ARCH_CONTEXT,
+    '',
+    '--- TEST RESULTS ---',
+    _diagTestContext || '(No test results loaded yet. Ask the user to run tests first.)',
+  ].join('\n');
+}
+
+function diagShowPanel(report){
+  _diagTestContext = _diagBuildTestContext(report);
+  _diagHistory = [];
+  var panel = document.getElementById('diagPanel');
+  panel.classList.add('visible');
+  diagSyncStatus();
+
+  // Show initial system message
+  var msgs = document.getElementById('diagMessages');
+  var failCount = report.failed || 0;
+  var initMsg = failCount > 0
+    ? '<i class="fas fa-exclamation-triangle" style="color:var(--amber);margin-right:6px"></i><strong>'+failCount+' endpoint'+(failCount>1?'s':'')+' failed.</strong> I have the full test context loaded. Ask me to analyze failures, find root causes, or build a fix plan.'
+    : '<i class="fas fa-check-circle" style="color:var(--green);margin-right:6px"></i><strong>All '+report.total+' endpoints passed!</strong> I can still help review response times, detect potential issues, or explain the architecture.';
+  msgs.innerHTML = '<div class="diag-msg system">'+initMsg+'</div>';
+}
+
+function diagAddMessage(role, content){
+  var msgs = document.getElementById('diagMessages');
+  var div = document.createElement('div');
+  div.className = 'diag-msg '+role;
+  if(role==='assistant'){
+    div.innerHTML = '<div class="md-body">'+marked.parse(content)+'</div>';
+  } else if(role==='thinking'){
+    div.innerHTML = '<i class="fas fa-spinner"></i> Thinking…';
+    div.id = 'diagThinking';
+  } else {
+    div.textContent = content;
+  }
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function diagRemoveThinking(){
+  var el = document.getElementById('diagThinking');
+  if(el) el.remove();
+}
+
+var _diagQuickPrompts = {
+  'summary': 'Summarize all test failures from the last run. For each failure, state the service, endpoint, HTTP status received vs expected, and the likely cause. Group by service.',
+  'root-cause': 'Perform a root cause analysis of all failed endpoints. Consider: Is the container running? Is nginx routing configured correctly? Is the service route registered? Are there dependency issues between services?',
+  'fix-plan': 'Create a prioritized fix plan for all failed endpoints. For each issue, provide the exact commands or config changes needed to fix it. Include docker restart commands, nginx config edits, or code changes as needed.',
+  'health-check': 'Generate a full service health report based on the test results. Include: which services are fully operational, which are degraded, response time analysis, and any warning signs even among passing tests.',
+  'nginx-debug': 'Analyze the nginx routing for all failed endpoints. Check if the location blocks in nginx.conf are correctly mapping to the upstream services. Suggest any missing or misconfigured routes.'
+};
+
+function diagAsk(quickId){
+  var prompt = _diagQuickPrompts[quickId];
+  if(prompt){
+    document.getElementById('diagInput').value = prompt;
+    diagSend();
+  }
+}
+
+function diagSend(){
+  if(_diagSending) return;
+  var input = document.getElementById('diagInput');
+  var text = input.value.trim();
+  if(!text) return;
+
+  var cfg = _diagGetConfig();
+  if(!cfg.apiKey){
+    diagToggleConfig();
+    toast('Configure an API key first','err');
+    return;
+  }
+
+  _diagSending = true;
+  input.value = '';
+  var btn = document.getElementById('diagSendBtn');
+  btn.disabled = true;
+
+  // Add user message
+  _diagHistory.push({role:'user', content:text});
+  diagAddMessage('user', text);
+  diagAddMessage('thinking', '');
+
+  var provider = _diagProviders[cfg.provider];
+  var systemPrompt = _diagBuildSystemPrompt();
+  var bodyPayload = provider.buildBody(cfg.model, systemPrompt, _diagHistory, 4000);
+  var headers = provider.buildHeaders(cfg.apiKey);
+
+  fetch(provider.endpoint, {
+    method:'POST',
+    headers: headers,
+    body: JSON.stringify(bodyPayload)
+  })
+  .then(function(resp){
+    return resp.json().then(function(data){
+      return {ok:resp.ok, data:data, statusText:resp.statusText};
+    });
+  })
+  .then(function(result){
+    diagRemoveThinking();
+    if(!result.ok){
+      var errMsg = provider.readError(result.data, result.statusText);
+      diagAddMessage('assistant', '**Error:** '+errMsg);
+      _diagHistory.pop(); // remove failed user message from history
+      return;
+    }
+    var reply = provider.readText(result.data);
+    if(!reply){
+      diagAddMessage('assistant', '*The model returned an empty response. Try rephrasing or switching models.*');
+      _diagHistory.pop();
+      return;
+    }
+    _diagHistory.push({role:'assistant', content:reply});
+    var msgEl = diagAddMessage('assistant', reply);
+    msgEl.querySelector('.md-body').insertAdjacentHTML('afterend',
+      '<div class="msg-meta">'+cfg.provider+' · '+cfg.model+'</div>');
+  })
+  .catch(function(e){
+    diagRemoveThinking();
+    diagAddMessage('assistant', '**Connection error:** '+e.message+'. Check your API key and network.');
+    _diagHistory.pop();
+  })
+  .finally(function(){
+    _diagSending = false;
+    btn.disabled = false;
+    input.focus();
+  });
+}
+/* END DEPRECATED */
+
+
+/* DEPRECATED: testFromJson (second copy) — part of the deprecated API Test feature */
+function testFromJson() {
+  var fileInput = document.getElementById('customJsonFile');
+  var file = fileInput.files[0];
+  if (!file) {
+    toast('Select a JSON file first', 'err');
+    return;
+  }
+
+  var baseUrl = document.getElementById('customJsonBaseUrl').value.trim();
+  var perServicePort = document.getElementById('customJsonPerServicePort').checked;
+
+  var fd = new FormData();
+  fd.append('file', file);
+  if (baseUrl) {
+    fd.append('base_url', baseUrl);
+  }
+  fd.append('per_service_port', perServicePort ? 'true' : 'false');
+
+  var btn = document.getElementById('btnTestJson');
+  var orig = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner spin"></i> Testing...';
+  btn.disabled = true;
+  document.getElementById('testStatsBar').style.display = 'none';
+  document.getElementById('testResultsArea').innerHTML = '<div style="color:var(--gray);padding:30px;text-align:center"><i class="fas fa-spinner spin" style="font-size:24px;color:var(--amber)"></i><br><br>Testing endpoints from JSON...</div>';
+
+  fetch(BASE + '/api/test/from-json', {
+    method: 'POST',
+    body: fd
+  })
+  .then(response => {
+    // First, try to parse as JSON. If response is not OK, still parse to get error message.
+    return response.json().then(data => {
+      if (!response.ok) {
+        throw new Error(data.error || `HTTP ${response.status}`);
+      }
+      return data;
+    });
+  })
+  .then(data => {
+    _testReport = data;
+    renderTestReport(data, false);
+    document.getElementById('btnDownloadReport').style.display = 'inline-flex';
+    toast('Tests complete: ' + data.passed + '/' + data.total + ' passed', data.failed > 0 ? 'err' : 'ok');
+    var info = '<i class="fas fa-check-circle"></i> Tested ' + data.total + ' endpoints from ' + file.name;
+    if (baseUrl) info += ' (base URL: ' + baseUrl + ')';
+    if (perServicePort) info += ' • per‑service ports';
+    document.getElementById('jsonTestInfo').innerHTML = info;
+  })
+  .catch(e => {
+    console.error('JSON test error:', e);
+    document.getElementById('testResultsArea').innerHTML = '<div style="color:var(--red);padding:20px">Error: ' + e.message + '</div>';
+    toast('Test failed: ' + e.message, 'err');
+  })
+  .finally(() => {
+    btn.innerHTML = orig;
+    btn.disabled = false;
+  });
+}
+/* END DEPRECATED */
+
+/* ── INIT ── */
+diagSyncStatus();
+loadQuickLinks();
+refreshAll();
+setAutoRefresh();
+</script>
+</body>
+</html>

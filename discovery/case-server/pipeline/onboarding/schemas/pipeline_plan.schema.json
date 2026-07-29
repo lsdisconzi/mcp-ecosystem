@@ -1,0 +1,161 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://discovery.local/schemas/pipeline_plan.schema.json",
+  "title": "PipelinePlan",
+  "description": "Per-directory layer configuration confirmed by the user in P4. Drives the pilot run (P5) and the full run (P6). Materialization at the destination_root happens at P6.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "spec_version",
+    "session_id",
+    "blueprint_ref",
+    "destination_root",
+    "main_directories",
+    "global_options",
+    "created_at"
+  ],
+  "properties": {
+    "spec_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "session_id": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "blueprint_ref": {
+      "type": "string",
+      "description": "Path or id of the TreeBlueprint v2 this plan references."
+    },
+    "destination_root": {
+      "type": "string",
+      "description": "Absolute filesystem path the user picked at P4.5. Materialization writes here at P6.",
+      "minLength": 1
+    },
+    "destination_collision_policy": {
+      "type": "string",
+      "enum": ["abort", "merge", "rename_existing", "overwrite"],
+      "default": "abort",
+      "description": "What to do if destination_root already contains files."
+    },
+    "main_directories": {
+      "type": "array",
+      "description": "User-flagged 'main' directories. Pilot run samples one file from each. Typically the top-level nodes of the blueprint plus selected second-level nodes.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "layers"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path relative to destination_root, e.g. 'INCIDENT_2024-07-05/transcripts'."
+          },
+          "layers": {
+            "type": "array",
+            "description": "Pipeline layers to run on files in this directory. Empty array means index-only.",
+            "items": { "type": "string", "enum": ["L1-L3", "L4", "L5-L7", "comprehend"] },
+            "uniqueItems": true
+          },
+          "options": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "entity_types": {
+                "type": "array",
+                "items": { "type": "string", "enum": ["people", "organizations", "laws", "places", "events", "documents"] }
+              },
+              "intelligence_focus": {
+                "type": "array",
+                "items": { "type": "string", "enum": ["violations", "timeline", "narrative", "gaps", "law_registry"] }
+              },
+              "language_hint": { "type": "string" },
+              "min_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+              "max_files": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Optional cap. Useful for cost control on large folders."
+              }
+            }
+          },
+          "pilot": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Pilot-run config for this directory.",
+            "properties": {
+              "sample_count": { "type": "integer", "minimum": 1, "default": 1 },
+              "sample_strategy": {
+                "type": "string",
+                "enum": ["first", "random", "largest", "most_recent", "user_picked"],
+                "default": "random"
+              },
+              "user_picked_files": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Required when sample_strategy=='user_picked'. Paths relative to this directory."
+              },
+              "deeper_sample": {
+                "type": "boolean",
+                "default": false,
+                "description": "When true, also sample one file per child subdirectory (Q2 'deeper sample' toggle)."
+              }
+            }
+          }
+        }
+      }
+    },
+    "global_options": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["llm_provider"],
+      "properties": {
+        "llm_provider": {
+          "type": "string",
+          "description": "Provider id resolved via case-server/pipeline/llm_client.js"
+        },
+        "max_concurrency": { "type": "integer", "minimum": 1, "default": 4 },
+        "halt_on_error": { "type": "boolean", "default": false },
+        "dry_run": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true, the pipeline executes classification but skips LLM calls. Useful for cost estimation."
+        },
+        "cost_ceiling_usd": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Optional hard cap on total LLM spend for the full run."
+        }
+      }
+    },
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Captures user overrides of soft-required guards from the blueprint. Recorded for audit.",
+      "properties": {
+        "deleted_required_paths": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "reason"],
+            "additionalProperties": false,
+            "properties": {
+              "path": { "type": "string" },
+              "reason": { "type": "string" }
+            }
+          }
+        },
+        "renamed_paths": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["from", "to"],
+            "additionalProperties": false,
+            "properties": {
+              "from": { "type": "string" },
+              "to": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

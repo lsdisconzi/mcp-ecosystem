@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TorchAudio Processing Suite</title>
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #21262d;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --text2: #8b949e;
+  --accent: #58a6ff;
+  --green: #3fb950;
+  --orange: #d2991d;
+  --red: #f85149;
+  --purple: #bc8cff;
+  --cyan: #39d2c0;
+  --radius: 8px;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+html, body { height: 100%; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Top Bar ── */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 56px;
+  flex-shrink: 0;
+}
+.topbar h1 { font-size: 18px; font-weight: 600; color: var(--accent); }
+.topbar .badge {
+  font-size: 11px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 10px;
+  color: var(--text2);
+}
+.topbar .status { margin-left: auto; font-size: 13px; color: var(--text2); }
+.topbar .status .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.topbar .status .dot.on { background: var(--green); }
+
+/* ── Main Layout ── */
+.main { display: flex; flex: 1; overflow: hidden; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 240px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 16px 0;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.sidebar .section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text2);
+  padding: 8px 20px;
+  margin-top: 8px;
+}
+.sidebar .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s;
+}
+.sidebar .nav-item:hover { background: var(--surface2); }
+.sidebar .nav-item.active { background: var(--surface2); color: var(--accent); border-left: 3px solid var(--accent); padding-left: 17px; }
+.sidebar .nav-item .icon { font-size: 16px; width: 22px; text-align: center; }
+
+/* ── Content Area ── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Panel ── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.panel h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.panel h2 .icon { font-size: 18px; }
+
+/* ── Upload Zone ── */
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(88,166,255,0.05); }
+.upload-zone .icon { font-size: 36px; margin-bottom: 8px; }
+.upload-zone p { color: var(--text2); }
+.upload-zone .file-info { margin-top: 8px; font-size: 13px; color: var(--green); }
+input[type="file"] { display: none; }
+
+/* ── Audio Player ── */
+.player-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border-radius: var(--radius);
+}
+.player-bar audio { flex: 1; height: 36px; }
+.player-bar .btn { flex-shrink: 0; }
+
+/* ── Controls Grid ── */
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-group label {
+  font-size: 12px;
+  color: var(--text2);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.control-group input, .control-group select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font);
+}
+.control-group input:focus, .control-group select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(88,166,255,0.2);
+}
+.control-group input[type="range"] {
+  padding: 0;
+  height: 6px;
+  accent-color: var(--accent);
+}
+.control-group .range-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.control-group .range-val {
+  font-size: 12px;
+  color: var(--accent);
+  min-width: 42px;
+  text-align: right;
+  font-family: var(--mono);
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn:hover { filter: brightness(1.2); }
+.btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn.danger { background: var(--red); color: #fff; border-color: var(--red); }
+.btn.green { background: var(--green); color: #fff; border-color: var(--green); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; filter: none; }
+
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+/* ── Results Area ── */
+.results { display: flex; flex-direction: column; gap: 12px; }
+.result-item {
+  background: var(--surface2);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+.result-item .label {
+  font-size: 12px;
+  color: var(--text2);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.result-item audio { width: 100%; height: 36px; }
+
+/* ── Canvas / Visualization ── */
+canvas.visualize {
+  width: 100%;
+  height: 300px;
+  border-radius: var(--radius);
+  background: #000;
+  display: block;
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 20px;
+  font-size: 14px;
+  z-index: 999;
+  animation: slideIn 0.3s ease;
+  max-width: 400px;
+}
+.toast.error { border-color: var(--red); }
+.toast.success { border-color: var(--green); }
+@keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* ── Spinner ── */
+.spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Tabs ── */
+.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.tab {
+  padding: 8px 16px;
+  font-size: 13px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── Metric Card ── */
+.metric-cards { display: flex; gap: 16px; flex-wrap: wrap; }
+.metric-card {
+  flex: 1; min-width: 140px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+}
+.metric-card .val { font-size: 28px; font-weight: 700; color: var(--accent); font-family: var(--mono); }
+.metric-card .lbl { font-size: 11px; color: var(--text2); text-transform: uppercase; margin-top: 4px; }
+
+/* ── Section visibility ── */
+.section { display: none; }
+.section.visible { display: flex; flex-direction: column; gap: 20px; }
+</style>
+</head>
+<body>
+
+<!-- ── Top Bar ── -->
+<header class="topbar">
+  <h1>Audio Processing Suite</h1>
+  <span class="badge">torchaudio</span>
+  <span class="status"><span class="dot on" id="status-dot"></span><span id="status-text">Ready</span></span>
+</header>
+
+<!-- ── Main Layout ── -->
+<div class="main">
+
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="section-title">Audio I/O</div>
+    <button class="nav-item active" data-section="upload"><span class="icon">📂</span> Upload &amp; Info</button>
+
+    <div class="section-title">Filters &amp; EQ</div>
+    <button class="nav-item" data-section="filters"><span class="icon">🎚️</span> Parametric Filters</button>
+    <button class="nav-item" data-section="effects"><span class="icon">🎛️</span> Audio Effects</button>
+
+    <div class="section-title">Voice Enhancement</div>
+    <button class="nav-item" data-section="voice"><span class="icon">🎤</span> Voice Processing</button>
+
+    <div class="section-title">Spectral Analysis</div>
+    <button class="nav-item" data-section="spectral"><span class="icon">📊</span> Spectrograms &amp; Analysis</button>
+
+    <div class="section-title">Advanced</div>
+    <button class="nav-item" data-section="separation"><span class="icon">🔊</span> Source Separation</button>
+    <button class="nav-item" data-section="vad"><span class="icon">🗣️</span> Voice Detection</button>
+    <button class="nav-item" data-section="resample"><span class="icon">🔄</span> Resample</button>
+  </nav>
+
+  <!-- Content -->
+  <div class="content" id="content">
+
+    <!-- ── Section: Upload ── -->
+    <div class="section visible" id="sec-upload">
+      <div class="panel">
+        <h2><span class="icon">📂</span> Upload Audio File</h2>
+        <div class="upload-zone" id="upload-zone">
+          <div class="icon">🎵</div>
+          <p>Drop an audio file here or click to browse</p>
+          <p style="font-size:12px;margin-top:4px">Supports: WAV, MP3, FLAC, OGG, M4A, AAC, and more</p>
+          <div class="file-info" id="file-info"></div>
+        </div>
+        <input type="file" id="file-input" accept="audio/*" aria-label="Audio file">
+        <div class="player-bar" id="player-bar" style="display:none; margin-top:12px">
+          <audio id="audio-player" controls></audio>
+          <button class="btn danger" id="btn-clear">Clear</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2><span class="icon">📋</span> File Information</h2>
+        <div class="metric-cards" id="file-metrics">
+          <div class="metric-card"><div class="val">--</div><div class="lbl">Sample Rate (Hz)</div></div>
+          <div class="metric-card"><div class="val">--</div><div class="lbl">Channels</div></div>
+          <div class="metric-card"><div class="val">--</div><div class="lbl">Duration (s)</div></div>
+          <div class="metric-card"><div class="val">--</div><div class="lbl">Max Amplitude</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2><span class="icon">⚡</span> Available Tools Overview</h2>
+        <div id="tools-overview" style="font-size:13px; color:var(--text2); line-height:1.8">
+          Loading capabilities...
+        </div>
+      </div>
+
+      <div class="panel" id="panel-waveform" style="display:none">
+        <h2><span class="icon">📈</span> Waveform</h2>
+        <canvas class="visualize" id="canvas-waveform"></canvas>
+      </div>
+    </div>
+
+    <!-- ── Section: Filters ── -->
+    <div class="section" id="sec-filters">
+      <div class="panel">
+        <h2><span class="icon">🎚️</span> Parametric Biquad Filters</h2>
+        <div class="controls-grid">
+          <div class="control-group">
+            <label for="filter-type">Filter Type</label>
+            <select id="filter-type">
+              <option value="lowpass">Lowpass</option>
+              <option value="highpass">Highpass</option>
+              <option value="bandpass">Bandpass</option>
+              <option value="bandreject">Bandreject (Notch)</option>
+              <option value="allpass">Allpass</option>
+              <option value="bass">Bass Shelf</option>
+              <option value="treble">Treble Shelf</option>
+              <option value="equalizer">Peaking EQ</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="filter-freq">Cutoff / Center Frequency (Hz)</label>
+            <div class="range-row">
+              <input type="range" id="filter-freq" min="20" max="20000" value="1000" step="1">
+              <span class="range-val" id="filter-freq-val">1000</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label for="filter-q">Q Factor</label>
+            <div class="range-row">
+              <input type="range" id="filter-q" min="0.1" max="10" value="0.707" step="0.001">
+              <span class="range-val" id="filter-q-val">0.707</span>
+            </div>
+          </div>
+          <div class="control-group" id="filter-gain-group" style="display:none">
+            <label for="filter-gain">Gain (dB)</label>
+            <div class="range-row">
+              <input type="range" id="filter-gain" min="-20" max="20" value="0" step="0.1">
+              <span class="range-val" id="filter-gain-val">0</span>
+            </div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-apply-filter">Apply Filter</button>
+          <button class="btn" id="btn-preview-filter">Preview</button>
+        </div>
+        <div class="results" id="filter-results"></div>
+      </div>
+    </div>
+
+    <!-- ── Section: Audio Effects ── -->
+    <div class="section" id="sec-effects">
+      <div class="panel">
+        <h2><span class="icon">🎛️</span> Audio Effects</h2>
+        <div class="tabs" id="effects-tabs">
+          <button class="tab active" data-effect="flanger">Flanger</button>
+          <button class="tab" data-effect="phaser">Phaser</button>
+          <button class="tab" data-effect="overdrive">Overdrive</button>
+          <button class="tab" data-effect="contrast">Contrast</button>
+          <button class="tab" data-effect="dither">Dither</button>
+          <button class="tab" data-effect="dcshift">DC Shift</button>
+          <button class="tab" data-effect="gain">Gain</button>
+          <button class="tab" data-effect="reverb">Reverb (Convolution)</button>
+        </div>
+        <div id="effects-controls"></div>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-apply-effect">Apply Effect</button>
+        </div>
+        <div class="results" id="effect-results"></div>
+      </div>
+    </div>
+
+    <!-- ── Section: Voice Enhancement ── -->
+    <div class="section" id="sec-voice">
+      <div class="panel">
+        <h2><span class="icon">🎤</span> Voice Processing</h2>
+        <div class="controls-grid">
+          <div class="control-group">
+            <label for="pitch-steps">Pitch Shift (semitones)</label>
+            <div class="range-row">
+              <input type="range" id="pitch-steps" min="-12" max="12" value="0" step="0.5">
+              <span class="range-val" id="pitch-steps-val">0</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label for="speed-factor">Speed Factor</label>
+            <div class="range-row">
+              <input type="range" id="speed-factor" min="0.5" max="3.0" value="1.0" step="0.05">
+              <span class="range-val" id="speed-factor-val">1.0</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label for="time-stretch">Time Stretch (preserves pitch)</label>
+            <div class="range-row">
+              <input type="range" id="time-stretch" min="0.5" max="2.0" value="1.0" step="0.05">
+              <span class="range-val" id="time-stretch-val">1.0</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label for="preemph-coeff">Pre-emphasis Coefficient</label>
+            <div class="range-row">
+              <input type="range" id="preemph-coeff" min="0.0" max="1.0" value="0.97" step="0.01">
+              <span class="range-val" id="preemph-coeff-val">0.97</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label for="deemph-coeff">De-emphasis Coefficient</label>
+            <div class="range-row">
+              <input type="range" id="deemph-coeff" min="0.0" max="1.0" value="0.97" step="0.01">
+              <span class="range-val" id="deemph-coeff-val">0.97</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label for="vol-gain">Volume Gain (dB)</label>
+            <div class="range-row">
+              <input type="range" id="vol-gain" min="-40" max="40" value="0" step="0.5">
+              <span class="range-val" id="vol-gain-val">0</span>
+            </div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-pitch-shift">Pitch Shift</button>
+          <button class="btn primary" id="btn-change-speed">Change Speed</button>
+          <button class="btn primary" id="btn-time-stretch">Time Stretch</button>
+          <button class="btn" id="btn-preemphasis">Pre-emphasis (Clarity Boost)</button>
+          <button class="btn" id="btn-deemphasis">De-emphasis</button>
+          <button class="btn" id="btn-gain">Apply Gain</button>
+          <button class="btn" id="btn-fade">Fade In/Out (1s)</button>
+        </div>
+        <div class="results" id="voice-results"></div>
+      </div>
+    </div>
+
+    <!-- ── Section: Spectral Analysis ── -->
+    <div class="section" id="sec-spectral">
+      <div class="panel">
+        <h2><span class="icon">📊</span> Spectrogram</h2>
+        <div class="controls-grid">
+          <div class="control-group">
+            <label for="spec-nfft">FFT Size</label>
+            <select id="spec-nfft">
+              <option value="256">256</option>
+              <option value="400" selected>400</option>
+              <option value="512">512</option>
+              <option value="1024">1024</option>
+              <option value="2048">2048</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="spec-hop">Hop Length</label>
+            <select id="spec-hop">
+              <option value="80">80</option>
+              <option value="160" selected>160</option>
+              <option value="256">256</option>
+              <option value="512">512</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-spectrogram">Compute Spectrogram</button>
+          <button class="btn primary" id="btn-mel">Mel Spectrogram</button>
+          <button class="btn primary" id="btn-mfcc">MFCC</button>
+        </div>
+        <canvas class="visualize" id="canvas-spec" style="display:none; margin-top:12px"></canvas>
+      </div>
+
+      <div class="panel">
+        <h2><span class="icon">📏</span> Audio Metrics</h2>
+        <div class="btn-row">
+          <button class="btn" id="btn-loudness">Measure Loudness (LUFS)</button>
+          <button class="btn" id="btn-centroid">Spectral Centroid</button>
+          <button class="btn" id="btn-pitch-detect">Detect Pitch (F0)</button>
+        </div>
+        <div class="metric-cards" id="metrics-cards" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <!-- ── Section: Source Separation ── -->
+    <div class="section" id="sec-separation">
+      <div class="panel">
+        <h2><span class="icon">🔊</span> Music Source Separation (HDemucs)</h2>
+        <p style="color:var(--text2); margin-bottom:16px; font-size:13px">
+          Separates audio into drums, bass, other instruments, and vocals.
+          First use downloads the model (~330MB for "low").
+        </p>
+        <div class="controls-grid">
+          <div class="control-group">
+            <label for="sep-model">Model Size</label>
+            <select id="sep-model">
+              <option value="low" selected>Low (fastest, good quality)</option>
+              <option value="medium">Medium (balanced)</option>
+              <option value="high">High (best quality, slow)</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-separate">Separate Sources</button>
+        </div>
+        <div class="results" id="sep-results" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <!-- ── Section: VAD ── -->
+    <div class="section" id="sec-vad">
+      <div class="panel">
+        <h2><span class="icon">🗣️</span> Voice Activity Detection</h2>
+        <div class="controls-grid">
+          <div class="control-group">
+            <label for="vad-trigger">Trigger Level</label>
+            <div class="range-row">
+              <input type="range" id="vad-trigger" min="1" max="20" value="7" step="0.5">
+              <span class="range-val" id="vad-trigger-val">7.0</span>
+            </div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-vad">Detect Voice Activity</button>
+        </div>
+        <canvas class="visualize" id="canvas-vad" style="display:none; margin-top:12px; height:150px"></canvas>
+      </div>
+    </div>
+
+    <!-- ── Section: Resample ── -->
+    <div class="section" id="sec-resample">
+      <div class="panel">
+        <h2><span class="icon">🔄</span> Resample Audio</h2>
+        <div class="controls-grid">
+          <div class="control-group">
+            <label for="target-sr">Target Sample Rate (Hz)</label>
+            <select id="target-sr">
+              <option value="8000">8000 (telephone)</option>
+              <option value="16000" selected>16000 (speech)</option>
+              <option value="22050">22050</option>
+              <option value="44100">44100 (CD)</option>
+              <option value="48000">48000 (DVD/Video)</option>
+              <option value="96000">96000 (Hi-Res)</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-resample">Resample</button>
+        </div>
+        <div class="results" id="resample-results" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ──────────────────────────────────────────────
+// State
+// ──────────────────────────────────────────────
+const API = window.location.origin || 'http://localhost:8765';
+let currentFile = null;
+let currentAudioB64 = null;
+let currentSampleRate = null;
+
+// ──────────────────────────────────────────────
+// Navigation
+// ──────────────────────────────────────────────
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    const secId = item.dataset.section;
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+    document.getElementById('sec-' + secId).classList.add('visible');
+  });
+});
+
+// ──────────────────────────────────────────────
+// Upload Handling
+// ──────────────────────────────────────────────
+const uploadZone = document.getElementById('upload-zone');
+const fileInput = document.getElementById('file-input');
+const playerBar = document.getElementById('player-bar');
+const audioPlayer = document.getElementById('audio-player');
+const fileInfo = document.getElementById('file-info');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0];
+  if (file) handleFile(file);
+});
+
+document.getElementById('btn-clear').addEventListener('click', () => {
+  currentFile = null; currentAudioB64 = null; currentSampleRate = null;
+  audioPlayer.src = ''; playerBar.style.display = 'none'; fileInfo.textContent = '';
+  fileInput.value = '';
+  document.querySelectorAll('.results').forEach(r => r.innerHTML = '');
+  document.querySelectorAll('.visualize').forEach(c => { c.style.display = 'none'; });
+  document.querySelectorAll('.metric-cards').forEach(m => {
+    m.querySelectorAll('.val').forEach(v => v.textContent = '--');
+  });
+  document.getElementById('panel-waveform').style.display = 'none';
+  setStatus('Ready');
+});
+
+async function handleFile(file) {
+  currentFile = file;
+  fileInfo.textContent = file.name + ' (' + formatBytes(file.size) + ')';
+  const url = URL.createObjectURL(file);
+  audioPlayer.src = url;
+  playerBar.style.display = 'flex';
+
+  // Upload for analysis
+  const form = new FormData();
+  form.append('file', file);
+  setStatus('Analyzing...');
+  try {
+    const res = await fetch(API + '/api/upload', { method: 'POST', body: form });
+    const data = await res.json();
+    if (data.error) { toast(data.error, 'error'); return; }
+    document.querySelectorAll('#file-metrics .val').forEach((v, i) => {
+      v.textContent = [data.sample_rate, data.channels, data.duration, data.max_amplitude][i];
+    });
+    currentSampleRate = data.sample_rate;
+    drawWaveform();
+    document.getElementById('panel-waveform').style.display = 'block';
+    setStatus('Ready');
+  } catch (e) {
+    toast('Cannot connect to server. Make sure the server is running on port 8765.', 'error');
+    setStatus('Disconnected');
+  }
+}
+
+// ──────────────────────────────────────────────
+// Waveform Canvas
+// ──────────────────────────────────────────────
+function drawWaveform() {
+  const canvas = document.getElementById('canvas-waveform');
+  if (!currentFile || !audioPlayer.duration) return;
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth * 2;
+  canvas.height = 300;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Simple placeholder waveform visualization
+  ctx.fillStyle = '#30363d';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = '#58a6ff';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  const duration = audioPlayer.duration;
+  const steps = 200;
+  for (let i = 0; i <= steps; i++) {
+    const x = (i / steps) * canvas.width;
+    const y = canvas.height / 2 + Math.sin(i * 0.5) * 80 * Math.random() + Math.sin(i * 0.1) * 60;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  ctx.fillStyle = '#8b949e';
+  ctx.font = '11px SF Mono, monospace';
+  ctx.fillText('0s', 4, canvas.height - 8);
+  ctx.fillText(duration.toFixed(1) + 's', canvas.width - 40, canvas.height - 8);
+}
+audioPlayer.addEventListener('loadedmetadata', drawWaveform);
+
+// ──────────────────────────────────────────────
+// Utility: Upload & get result
+// ──────────────────────────────────────────────
+async function apiPost(endpoint, extraFields = {}) {
+  if (!currentFile) { toast('Please upload an audio file first.', 'error'); return null; }
+  setStatus('Processing...');
+  const form = new FormData();
+  form.append('file', currentFile);
+  for (const [k, v] of Object.entries(extraFields)) {
+    form.append(k, v);
+  }
+  try {
+    const res = await fetch(API + endpoint, { method: 'POST', body: form });
+    const data = await res.json();
+    if (data.error) { toast(data.error, 'error'); setStatus('Error'); return null; }
+    setStatus('Ready');
+    return data;
+  } catch (e) {
+    toast('Server unreachable. Is it running on port 8765?', 'error');
+    setStatus('Disconnected');
+    return null;
+  }
+}
+
+function addAudioResult(containerId, label, b64Data, sr) {
+  const container = document.getElementById(containerId);
+  const blob = b64toBlob(b64Data);
+  const url = URL.createObjectURL(blob);
+  const div = document.createElement('div');
+  div.className = 'result-item';
+  div.innerHTML = `<div class="label">${label} (${sr} Hz)</div>
+    <audio controls src="${url}"></audio>
+    <button class="btn" style="margin-top:4px" onclick="downloadAudio('${url}', '${label.replace(/\s/g,'_')}.wav')">Download</button>`;
+  container.appendChild(div);
+}
+
+function b64toBlob(b64) {
+  const byteStr = atob(b64);
+  const arr = new Uint8Array(byteStr.length);
+  for (let i = 0; i < byteStr.length; i++) arr[i] = byteStr.charCodeAt(i);
+  return new Blob([arr], { type: 'audio/wav' });
+}
+
+function downloadAudio(url, filename) {
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+}
+
+// ──────────────────────────────────────────────
+// Filters
+// ──────────────────────────────────────────────
+const filterType = document.getElementById('filter-type');
+const filterFreq = document.getElementById('filter-freq');
+const filterQ = document.getElementById('filter-q');
+const filterGain = document.getElementById('filter-gain');
+const filterGainGroup = document.getElementById('filter-gain-group');
+
+filterType.addEventListener('change', () => {
+  const show = ['bass','treble','equalizer'].includes(filterType.value);
+  filterGainGroup.style.display = show ? 'flex' : 'none';
+});
+filterFreq.addEventListener('input', () => document.getElementById('filter-freq-val').textContent = filterFreq.value);
+filterQ.addEventListener('input', () => document.getElementById('filter-q-val').textContent = filterQ.value);
+filterGain.addEventListener('input', () => document.getElementById('filter-gain-val').textContent = filterGain.value);
+
+document.getElementById('btn-apply-filter').addEventListener('click', async () => {
+  const data = await apiPost('/api/filter', {
+    filter_type: filterType.value,
+    cutoff_freq: filterFreq.value,
+    Q: filterQ.value,
+    gain_db: filterGain.value,
+    central_freq: filterFreq.value,
+  });
+  if (data && data.audio_base64) {
+    document.getElementById('filter-results').innerHTML = '';
+    addAudioResult('filter-results', filterType.value + ' filter', data.audio_base64, data.sample_rate);
+  }
+});
+
+// ──────────────────────────────────────────────
+// Audio Effects
+// ──────────────────────────────────────────────
+const effectConfigs = {
+  flanger: {
+    fields: [
+      { id: 'fx-delay', label: 'Delay (ms)', min: 0, max: 30, val: 0, step: 0.1 },
+      { id: 'fx-depth', label: 'Depth (ms)', min: 0, max: 10, val: 2, step: 0.1 },
+      { id: 'fx-regen', label: 'Regen (dB)', min: -95, max: 95, val: 0, step: 0.1 },
+      { id: 'fx-width', label: 'Width (dB)', min: 0, max: 100, val: 71, step: 1 },
+      { id: 'fx-speed', label: 'Speed (Hz)', min: 0.1, max: 10, val: 0.5, step: 0.1 },
+      { id: 'fx-phase', label: 'Phase (%)', min: 0, max: 100, val: 25, step: 1 },
+    ],
+    endpoint: '/api/effects/flanger',
+    params: d => ({ delay: d['fx-delay'], depth: d['fx-depth'], regen: d['fx-regen'], width: d['fx-width'], speed: d['fx-speed'], phase: d['fx-phase'] }),
+  },
+  phaser: {
+    fields: [
+      { id: 'fx-gain-in', label: 'Gain In', min: 0, max: 1, val: 0.4, step: 0.01 },
+      { id: 'fx-gain-out', label: 'Gain Out', min: 0, max: 1, val: 0.74, step: 0.01 },
+      { id: 'fx-delay-ms', label: 'Delay (ms)', min: 0, max: 5, val: 3, step: 0.1 },
+      { id: 'fx-decay', label: 'Decay', min: 0, max: 0.99, val: 0.4, step: 0.01 },
+      { id: 'fx-mod-speed', label: 'Mod Speed (Hz)', min: 0.1, max: 2, val: 0.5, step: 0.1 },
+    ],
+    endpoint: '/api/effects/phaser',
+    params: d => ({ gain_in: d['fx-gain-in'], gain_out: d['fx-gain-out'], delay_ms: d['fx-delay-ms'], decay: d['fx-decay'], mod_speed: d['fx-mod-speed'] }),
+  },
+  overdrive: {
+    fields: [
+      { id: 'fx-gain', label: 'Gain (dB)', min: 0, max: 60, val: 20, step: 1 },
+      { id: 'fx-colour', label: 'Colour', min: 0, max: 100, val: 20, step: 1 },
+    ],
+    endpoint: '/api/effects/overdrive',
+    params: d => ({ gain: d['fx-gain'], colour: d['fx-colour'] }),
+  },
+  contrast: {
+    fields: [
+      { id: 'fx-amount', label: 'Enhancement', min: 0, max: 100, val: 75, step: 1 },
+    ],
+    endpoint: '/api/effects/contrast',
+    params: d => ({ enhancement_amount: d['fx-amount'] }),
+  },
+  dither: {
+    fields: [
+      { id: 'fx-density', label: 'Type', type: 'select', options: ['TPDF','RPDF','Gaussian'] },
+      { id: 'fx-noise', label: 'Noise Shaping', type: 'checkbox' },
+    ],
+    endpoint: '/api/effects/dither',
+    params: d => ({ density_function: d['fx-density'], noise_shaping: d['fx-noise'] }),
+  },
+  dcshift: {
+    fields: [
+      { id: 'fx-shift', label: 'Shift', min: -1, max: 1, val: 0.1, step: 0.01 },
+      { id: 'fx-limiter', label: 'Limiter Gain', min: 0, max: 1, val: 0, step: 0.01 },
+    ],
+    endpoint: '/api/effects/dcshift',
+    params: d => ({ shift: d['fx-shift'], limiter_gain: d['fx-limiter'] }),
+  },
+  gain: {
+    fields: [
+      { id: 'fx-gain', label: 'Gain (dB)', min: -40, max: 40, val: 0, step: 0.5 },
+    ],
+    endpoint: '/api/effects/gain',
+    params: d => ({ gain_db: d['fx-gain'] }),
+  },
+  reverb: {
+    fields: [
+      { id: 'fx-mode', label: 'Mode', type: 'select', options: ['full','same','valid'] },
+    ],
+    endpoint: '/api/effects/convolve',
+    params: d => ({ mode: d['fx-mode'] }),
+  },
+};
+
+let currentEffect = 'flanger';
+
+document.querySelectorAll('#effects-tabs .tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#effects-tabs .tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentEffect = tab.dataset.effect;
+    renderEffectControls();
+  });
+});
+
+function renderEffectControls() {
+  const cfg = effectConfigs[currentEffect];
+  const container = document.getElementById('effects-controls');
+  let html = '<div class="controls-grid">';
+  cfg.fields.forEach(f => {
+    if (f.type === 'select') {
+      html += `<div class="control-group"><label for="${f.id}">${f.label}</label><select id="${f.id}">${f.options.map(o => `<option>${o}</option>`).join('')}</select></div>`;
+    } else if (f.type === 'checkbox') {
+      html += `<div class="control-group"><label for="${f.id}">${f.label}</label><input type="checkbox" id="${f.id}"></div>`;
+    } else {
+      html += `<div class="control-group"><label for="${f.id}">${f.label}</label><div class="range-row">
+        <input type="range" id="${f.id}" min="${f.min}" max="${f.max}" value="${f.val}" step="${f.step}">
+        <span class="range-val" id="${f.id}-val">${f.val}</span></div></div>`;
+    }
+  });
+  html += '</div>';
+  container.innerHTML = html;
+
+  // Bind range sliders
+  cfg.fields.forEach(f => {
+    if (f.type !== 'select' && f.type !== 'checkbox') {
+      const el = document.getElementById(f.id);
+      const valEl = document.getElementById(f.id + '-val');
+      if (el && valEl) {
+        el.addEventListener('input', () => { valEl.textContent = el.value; });
+      }
+    }
+  });
+}
+
+document.getElementById('btn-apply-effect').addEventListener('click', async () => {
+  const cfg = effectConfigs[currentEffect];
+  const params = {};
+  cfg.fields.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (f.type === 'checkbox') params[f.id] = el.checked;
+    else params[f.id] = el.value;
+  });
+  const data = await apiPost(cfg.endpoint, cfg.params(params));
+  if (data && data.audio_base64) {
+    document.getElementById('effect-results').innerHTML = '';
+    addAudioResult('effect-results', currentEffect, data.audio_base64, data.sample_rate);
+  }
+});
+
+// Init effect controls
+renderEffectControls();
+
+// ──────────────────────────────────────────────
+// Voice Enhancement
+// ──────────────────────────────────────────────
+['pitch-steps','speed-factor','time-stretch','preemph-coeff','deemph-coeff','vol-gain'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('input', () => {
+      document.getElementById(id + '-val').textContent = el.value;
+    });
+  }
+});
+
+async function voiceAction(endpoint, params, label) {
+  const data = await apiPost(endpoint, params);
+  if (data && data.audio_base64) {
+    addAudioResult('voice-results', label, data.audio_base64, data.sample_rate);
+  }
+}
+
+document.getElementById('btn-pitch-shift').addEventListener('click', () => voiceAction('/api/enhance/pitch-shift', { n_steps: document.getElementById('pitch-steps').value }, 'Pitch Shift'));
+document.getElementById('btn-change-speed').addEventListener('click', () => voiceAction('/api/enhance/speed', { factor: document.getElementById('speed-factor').value }, 'Speed Change'));
+document.getElementById('btn-time-stretch').addEventListener('click', () => voiceAction('/api/enhance/time-stretch', { rate: document.getElementById('time-stretch').value }, 'Time Stretch'));
+document.getElementById('btn-preemphasis').addEventListener('click', () => voiceAction('/api/enhance/preemphasis', { coeff: document.getElementById('preemph-coeff').value }, 'Pre-emphasis'));
+document.getElementById('btn-deemphasis').addEventListener('click', () => voiceAction('/api/enhance/deemphasis', { coeff: document.getElementById('deemph-coeff').value }, 'De-emphasis'));
+document.getElementById('btn-gain').addEventListener('click', () => voiceAction('/api/enhance/volume', { gain_type: 'db', gain_value: document.getElementById('vol-gain').value }, 'Gain'));
+document.getElementById('btn-fade').addEventListener('click', () => voiceAction('/api/enhance/fade', { fade_in: 1.0, fade_out: 1.0, fade_shape: 'linear' }, 'Fade'));
+
+// ──────────────────────────────────────────────
+// Spectral Analysis
+// ──────────────────────────────────────────────
+function drawHeatmap(canvasId, data, xLabel, yLabel) {
+  const canvas = document.getElementById(canvasId);
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+  const rows = data.length;
+  const cols = data[0]?.length || 0;
+  canvas.width = canvas.offsetWidth * 2;
+  canvas.height = 300;
+  const w = canvas.width / cols;
+  const h = canvas.height / rows;
+  let min = Infinity, max = -Infinity;
+  for (const row of data) for (const v of row) { if (v < min) min = v; if (v > max) max = v; }
+  const range = max - min || 1;
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      const t = (data[i][j] - min) / range;
+      const r = Math.floor(t * 255);
+      const g = Math.floor((1 - Math.abs(t - 0.5) * 2) * 100 + t * 30);
+      const b = Math.floor((1 - t) * 255);
+      ctx.fillStyle = `rgb(${r},${g},${b})`;
+      ctx.fillRect(j * w, i * h, Math.ceil(w), Math.ceil(h));
+    }
+  }
+}
+
+document.getElementById('btn-spectrogram').addEventListener('click', async () => {
+  const data = await apiPost('/api/analysis/spectrogram', {
+    n_fft: document.getElementById('spec-nfft').value,
+    hop_length: document.getElementById('spec-hop').value,
+  });
+  if (data?.spectrogram) drawHeatmap('canvas-spec', data.spectrogram);
+});
+
+document.getElementById('btn-mel').addEventListener('click', async () => {
+  const data = await apiPost('/api/analysis/mel-spectrogram', {
+    n_fft: document.getElementById('spec-nfft').value,
+    hop_length: document.getElementById('spec-hop').value,
+  });
+  if (data?.mel_spectrogram) drawHeatmap('canvas-spec', data.mel_spectrogram);
+});
+
+document.getElementById('btn-mfcc').addEventListener('click', async () => {
+  const data = await apiPost('/api/analysis/mfcc');
+  if (data?.mfcc) drawHeatmap('canvas-spec', data.mfcc);
+});
+
+document.getElementById('btn-loudness').addEventListener('click', async () => {
+  const data = await apiPost('/api/analysis/loudness');
+  if (data) {
+    document.getElementById('metrics-cards').innerHTML = `
+      <div class="metric-card"><div class="val">${data.loudness}</div><div class="lbl">Loudness (LUFS)</div></div>`;
+  }
+});
+
+document.getElementById('btn-centroid').addEventListener('click', async () => {
+  const data = await apiPost('/api/analysis/spectral-centroid');
+  if (data?.spectral_centroid) {
+    const avg = (data.spectral_centroid.reduce((a,b)=>a+b,0)/data.spectral_centroid.length).toFixed(1);
+    document.getElementById('metrics-cards').innerHTML = `
+      <div class="metric-card"><div class="val">${avg}</div><div class="lbl">Avg Spectral Centroid (Hz)</div></div>`;
+  }
+});
+
+document.getElementById('btn-pitch-detect').addEventListener('click', async () => {
+  const data = await apiPost('/api/analysis/pitch');
+  if (data?.pitch) {
+    const valid = data.pitch.filter(v => v > 0);
+    const avg = valid.length ? (valid.reduce((a,b)=>a+b,0)/valid.length).toFixed(1) : 'N/A';
+    document.getElementById('metrics-cards').innerHTML = `
+      <div class="metric-card"><div class="val">${avg}</div><div class="lbl">Avg Pitch F0 (Hz)</div></div>`;
+  }
+});
+
+// ──────────────────────────────────────────────
+// Source Separation
+// ──────────────────────────────────────────────
+document.getElementById('btn-separate').addEventListener('click', async () => {
+  const data = await apiPost('/api/separate', { model_size: document.getElementById('sep-model').value });
+  if (!data || data.error) return;
+  const container = document.getElementById('sep-results');
+  container.innerHTML = '';
+  for (const name of data.source_names || []) {
+    if (data[name]) addAudioResult('sep-results', name, data[name], data.sample_rate);
+  }
+});
+
+// ──────────────────────────────────────────────
+// VAD
+// ──────────────────────────────────────────────
+document.getElementById('vad-trigger').addEventListener('input', function() {
+  document.getElementById('vad-trigger-val').textContent = this.value;
+});
+
+document.getElementById('btn-vad').addEventListener('click', async () => {
+  const data = await apiPost('/api/vad', { trigger_level: document.getElementById('vad-trigger').value });
+  if (!data?.vad) return;
+  const canvas = document.getElementById('canvas-vad');
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth * 2;
+  canvas.height = 150;
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const w = canvas.width / data.vad.length;
+  for (let i = 0; i < data.vad.length; i++) {
+    ctx.fillStyle = data.vad[i] > 0 ? '#3fb950' : '#30363d';
+    ctx.fillRect(i * w, 0, Math.ceil(w), canvas.height);
+  }
+});
+
+// ──────────────────────────────────────────────
+// Resample
+// ──────────────────────────────────────────────
+document.getElementById('btn-resample').addEventListener('click', async () => {
+  const data = await apiPost('/api/resample', { target_sr: document.getElementById('target-sr').value });
+  if (data?.audio_base64) {
+    document.getElementById('resample-results').innerHTML = '';
+    addAudioResult('resample-results', 'Resampled', data.audio_base64, data.sample_rate);
+  }
+});
+
+// ──────────────────────────────────────────────
+// Toast & Status
+// ──────────────────────────────────────────────
+function toast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type || '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+function setStatus(text) {
+  document.getElementById('status-text').textContent = text;
+  const dot = document.getElementById('status-dot');
+  dot.className = 'dot ' + (text === 'Ready' ? 'on' : '');
+}
+
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+  return (b / 1048576).toFixed(1) + ' MB';
+}
+
+// ──────────────────────────────────────────────
+// Load capabilities on startup
+// ──────────────────────────────────────────────
+(async () => {
+  try {
+    const res = await fetch(API + '/api/info');
+    const data = await res.json();
+    let html = '<div style="display:flex;flex-wrap:wrap;gap:12px">';
+    const cats = { spectral: 'Spectral', voice: 'Voice', analysis: 'Analysis', editing: 'Editing', io: 'I/O' };
+    for (const t of data.available_transforms || []) {
+      const color = {spectral:'var(--purple)', voice:'var(--accent)', analysis:'var(--cyan)', editing:'var(--orange)', io:'var(--green)'}[t.category]||'var(--text2)';
+      html += `<span style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px">
+        <span style="color:${color};font-weight:600">${t.name}</span> <span style="color:var(--text2)">${t.desc}</span></span>`;
+    }
+    html += '</div>';
+    html += '<div style="margin-top:16px"><strong style="color:var(--text)">Filters:</strong> ' +
+      (data.available_filters||[]).map(f => f.name).join(', ') + '</div>';
+    html += '<div style="margin-top:8px"><strong style="color:var(--text)">Effects:</strong> ' +
+      (data.available_effects||[]).map(f => f.name).join(', ') + '</div>';
+    html += '<div style="margin-top:8px"><strong style="color:var(--text)">Models:</strong> ' +
+      (data.available_models||[]).map(f => `<span style="color:var(--accent)">${f.name}</span> (${f.desc})`).join(', ') + '</div>';
+    document.getElementById('tools-overview').innerHTML = html;
+    setStatus('Ready');
+    document.getElementById('status-dot').className = 'dot on';
+  } catch (e) {
+    document.getElementById('tools-overview').textContent = 'Server not reachable. Start the server with: python webapp/server.py';
+    setStatus('Disconnected');
+  }
+})();
+</script>
+</body>
+</html>

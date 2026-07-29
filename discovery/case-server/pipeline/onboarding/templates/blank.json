@@ -1,0 +1,30 @@
+{
+  "spec_version": "1.0.0",
+  "blueprint_version": "template",
+  "root_label": "New Corpus",
+  "generated_at": "2026-05-06T00:00:00Z",
+  "source": {
+    "kind": "template",
+    "template_id": "blank"
+  },
+  "notes": "Minimal starting point. Three top-level buckets only — refinement after corpus ingestion will propose the real structure.",
+  "nodes": [
+    {
+      "path": "INPUTS",
+      "purpose": "Raw materials uploaded by the user. The refinement pass (P3) will propose subdirectories based on what's actually here.",
+      "required": true,
+      "pipeline_layers": ["L1-L3", "L4"]
+    },
+    {
+      "path": "ANALYSIS",
+      "purpose": "Derived analysis: extracted entities, relationships, narratives.",
+      "required": false,
+      "pipeline_layers": ["L4", "L5-L7", "comprehend"]
+    },
+    {
+      "path": "OUTPUTS",
+      "purpose": "Final deliverables produced from the corpus.",
+      "required": false
+    }
+  ]
+}

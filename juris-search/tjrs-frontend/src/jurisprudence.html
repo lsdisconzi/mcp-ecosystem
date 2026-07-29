@@ -1,0 +1,2448 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jurisprudência · Olivia Workspace</title>
+
+    <!-- Font Awesome (ícones) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+    <style>
+        /* ============================================================================
+           JURISPRUDÊNCIA — Plataforma Inteligente de Inteligência Jurisprudencial
+           Tokens nativos do workspace (claro/escuro automático).
+           ============================================================================ */
+
+        /* ── Variáveis ──────────────────────────────────────────────────────────── */
+        :root {
+            --bg: #0d0f14;
+            --bg-card: #151a20;
+            --bg-code: #1a2028;
+            --border: #2a313c;
+            --border-hi: #3a4452;
+            --white: #f0f2f5;
+            --gray: #8a94a6;
+            --gray-hi: #c8ced9;
+            --amber: #d4874a;
+            --amber-lo: rgba(212, 135, 74, 0.10);
+            --amber-hi: #e09a5c;
+            --red: #c97a7a;
+            --green: #6baa7a;
+            --blue: #5a8fc9;
+            --purple: #a58bc9;
+            --r: 10px;
+            --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --serif: 'Georgia', 'Times New Roman', serif;
+            --mono: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+
+        /* ── Reset / base ──────────────────────────────────────────────────────── */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--sans);
+            background: var(--bg);
+            color: var(--white);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: inherit;
+        }
+
+        textarea,
+        input,
+        select {
+            font-family: inherit;
+            color: inherit;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            outline: none;
+        }
+
+        textarea:focus,
+        input:focus,
+        select:focus {
+            border-color: var(--amber);
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-hi);
+            border-radius: 4px;
+        }
+
+        /* ── View container ────────────────────────────────────────────────────── */
+        .jurisprudencia-view {
+            display: none;
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            background: var(--bg);
+        }
+
+        .jurisprudencia-view.active {
+            display: flex;
+        }
+
+        .workspace.jurisprudencia-open>.main-content {
+            display: none !important;
+        }
+
+        /* ── Cabeçalho ─────────────────────────────────────────────────────────── */
+        .jr-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            background: var(--bg-card);
+        }
+
+        .jr-head-brand {
+            display: flex;
+            align-items: baseline;
+            gap: 9px;
+        }
+
+        .jr-logo {
+            width: 20px;
+            height: 20px;
+            color: var(--amber);
+            align-self: center;
+            display: flex;
+        }
+
+        .jr-logo svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .jr-title {
+            font-family: var(--serif);
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--white);
+            letter-spacing: -0.01em;
+        }
+
+        .jr-sub {
+            font-family: var(--mono);
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--gray);
+        }
+
+        .jr-head-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .jr-head-actions .btn {
+            padding: 4px 10px;
+            font-size: 11px;
+            border-radius: var(--r);
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--gray);
+            transition: border-color .15s, color .15s;
+        }
+
+        .jr-head-actions .btn:hover {
+            border-color: var(--amber);
+            color: var(--white);
+        }
+
+        .jr-head-actions .btn-primary {
+            background: var(--amber);
+            border-color: var(--amber);
+            color: #fff;
+        }
+
+        .jr-head-actions .btn-primary:hover {
+            background: var(--amber-hi);
+            border-color: var(--amber-hi);
+        }
+
+        /* ── Sub-navegação ─────────────────────────────────────────────────────── */
+        .jr-subnav {
+            display: flex;
+            gap: 2px;
+            padding: 6px 14px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            background: var(--bg-card);
+            overflow-x: auto;
+        }
+
+        .jr-tab {
+            padding: 6px 14px;
+            border: none;
+            background: transparent;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--gray);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+            transition: color .15s, border-color .15s;
+        }
+
+        .jr-tab:hover {
+            color: var(--white);
+        }
+
+        .jr-tab.active {
+            color: var(--amber);
+            border-bottom-color: var(--amber);
+        }
+
+        /* ── Painéis ───────────────────────────────────────────────────────────── */
+        .jr-panels {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+        }
+
+        .jr-panel {
+            display: none;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .jr-panel.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .jr-panel-scroll {
+            overflow-y: auto;
+            padding: 24px 24px 48px;
+        }
+
+        .jr-panel-scroll>* {
+            width: 100%;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ── Pesquisa global ───────────────────────────────────────────────────── */
+        .jr-global-search {
+            display: flex;
+            gap: 8px;
+            padding: 8px 14px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-card);
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .jr-global-search .jr-search-input-wrap {
+            flex: 1;
+            min-width: 180px;
+            position: relative;
+        }
+
+        .jr-global-search .jr-search-input-wrap i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-size: 13px;
+        }
+
+        .jr-global-search input {
+            width: 100%;
+            padding: 8px 12px 8px 36px;
+            background: var(--bg);
+            border: 1px solid var(--border-hi);
+            border-radius: var(--r);
+            font-size: 13px;
+            transition: border-color .15s;
+        }
+
+        .jr-global-search input:focus {
+            border-color: var(--amber);
+        }
+
+        .jr-global-search input::placeholder {
+            color: var(--gray);
+        }
+
+        .jr-global-search .jr-search-filters {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .jr-global-search .jr-search-filters select {
+            padding: 7px 10px;
+            font-size: 12px;
+            background: var(--bg);
+            border: 1px solid var(--border-hi);
+            border-radius: var(--r);
+            color: var(--gray-hi);
+            cursor: pointer;
+            max-width: 140px;
+        }
+
+        .jr-global-search .jr-search-filters select:focus {
+            border-color: var(--amber);
+        }
+
+        .jr-global-search .jr-search-btn {
+            padding: 7px 16px;
+            background: var(--amber);
+            border-radius: var(--r);
+            color: #fff;
+            font-weight: 500;
+            font-size: 12px;
+            transition: background .15s;
+            white-space: nowrap;
+        }
+
+        .jr-global-search .jr-search-btn:hover {
+            background: var(--amber-hi);
+        }
+
+        .jr-search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border-hi);
+            border-radius: 0 0 var(--r) var(--r);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 20;
+            display: none;
+        }
+
+        .jr-search-suggestions.open {
+            display: block;
+        }
+
+        .jr-search-suggestions .jr-sug-item {
+            padding: 8px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            transition: background .1s;
+            color: var(--gray-hi);
+        }
+
+        .jr-search-suggestions .jr-sug-item:hover {
+            background: var(--amber-lo);
+            color: var(--white);
+        }
+
+        .jr-search-suggestions .jr-sug-item .jr-sug-type {
+            font-size: 9px;
+            text-transform: uppercase;
+            color: var(--amber);
+            margin-right: 8px;
+            font-weight: 600;
+        }
+
+        /* ── Dashboard ─────────────────────────────────────────────────────────── */
+        .jr-dash-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .jr-stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 14px 16px;
+            text-align: center;
+        }
+
+        .jr-stat-card .jr-stat-num {
+            font-family: var(--serif);
+            font-size: 26px;
+            font-weight: 600;
+            color: var(--amber);
+            line-height: 1.2;
+        }
+
+        .jr-stat-card .jr-stat-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--gray);
+            margin-top: 2px;
+        }
+
+        .jr-stat-card .jr-stat-sub {
+            font-size: 11px;
+            color: var(--gray-hi);
+            margin-top: 4px;
+        }
+
+        .jr-dash-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 820px) {
+            .jr-dash-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .jr-chart-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 14px 16px 18px;
+        }
+
+        .jr-chart-box .jr-chart-title {
+            font-family: var(--mono);
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--gray);
+            margin-bottom: 10px;
+        }
+
+        .jr-chart-box .jr-chart-body {
+            min-height: 60px;
+        }
+
+        /* gráfico de barras simples */
+        .jr-bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            height: 80px;
+            padding-top: 6px;
+        }
+
+        .jr-bar-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: opacity .15s;
+        }
+
+        .jr-bar-item:hover {
+            opacity: 0.7;
+        }
+
+        .jr-bar-item .jr-bar {
+            width: 100%;
+            min-height: 4px;
+            border-radius: 3px 3px 0 0;
+            background: var(--amber);
+            transition: height .3s ease;
+        }
+
+        .jr-bar-item .jr-bar-label {
+            font-size: 8px;
+            color: var(--gray);
+            text-align: center;
+            line-height: 1.2;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .jr-bar-item .jr-bar-value {
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--white);
+        }
+
+        /* gráfico de pizza (simples) */
+        .jr-pie-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .jr-pie {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .jr-pie-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 11px;
+        }
+
+        .jr-pie-legend .jr-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--gray-hi);
+        }
+
+        .jr-pie-legend .jr-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ── Filtros avançados ────────────────────────────────────────────────── */
+        .jr-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 12px 0 16px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .jr-filter-bar .jr-filter-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 2px 6px 2px 8px;
+        }
+
+        .jr-filter-bar .jr-filter-group label {
+            font-size: 10px;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .jr-filter-bar .jr-filter-group select,
+        .jr-filter-bar .jr-filter-group input {
+            border: none;
+            background: transparent;
+            padding: 5px 4px;
+            font-size: 12px;
+            color: var(--white);
+            min-width: 80px;
+            outline: none;
+        }
+
+        .jr-filter-bar .jr-filter-group input {
+            min-width: 60px;
+        }
+
+        .jr-filter-bar .jr-filter-actions {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            margin-left: 4px;
+        }
+
+        .jr-filter-bar .jr-filter-actions .btn-sm {
+            padding: 4px 10px;
+            font-size: 11px;
+            border-radius: var(--r);
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--gray);
+            transition: border-color .15s, color .15s;
+        }
+
+        .jr-filter-bar .jr-filter-actions .btn-sm:hover {
+            border-color: var(--amber);
+            color: var(--white);
+        }
+
+        .jr-filter-bar .jr-filter-actions .btn-sm.primary {
+            background: var(--amber);
+            border-color: var(--amber);
+            color: #fff;
+        }
+
+        .jr-filter-bar .jr-filter-actions .btn-sm.primary:hover {
+            background: var(--amber-hi);
+        }
+
+        /* ── Resultados da pesquisa ───────────────────────────────────────────── */
+        .jr-results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .jr-results-header .jr-count {
+            font-size: 13px;
+            color: var(--gray-hi);
+        }
+
+        .jr-results-header .jr-count strong {
+            color: var(--white);
+        }
+
+        .jr-results-header .jr-export-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .jr-results-header .jr-export-actions .btn-sm {
+            padding: 4px 10px;
+            font-size: 11px;
+            border-radius: var(--r);
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--gray);
+            transition: border-color .15s, color .15s;
+        }
+
+        .jr-results-header .jr-export-actions .btn-sm:hover {
+            border-color: var(--amber);
+            color: var(--white);
+        }
+
+        .jr-result-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: border-color .15s, box-shadow .15s;
+        }
+
+        .jr-result-item:hover {
+            border-color: var(--amber);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .jr-result-item .jr-result-top {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 14px;
+            align-items: baseline;
+            margin-bottom: 4px;
+        }
+
+        .jr-result-item .jr-result-top .jr-processo {
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--amber);
+        }
+
+        .jr-result-item .jr-result-top .jr-meta {
+            font-size: 11px;
+            color: var(--gray);
+        }
+
+        .jr-result-item .jr-result-top .jr-meta strong {
+            color: var(--gray-hi);
+            font-weight: 500;
+        }
+
+        .jr-result-item .jr-result-top .jr-outcome {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: var(--amber-lo);
+            color: var(--amber);
+            border: 1px solid var(--border-hi);
+        }
+
+        .jr-result-item .jr-result-top .jr-outcome.granted {
+            color: var(--green);
+            background: rgba(107, 170, 122, 0.12);
+            border-color: rgba(107, 170, 122, 0.25);
+        }
+
+        .jr-result-item .jr-result-top .jr-outcome.denied {
+            color: var(--red);
+            background: rgba(201, 122, 122, 0.12);
+            border-color: rgba(201, 122, 122, 0.25);
+        }
+
+        .jr-result-item .jr-result-snippet {
+            font-size: 13px;
+            color: var(--gray-hi);
+            line-height: 1.6;
+            margin: 2px 0 6px;
+        }
+
+        .jr-result-item .jr-result-snippet mark {
+            background: var(--amber-lo);
+            color: var(--amber);
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .jr-result-item .jr-result-bottom {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 10px;
+            font-size: 10px;
+            color: var(--gray);
+        }
+
+        .jr-result-item .jr-result-bottom .jr-tag {
+            background: var(--bg-code);
+            border-radius: 999px;
+            padding: 1px 8px;
+            border: 1px solid var(--border);
+        }
+
+        /* ── Detalhe do julgado (overlay) ────────────────────────────────────── */
+        .jr-detail {
+            position: absolute;
+            inset: 0;
+            z-index: 30;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .jr-detail.open {
+            display: flex;
+        }
+
+        .jr-detail-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.52);
+            animation: jrFade .18s ease;
+        }
+
+        @keyframes jrFade {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .jr-detail-card {
+            position: relative;
+            width: 100%;
+            max-width: 720px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-hi);
+            border-radius: var(--r);
+            padding: 24px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+            animation: jrPop .2s ease;
+        }
+
+        @keyframes jrPop {
+            from {
+                opacity: 0;
+                transform: translateY(10px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .jr-detail-card .jr-detail-close {
+            position: sticky;
+            top: 0;
+            float: right;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 4px 10px;
+            font-size: 14px;
+            color: var(--gray);
+            z-index: 2;
+            transition: border-color .15s;
+        }
+
+        .jr-detail-card .jr-detail-close:hover {
+            border-color: var(--amber);
+            color: var(--white);
+        }
+
+        .jr-detail-card .jr-detail-head {
+            margin-bottom: 14px;
+        }
+
+        .jr-detail-card .jr-detail-head .jr-detail-processo {
+            font-family: var(--mono);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--amber);
+        }
+
+        .jr-detail-card .jr-detail-head .jr-detail-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 16px;
+            font-size: 12px;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+
+        .jr-detail-card .jr-detail-head .jr-detail-meta-row strong {
+            color: var(--gray-hi);
+            font-weight: 500;
+        }
+
+        .jr-detail-card .jr-detail-body {
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--gray-hi);
+        }
+
+        .jr-detail-card .jr-detail-body h4 {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--amber);
+            margin: 16px 0 6px;
+        }
+
+        .jr-detail-card .jr-detail-body .jr-ementa {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 12px 14px;
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--white);
+            margin-bottom: 12px;
+        }
+
+        .jr-detail-card .jr-detail-body .jr-ementa mark {
+            background: var(--amber-lo);
+            color: var(--amber);
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .jr-detail-card .jr-detail-body .jr-correlations {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .jr-detail-card .jr-detail-body .jr-correlations .jr-corr-chip {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 2px 10px;
+            font-size: 10px;
+            color: var(--gray-hi);
+            text-align: center;
+            cursor: pointer;
+            transition: border-color .15s;
+        }
+
+        .jr-detail-card .jr-detail-body .jr-correlations .jr-corr-chip:hover {
+            border-color: var(--amber);
+        }
+
+        .jr-detail-card .jr-detail-body .jr-timeline {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .jr-detail-card .jr-detail-body .jr-timeline .jr-tl-item {
+            font-size: 12px;
+            color: var(--gray);
+            padding-left: 14px;
+            border-left: 2px solid var(--border-hi);
+            padding-bottom: 4px;
+        }
+
+        .jr-detail-card .jr-detail-body .jr-timeline .jr-tl-item .jr-tl-date {
+            color: var(--amber);
+            font-weight: 500;
+        }
+
+        .jr-detail-card .jr-detail-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+        }
+
+        .jr-detail-card .jr-detail-actions .btn-sm {
+            padding: 4px 12px;
+            font-size: 11px;
+            border-radius: var(--r);
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--gray);
+            transition: border-color .15s, color .15s;
+        }
+
+        .jr-detail-card .jr-detail-actions .btn-sm:hover {
+            border-color: var(--amber);
+            color: var(--white);
+        }
+
+        .jr-detail-card .jr-detail-actions .btn-sm.active {
+            border-color: var(--amber);
+            color: var(--amber);
+        }
+
+        /* ── Admin ────────────────────────────────────────────────────────────── */
+        .jr-admin-pipeline {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .jr-pipe-step {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 12px 14px;
+            text-align: center;
+        }
+
+        .jr-pipe-step .jr-pipe-name {
+            font-family: var(--mono);
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--gray);
+        }
+
+        .jr-pipe-step .jr-pipe-status {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--amber);
+            margin: 4px 0 2px;
+        }
+
+        .jr-pipe-step .jr-pipe-status.ok {
+            color: var(--green);
+        }
+
+        .jr-pipe-step .jr-pipe-status.err {
+            color: var(--red);
+        }
+
+        .jr-pipe-step .jr-pipe-sub {
+            font-size: 10px;
+            color: var(--gray);
+        }
+
+        .jr-admin-logs {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 12px 14px;
+            max-height: 260px;
+            overflow-y: auto;
+            font-family: var(--mono);
+            font-size: 11px;
+        }
+
+        .jr-admin-logs .jr-log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            color: var(--gray-hi);
+        }
+
+        .jr-admin-logs .jr-log-entry .jr-log-time {
+            color: var(--gray);
+            flex-shrink: 0;
+        }
+
+        .jr-admin-logs .jr-log-entry .jr-log-level {
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .jr-admin-logs .jr-log-entry .jr-log-level.info {
+            color: var(--blue);
+        }
+
+        .jr-admin-logs .jr-log-entry .jr-log-level.warn {
+            color: var(--amber);
+        }
+
+        .jr-admin-logs .jr-log-entry .jr-log-level.err {
+            color: var(--red);
+        }
+
+        .jr-admin-logs .jr-log-entry .jr-log-msg {
+            word-break: break-word;
+        }
+
+        /* ── Biblioteca / alertas ────────────────────────────────────────────── */
+        .jr-library-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .jr-lib-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: border-color .15s;
+        }
+
+        .jr-lib-item:hover {
+            border-color: var(--amber);
+        }
+
+        .jr-lib-item .jr-lib-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--white);
+        }
+
+        .jr-lib-item .jr-lib-meta {
+            font-size: 10px;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+
+        .jr-alert-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .jr-alert-item .jr-alert-info .jr-alert-query {
+            font-weight: 500;
+            color: var(--white);
+        }
+
+        .jr-alert-item .jr-alert-info .jr-alert-detail {
+            font-size: 11px;
+            color: var(--gray);
+        }
+
+        .jr-alert-item .jr-alert-badge {
+            font-size: 9px;
+            padding: 2px 10px;
+            border-radius: 999px;
+            background: var(--amber-lo);
+            color: var(--amber);
+            border: 1px solid var(--border-hi);
+        }
+
+        /* ── Responsivo ────────────────────────────────────────────────────────── */
+        @media (max-width: 720px) {
+            .jr-dash-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .jr-global-search {
+                flex-direction: column;
+            }
+
+            .jr-global-search .jr-search-filters {
+                flex-wrap: wrap;
+            }
+
+            .jr-global-search .jr-search-filters select {
+                max-width: 100%;
+                flex: 1;
+                min-width: 80px;
+            }
+
+            .jr-filter-bar {
+                flex-direction: column;
+            }
+
+            .jr-filter-bar .jr-filter-group {
+                flex-wrap: wrap;
+            }
+
+            .jr-detail-card {
+                padding: 16px;
+                max-height: 95vh;
+            }
+
+            .jr-panel-scroll {
+                padding: 16px 12px 32px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .jr-head-brand .jr-sub {
+                display: none;
+            }
+
+            .jr-dash-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ============================================================
+    JURISPRUDÊNCIA VIEW
+    ============================================================ -->
+    <div id="jurisprudenciaView" class="jurisprudencia-view">
+
+        <!-- Cabeçalho -->
+        <div class="jr-head">
+            <div class="jr-head-brand">
+                <span class="jr-logo">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <g stroke="currentColor" stroke-width="3.5" stroke-linejoin="round">
+                            <path fill="currentColor" fill-opacity="0.95" d="M50 18 L80 35 L50 52 L20 35 Z" />
+                            <path fill="currentColor" fill-opacity="0.52" d="M20 35 L50 52 L50 86 L20 69 Z" />
+                            <path fill="currentColor" fill-opacity="0.28" d="M80 35 L80 69 L50 86 L50 52 Z" />
+                        </g>
+                    </svg>
+                </span>
+                <span class="jr-title">Jurisprudência</span>
+                <span class="jr-sub">Inteligência Jurisprudencial</span>
+            </div>
+            <div class="jr-head-actions">
+                <button class="btn" onclick="jurisprudenciaRefresh()" title="Atualizar dados">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="btn btn-primary" onclick="jurisprudenciaHideView()" title="Fechar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Pesquisa global -->
+        <div class="jr-global-search">
+            <div class="jr-search-input-wrap">
+                <i class="fas fa-search"></i>
+                <input id="jrGlobalInput" type="text"
+                    placeholder="Pesquise por processo, relator, assunto, lei, artigo…"
+                    oninput="jurisprudenciaGlobalSuggest(this.value)"
+                    onkeydown="if(event.key==='Enter')jurisprudenciaGlobalSearch()" />
+                <div id="jrSuggestions" class="jr-search-suggestions"></div>
+            </div>
+            <div class="jr-search-filters">
+                <select id="jrFilterTribunal">
+                    <option value="">Tribunal</option>
+                    <option value="TJSP">TJSP</option>
+                    <option value="TJMS">TJMS</option>
+                    <option value="TJRS">TJRS</option>
+                    <option value="TJCE">TJCE</option>
+                    <option value="TJAL">TJAL</option>
+                    <option value="TJAM">TJAM</option>
+                </select>
+                <select id="jrFilterAno">
+                    <option value="">Ano</option>
+                    <option value="2026">2026</option>
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                </select>
+                <button class="jr-search-btn" onclick="jurisprudenciaGlobalSearch()">
+                    <i class="fas fa-arrow-right"></i> Buscar
+                </button>
+            </div>
+        </div>
+
+        <!-- Sub-navegação -->
+        <div class="jr-subnav">
+            <button class="jr-tab active" data-panel="dashboard" onclick="jurisprudenciaSwitchPanel('dashboard')">
+                <i class="fas fa-chart-pie"></i> Dashboard
+            </button>
+            <button class="jr-tab" data-panel="pesquisa" onclick="jurisprudenciaSwitchPanel('pesquisa')">
+                <i class="fas fa-search"></i> Pesquisa
+            </button>
+            <button class="jr-tab" data-panel="analises" onclick="jurisprudenciaSwitchPanel('analises')">
+                <i class="fas fa-chart-bar"></i> Análises
+            </button>
+            <button class="jr-tab" data-panel="biblioteca" onclick="jurisprudenciaSwitchPanel('biblioteca')">
+                <i class="fas fa-bookmark"></i> Biblioteca
+            </button>
+            <button class="jr-tab" data-panel="alertas" onclick="jurisprudenciaSwitchPanel('alertas')">
+                <i class="fas fa-bell"></i> Alertas
+            </button>
+            <button class="jr-tab" data-panel="admin" onclick="jurisprudenciaSwitchPanel('admin')">
+                <i class="fas fa-cog"></i> Admin
+            </button>
+        </div>
+
+        <!-- Painéis -->
+        <div class="jr-panels">
+
+            <!-- DASHBOARD -->
+            <div id="jrPanel-dashboard" class="jr-panel active">
+                <div class="jr-panel-scroll" id="jrDashboardContent">
+                    <!-- preenchido por JS -->
+                </div>
+            </div>
+
+            <!-- PESQUISA -->
+            <div id="jrPanel-pesquisa" class="jr-panel">
+                <div class="jr-panel-scroll" id="jrPesquisaContent">
+                    <!-- preenchido por JS -->
+                </div>
+            </div>
+
+            <!-- ANÁLISES -->
+            <div id="jrPanel-analises" class="jr-panel">
+                <div class="jr-panel-scroll" id="jrAnalisesContent">
+                    <!-- preenchido por JS -->
+                </div>
+            </div>
+
+            <!-- BIBLIOTECA -->
+            <div id="jrPanel-biblioteca" class="jr-panel">
+                <div class="jr-panel-scroll" id="jrBibliotecaContent">
+                    <!-- preenchido por JS -->
+                </div>
+            </div>
+
+            <!-- ALERTAS -->
+            <div id="jrPanel-alertas" class="jr-panel">
+                <div class="jr-panel-scroll" id="jrAlertasContent">
+                    <!-- preenchido por JS -->
+                </div>
+            </div>
+
+            <!-- ADMIN -->
+            <div id="jrPanel-admin" class="jr-panel">
+                <div class="jr-panel-scroll" id="jrAdminContent">
+                    <!-- preenchido por JS -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Detalhe do julgado (overlay) -->
+        <div id="jrDetail" class="jr-detail">
+            <div class="jr-detail-backdrop" onclick="jurisprudenciaCloseDetail()"></div>
+            <div class="jr-detail-card" id="jrDetailCard">
+                <!-- preenchido por JS -->
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+    JAVASCRIPT
+    ============================================================ -->
+    <script>
+        /* ============================================================================
+           JURISPRUDÊNCIA — Plataforma Inteligente de Inteligência Jurisprudencial
+           Módulo autônomo para o Olivia Workspace.
+           ============================================================================ */
+        (function () {
+            'use strict';
+
+            // ── DADOS MOCK (simula Master Index) ──────────────────────────────────
+            var MOCK_JULGADOS = [];
+
+            function gerarMock() {
+                var tribunais = ['TJSP', 'TJMS', 'TJRS', 'TJCE', 'TJAL', 'TJAM'];
+                var relatores = ['Des. Ana Paula', 'Des. Carlos Mendes', 'Des. Fernanda Rocha', 'Des. Renato Costa',
+                    'Des. Beatriz Lima', 'Des. Marcos Vinícius', 'Des. Patrícia Duarte', 'Des. Sérgio Almeida'
+                ];
+                var camaras = ['1ª Câmara', '2ª Câmara', '3ª Câmara', '4ª Câmara', '5ª Câmara', 'Seção Especial'];
+                var assuntos = ['Plano de Saúde', 'Servidor Público', 'Responsabilidade Civil', 'Direito Tributário',
+                    'Consumidor', 'Família', 'Contratos', 'Direito Administrativo', 'Previdenciário',
+                    'Ambiental'
+                ];
+                var classes = ['Apelação', 'Agravo de Instrumento', 'Ação Rescisória', 'Mandado de Segurança',
+                    'Reclamação'
+                ];
+                var outcomes = ['Deu Provimento', 'Negou Provimento', 'Parcial', 'Não Conhecido'];
+                var leis = ['CDC', 'CC/2002', 'CF/88', 'CPC/2015', 'Lei 8.112/90', 'Lei 9.656/98'];
+                var artigos = ['Art. 14 CDC', 'Art. 37 CF', 'Art. 186 CC', 'Art. 927 CC', 'Art. 5º CF', 'Art. 515 CPC',
+                    'Art. 1.023 CC'
+                ];
+
+                var dataBase = new Date('2023-01-01');
+                var julgados = [];
+                for (var i = 0; i < 180; i++) {
+                    var tribunal = tribunais[Math.floor(Math.random() * tribunais.length)];
+                    var relator = relatores[Math.floor(Math.random() * relatores.length)];
+                    var camara = camaras[Math.floor(Math.random() * camaras.length)];
+                    var assunto = assuntos[Math.floor(Math.random() * assuntos.length)];
+                    var cls = classes[Math.floor(Math.random() * classes.length)];
+                    var outcome = outcomes[Math.floor(Math.random() * outcomes.length)];
+                    var lei = leis[Math.floor(Math.random() * leis.length)];
+                    var artigo = artigos[Math.floor(Math.random() * artigos.length)];
+                    var data = new Date(dataBase);
+                    data.setDate(data.getDate() + Math.floor(Math.random() * 800));
+                    var ano = data.getFullYear();
+
+                    var num = String(100000 + i).padStart(7, '0');
+                    var processo = '000' + (i % 9 + 1) + '2345-' + (i % 100 + 10) + '.' + (ano % 100) + '.' +
+                        (i % 27 + 1) + '.' + (i % 13 + 1) + '.000' + (i % 9 + 1);
+
+                    var ementa = 'Decisão sobre ' + assunto.toLowerCase() + '. ' +
+                        'O relator ' + relator + ' analisou a matéria à luz do ' + artigo + ' e da ' + lei + '. ' +
+                        'A turma, por ' + (outcome === 'Unânime' ? 'unanimidade' : 'maioria') +
+                        ', decidiu pelo ' + outcome.toLowerCase() + '. ' +
+                        'Precedentes no mesmo sentido.' +
+                        (Math.random() > 0.6 ? ' Destaca-se a Súmula 123 do STJ.' : '');
+
+                    julgados.push({
+                        id: 'jr-' + i,
+                        tribunal: tribunal,
+                        processo: processo,
+                        relator: relator,
+                        orgao_julgador: camara,
+                        comarca: 'Comarca ' + (i % 50 + 1),
+                        data_julgamento: data.toISOString().split('T')[0],
+                        classe: cls,
+                        votacao: Math.random() > 0.3 ? 'Unânime' : 'Maioria',
+                        outcome: outcome,
+                        assuntos: [assunto].concat(Math.random() > 0.5 ? [assuntos[Math.floor(Math.random() *
+                            assuntos.length)]] : []),
+                        legislacao_citada: [lei],
+                        artigos_citados: [artigo],
+                        partes: {
+                            autor: 'Parte A ' + (i + 1),
+                            reu: 'Parte B ' + (i + 1),
+                            apelante: Math.random() > 0.5 ? 'Parte A' : 'Parte B'
+                        },
+                        ementa: ementa,
+                        ementa_snippet: ementa.slice(0, 120) + '…',
+                        data_index: data.getTime()
+                    });
+                }
+                return julgados;
+            }
+
+            MOCK_JULGADOS = gerarMock();
+
+            // ── ESTADO ─────────────────────────────────────────────────────────────
+            var jrBuilt = false;
+            var jrActivePanel = 'dashboard';
+            var jrFiltered = [];
+            var jrFavorites = JSON.parse(localStorage.getItem('jrFavorites') || '[]');
+            var jrLibrary = JSON.parse(localStorage.getItem('jrLibrary') || '[]');
+            var jrAlerts = JSON.parse(localStorage.getItem('jrAlerts') || '[]');
+            var jrSearchHistory = JSON.parse(localStorage.getItem('jrSearchHistory') || '[]');
+
+            // ── HELPERS ─────────────────────────────────────────────────────────────
+            function esc(s) {
+                return String(s == null ? '' : s)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
+
+            function formatDate(d) {
+                if (!d) return '';
+                var parts = d.split('-');
+                if (parts.length === 3) return parts[2] + '/' + parts[1] + '/' + parts[0];
+                return d;
+            }
+
+            function safePush(arr, item) {
+                if (!Array.isArray(arr)) return;
+                arr.push(item);
+            }
+
+            function isFavorited(id) { return jrFavorites.indexOf(id) !== -1; }
+
+            function isInLibrary(id) { return jrLibrary.indexOf(id) !== -1; }
+
+            function getJulgado(id) {
+                return MOCK_JULGADOS.filter(function (j) { return j.id === id; })[0] || null;
+            }
+
+            function getRelated(julgado, limit) {
+                limit = limit || 4;
+                var rels = [];
+                if (!julgado) return rels;
+                MOCK_JULGADOS.forEach(function (j) {
+                    if (j.id === julgado.id) return;
+                    var score = 0;
+                    if (j.relator === julgado.relator) score += 3;
+                    if (j.tribunal === julgado.tribunal) score += 1;
+                    if (j.assuntos.some(function (a) { return julgado.assuntos.indexOf(a) !== -1; })) score += 2;
+                    if (j.artigos_citados.some(function (a) { return julgado.artigos_citados.indexOf(a) !== -1; }))
+                        score += 2;
+                    if (j.outcome === julgado.outcome) score += 1;
+                    if (score > 0) rels.push({ item: j, score: score });
+                });
+                rels.sort(function (a, b) { return b.score - a.score; });
+                return rels.slice(0, limit).map(function (r) { return r.item; });
+            }
+
+            function getTimeline(julgado) {
+                if (!julgado) return [];
+                var rel = julgado.relator;
+                var results = MOCK_JULGADOS.filter(function (j) {
+                    return j.relator === rel && j.id !== julgado.id;
+                });
+                results.sort(function (a, b) {
+                    return new Date(a.data_julgamento) - new Date(b.data_julgamento);
+                });
+                return results.slice(0, 6);
+            }
+
+            // ── CONSTRUÇÃO DA VIEW ────────────────────────────────────────────────
+            function build() {
+                var view = document.getElementById('jurisprudenciaView');
+                if (!view || jrBuilt) return;
+                jrBuilt = true;
+                renderDashboard();
+                renderPesquisa();
+                renderAnalises();
+                renderBiblioteca();
+                renderAlertas();
+                renderAdmin();
+            }
+
+            // ── RENDER: DASHBOARD ─────────────────────────────────────────────────
+            function renderDashboard() {
+                var el = document.getElementById('jrDashboardContent');
+                if (!el) return;
+                var total = MOCK_JULGADOS.length;
+                var tribunais = {};
+                MOCK_JULGADOS.forEach(function (j) { tribunais[j.tribunal] = (tribunais[j.tribunal] || 0) + 1; });
+                var qtdTrib = Object.keys(tribunais).length;
+                var anos = {};
+                MOCK_JULGADOS.forEach(function (j) {
+                    var a = j.data_julgamento.slice(0, 4);
+                    anos[a] = (anos[a] || 0) + 1;
+                });
+                var anosKeys = Object.keys(anos).sort();
+
+                // estatísticas de outcome
+                var outcomeCount = {};
+                MOCK_JULGADOS.forEach(function (j) {
+                    outcomeCount[j.outcome] = (outcomeCount[j.outcome] || 0) + 1;
+                });
+                var outcomeLabels = Object.keys(outcomeCount);
+                var outcomeColors = ['#d4874a', '#6baa7a', '#c97a7a', '#5a8fc9', '#a58bc9'];
+                var pieData = outcomeLabels.map(function (k, idx) {
+                    return { label: k, value: outcomeCount[k], color: outcomeColors[idx % outcomeColors.length] };
+                });
+
+                // assuntos mais frequentes
+                var assuntoCount = {};
+                MOCK_JULGADOS.forEach(function (j) {
+                    j.assuntos.forEach(function (a) { assuntoCount[a] = (assuntoCount[a] || 0) + 1; });
+                });
+                var topAssuntos = Object.keys(assuntoCount).sort(function (a, b) {
+                    return assuntoCount[b] -
+                        assuntoCount[a];
+                }).slice(0, 6);
+
+                // relatores com maior volume
+                var relatorCount = {};
+                MOCK_JULGADOS.forEach(function (j) {
+                    relatorCount[j.relator] = (relatorCount[j.relator] || 0) + 1;
+                });
+                var topRelatores = Object.keys(relatorCount).sort(function (a, b) {
+                    return relatorCount[b] -
+                        relatorCount[a];
+                }).slice(0, 6);
+
+                // distribuição por câmara
+                var camaraOutcome = {};
+                MOCK_JULGADOS.forEach(function (j) {
+                    var key = j.orgao_julgador;
+                    if (!camaraOutcome[key]) camaraOutcome[key] = { total: 0, granted: 0, denied: 0 };
+                    camaraOutcome[key].total++;
+                    if (j.outcome === 'Deu Provimento') camaraOutcome[key].granted++;
+                    if (j.outcome === 'Negou Provimento') camaraOutcome[key].denied++;
+                });
+                var camaraLabels = Object.keys(camaraOutcome);
+
+                var html = '';
+                html += '<div class="jr-dash-stats">';
+                html += '<div class="jr-stat-card"><div class="jr-stat-num">' + total + '</div><div class="jr-stat-label">Decisões indexadas</div></div>';
+                html += '<div class="jr-stat-card"><div class="jr-stat-num">' + qtdTrib +
+                    '</div><div class="jr-stat-label">Tribunais</div></div>';
+                html +=
+                    '<div class="jr-stat-card"><div class="jr-stat-num">' + (anosKeys.length ? anosKeys[0] + ' – ' +
+                        anosKeys[anosKeys.length - 1] : '—') +
+                    '</div><div class="jr-stat-label">Período</div></div>';
+                html +=
+                    '<div class="jr-stat-card"><div class="jr-stat-num">' + new Date().toLocaleDateString(
+                        'pt-BR') + '</div><div class="jr-stat-label">Última atualização</div></div>';
+                html += '</div>';
+
+                // gráficos
+                html += '<div class="jr-dash-grid">';
+
+                // Pizza: distribuição de resultados
+                html += '<div class="jr-chart-box"><div class="jr-chart-title"><i class="fas fa-chart-pie"></i> Distribuição dos Resultados</div><div class="jr-chart-body">';
+                html += '<div class="jr-pie-row">';
+                // desenho da pizza com conic-gradient
+                var totalPie = pieData.reduce(function (s, d) { return s + d.value; }, 0);
+                var conicParts = [];
+                var cumAngle = 0;
+                pieData.forEach(function (d) {
+                    var pct = d.value / totalPie;
+                    var angle = pct * 360;
+                    conicParts.push(d.color + ' ' + cumAngle + 'deg ' + (cumAngle + angle) + 'deg');
+                    cumAngle += angle;
+                });
+                var bgConic = 'conic-gradient(' + conicParts.join(', ') + ')';
+                html += '<div class="jr-pie" style="background:' + bgConic + ';"></div>';
+                html += '<div class="jr-pie-legend">';
+                pieData.forEach(function (d) {
+                    html += '<div class="jr-legend-item"><span class="jr-legend-dot" style="background:' +
+                        d.color + ';"></span> ' + d.label + ' (' + d.value + ')</div>';
+                });
+                html += '</div></div></div></div>';
+
+                // Barras: assuntos mais frequentes
+                html += '<div class="jr-chart-box"><div class="jr-chart-title"><i class="fas fa-tag"></i> Assuntos Mais Frequentes</div><div class="jr-chart-body">';
+                html += '<div class="jr-bar-chart" style="height:70px;">';
+                var maxAss = topAssuntos.length ? assuntoCount[topAssuntos[0]] : 1;
+                topAssuntos.forEach(function (a) {
+                    var h = Math.max(8, (assuntoCount[a] / maxAss) * 60);
+                    html += '<div class="jr-bar-item" onclick="jurisprudenciaSearchAssunto(\'' + esc(a) +
+                        '\')"><div class="jr-bar" style="height:' + h + 'px;"></div><div class="jr-bar-label">' +
+                        esc(a.slice(0, 14)) + '</div><div class="jr-bar-value">' + assuntoCount[a] + '</div></div>';
+                });
+                html += '</div></div></div>';
+
+                // Barras: relatores com maior volume
+                html += '<div class="jr-chart-box"><div class="jr-chart-title"><i class="fas fa-user"></i> Relatores com Maior Volume</div><div class="jr-chart-body">';
+                html += '<div class="jr-bar-chart" style="height:70px;">';
+                var maxRel = topRelatores.length ? relatorCount[topRelatores[0]] : 1;
+                topRelatores.forEach(function (r) {
+                    var h = Math.max(8, (relatorCount[r] / maxRel) * 60);
+                    html += '<div class="jr-bar-item" onclick="jurisprudenciaSearchRelator(\'' + esc(r) +
+                        '\')"><div class="jr-bar" style="height:' + h + 'px;background:var(--blue);"></div><div class="jr-bar-label">' +
+                        esc(r.slice(0, 14)) + '</div><div class="jr-bar-value">' + relatorCount[r] + '</div></div>';
+                });
+                html += '</div></div></div>';
+
+                // Barras: resultado por câmara
+                html += '<div class="jr-chart-box"><div class="jr-chart-title"><i class="fas fa-gavel"></i> Resultado por Câmara Julgadora</div><div class="jr-chart-body">';
+                html += '<div style="font-size:11px;color:var(--gray-hi);display:flex;gap:12px;flex-wrap:wrap;margin-bottom:6px;">';
+                html +=
+                    '<span><span style="color:var(--green);">●</span> Provimento</span><span><span style="color:var(--red);">●</span> Improvimento</span>';
+                html += '</div>';
+                var maxCam = 1;
+                camaraLabels.forEach(function (c) {
+                    if (camaraOutcome[c].total > maxCam) maxCam = camaraOutcome[c]
+                        .total;
+                });
+                html += '<div style="display:flex;gap:6px;align-items:flex-end;height:60px;">';
+                camaraLabels.slice(0, 8).forEach(function (c) {
+                    var d = camaraOutcome[c];
+                    var totalH = Math.max(6, (d.total / maxCam) * 50);
+                    var grantedH = Math.max(2, (d.granted / Math.max(1, d.total)) * totalH);
+                    var deniedH = Math.max(2, (d.denied / Math.max(1, d.total)) * totalH);
+                    html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;" onclick="jurisprudenciaSearchCamara(\'' +
+                        esc(c) + '\')">';
+                    html +=
+                        '<div style="width:100%;display:flex;flex-direction:column-reverse;align-items:stretch;height:' +
+                        totalH + 'px;border-radius:3px 3px 0 0;overflow:hidden;background:var(--border);">';
+                    html += '<div style="height:' + grantedH + 'px;background:var(--green);border-radius:2px 2px 0 0;"></div>';
+                    html += '<div style="height:' + deniedH + 'px;background:var(--red);border-radius:0 0 2px 2px;"></div>';
+                    html += '</div>';
+                    html += '<div style="font-size:7px;color:var(--gray);text-align:center;line-height:1.2;">' +
+                        esc(c.slice(0, 12)) + '</div>';
+                    html += '<div style="font-size:8px;color:var(--gray-hi);">' + d.total + '</div>';
+                    html += '</div>';
+                });
+                html += '</div></div></div>';
+
+                html += '</div>'; // fim grid
+
+                // Mapa de divergência (simplificado)
+                html += '<div class="jr-chart-box" style="margin-bottom:16px;"><div class="jr-chart-title"><i class="fas fa-code-branch"></i> Mapa de Divergência Jurisprudencial — Assunto × Câmara</div><div class="jr-chart-body" style="overflow-x:auto;">';
+                html +=
+                    '<table style="width:100%;border-collapse:collapse;font-size:11px;min-width:400px;margin-top:4px;">';
+                html +=
+                    '<thead><tr><th style="text-align:left;padding:4px 8px;color:var(--gray);font-weight:400;">Assunto</th>';
+                var topCamaras = camaraLabels.slice(0, 6);
+                topCamaras.forEach(function (c) {
+                    html += '<th style="text-align:center;padding:4px 8px;color:var(--gray);font-weight:400;font-size:9px;">' +
+                        esc(c.slice(0, 10)) + '</th>';
+                });
+                html += '</tr></thead><tbody>';
+                var topAssuntosDiv = Object.keys(assuntoCount).sort(function (a, b) {
+                    return assuntoCount[b] -
+                        assuntoCount[a];
+                }).slice(0, 8);
+                topAssuntosDiv.forEach(function (a) {
+                    html += '<tr><td style="padding:4px 8px;color:var(--gray-hi);font-size:10px;">' + esc(a
+                        .slice(0, 20)) + '</td>';
+                    topCamaras.forEach(function (c) {
+                        var julgadosFiltro = MOCK_JULGADOS.filter(function (j) {
+                            return j.orgao_julgador === c && j.assuntos.indexOf(a) !== -1;
+                        });
+                        var totalF = julgadosFiltro.length;
+                        var grantedF = julgadosFiltro.filter(function (j) {
+                            return j.outcome ===
+                                'Deu Provimento';
+                        }).length;
+                        var pct = totalF > 0 ? Math.round((grantedF / totalF) * 100) : -1;
+                        var color = pct >= 60 ? 'var(--green)' : pct >= 40 ? 'var(--amber)' : pct >= 0 ?
+                            'var(--red)' : 'var(--gray)';
+                        var label = pct >= 0 ? pct + '%' : '—';
+                        html += '<td style="text-align:center;padding:4px 6px;font-weight:500;color:' +
+                            color + ';font-size:10px;cursor:pointer;" onclick="jurisprudenciaSearchAssuntoCamara(\'' +
+                            esc(a) + '\',\'' + esc(c) + '\')">' + label + '</td>';
+                    });
+                    html += '</tr>';
+                });
+                html += '</tbody></table>';
+                html +=
+                    '<div style="font-size:9px;color:var(--gray);margin-top:6px;">Células mostram % de provimento. Clique para filtrar.</div>';
+                html += '</div></div>';
+
+                el.innerHTML = html;
+            }
+
+            // ── RENDER: PESQUISA ──────────────────────────────────────────────────
+            function renderPesquisa(filtro) {
+                var el = document.getElementById('jrPesquisaContent');
+                if (!el) return;
+                var query = filtro || '';
+                var results = MOCK_JULGADOS;
+                if (query) {
+                    var q = query.toLowerCase();
+                    results = results.filter(function (j) {
+                        return j.processo.toLowerCase().indexOf(q) !== -1 ||
+                            j.relator.toLowerCase().indexOf(q) !== -1 ||
+                            j.assuntos.some(function (a) { return a.toLowerCase().indexOf(q) !== -1; }) ||
+                            j.artigos_citados.some(function (a) { return a.toLowerCase().indexOf(q) !== -1; }) ||
+                            j.ementa.toLowerCase().indexOf(q) !== -1 ||
+                            j.legislacao_citada.some(function (l) { return l.toLowerCase().indexOf(q) !== -1; });
+                    });
+                }
+
+                // aplicar filtros da barra
+                var tribunalFiltro = document.getElementById('jrFilterTribunal');
+                var anoFiltro = document.getElementById('jrFilterAno');
+                if (tribunalFiltro && tribunalFiltro.value) {
+                    results = results.filter(function (j) { return j.tribunal === tribunalFiltro.value; });
+                }
+                if (anoFiltro && anoFiltro.value) {
+                    results = results.filter(function (j) { return j.data_julgamento.slice(0, 4) === anoFiltro.value; });
+                }
+
+                jrFiltered = results;
+
+                var html = '';
+                html += '<div class="jr-filter-bar">';
+                html += '<div class="jr-filter-group"><label>Relator</label><input id="jrFiltroRelator" placeholder="Nome…" oninput="jurisprudenciaFiltrar()" /></div>';
+                html += '<div class="jr-filter-group"><label>Assunto</label><input id="jrFiltroAssunto" placeholder="Assunto…" oninput="jurisprudenciaFiltrar()" /></div>';
+                html += '<div class="jr-filter-group"><label>Resultado</label><select id="jrFiltroResultado" onchange="jurisprudenciaFiltrar()"><option value="">Todos</option><option value="Deu Provimento">Deu Provimento</option><option value="Negou Provimento">Negou Provimento</option><option value="Parcial">Parcial</option><option value="Não Conhecido">Não Conhecido</option></select></div>';
+                html += '<div class="jr-filter-group"><label>Lei</label><input id="jrFiltroLei" placeholder="Lei…" oninput="jurisprudenciaFiltrar()" /></div>';
+                html += '<div class="jr-filter-actions"><button class="btn-sm primary" onclick="jurisprudenciaFiltrar()"><i class="fas fa-filter"></i> Filtrar</button>';
+                html +=
+                    '<button class="btn-sm" onclick="jurisprudenciaLimparFiltros()"><i class="fas fa-times"></i> Limpar</button></div>';
+                html += '</div>';
+
+                html += '<div class="jr-results-header"><div class="jr-count"><strong>' + results.length +
+                    '</strong> julgados encontrados</div><div class="jr-export-actions">';
+                html +=
+                    '<button class="btn-sm" onclick="jurisprudenciaExport(\'csv\')"><i class="fas fa-file-csv"></i> CSV</button>';
+                html +=
+                    '<button class="btn-sm" onclick="jurisprudenciaExport(\'excel\')"><i class="fas fa-file-excel"></i> Excel</button>';
+                html +=
+                    '<button class="btn-sm" onclick="jurisprudenciaExport(\'pdf\')"><i class="fas fa-file-pdf"></i> PDF</button>';
+                html += '</div></div>';
+
+                results.slice(0, 30).forEach(function (j) {
+                    var outcomeClass = '';
+                    if (j.outcome === 'Deu Provimento') outcomeClass = 'granted';
+                    else if (j.outcome === 'Negou Provimento') outcomeClass = 'denied';
+                    var snippet = j.ementa_snippet || j.ementa.slice(0, 150) + '…';
+                    if (query) {
+                        var re = new RegExp('(' + esc(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+                        snippet = snippet.replace(re, '<mark>$1</mark>');
+                    }
+                    html += '<div class="jr-result-item" onclick="jurisprudenciaOpenDetail(\'' + j.id + '\')">';
+                    html += '<div class="jr-result-top">';
+                    html += '<span class="jr-processo">' + esc(j.processo) + '</span>';
+                    html += '<span class="jr-meta">' + esc(j.tribunal) + ' · ' + esc(j.orgao_julgador) +
+                        ' · ' + formatDate(j.data_julgamento) + '</span>';
+                    html += '<span class="jr-meta"><strong>' + esc(j.relator) + '</strong></span>';
+                    html += '<span class="jr-outcome ' + outcomeClass + '">' + esc(j.outcome) + '</span>';
+                    html += '</div>';
+                    html += '<div class="jr-result-snippet">' + snippet + '</div>';
+                    html += '<div class="jr-result-bottom">';
+                    j.assuntos.forEach(function (a) { html += '<span class="jr-tag">' + esc(a) + '</span>'; });
+                    j.artigos_citados.forEach(function (a) {
+                        html += '<span class="jr-tag">' + esc(a) +
+                        '</span>';
+                    });
+                    if (isFavorited(j.id)) html +=
+                        '<span class="jr-tag" style="color:var(--amber);"><i class="fas fa-star"></i></span>';
+                    html += '</div></div>';
+                });
+
+                if (!results.length) {
+                    html +=
+                        '<div style="text-align:center;padding:40px 0;color:var(--gray);"><i class="fas fa-search" style="font-size:28px;display:block;margin-bottom:12px;"></i> Nenhum julgado encontrado</div>';
+                }
+
+                el.innerHTML = html;
+            }
+
+            // ── RENDER: ANÁLISES ──────────────────────────────────────────────────
+            function renderAnalises() {
+                var el = document.getElementById('jrAnalisesContent');
+                if (!el) return;
+                var html = '';
+                html += '<h2 style="font-family:var(--serif);font-weight:600;font-size:22px;margin:0 0 4px;color:var(--white);">Análises Inteligentes</h2>';
+                html +=
+                    '<p style="color:var(--gray-hi);margin-bottom:16px;">Visualizações estratégicas para apoiar sua pesquisa jurídica.</p>';
+
+                // Evolução temporal
+                var anoCount = {};
+                MOCK_JULGADOS.forEach(function (j) {
+                    var a = j.data_julgamento.slice(0, 4);
+                    anoCount[a] = (anoCount[a] || 0) + 1;
+                });
+                var anos = Object.keys(anoCount).sort();
+                html += '<div class="jr-chart-box" style="margin-bottom:16px;"><div class="jr-chart-title"><i class="fas fa-chart-line"></i> Evolução Temporal (decisões por ano)</div><div class="jr-chart-body">';
+                html += '<div class="jr-bar-chart" style="height:80px;">';
+                var maxAno = 1;
+                anos.forEach(function (a) { if (anoCount[a] > maxAno) maxAno = anoCount[a]; });
+                anos.forEach(function (a) {
+                    var h = Math.max(6, (anoCount[a] / maxAno) * 70);
+                    html += '<div class="jr-bar-item"><div class="jr-bar" style="height:' + h +
+                        'px;background:var(--blue);"></div><div class="jr-bar-label">' + a +
+                        '</div><div class="jr-bar-value">' + anoCount[a] + '</div></div>';
+                });
+                html += '</div></div></div>';
+
+                // Leis mais citadas
+                var leiCount = {};
+                MOCK_JULGADOS.forEach(function (j) {
+                    j.legislacao_citada.forEach(function (l) { leiCount[l] = (leiCount[l] || 0) + 1; });
+                });
+                var topLeis = Object.keys(leiCount).sort(function (a, b) { return leiCount[b] - leiCount[a]; }).slice(
+                    0, 8);
+                html += '<div class="jr-chart-box"><div class="jr-chart-title"><i class="fas fa-book"></i> Leis Mais Citadas</div><div class="jr-chart-body">';
+                html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+                topLeis.forEach(function (l) {
+                    html +=
+                        '<span style="background:var(--bg-code);border:1px solid var(--border);border-radius:999px;padding:2px 12px;font-size:12px;color:var(--gray-hi);cursor:pointer;" onclick="jurisprudenciaSearchLei(\'' +
+                        esc(l) + '\')">' + esc(l) + ' <span style="color:var(--amber);">' + leiCount[l] +
+                        '</span></span>';
+                });
+                html += '</div></div></div>';
+
+                // Artigos mais citados
+                var artCount = {};
+                MOCK_JULGADOS.forEach(function (j) {
+                    j.artigos_citados.forEach(function (a) { artCount[a] = (artCount[a] || 0) + 1; });
+                });
+                var topArts = Object.keys(artCount).sort(function (a, b) { return artCount[b] - artCount[a]; }).slice(
+                    0, 8);
+                html += '<div class="jr-chart-box" style="margin-top:16px;"><div class="jr-chart-title"><i class="fas fa-paragraph"></i> Artigos Mais Citados</div><div class="jr-chart-body">';
+                html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+                topArts.forEach(function (a) {
+                    html +=
+                        '<span style="background:var(--bg-code);border:1px solid var(--border);border-radius:999px;padding:2px 12px;font-size:12px;color:var(--gray-hi);cursor:pointer;" onclick="jurisprudenciaSearchArtigo(\'' +
+                        esc(a) + '\')">' + esc(a) + ' <span style="color:var(--amber);">' + artCount[a] +
+                        '</span></span>';
+                });
+                html += '</div></div></div>';
+
+                el.innerHTML = html;
+            }
+
+            // ── RENDER: BIBLIOTECA ─────────────────────────────────────────────────
+            function renderBiblioteca() {
+                var el = document.getElementById('jrBibliotecaContent');
+                if (!el) return;
+                var html = '';
+                html += '<h2 style="font-family:var(--serif);font-weight:600;font-size:22px;margin:0 0 4px;color:var(--white);"><i class="fas fa-bookmark" style="color:var(--amber);"></i> Biblioteca Pessoal</h2>';
+                html +=
+                    '<p style="color:var(--gray-hi);margin-bottom:16px;">Decisões favoritadas e com anotações.</p>';
+
+                if (!jrLibrary.length) {
+                    html +=
+                        '<div style="text-align:center;padding:40px 0;color:var(--gray);"><i class="fas fa-book-open" style="font-size:28px;display:block;margin-bottom:12px;"></i> Sua biblioteca está vazia.<br>Favoritize decisões para vê-las aqui.</div>';
+                } else {
+                    html += '<div class="jr-library-grid">';
+                    jrLibrary.forEach(function (id) {
+                        var j = getJulgado(id);
+                        if (!j) return;
+                        html += '<div class="jr-lib-item" onclick="jurisprudenciaOpenDetail(\'' + j.id +
+                            '\')">';
+                        html += '<div class="jr-lib-title">' + esc(j.processo) + '</div>';
+                        html += '<div class="jr-lib-meta">' + esc(j.relator) + ' · ' + esc(j.tribunal) +
+                            ' · ' + formatDate(j.data_julgamento) + '</div>';
+                        html +=
+                            '<div style="margin-top:6px;font-size:10px;color:var(--amber);"><i class="fas fa-star"></i> Favorito</div>';
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                }
+                el.innerHTML = html;
+            }
+
+            // ── RENDER: ALERTAS ────────────────────────────────────────────────────
+            function renderAlertas() {
+                var el = document.getElementById('jrAlertasContent');
+                if (!el) return;
+                var html = '';
+                html += '<h2 style="font-family:var(--serif);font-weight:600;font-size:22px;margin:0 0 4px;color:var(--white);"><i class="fas fa-bell" style="color:var(--amber);"></i> Alertas Inteligentes</h2>';
+                html +=
+                    '<p style="color:var(--gray-hi);margin-bottom:16px;">Monitore novos julgados com filtros personalizados.</p>';
+
+                html +=
+                    '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:16px;">';
+                html +=
+                    '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;"><input id="jrNovoAlerta" placeholder="Ex: responsabilidade médica TJSP Art. 14 CDC" style="flex:1;min-width:160px;padding:8px 12px;background:var(--bg);border:1px solid var(--border-hi);border-radius:var(--r);font-size:13px;" />';
+                html +=
+                    '<button class="btn-sm primary" onclick="jurisprudenciaCriarAlerta()"><i class="fas fa-plus"></i> Criar alerta</button></div>';
+                html += '</div>';
+
+                if (!jrAlerts.length) {
+                    html +=
+                        '<div style="text-align:center;padding:30px 0;color:var(--gray);">Nenhum alerta cadastrado.</div>';
+                } else {
+                    jrAlerts.forEach(function (alerta, idx) {
+                        html += '<div class="jr-alert-item">';
+                        html += '<div class="jr-alert-info"><div class="jr-alert-query">' + esc(alerta
+                            .query) + '</div><div class="jr-alert-detail">Criado em ' + (alerta
+                                .created || '—') + ' · ' + (alerta.count || 0) +
+                            ' notificações</div></div>';
+                        html += '<div style="display:flex;gap:4px;align-items:center;">';
+                        html += '<span class="jr-alert-badge"><i class="fas fa-bell"></i> Ativo</span>';
+                        html +=
+                            '<button class="btn-sm" style="color:var(--red);" onclick="jurisprudenciaRemoverAlerta(' +
+                            idx + ')"><i class="fas fa-trash"></i></button>';
+                        html += '</div></div>';
+                    });
+                }
+                el.innerHTML = html;
+            }
+
+            // ── RENDER: ADMIN ──────────────────────────────────────────────────────
+            function renderAdmin() {
+                var el = document.getElementById('jrAdminContent');
+                if (!el) return;
+                var html = '';
+                html += '<h2 style="font-family:var(--serif);font-weight:600;font-size:22px;margin:0 0 4px;color:var(--white);"><i class="fas fa-cog" style="color:var(--amber);"></i> Administração</h2>';
+                html +=
+                    '<p style="color:var(--gray-hi);margin-bottom:16px;">Monitoramento da coleta, indexação e saúde do sistema.</p>';
+
+                // Pipeline
+                var etapas = [
+                    { nome: 'Pesquisa', status: 'ok', sub: 'OK' },
+                    { nome: 'Download', status: 'ok', sub: '3 falhas' },
+                    { nome: 'Conversão', status: 'ok', sub: 'OK' },
+                    { nome: 'Extração', status: 'ok', sub: 'OK' },
+                    { nome: 'JSON', status: 'ok', sub: 'OK' },
+                    { nome: 'Vetorização', status: 'ok', sub: '1.240 vetores' },
+                    { nome: 'Qdrant', status: 'ok', sub: '1.240 vetores' },
+                    { nome: 'Master Index', status: 'ok', sub: '792 docs' },
+                ];
+                html += '<div class="jr-admin-pipeline">';
+                etapas.forEach(function (e) {
+                    var icon = e.status === 'ok' ? 'fa-check-circle' : e.status === 'err' ?
+                        'fa-times-circle' : 'fa-clock';
+                    var cls = e.status === 'ok' ? 'ok' : e.status === 'err' ? 'err' : '';
+                    html += '<div class="jr-pipe-step"><div class="jr-pipe-name">' + esc(e.nome) +
+                        '</div><div class="jr-pipe-status ' + cls + '"><i class="fas ' + icon +
+                        '"></i></div><div class="jr-pipe-sub">' + esc(e.sub) + '</div></div>';
+                });
+                html += '</div>';
+
+                // Logs
+                var logs = [
+                    { time: '10:32:14', level: 'info', msg: 'Coleta finalizada — 12 novos docs' },
+                    { time: '10:28:07', level: 'warn', msg: 'Timeout no download do TJSP — retentativa 3/5' },
+                    { time: '10:20:33', level: 'info', msg: 'Conversão DOCX concluída — 8 arquivos' },
+                    { time: '10:15:21', level: 'info', msg: 'Vetorização Qdrant — 1.240 vetores' },
+                    { time: '09:58:12', level: 'err', msg: 'Falha na extração do doc 0012345 — formato inválido' },
+                    { time: '09:45:00', level: 'info', msg: 'Master Index atualizado — 792 documentos' },
+                ];
+                html += '<h4 style="font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin:16px 0 8px;">Logs do Sistema</h4>';
+                html += '<div class="jr-admin-logs">';
+                logs.forEach(function (log) {
+                    html += '<div class="jr-log-entry">';
+                    html += '<span class="jr-log-time">' + esc(log.time) + '</span>';
+                    html += '<span class="jr-log-level ' + esc(log.level) + '">[' + esc(log.level.toUpperCase()) +
+                        ']</span>';
+                    html += '<span class="jr-log-msg">' + esc(log.msg) + '</span>';
+                    html += '</div>';
+                });
+                html += '</div>';
+
+                // Auditoria
+                html +=
+                    '<div style="margin-top:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-size:12px;color:var(--gray-hi);">';
+                html +=
+                    '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;"><span><strong>Última reindexação:</strong> 10/03/2026 09:32</span><span><strong>Usuário:</strong> admin@olivia.workspace</span><span><strong>Configurações:</strong> v2.4.1</span></div>';
+                html += '</div>';
+
+                el.innerHTML = html;
+            }
+
+            // ── AÇÕES ──────────────────────────────────────────────────────────────
+
+            window.jurisprudenciaSwitchPanel = function (name) {
+                jrActivePanel = name;
+                ['dashboard', 'pesquisa', 'analises', 'biblioteca', 'alertas', 'admin'].forEach(function (p) {
+                    var panel = document.getElementById('jrPanel-' + p);
+                    if (panel) panel.classList.toggle('active', p === name);
+                });
+                var tabs = document.querySelectorAll('#jurisprudenciaView .jr-tab');
+                tabs.forEach(function (t) {
+                    t.classList.toggle('active', t.getAttribute('data-panel') === name);
+                });
+                // re-render sob demanda
+                if (name === 'dashboard') renderDashboard();
+                if (name === 'biblioteca') renderBiblioteca();
+                if (name === 'alertas') renderAlertas();
+                if (name === 'admin') renderAdmin();
+            };
+
+            window.jurisprudenciaGlobalSearch = function () {
+                var input = document.getElementById('jrGlobalInput');
+                var query = (input.value || '').trim();
+                if (!query) return;
+                // salvar histórico
+                if (jrSearchHistory.indexOf(query) === -1) {
+                    jrSearchHistory.unshift(query);
+                    if (jrSearchHistory.length > 20) jrSearchHistory.pop();
+                    localStorage.setItem('jrSearchHistory', JSON.stringify(jrSearchHistory));
+                }
+                document.getElementById('jrSuggestions').classList.remove('open');
+                jurisprudenciaSwitchPanel('pesquisa');
+                renderPesquisa(query);
+            };
+
+            window.jurisprudenciaGlobalSuggest = function (val) {
+                var sug = document.getElementById('jrSuggestions');
+                if (!val || val.length < 2) { sug.classList.remove('open'); return; }
+                var q = val.toLowerCase();
+                var matches = [];
+                var seen = {};
+                MOCK_JULGADOS.forEach(function (j) {
+                    if (j.processo.toLowerCase().indexOf(q) !== -1 && !seen[j.processo]) {
+                        seen[j.processo] = true;
+                        matches.push({ label: j.processo, type: 'Processo' });
+                    }
+                    if (j.relator.toLowerCase().indexOf(q) !== -1 && !seen[j.relator]) {
+                        seen[j.relator] = true;
+                        matches.push({ label: j.relator, type: 'Relator' });
+                    }
+                    j.assuntos.forEach(function (a) {
+                        if (a.toLowerCase().indexOf(q) !== -1 && !seen[a]) {
+                            seen[a] = true;
+                            matches.push({ label: a, type: 'Assunto' });
+                        }
+                    });
+                });
+                if (!matches.length) { sug.classList.remove('open'); return; }
+                sug.innerHTML = '';
+                matches.slice(0, 8).forEach(function (m) {
+                    var div = document.createElement('div');
+                    div.className = 'jr-sug-item';
+                    div.innerHTML = '<span class="jr-sug-type">' + esc(m.type) + '</span>' + esc(m.label);
+                    div.onclick = function () {
+                        document.getElementById('jrGlobalInput').value = m.label;
+                        sug.classList.remove('open');
+                        jurisprudenciaGlobalSearch();
+                    };
+                    sug.appendChild(div);
+                });
+                sug.classList.add('open');
+            };
+
+            window.jurisprudenciaFiltrar = function () {
+                var query = document.getElementById('jrFiltroRelator') ? document.getElementById('jrFiltroRelator')
+                    .value : '';
+                var assunto = document.getElementById('jrFiltroAssunto') ? document.getElementById('jrFiltroAssunto')
+                    .value : '';
+                var resultado = document.getElementById('jrFiltroResultado') ? document.getElementById(
+                    'jrFiltroResultado').value : '';
+                var lei = document.getElementById('jrFiltroLei') ? document.getElementById('jrFiltroLei').value : '';
+
+                var results = MOCK_JULGADOS;
+                if (query) results = results.filter(function (j) {
+                    return j.relator.toLowerCase().indexOf(query
+                        .toLowerCase()) !== -1;
+                });
+                if (assunto) results = results.filter(function (j) {
+                    return j.assuntos.some(function (a) {
+                        return a
+                            .toLowerCase().indexOf(assunto.toLowerCase()) !== -1;
+                    });
+                });
+                if (resultado) results = results.filter(function (j) { return j.outcome === resultado; });
+                if (lei) results = results.filter(function (j) {
+                    return j.legislacao_citada.some(function (l) {
+                        return l
+                            .toLowerCase().indexOf(lei.toLowerCase()) !== -1;
+                    });
+                });
+
+                // também aplicar filtros globais
+                var tribunalFiltro = document.getElementById('jrFilterTribunal');
+                var anoFiltro = document.getElementById('jrFilterAno');
+                if (tribunalFiltro && tribunalFiltro.value) {
+                    results = results.filter(function (j) { return j.tribunal === tribunalFiltro.value; });
+                }
+                if (anoFiltro && anoFiltro.value) {
+                    results = results.filter(function (j) { return j.data_julgamento.slice(0, 4) === anoFiltro.value; });
+                }
+
+                jrFiltered = results;
+                renderPesquisaComFiltros(results);
+            };
+
+            function renderPesquisaComFiltros(results) {
+                var el = document.getElementById('jrPesquisaContent');
+                if (!el) return;
+                // reutiliza a mesma lógica de renderPesquisa mas com os resultados já filtrados
+                var html = '';
+                html += '<div class="jr-filter-bar">';
+                html += '<div class="jr-filter-group"><label>Relator</label><input id="jrFiltroRelator" placeholder="Nome…" oninput="jurisprudenciaFiltrar()" /></div>';
+                html += '<div class="jr-filter-group"><label>Assunto</label><input id="jrFiltroAssunto" placeholder="Assunto…" oninput="jurisprudenciaFiltrar()" /></div>';
+                html += '<div class="jr-filter-group"><label>Resultado</label><select id="jrFiltroResultado" onchange="jurisprudenciaFiltrar()"><option value="">Todos</option><option value="Deu Provimento">Deu Provimento</option><option value="Negou Provimento">Negou Provimento</option><option value="Parcial">Parcial</option><option value="Não Conhecido">Não Conhecido</option></select></div>';
+                html += '<div class="jr-filter-group"><label>Lei</label><input id="jrFiltroLei" placeholder="Lei…" oninput="jurisprudenciaFiltrar()" /></div>';
+                html += '<div class="jr-filter-actions"><button class="btn-sm primary" onclick="jurisprudenciaFiltrar()"><i class="fas fa-filter"></i> Filtrar</button>';
+                html +=
+                    '<button class="btn-sm" onclick="jurisprudenciaLimparFiltros()"><i class="fas fa-times"></i> Limpar</button></div>';
+                html += '</div>';
+
+                html += '<div class="jr-results-header"><div class="jr-count"><strong>' + results.length +
+                    '</strong> julgados encontrados</div><div class="jr-export-actions">';
+                html +=
+                    '<button class="btn-sm" onclick="jurisprudenciaExport(\'csv\')"><i class="fas fa-file-csv"></i> CSV</button>';
+                html +=
+                    '<button class="btn-sm" onclick="jurisprudenciaExport(\'excel\')"><i class="fas fa-file-excel"></i> Excel</button>';
+                html +=
+                    '<button class="btn-sm" onclick="jurisprudenciaExport(\'pdf\')"><i class="fas fa-file-pdf"></i> PDF</button>';
+                html += '</div></div>';
+
+                results.slice(0, 30).forEach(function (j) {
+                    var outcomeClass = '';
+                    if (j.outcome === 'Deu Provimento') outcomeClass = 'granted';
+                    else if (j.outcome === 'Negou Provimento') outcomeClass = 'denied';
+                    var snippet = j.ementa_snippet || j.ementa.slice(0, 150) + '…';
+                    html += '<div class="jr-result-item" onclick="jurisprudenciaOpenDetail(\'' + j.id + '\')">';
+                    html += '<div class="jr-result-top">';
+                    html += '<span class="jr-processo">' + esc(j.processo) + '</span>';
+                    html += '<span class="jr-meta">' + esc(j.tribunal) + ' · ' + esc(j.orgao_julgador) +
+                        ' · ' + formatDate(j.data_julgamento) + '</span>';
+                    html += '<span class="jr-meta"><strong>' + esc(j.relator) + '</strong></span>';
+                    html += '<span class="jr-outcome ' + outcomeClass + '">' + esc(j.outcome) + '</span>';
+                    html += '</div>';
+                    html += '<div class="jr-result-snippet">' + snippet + '</div>';
+                    html += '<div class="jr-result-bottom">';
+                    j.assuntos.forEach(function (a) { html += '<span class="jr-tag">' + esc(a) + '</span>'; });
+                    j.artigos_citados.forEach(function (a) {
+                        html += '<span class="jr-tag">' + esc(a) +
+                        '</span>';
+                    });
+                    if (isFavorited(j.id)) html +=
+                        '<span class="jr-tag" style="color:var(--amber);"><i class="fas fa-star"></i></span>';
+                    html += '</div></div>';
+                });
+
+                if (!results.length) {
+                    html +=
+                        '<div style="text-align:center;padding:40px 0;color:var(--gray);"><i class="fas fa-search" style="font-size:28px;display:block;margin-bottom:12px;"></i> Nenhum julgado encontrado</div>';
+                }
+                el.innerHTML = html;
+            }
+
+            window.jurisprudenciaLimparFiltros = function () {
+                var inputs = document.querySelectorAll('#jrPesquisaContent input');
+                inputs.forEach(function (inp) { inp.value = ''; });
+                var selects = document.querySelectorAll('#jrPesquisaContent select');
+                selects.forEach(function (sel) { sel.value = ''; });
+                // também limpa os globais
+                var tf = document.getElementById('jrFilterTribunal');
+                var af = document.getElementById('jrFilterAno');
+                if (tf) tf.value = '';
+                if (af) af.value = '';
+                renderPesquisa('');
+            };
+
+            window.jurisprudenciaSearchAssunto = function (assunto) {
+                document.getElementById('jrGlobalInput').value = assunto;
+                jurisprudenciaSwitchPanel('pesquisa');
+                renderPesquisa(assunto);
+            };
+
+            window.jurisprudenciaSearchRelator = function (relator) {
+                document.getElementById('jrGlobalInput').value = relator;
+                jurisprudenciaSwitchPanel('pesquisa');
+                renderPesquisa(relator);
+            };
+
+            window.jurisprudenciaSearchCamara = function (camara) {
+                document.getElementById('jrGlobalInput').value = camara;
+                jurisprudenciaSwitchPanel('pesquisa');
+                renderPesquisa(camara);
+            };
+
+            window.jurisprudenciaSearchAssuntoCamara = function (assunto, camara) {
+                document.getElementById('jrGlobalInput').value = assunto + ' ' + camara;
+                jurisprudenciaSwitchPanel('pesquisa');
+                renderPesquisa(assunto + ' ' + camara);
+            };
+
+            window.jurisprudenciaSearchLei = function (lei) {
+                document.getElementById('jrGlobalInput').value = lei;
+                jurisprudenciaSwitchPanel('pesquisa');
+                renderPesquisa(lei);
+            };
+
+            window.jurisprudenciaSearchArtigo = function (artigo) {
+                document.getElementById('jrGlobalInput').value = artigo;
+                jurisprudenciaSwitchPanel('pesquisa');
+                renderPesquisa(artigo);
+            };
+
+            // ── DETALHE ────────────────────────────────────────────────────────────
+            window.jurisprudenciaOpenDetail = function (id) {
+                var j = getJulgado(id);
+                if (!j) return;
+                var related = getRelated(j, 5);
+                var timeline = getTimeline(j);
+
+                var card = document.getElementById('jrDetailCard');
+                var outcomeClass = '';
+                if (j.outcome === 'Deu Provimento') outcomeClass = 'granted';
+                else if (j.outcome === 'Negou Provimento') outcomeClass = 'denied';
+
+                var html = '';
+                html +=
+                    '<button class="jr-detail-close" onclick="jurisprudenciaCloseDetail()"><i class="fas fa-times"></i></button>';
+                html += '<div class="jr-detail-head">';
+                html += '<div class="jr-detail-processo">' + esc(j.processo) + '</div>';
+                html += '<div class="jr-detail-meta-row">';
+                html += '<span><strong>Tribunal:</strong> ' + esc(j.tribunal) + '</span>';
+                html += '<span><strong>Órgão:</strong> ' + esc(j.orgao_julgador) + '</span>';
+                html += '<span><strong>Relator:</strong> ' + esc(j.relator) + '</span>';
+                html += '<span><strong>Data:</strong> ' + formatDate(j.data_julgamento) + '</span>';
+                html += '<span><strong>Classe:</strong> ' + esc(j.classe) + '</span>';
+                html += '<span><strong>Votação:</strong> ' + esc(j.votacao) + '</span>';
+                html += '<span><strong>Resultado:</strong> <span style="color:' + (j.outcome === 'Deu Provimento' ?
+                    'var(--green)' : j.outcome === 'Negou Provimento' ? 'var(--red)' : 'var(--amber)') + ';font-weight:600;">' +
+                    esc(j.outcome) + '</span></span>';
+                html += '</div></div>';
+
+                html += '<div class="jr-detail-body">';
+                html += '<h4>Ementa</h4>';
+                html += '<div class="jr-ementa">' + esc(j.ementa).replace(/\n/g, '<br>') + '</div>';
+
+                html += '<h4>Assuntos</h4>';
+                html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;">';
+                j.assuntos.forEach(function (a) { html += '<span class="jr-tag">' + esc(a) + '</span>'; });
+                html += '</div>';
+
+                html += '<h4>Legislação citada</h4>';
+                html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;">';
+                j.legislacao_citada.forEach(function (l) {
+                    html += '<span class="jr-tag">' + esc(l) +
+                    '</span>';
+                });
+                html += '</div>';
+
+                html += '<h4>Artigos citados</h4>';
+                html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;">';
+                j.artigos_citados.forEach(function (a) {
+                    html += '<span class="jr-tag">' + esc(a) +
+                    '</span>';
+                });
+                html += '</div>';
+
+                html += '<h4>Partes</h4>';
+                html += '<div style="font-size:12px;color:var(--gray-hi);margin-bottom:10px;">';
+                html += '<span><strong>Autor:</strong> ' + esc(j.partes.autor || '—') + '</span> · ';
+                html += '<span><strong>Réu:</strong> ' + esc(j.partes.reu || '—') + '</span> · ';
+                html += '<span><strong>Apelante:</strong> ' + esc(j.partes.apelante || '—') + '</span>';
+                html += '</div>';
+
+                // Correlações
+                if (related.length) {
+                    html += '<h4>Correlações <span style="font-weight:400;font-size:10px;color:var(--gray);">(clique para abrir)</span></h4>';
+                    html += '<div class="jr-correlations">';
+                    related.forEach(function (r) {
+                        html += '<span class="jr-corr-chip" onclick="jurisprudenciaOpenDetail(\'' + r.id +
+                            '\');event.stopPropagation();">' + esc(r.processo) + ' · ' + esc(r
+                                .outcome) + '</span>';
+                    });
+                    html += '</div>';
+                }
+
+                // Linha do tempo
+                if (timeline.length) {
+                    html += '<h4 style="margin-top:14px;">Linha do Tempo — ' + esc(j.relator) +
+                        ' <span style="font-weight:400;font-size:10px;color:var(--gray);">(decisões próximas)</span></h4>';
+                    html += '<div class="jr-timeline">';
+                    timeline.forEach(function (t) {
+                        html += '<div class="jr-tl-item"><span class="jr-tl-date">' + formatDate(t
+                            .data_julgamento) + '</span> ' + esc(t.processo) + ' — ' + esc(t
+                                .outcome) + ' <span style="color:var(--gray);font-size:10px;">' + esc(t
+                                    .assuntos[0] || '') + '</span></div>';
+                    });
+                    html += '</div>';
+                }
+
+                html += '</div>'; // body
+
+                // Ações
+                var fav = isFavorited(j.id);
+                var lib = isInLibrary(j.id);
+                html += '<div class="jr-detail-actions">';
+                html +=
+                    '<button class="btn-sm ' + (fav ? 'active' : '') + '" onclick="jurisprudenciaToggleFavorito(\'' +
+                    j.id + '\')"><i class="fas fa-star"></i> ' + (fav ? 'Favoritado' : 'Favoritar') + '</button>';
+                html +=
+                    '<button class="btn-sm ' + (lib ? 'active' : '') + '" onclick="jurisprudenciaToggleBiblioteca(\'' +
+                    j.id + '\')"><i class="fas fa-bookmark"></i> ' + (lib ? 'Na biblioteca' :
+                        'Adicionar à biblioteca') + '</button>';
+                html +=
+                    '<button class="btn-sm" onclick="jurisprudenciaExportarJulgado(\'' + j.id +
+                    '\')"><i class="fas fa-file-pdf"></i> Exportar</button>';
+                html += '</div>';
+
+                card.innerHTML = html;
+                document.getElementById('jrDetail').classList.add('open');
+            };
+
+            window.jurisprudenciaCloseDetail = function () {
+                document.getElementById('jrDetail').classList.remove('open');
+            };
+
+            // ── FAVORITOS / BIBLIOTECA ─────────────────────────────────────────────
+            window.jurisprudenciaToggleFavorito = function (id) {
+                var idx = jrFavorites.indexOf(id);
+                if (idx === -1) jrFavorites.push(id);
+                else jrFavorites.splice(idx, 1);
+                localStorage.setItem('jrFavorites', JSON.stringify(jrFavorites));
+                // re-render se estiver aberto
+                if (document.getElementById('jrDetail').classList.contains('open')) {
+                    jurisprudenciaOpenDetail(id);
+                }
+                renderBiblioteca();
+            };
+
+            window.jurisprudenciaToggleBiblioteca = function (id) {
+                var idx = jrLibrary.indexOf(id);
+                if (idx === -1) jrLibrary.push(id);
+                else jrLibrary.splice(idx, 1);
+                localStorage.setItem('jrLibrary', JSON.stringify(jrLibrary));
+                if (document.getElementById('jrDetail').classList.contains('open')) {
+                    jurisprudenciaOpenDetail(id);
+                }
+                renderBiblioteca();
+            };
+
+            window.jurisprudenciaExportarJulgado = function (id) {
+                var j = getJulgado(id);
+                if (!j) return;
+                var txt = 'PROCESSO: ' + j.processo + '\n' +
+                    'TRIBUNAL: ' + j.tribunal + '\n' +
+                    'RELATOR: ' + j.relator + '\n' +
+                    'ÓRGÃO: ' + j.orgao_julgador + '\n' +
+                    'DATA: ' + formatDate(j.data_julgamento) + '\n' +
+                    'RESULTADO: ' + j.outcome + '\n' +
+                    'ASSUNTOS: ' + j.assuntos.join(', ') + '\n' +
+                    'LEGISLAÇÃO: ' + j.legislacao_citada.join(', ') + '\n' +
+                    'ARTIGOS: ' + j.artigos_citados.join(', ') + '\n\n' +
+                    'EMENTA:\n' + j.ementa;
+                alert('Exportação simulada (PDF). Conteúdo:\n\n' + txt.slice(0, 600) + (txt.length > 600 ? '…' : ''));
+            };
+
+            // ── EXPORT ─────────────────────────────────────────────────────────────
+            window.jurisprudenciaExport = function (format) {
+                var data = jrFiltered.length ? jrFiltered : MOCK_JULGADOS;
+                var headers = ['Processo', 'Tribunal', 'Relator', 'Órgão', 'Data', 'Classe', 'Resultado', 'Assuntos'];
+                var rows = data.slice(0, 50).map(function (j) {
+                    return [
+                        j.processo, j.tribunal, j.relator, j.orgao_julgador,
+                        formatDate(j.data_julgamento), j.classe, j.outcome,
+                        j.assuntos.join('; ')
+                    ];
+                });
+                var csv = headers.join(',') + '\n' + rows.map(function (r) { return r.join(','); }).join('\n');
+                var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                var link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'jurisprudencia.' + (format === 'csv' ? 'csv' : 'txt');
+                link.click();
+                URL.revokeObjectURL(link.href);
+                alert('Exportação ' + format.toUpperCase() + ' gerada com ' + rows.length + ' registros.');
+            };
+
+            // ── ALERTAS ────────────────────────────────────────────────────────────
+            window.jurisprudenciaCriarAlerta = function () {
+                var input = document.getElementById('jrNovoAlerta');
+                var query = (input.value || '').trim();
+                if (!query) { alert('Digite uma consulta para o alerta.'); return; }
+                jrAlerts.push({ query: query, created: new Date().toLocaleDateString('pt-BR'), count: 0 });
+                localStorage.setItem('jrAlerts', JSON.stringify(jrAlerts));
+                input.value = '';
+                renderAlertas();
+                alert('Alerta criado: "' + query + '"');
+            };
+
+            window.jurisprudenciaRemoverAlerta = function (idx) {
+                jrAlerts.splice(idx, 1);
+                localStorage.setItem('jrAlerts', JSON.stringify(jrAlerts));
+                renderAlertas();
+            };
+
+            // ── REFRESH ────────────────────────────────────────────────────────────
+            window.jurisprudenciaRefresh = function () {
+                // simula atualização
+                MOCK_JULGADOS = gerarMock();
+                renderDashboard();
+                renderPesquisa('');
+                renderAnalises();
+                renderBiblioteca();
+                renderAlertas();
+                renderAdmin();
+                alert('Dados atualizados! ' + MOCK_JULGADOS.length + ' julgados indexados.');
+            };
+
+            // ── LIFECYCLE: SHOW / HIDE ────────────────────────────────────────────
+            var JR_SIBLING_HIDE = ['violationsHideView', 'lawLibHideView', 'masterIndexHideView',
+                'legalRouterHideView', 'spacesHideView', 'listeningHideView', 'studioHideView',
+                'descobertaHideView', 'memoryHideView', 'shadersHideView', 'architectureHideView',
+                'craudioHideView'
+            ];
+            var JR_CHAT_IDS = ['chatHeader', 'welcomeState', 'chatLog', 'chatCompose', 'chatToolbar'];
+
+            window.jurisprudenciaShowView = function () {
+                build();
+                JR_CHAT_IDS.forEach(function (id) {
+                    var el = document.getElementById(id);
+                    if (el) el.style.display = 'none';
+                });
+                var mc = document.querySelector('.main-content');
+                if (mc) {
+                    mc._jrDisplay = mc.style.display;
+                    mc.style.display = 'none';
+                }
+                if (typeof window.aexHideMain === 'function') { try { window.aexHideMain(); } catch (_e) { } }
+                JR_SIBLING_HIDE.forEach(function (fn) {
+                    try { if (typeof window[fn] === 'function') window[fn](); } catch (_e) { }
+                });
+                var v = document.getElementById('jurisprudenciaView');
+                if (v) v.classList.add('active');
+                var ws = document.querySelector('.workspace');
+                if (ws) ws.classList.add('jurisprudencia-open');
+                // sincroniza com o painel ativo
+                jurisprudenciaSwitchPanel(jrActivePanel || 'dashboard');
+            };
+
+            window.jurisprudenciaHideView = function () {
+                var v = document.getElementById('jurisprudenciaView');
+                if (v) v.classList.remove('active');
+                var ws = document.querySelector('.workspace');
+                if (ws) ws.classList.remove('jurisprudencia-open');
+                var mc = document.querySelector('.main-content');
+                if (mc) {
+                    mc.style.display = mc._jrDisplay !== undefined ? mc._jrDisplay : '';
+                    delete mc._jrDisplay;
+                }
+                JR_CHAT_IDS.forEach(function (id) {
+                    var el = document.getElementById(id);
+                    if (el) el.style.display = '';
+                });
+            };
+
+            // wrap siblings
+            function wrapSiblingsJr() {
+                var names = ['violationsShowView', 'lawLibShowView', 'masterIndexShowView',
+                    'legalRouterShowView', 'spacesShowView', 'listeningShowView', 'studioShowView',
+                    'descobertaShowView', 'memoryShowView', 'shadersShowView', 'architectureShowView',
+                    'craudioShowView', 'resetToWelcome', 'aexToggleMain'
+                ];
+                names.forEach(function (n) {
+                    var orig = window[n];
+                    if (typeof orig !== 'function' || orig._jrWrapped) return;
+                    var wrapped = function () {
+                        try { window.jurisprudenciaHideView(); } catch (_e) { }
+                        return orig.apply(this, arguments);
+                    };
+                    wrapped._jrWrapped = true;
+                    window[n] = wrapped;
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', wrapSiblingsJr);
+            } else {
+                wrapSiblingsJr();
+            }
+
+        })();
+    </script>
+
+</body>
+
+</html>

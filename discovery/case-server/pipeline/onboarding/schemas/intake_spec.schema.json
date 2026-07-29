@@ -1,0 +1,208 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://discovery.local/schemas/intake_spec.schema.json",
+  "title": "IntakeSpec",
+  "description": "Captured during P0 of the onboarding flow. Drives blueprint v1 generation. Source of truth for the user's stated goal, domain, jurisdictions, and expected file kinds.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_version", "session_id", "domain", "goal", "intake_mode", "template_id", "created_at"],
+  "properties": {
+    "spec_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Discovery workspace session id this intake belongs to."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "intake_mode": {
+      "type": "string",
+      "enum": ["form", "agent", "hybrid"],
+      "description": "How the spec was collected: pure form input, agent dialogue, or agent-assisted form."
+    },
+    "template_id": {
+      "type": "string",
+      "description": "Identifier of the template used as starting point.",
+      "examples": ["legal-case", "blank"]
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "legal_case",
+        "research",
+        "business_records",
+        "technical_docs",
+        "personal_archive",
+        "investigation",
+        "mixed",
+        "other"
+      ]
+    },
+    "domain_other": {
+      "type": "string",
+      "description": "Free-text label when domain == 'other'."
+    },
+    "goal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary"],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "description": "One-paragraph user statement of intent."
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Structured tags chosen by the user (chips). Examples: 'litigation', 'compliance-audit', 'thesis'."
+        },
+        "deliverables": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "complaint_filing",
+              "court_motion",
+              "regulatory_report",
+              "internal_memo",
+              "research_paper",
+              "timeline_narrative",
+              "evidence_bundle",
+              "compliance_report",
+              "other"
+            ]
+          }
+        }
+      }
+    },
+    "jurisdictions": {
+      "type": "array",
+      "description": "ISO 3166-1 alpha-2 codes plus special tokens. Empty array for non-legal domains.",
+      "items": {
+        "type": "string",
+        "pattern": "^([A-Z]{2}|INT|EU|UN)$"
+      },
+      "uniqueItems": true
+    },
+    "timeframe": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "from": { "type": "string", "format": "date" },
+        "to":   { "type": "string", "format": "date" },
+        "is_ongoing": { "type": "boolean", "default": false }
+      }
+    },
+    "parties_of_interest": {
+      "type": "array",
+      "description": "People/orgs central to the corpus. Helps L4 entity extraction prioritize.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "role"],
+        "properties": {
+          "name": { "type": "string" },
+          "role": {
+            "type": "string",
+            "enum": ["claimant", "respondent", "witness", "official", "counsel", "third_party", "other"]
+          },
+          "aliases": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "expected_file_kinds": {
+      "type": "array",
+      "description": "What the user thinks they'll be uploading. Drives blueprint v1 buckets and L4 prompt selection.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "transcripts",
+          "audio_recordings",
+          "video_recordings",
+          "photos",
+          "screenshots",
+          "emails",
+          "chat_logs",
+          "contracts",
+          "filings",
+          "court_documents",
+          "regulatory_documents",
+          "law_texts",
+          "case_law",
+          "reports",
+          "spreadsheets",
+          "structured_data",
+          "boarding_passes_or_tickets",
+          "id_documents",
+          "personal_notes",
+          "other"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "privacy_level": {
+      "type": "string",
+      "enum": ["public", "confidential", "privileged", "sealed"],
+      "default": "confidential",
+      "description": "Highest sensitivity present in the corpus. Used to gate downstream sharing and LLM provider selection."
+    },
+    "preferred_llm_provider": {
+      "type": "string",
+      "description": "Optional override for which LLM the pipeline uses (must match a provider id known to llm_client.js).",
+      "examples": ["anthropic", "openai", "local"]
+    },
+    "reference_attachments": {
+      "type": "array",
+      "description": "Files attached during intake itself (style references, prior reports, sample files). Stored alongside the workspace, not yet pipelined.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["relative_path", "purpose"],
+        "properties": {
+          "relative_path": { "type": "string" },
+          "purpose": {
+            "type": "string",
+            "enum": ["style_reference", "prior_artifact", "sample_input", "domain_glossary", "other"]
+          },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "agent_transcript": {
+      "type": "object",
+      "description": "Present when intake_mode is 'agent' or 'hybrid'. Stores the dialogue that produced this spec for auditability.",
+      "additionalProperties": false,
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["role", "content"],
+            "additionalProperties": false,
+            "properties": {
+              "role": { "type": "string", "enum": ["user", "assistant", "system"] },
+              "content": { "type": "string" },
+              "ts": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
+        "model": { "type": "string" }
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "description": "Items the agent flagged as worth revisiting after the corpus is uploaded.",
+      "items": { "type": "string" }
+    }
+  }
+}

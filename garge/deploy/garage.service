@@ -1,0 +1,23 @@
+[Unit]
+Description=Garage AI Workspace (FastAPI + Qdrant tools)
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/vps_ecosystem/vps_projects_/awareness-ai/garage
+ExecStart=/root/vps_ecosystem/vps_projects_/awareness-ai/garage/.venv/bin/uvicorn main:app --host 0.0.0.0 --port 8066
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=garage
+Environment="PORT=8066"
+Environment="HF_HUB_DISABLE_PROGRESS_BARS=1"
+Environment="TOKENIZERS_PARALLELISM=false"
+EnvironmentFile=-/root/vps_ecosystem/vps_projects_/awareness-ai/_shared/.env
+EnvironmentFile=-/root/vps_ecosystem/vps_projects_/awareness-ai/garage/.env
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,21 @@
+[Unit]
+Description=Ops Dashboard — central service monitor
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/Users/dev/ops
+ExecStart=/Users/dev/ops/.venv/bin/python3 /Users/dev/ops/app.py
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ops-dashboard
+Environment="PORT=9000"
+Environment="OPS_DASHBOARD_PORT=9000"
+Environment="OPS_PROJECT_ROOT=/Users/dev"
+
+[Install]
+WantedBy=multi-user.target

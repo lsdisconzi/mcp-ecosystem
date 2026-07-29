@@ -1,0 +1,65 @@
+{
+  "name": "discovery-desktop",
+  "version": "2.0.0",
+  "description": "Discovery desktop app for turning any local folder into a searchable REST-backed dashboard.",
+  "author": "Awareness-AI",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "start:onboarding": "DISCOVERY_START_PATH=/onboarding electron .",
+    "server:dev": "node case-server/auto_server_builder.js",
+    "mcp:start": "node mcp/discovery_mcp_server.js",
+    "mcp:inspect": "npx @modelcontextprotocol/inspector node mcp/discovery_mcp_server.js",
+    "mcp:readiness": "node mcp/generate_readiness_artifacts.js",
+    "desktop:dev": "electron .",
+    "dist:dir": "electron-builder --dir",
+    "dist:mac": "electron-builder --mac dmg zip",
+    "dist:win": "electron-builder --win nsis portable"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "multer": "^2.0.2"
+  },
+  "devDependencies": {
+    "electron": "^41.2.1",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.awarenessai.discovery",
+    "productName": "Discovery",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "case-server/**/*",
+      "ui/assets/**/*",
+      "ui/discovery_ui.html",
+      "package.json",
+      "README.md",
+      "!**/.logs/**/*",
+      "!**/.venv/**/*",
+      "!case-server/node_modules/**/*"
+    ],
+    "asar": true,
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

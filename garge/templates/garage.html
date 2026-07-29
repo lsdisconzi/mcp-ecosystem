@@ -1,0 +1,3465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Awareness-AI · Prompt Lab</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ── AWARENESS-AI · GARAGE APP SHELL ── */
+        :root {
+            --bg: #191917;
+            --bg-card: #1f1f1d;
+            --bg-code: #161614;
+            --bg-input: #171715;
+            --border: #2a2a28;
+            --border-hi: #363634;
+            --amber: #c4622d;
+            --amber-lo: rgba(196, 98, 45, 0.10);
+            --white: #ede8df;
+            --gray: #6b6b68;
+            --gray-hi: #9a9a96;
+            --green: #4a9e70;
+            --green-lo: rgba(74, 158, 112, 0.10);
+            --red: #9e4a4a;
+            --red-lo: rgba(158, 74, 74, 0.10);
+            --blue: #5b8fa8;
+            --blue-lo: rgba(91, 143, 168, 0.10);
+            --yellow: #b8962e;
+            --yellow-lo: rgba(184, 150, 46, 0.10);
+            --serif: 'Lora', Georgia, serif;
+            --sans: 'Inter', sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+            --r: 8px;
+
+            /* compat aliases for external JS that reads these */
+            --primary: #c4622d;
+            --primary-light: #d4825a;
+            --secondary: #5b8fa8;
+            --success: #4a9e70;
+            --warning: #b8962e;
+            --danger: #9e4a4a;
+            --gray-100: #1f1f1d;
+            --gray-200: #2a2a28;
+            --gray-300: #363634;
+            --gray-400: #6b6b68;
+            --gray-600: #9a9a96;
+            --card-bg: #1f1f1d;
+        }
+
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            font-family: var(--sans);
+            background: var(--bg);
+            color: var(--white);
+            line-height: 1.7;
+            font-size: 15px;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh
+        }
+
+        /* ─── CONTAINER ─── */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 32px
+        }
+
+        /* ─── HEADER / APP BAR ─── */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0 20px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 14px
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            background: var(--amber-lo);
+            border: 1px solid rgba(196, 98, 45, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--amber);
+            font-size: 15px
+        }
+
+        .logo-text {
+            font-family: var(--serif);
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--white)
+        }
+
+        .logo-text span {
+            color: var(--amber)
+        }
+
+        .header-info {
+            display: flex;
+            gap: 28px
+        }
+
+        .info-item {
+            text-align: right
+        }
+
+        .info-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            color: var(--gray)
+        }
+
+        .info-value {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--gray-hi);
+            margin-top: 2px
+        }
+
+        /* ─── STATUS BADGE ─── */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: var(--mono);
+            font-weight: 500;
+            border: 1px solid
+        }
+
+        .status-badge {
+            color: var(--green);
+            background: var(--green-lo);
+            border-color: rgba(74, 158, 112, .25)
+        }
+
+        .status-badge.connecting,
+        .status-badge.secondary {
+            color: var(--yellow);
+            background: var(--yellow-lo);
+            border-color: rgba(184, 150, 46, .25)
+        }
+
+        .status-badge.error {
+            color: var(--red);
+            background: var(--red-lo);
+            border-color: rgba(158, 74, 74, .25)
+        }
+
+        .status-badge.disconnected {
+            color: var(--gray);
+            background: rgba(255, 255, 255, .04);
+            border-color: var(--border)
+        }
+
+        /* ─── MAIN TABS ─── */
+        .main-tabs,
+        .tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 4px;
+            flex-wrap: wrap
+        }
+
+        .main-tab-btn,
+        .tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 16px;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            color: var(--gray-hi);
+            font-family: var(--sans);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all .15s;
+            white-space: nowrap
+        }
+
+        .main-tab-btn:hover,
+        .tab-btn:hover {
+            color: var(--white);
+            background: rgba(255, 255, 255, .05)
+        }
+
+        .main-tab-btn.active,
+        .tab-btn.active {
+            background: var(--bg);
+            color: var(--white);
+            border: 1px solid var(--border-hi)
+        }
+
+        .main-tab-btn i,
+        .tab-btn i {
+            font-size: 11px;
+            color: var(--amber)
+        }
+
+        /* ─── SECTIONS ─── */
+        .main-section,
+        .tab-content {
+            display: block
+        }
+
+        .main-section[style*="display:none"],
+        .tab-content:not(.active) {
+            display: none !important
+        }
+
+        /* ─── CARD ─── */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            margin-bottom: 18px;
+            overflow: hidden;
+            transition: border-color .2s
+        }
+
+        .card:hover {
+            border-color: var(--border-hi)
+        }
+
+        .card-header {
+            padding: 18px 22px 14px;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .card-header h2 {
+            font-family: var(--serif);
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--white);
+            margin: 0 0 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .card-header h2 i {
+            color: var(--amber);
+            font-size: 14px
+        }
+
+        .card-header p {
+            font-size: 13px;
+            color: var(--gray);
+            margin: 0
+        }
+
+        .card-body {
+            padding: 20px 22px
+        }
+
+        h3 {
+            font-family: var(--serif);
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--white);
+            margin: 20px 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border)
+        }
+
+        h3:first-child {
+            margin-top: 0
+        }
+
+        h4 {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gray-hi);
+            margin: 14px 0 8px;
+            text-transform: uppercase;
+            letter-spacing: .05em
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 22px 0
+        }
+
+        p {
+            color: var(--gray-hi);
+            font-size: 14px;
+            line-height: 1.7
+        }
+
+        small,
+        .helper-text {
+            font-size: 12px;
+            color: var(--gray);
+            display: block;
+            margin-top: 4px;
+            line-height: 1.5
+        }
+
+        strong {
+            color: var(--white);
+            font-weight: 500
+        }
+
+        /* ─── FORMS ─── */
+        .form-group {
+            margin-bottom: 16px
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 16px
+        }
+
+        .form-row .stretch {
+            grid-column: auto
+        }
+
+        .parameter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px
+        }
+
+        .parameter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: var(--gray);
+            margin-bottom: 5px;
+            letter-spacing: .05em;
+            text-transform: uppercase
+        }
+
+        label.inline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: none;
+            letter-spacing: 0;
+            font-size: 13px;
+            cursor: pointer
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="password"],
+        input[type="url"],
+        input[type="email"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 13px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--white);
+            font-family: var(--sans);
+            font-size: 14px;
+            transition: border-color .15s;
+            -webkit-appearance: none
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: var(--border);
+            height: 4px;
+            border-radius: 4px;
+            border: none;
+            padding: 0
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--amber);
+            cursor: pointer
+        }
+
+        input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            accent-color: var(--amber);
+            cursor: pointer;
+            flex-shrink: 0
+        }
+
+        input[type="file"] {
+            color: var(--gray-hi);
+            font-size: 13px
+        }
+
+        input[type="file"]::file-selector-button {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--gray-hi);
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 10px;
+            transition: all .15s
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            border-color: var(--border-hi);
+            color: var(--white)
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: rgba(237, 232, 223, .3)
+        }
+
+        select option {
+            background: var(--bg-card)
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: var(--mono);
+            font-size: 13px;
+            line-height: 1.7
+        }
+
+        textarea#prompt-input,
+        textarea#pe-input-description,
+        textarea#pe-generated-prompt,
+        textarea#pe-system-instruction,
+        textarea#engineer-prompt,
+        textarea#manus-prompt,
+        textarea#lawyer-prompt {
+            font-family: var(--sans);
+            font-size: 14px
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 13px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--white);
+            font-family: var(--sans);
+            font-size: 14px;
+            transition: border-color .15s
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: rgba(237, 232, 223, .3)
+        }
+
+        /* ─── BUTTONS ─── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 9px 18px;
+            border: 1px solid var(--border-hi);
+            border-radius: 6px;
+            font-family: var(--sans);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all .18s;
+            background: transparent;
+            color: var(--gray-hi);
+            white-space: nowrap;
+            text-decoration: none
+        }
+
+        .btn:hover {
+            border-color: rgba(237, 232, 223, .3);
+            color: var(--white);
+            background: rgba(237, 232, 223, .05)
+        }
+
+        .btn:disabled,
+        .btn[disabled] {
+            opacity: .4;
+            cursor: not-allowed;
+            transform: none !important
+        }
+
+        .btn-primary {
+            background: var(--white);
+            border-color: var(--white);
+            color: #191917;
+            font-weight: 600
+        }
+
+        .btn-primary:hover {
+            background: #f5f0e8;
+            border-color: #f5f0e8;
+            color: #191917
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border-color: var(--border-hi);
+            color: var(--gray-hi)
+        }
+
+        .btn-secondary:hover {
+            color: var(--white);
+            background: rgba(255, 255, 255, .05)
+        }
+
+        .btn-success {
+            background: var(--green-lo);
+            border-color: rgba(74, 158, 112, .35);
+            color: var(--green)
+        }
+
+        .btn-success:hover {
+            background: rgba(74, 158, 112, .18);
+            border-color: rgba(74, 158, 112, .55);
+            color: #6bcf96
+        }
+
+        .btn-danger {
+            background: var(--red-lo);
+            border-color: rgba(158, 74, 74, .35);
+            color: var(--red)
+        }
+
+        .btn-danger:hover {
+            background: rgba(158, 74, 74, .18);
+            color: #cf8080
+        }
+
+        .btn-warning {
+            background: var(--yellow-lo);
+            border-color: rgba(184, 150, 46, .35);
+            color: var(--yellow)
+        }
+
+        .btn-light {
+            background: rgba(255, 255, 255, .05);
+            border-color: var(--border-hi);
+            color: var(--gray-hi)
+        }
+
+        .btn-light:hover {
+            color: var(--white)
+        }
+
+        .btn-link {
+            background: none;
+            border: none;
+            color: var(--amber);
+            padding: 4px 0;
+            font-size: 13px
+        }
+
+        .btn-link:hover {
+            color: var(--white);
+            background: none;
+            border: none
+        }
+
+        .btn-sm {
+            padding: 5px 11px;
+            font-size: 12px
+        }
+
+        .btn-ai {
+            background: rgba(74, 158, 112, .12);
+            border-color: rgba(74, 158, 112, .3);
+            color: var(--green)
+        }
+
+        .btn-ai:hover {
+            background: rgba(74, 158, 112, .22);
+            color: #6bcf96
+        }
+
+        .btn-download {
+            background: var(--amber-lo);
+            border-color: rgba(196, 98, 45, .35);
+            color: var(--amber)
+        }
+
+        .btn-download:hover {
+            background: rgba(196, 98, 45, .2);
+            color: #e08050
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 14px 0;
+            align-items: center
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 14px
+        }
+
+        /* ─── BADGE ─── */
+        .badge {
+            display: inline-block;
+            padding: 2px 9px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: var(--mono)
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, .07);
+            color: var(--gray-hi);
+            border: 1px solid var(--border)
+        }
+
+        /* ─── MODEL GRID ─── */
+        .model-grid,
+        .assistant-grid,
+        .collection-grid,
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 10px;
+            margin-top: 12px
+        }
+
+        /* ─── PLAYGROUND ─── */
+        .playground {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 18px
+        }
+
+        /* ─── TOOL CONTAINER ─── */
+        .tool-container {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 14px;
+            margin-top: 14px
+        }
+
+        .tool-sidebar {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 14px
+        }
+
+        .tool-main-content {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 18px
+        }
+
+        .tool-list {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px
+        }
+
+        .search-box {
+            position: relative
+        }
+
+        .search-box input {
+            padding-right: 32px
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-size: 12px
+        }
+
+        #tool-tester {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border)
+        }
+
+        .tool-assignments {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border)
+        }
+
+        /* ─── RESPONSE AREA ─── */
+        .response-area,
+        .markdown-body {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 16px 18px;
+            margin-top: 14px;
+            font-size: 13px;
+            line-height: 1.8;
+            color: var(--gray-hi);
+            max-height: 500px;
+            overflow-y: auto
+        }
+
+        .response-area.hidden {
+            display: none
+        }
+
+        pre {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 14px 16px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: var(--mono);
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--gray-hi);
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 8px 0
+        }
+
+        code {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--gray-hi);
+            background: rgba(237, 232, 223, .06);
+            padding: 2px 6px;
+            border-radius: 3px
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            font-size: 13px
+        }
+
+        #json-preview,
+        #test-tool-output {
+            font-size: 12px;
+            max-height: 250px
+        }
+
+        /* ─── API TABLE ─── */
+        .api-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px
+        }
+
+        .api-table th {
+            text-align: left;
+            padding: 9px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--gray-hi);
+            font-weight: 500
+        }
+
+        .api-table td {
+            padding: 9px 12px;
+            border: 1px solid var(--border);
+            color: var(--gray-hi);
+            vertical-align: middle
+        }
+
+        .api-table tr:hover td {
+            background: rgba(255, 255, 255, .02)
+        }
+
+        /* ─── MODAL ─── */
+        .modal,
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .75);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center
+        }
+
+        .modal:not(.hidden) {
+            display: flex
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-hi);
+            border-radius: var(--r);
+            width: 90%;
+            max-width: 560px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative
+        }
+
+        .large-modal {
+            max-width: 780px
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .modal-header h3 {
+            font-family: var(--serif);
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--white);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--gray);
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+            transition: color .15s
+        }
+
+        .close-modal:hover {
+            color: var(--white)
+        }
+
+        .modal-body {
+            padding: 20px 22px
+        }
+
+        .modal-footer {
+            padding: 14px 22px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px
+        }
+
+        .modal.hidden {
+            display: none !important
+        }
+
+        /* ─── CHAT UI ─── */
+        .chat-container {
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            overflow: hidden;
+            margin-top: 14px
+        }
+
+        .chat-messages {
+            padding: 16px;
+            max-height: 440px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: var(--bg)
+        }
+
+        #lawyer-conversation,
+        #engineer-conversation {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 16px;
+            margin-top: 14px;
+            max-height: 500px;
+            overflow-y: auto
+        }
+
+        .chat-message {
+            display: flex;
+            gap: 10px
+        }
+
+        .chat-message.user {
+            flex-direction: row-reverse
+        }
+
+        .chat-bubble {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+            color: var(--gray-hi);
+            max-width: 85%;
+            line-height: 1.7
+        }
+
+        .chat-message.user .chat-bubble {
+            background: var(--amber-lo);
+            border-color: rgba(196, 98, 45, .3);
+            color: var(--white)
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 8px;
+            padding: 10px 14px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border)
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 9px 13px;
+            color: var(--white);
+            font-size: 14px
+        }
+
+        .chat-input-area input:focus {
+            outline: none;
+            border-color: rgba(237, 232, 223, .3)
+        }
+
+        .chat-payload-viewer {
+            margin-top: 14px
+        }
+
+        .chat-payload-viewer h4 {
+            font-size: 12px;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin-bottom: 6px
+        }
+
+        #chat-payload-preview {
+            max-height: 140px;
+            font-size: 12px
+        }
+
+        .chat-config-panel {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 16px;
+            margin-bottom: 14px
+        }
+
+        .chat-config-panel h4 {
+            margin-top: 0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .06em
+        }
+
+        .chat-config-panel .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: center
+        }
+
+        .chat-config-panel .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px
+        }
+
+        .quick-prompts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 14px
+        }
+
+        .quick-prompt-btn {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 5px 13px;
+            font-size: 12px;
+            color: var(--gray-hi);
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .quick-prompt-btn:hover {
+            border-color: var(--amber);
+            color: var(--amber);
+            background: var(--amber-lo)
+        }
+
+        .conversation-placeholder {
+            text-align: center;
+            color: var(--gray);
+            padding: 40px 20px
+        }
+
+        .conversation-placeholder i {
+            font-size: 40px;
+            margin-bottom: 14px;
+            display: block;
+            color: var(--border-hi)
+        }
+
+        /* ─── PROMPT ENGINEER ─── */
+        .prompt-engineer-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 18px;
+            margin-bottom: 18px
+        }
+
+        .pe-left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 14px
+        }
+
+        .pe-right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 14px
+        }
+
+        .source-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px 14px;
+            margin-bottom: 8px
+        }
+
+        .sub-options {
+            margin-top: 10px;
+            padding-left: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .metrics-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .metric-item {
+            display: grid;
+            grid-template-columns: 80px 1fr 30px;
+            gap: 8px;
+            align-items: center;
+            font-size: 12px;
+            color: var(--gray)
+        }
+
+        .templates-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 10px;
+            max-height: 180px;
+            overflow-y: auto
+        }
+
+        .prompt-editor-container {
+            position: relative
+        }
+
+        .prompt-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px
+        }
+
+        .prompt-details {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 14px
+        }
+
+        .details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .details-header h5 {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--white);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 7px
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px
+        }
+
+        .detail-item:last-child {
+            border-bottom: none
+        }
+
+        .detail-label {
+            color: var(--gray)
+        }
+
+        .history-container {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            overflow: hidden
+        }
+
+        .history-container select {
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: var(--gray-hi);
+            padding: 8px 12px;
+            font-size: 13px
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 6px;
+            padding: 8px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-card)
+        }
+
+        .output-preview-container {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            overflow: hidden
+        }
+
+        .preview-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-card)
+        }
+
+        .preview-tab {
+            flex: 1;
+            padding: 8px;
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all .15s;
+            border-bottom: 2px solid transparent
+        }
+
+        .preview-tab.active {
+            color: var(--white);
+            border-bottom-color: var(--amber)
+        }
+
+        .preview-content {
+            padding: 12px
+        }
+
+        .preview-pane {
+            display: none
+        }
+
+        .preview-pane.active {
+            display: block
+        }
+
+        .advanced-settings {
+            margin-top: 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            overflow: hidden
+        }
+
+        .settings-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--gray-hi);
+            margin: 0
+        }
+
+        .settings-toggle:hover {
+            color: var(--white)
+        }
+
+        .settings-content {
+            padding: 16px;
+            border-top: 1px solid var(--border)
+        }
+
+        .quick-actions-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 10px 0
+        }
+
+        .input-with-voice {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start
+        }
+
+        .input-with-voice textarea {
+            flex: 1
+        }
+
+        /* ─── MANUS GARAGE ─── */
+        .progress-bar-container {
+            background: var(--border);
+            border-radius: 20px;
+            height: 5px;
+            overflow: hidden;
+            margin: 14px 0;
+            position: relative
+        }
+
+        .progress-bar-container .progress-bar {
+            background: var(--amber);
+            height: 100%;
+            border-radius: 20px;
+            transition: width .3s
+        }
+
+        #manus-progress-label {
+            position: absolute;
+            right: 0;
+            top: -18px;
+            font-size: 11px;
+            color: var(--gray);
+            font-family: var(--mono)
+        }
+
+        .chip-list,
+        .tag-list,
+        .assistant-files-list,
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin: 8px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px
+        }
+
+        .chip-list li,
+        .tag-list li {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 12px;
+            color: var(--gray-hi)
+        }
+
+        .chip-list li.empty,
+        .tag-list li.empty,
+        .assistant-files-list li.empty,
+        .history-list li.empty {
+            color: var(--gray);
+            font-style: italic;
+            font-size: 12px;
+            background: none;
+            border: none
+        }
+
+        .assistant-files-list,
+        .history-list {
+            flex-direction: column;
+            gap: 0
+        }
+
+        .assistant-files-list li,
+        .history-list li {
+            padding: 7px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--gray-hi)
+        }
+
+        .saved-outcomes-panel,
+        .history-panel {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border)
+        }
+
+        .saved-outcomes-grid {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: start
+        }
+
+        .saved-outcomes-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px
+        }
+
+        .input-with-button {
+            display: flex;
+            gap: 6px
+        }
+
+        .input-with-button select {
+            flex: 1
+        }
+
+        .selected-order-wrapper {
+            margin-top: 10px
+        }
+
+        .url-adder {
+            margin-top: 8px
+        }
+
+        .url-adder .input-group {
+            display: flex;
+            gap: 6px
+        }
+
+        .input-group {
+            display: flex;
+            gap: 6px
+        }
+
+        .input-group input {
+            flex: 1
+        }
+
+        .assistant-active {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--gray);
+            display: flex;
+            gap: 6px;
+            align-items: center
+        }
+
+        .assistant-active strong {
+            color: var(--white)
+        }
+
+        .assistant-files-panel {
+            margin-top: 10px
+        }
+
+        .assistant-files-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: var(--gray)
+        }
+
+        .source-options {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 4px
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .response-actions {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px;
+            flex-wrap: wrap
+        }
+
+        /* ─── RESOURCES (ASSISTANT MODAL) ─── */
+        .resource-tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 10px
+        }
+
+        .resource-tab {
+            padding: 6px 14px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--gray);
+            font-size: 12px;
+            cursor: pointer
+        }
+
+        .resource-tab.active {
+            background: var(--bg-card);
+            color: var(--white);
+            border-color: var(--border-hi)
+        }
+
+        .resource-content {
+            display: none
+        }
+
+        .resource-content.active {
+            display: block
+        }
+
+        .checkbox-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 200px;
+            overflow-y: auto
+        }
+
+        .checkbox-list label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--gray-hi);
+            text-transform: none;
+            letter-spacing: 0;
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer
+        }
+
+        .checkbox-list label:hover {
+            background: rgba(255, 255, 255, .04)
+        }
+
+        /* ─── FILES LIST ─── */
+        .files-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 8px;
+            max-height: 160px;
+            overflow-y: auto
+        }
+
+        .files-list .empty,
+        .files-grid .empty {
+            color: var(--gray);
+            font-size: 12px;
+            font-style: italic;
+            padding: 8px 0
+        }
+
+        /* ─── COLLECTION CARDS ─── */
+        .collection-list,
+        .collection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 10px;
+            margin-top: 12px
+        }
+
+        .collection-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 14px;
+            transition: border-color .15s;
+            cursor: pointer
+        }
+
+        .collection-item:hover {
+            border-color: var(--amber)
+        }
+
+        .collection-item h4 {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--white);
+            margin: 0 0 6px
+        }
+
+        .collection-item p {
+            font-size: 12px;
+            color: var(--gray);
+            margin: 0
+        }
+
+        /* ─── MULTI-SELECT ─── */
+        .multi-select-container {
+            position: relative;
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            overflow: hidden
+        }
+
+        .multi-select-placeholder {
+            padding: 10px 14px;
+            font-size: 13px;
+            color: var(--gray);
+            cursor: pointer;
+            background: var(--bg-card)
+        }
+
+        .multi-select-options {
+            background: var(--bg-card);
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 4px 0
+        }
+
+        .multi-select-options label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            font-size: 13px;
+            color: var(--gray-hi);
+            text-transform: none;
+            letter-spacing: 0;
+            cursor: pointer
+        }
+
+        .multi-select-options label:hover {
+            background: rgba(255, 255, 255, .04)
+        }
+
+        select[multiple] {
+            min-height: 120px;
+            padding: 4px
+        }
+
+        select[multiple] option {
+            padding: 6px 10px;
+            border-radius: 4px
+        }
+
+        select[multiple] option:checked {
+            background: var(--amber-lo);
+            color: var(--white)
+        }
+
+        .placeholder-text {
+            color: var(--gray);
+            font-style: italic;
+            font-size: 13px;
+            padding: 12px 0
+        }
+
+        /* ─── WORKFLOW ─── */
+        #workflow-steps-order {
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 14px;
+            min-height: 80px;
+            background: var(--bg)
+        }
+
+        #workflow-step-results {
+            padding: 0 0 14px
+        }
+
+        /* ─── LAWYER ─── */
+        .legislation-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 14px;
+            max-height: 650px;
+            overflow-y: auto
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px
+        }
+
+        /* ─── THEME TOGGLE (keep visible but brand it) ─── */
+        .theme-toggle {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 40px;
+            height: 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--gray);
+            transition: all .15s;
+            z-index: 500
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--amber);
+            color: var(--amber)
+        }
+
+        /* ─── ALERTS ─── */
+        .alert {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: var(--r);
+            margin-bottom: 12px;
+            font-size: 13px;
+            line-height: 1.6
+        }
+
+        .alert-error,
+        .alert-danger {
+            background: var(--red-lo);
+            border: 1px solid rgba(158, 74, 74, .3);
+            color: #cf8080
+        }
+
+        .alert-success {
+            background: var(--green-lo);
+            border: 1px solid rgba(74, 158, 112, .3);
+            color: #6bcf96
+        }
+
+        .alert-warning {
+            background: var(--yellow-lo);
+            border: 1px solid rgba(184, 150, 46, .3);
+            color: #d4b060
+        }
+
+        .alert-info {
+            background: var(--blue-lo);
+            border: 1px solid rgba(91, 143, 168, .3);
+            color: #7ab5cc
+        }
+
+        /* ─── ENHANCED INGESTION PANELS (qdrant) ─── */
+        #enhanced-ingest-panel>div[style*="background: linear-gradient"],
+        #enhanced-ingest-panel>div[style*="background:linear-gradient"] {
+            background: var(--bg-card) !important;
+            border-left: 2px solid var(--amber) !important;
+            padding: 16px !important;
+            border-radius: 0 var(--r) var(--r) 0 !important;
+            margin-bottom: 14px !important;
+        }
+
+        #enhanced-ingest-panel h4 {
+            color: var(--white) !important
+        }
+
+        #enhanced-ingest-panel label {
+            color: var(--gray) !important
+        }
+
+        #enhanced-ingest-panel small {
+            color: var(--gray) !important
+        }
+
+        #advanced-structured-options {
+            background: var(--bg) !important;
+            border-left: 2px solid var(--amber) !important
+        }
+
+        /* ─── STATUS INDICATORS ─── */
+        .status-complete {
+            color: var(--green);
+            background: var(--green-lo);
+            border: 1px solid rgba(74, 158, 112, .3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: var(--mono)
+        }
+
+        .status-incomplete {
+            color: var(--yellow);
+            background: var(--yellow-lo);
+            border: 1px solid rgba(184, 150, 46, .3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: var(--mono)
+        }
+
+        .status-missing {
+            color: var(--red);
+            background: var(--red-lo);
+            border: 1px solid rgba(158, 74, 74, .3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: var(--mono)
+        }
+
+        /* ─── ENGINEER CONVERSATION ─── */
+        .chat-interface .parameter-group label {
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: .06em;
+            color: var(--gray)
+        }
+
+        #engineer-files-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 8px
+        }
+
+        /* ─── OPENCLAUDE BACKSTAGE ─── */
+        #oc-run-output {
+            font-family: var(--mono) !important;
+            font-size: 13px !important;
+            line-height: 1.7 !important
+        }
+
+        #oc-run-output::-webkit-scrollbar {
+            width: 6px
+        }
+
+        #oc-run-output::-webkit-scrollbar-thumb {
+            background: var(--border-hi);
+            border-radius: 3px
+        }
+
+        .oc-status-running {
+            color: var(--yellow);
+            background: var(--yellow-lo);
+            border: 1px solid rgba(184, 150, 46, .3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: var(--mono)
+        }
+
+        .oc-status-idle {
+            color: var(--gray);
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid var(--border);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: var(--mono)
+        }
+
+        .agent-edit-pane {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px
+        }
+
+        .agent-edit-pane .fm-editor,
+        .agent-edit-pane .body-editor {
+            display: flex;
+            flex-direction: column;
+            gap: 6px
+        }
+
+        .agent-edit-pane textarea {
+            font-family: var(--mono);
+            font-size: 13px;
+            min-height: 200px
+        }
+
+        /* ─── CUSTOM SCROLLBARS ─── */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg)
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-hi);
+            border-radius: 3px
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gray)
+        }
+
+        /* ─── PRISM OVERRIDES (argus) ─── */
+        code[class*="language-"],
+        pre[class*="language-"] {
+            color: #ede8df;
+            background: var(--bg-code);
+            font-family: var(--mono);
+            font-size: 13px;
+            text-shadow: none
+        }
+
+        .token.comment,
+        .token.prolog,
+        .token.doctype,
+        .token.cdata {
+            color: #6b6b68
+        }
+
+        .token.keyword {
+            color: #c792ea
+        }
+
+        .token.string {
+            color: #c3e88d
+        }
+
+        .token.number {
+            color: #c4622d
+        }
+
+        .token.function {
+            color: #82aaff
+        }
+
+        .token.operator {
+            color: #9a9a96
+        }
+
+        .token.class-name {
+            color: #80cbc4
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media(max-width:1024px) {
+            .prompt-engineer-container {
+                grid-template-columns: 1fr
+            }
+
+            .tool-container {
+                grid-template-columns: 1fr
+            }
+        }
+
+        @media(max-width:768px) {
+            .container {
+                padding: 16px 18px
+            }
+
+            header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start
+            }
+
+            .header-info {
+                display: none
+            }
+
+            .form-row {
+                grid-template-columns: 1fr
+            }
+
+            .main-tabs,
+            .tabs {
+                gap: 1px;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding: 3px
+            }
+
+            .main-tab-btn,
+            .tab-btn {
+                font-size: 12px;
+                padding: 7px 12px
+            }
+
+            .chat-config-panel .row {
+                grid-template-columns: 1fr
+            }
+
+            .saved-outcomes-grid {
+                grid-template-columns: 1fr
+            }
+
+            .saved-outcomes-actions {
+                flex-direction: row
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <div>
+                    <div class="logo-text">AI <span>Garage</span></div>
+                    <div id="selected-assistant-label"
+                        style="font-size:15px;color:var(--primary-light);font-weight:500;margin-top:2px;"></div>
+                </div>
+            </div>
+            <div class="header-info">
+                <div class="info-item">
+                    <div class="info-label">API URL</div>
+                    <div class="info-value" id="api-url">Loading...</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Server Time</div>
+                    <div class="info-value" id="server-time">Loading...</div>
+                </div>
+            </div>
+            <div class="status-badge" id="status-badge">
+                <i class="fas fa-check-circle"></i>
+                System Healthy
+            </div>
+        </header>
+
+        <!-- Main Navigation Tabs -->
+        <div class="main-tabs">
+            <button class="main-tab-btn active" data-section="models-section">
+                <i class="fas fa-cogs"></i> Base Models
+            </button>
+            <button class="main-tab-btn" data-section="assistants-section">
+                <i class="fas fa-robot"></i> Assistants
+            </button>
+            <!-- New Knowledge Tab -->
+            <button class="main-tab-btn" data-section="knowledge-section">
+                <i class="fas fa-book"></i> Knowledge
+            </button>
+            <button class="main-tab-btn" data-section="files-section">
+                <i class="fas fa-file-alt"></i> Files
+            </button>
+            <button class="main-tab-btn" data-section="tools-section">
+                <i class="fas fa-wrench"></i> Tools
+            </button>
+            <button class="main-tab-btn" data-section="google-drive-section">
+                <i class="fas fa-drive"></i> Google Drive
+            </button>
+            <button class="main-tab-btn" data-section="vectors-section">
+                <i class="fas fa-layer-group"></i> Vectors
+            </button>
+            <button class="main-tab-btn" data-section="api-section">
+                <i class="fas fa-code"></i> API Endpoints
+            </button>
+            <!-- Add this to your main-tabs section -->
+            <button class="main-tab-btn" data-section="deepseek-engineer-section">
+                <i class="fas fa-robot"></i> Ollama Engineer
+            </button>
+            <button class="main-tab-btn" data-section="manus-garage-section">
+                <i class="fas fa-database"></i> Manus Garage
+            </button>
+            <!-- New Lawyer Tab -->
+            <button class="main-tab-btn" data-section="lawyer-section">
+                <i class="fas fa-balance-scale"></i> Advogado
+            </button>
+            <!-- New Prompt Engineer Tab -->
+            <button class="main-tab-btn" data-section="prompt-engineer-section">
+                <i class="fas fa-magic"></i> Prompt Engineer
+            </button>
+            <!-- OpenClaude Backstage Tab -->
+            <button class="main-tab-btn" data-section="openclaude-section">
+                <i class="fas fa-terminal"></i> OpenClaude
+            </button>
+        </div>
+
+        <!-- Base Models Section -->
+        <div id="models-section" class="main-section">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-cogs"></i> Base Models</h2>
+                    <p>Direct operations with foundation models like Llama, GEMMA, and DeepSeek</p>
+                </div>
+                <div class="card-body">
+                    <h3>Available Models</h3>
+                    <div class="model-grid" id="model-list">
+                        <!-- Models will be loaded dynamically -->
+                    </div>
+
+                    <h3>Model Playground</h3>
+                    <div class="playground">
+                        <div class="parameter-grid">
+                            <div class="parameter-group">
+                                <label for="selected-model">Model</label>
+                                <select id="selected-model">
+                                    <option value="">Select a model...</option>
+                                </select>
+                            </div>
+                            <div class="parameter-group">
+                                <label for="temperature">Temperature: <span id="temperature-value">0.7</span></label>
+                                <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
+                            </div>
+                            <div class="parameter-group">
+                                <label for="max-tokens">Max Tokens</label>
+                                <input type="number" id="max-tokens" value="512" min="1" max="8000">
+                            </div>
+                            <div class="parameter-group">
+                                <label for="top-p">Top P: <span id="top-p-value">0.9</span></label>
+                                <input type="range" id="top-p" min="0" max="1" step="0.05" value="0.9">
+                            </div>
+                        </div>
+                        <div class="parameter-group">
+                            <label for="prompt-input">Prompt</label>
+                            <textarea id="prompt-input"
+                                placeholder="Enter your prompt here...">Explain the concept of quantum computing in simple terms</textarea>
+                        </div>
+                        <div class="action-bar">
+                            <button class="btn btn-primary" id="generate-btn">
+                                <i class="fas fa-bolt"></i> Generate Response
+                            </button>
+                            <button class="btn btn-secondary" id="clear-btn">
+                                <i class="fas fa-eraser"></i> Clear
+                            </button>
+                        </div>
+                        <div id="generation-result">
+                            <!-- Response will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assistants Section -->
+        <div id="assistants-section" class="main-section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-robot"></i> Custom Assistants</h2>
+                    <p>Create and manage AI assistants built on top of foundation models</p>
+                </div>
+                <div class="card-body">
+                    <div class="action-bar">
+                        <button class="btn btn-primary" id="create-assistant-btn">
+                            <i class="fas fa-plus"></i> Create Assistant
+                        </button>
+                        <button class="btn btn-secondary" id="refresh-assistants-btn">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="assistant-grid" id="assistants-list">
+                        <!-- Assistants will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KNOWLEDGE QUERY SECTION -->
+        <div id="knowledge-section" class="main-section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-search"></i> Query Knowledge Base</h2>
+                    <p>Ask questions against your vectorized data using a selected assistant.</p>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="knowledge-assistant-select">Select Assistant</label>
+                            <select id="knowledge-assistant-select">
+                                <option value="">Default (No Assistant)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="knowledge-collection-select">Select Collection (or use Assistant's
+                                default)</label>
+                            <select id="knowledge-collection-select"></select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="knowledge-query-input">Your Question</label>
+                        <textarea id="knowledge-query-input" rows="3"
+                            placeholder="e.g., What are the safety protocols for..."></textarea>
+                    </div>
+                    <div class="action-bar">
+                        <button class="btn btn-primary" id="knowledge-query-btn">
+                            <i class="fas fa-paper-plane"></i> Submit Query
+                        </button>
+                    </div>
+                    <div id="knowledge-results" class="response-area" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Files Section -->
+        <div id="files-section" class="main-section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-file-alt"></i> Files</h2>
+                    <p>Manage files and shared resources for models and assistants</p>
+                </div>
+                <div class="card-body">
+                    <div class="action-bar">
+                        <button class="btn btn-primary" id="upload-file-btn">
+                            <i class="fas fa-upload"></i> Upload Files
+                        </button>
+                        <button class="btn btn-secondary" id="refresh-files-btn">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                    <div id="files-list">
+                        <!-- Files will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tools Section -->
+        <div id="tools-section" class="main-section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-wrench"></i> Tools</h2>
+                    <p>Create, manage and test tools. Click to view/edit JSON, assign to assistants, or test.</p>
+                </div>
+                <div class="card-body">
+                    <div class="action-bar">
+                        <button class="btn btn-primary" id="create-tool-btn">
+                            <i class="fas fa-plus"></i> Create New Tool
+                        </button>
+                        <button class="btn btn-secondary" id="refresh-tools-btn">
+                            <i class="fas fa-sync-alt"></i> Refresh Tools
+                        </button>
+                    </div>
+
+                    <div class="tool-container">
+                        <div class="tool-sidebar">
+                            <h3>Available Tools</h3>
+                            <div class="search-box">
+                                <label for="tool-search" class="helper-text" style="margin-bottom:4px">Search
+                                    tools</label>
+                                <input type="text" id="tool-search" name="tool_search" placeholder="Search tools...">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="tool-list" id="tools-list">
+                                <!-- Tools will be loaded here -->
+                            </div>
+                        </div>
+
+                        <div class="tool-main-content">
+                            <div id="tool-editor">
+                                <h3 id="form-title">Create New Tool</h3>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="tool-name">Tool Name</label>
+                                        <input type="text" id="tool-name" placeholder="e.g., time_get_current_time">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="tool-type">Tool Type</label>
+                                        <select id="tool-type">
+                                            <option value="function">Function</option>
+                                            <option value="retrieval">Retrieval</option>
+                                            <option value="code_interpreter">Code Interpreter</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="tool-description">Description</label>
+                                    <textarea id="tool-description"
+                                        placeholder="Describe what this tool does..."></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <h4>Parameters</h4>
+                                    <div id="parameters-container"></div>
+                                    <button id="add-parameter-btn" class="btn btn-secondary">
+                                        <i class="fas fa-plus"></i> Add Parameter
+                                    </button>
+                                </div>
+
+                                <div class="form-group">
+                                    <h4>JSON Definition</h4>
+                                    <pre id="json-preview">{}</pre>
+                                </div>
+
+                                <div class="button-group">
+                                    <button id="save-tool-btn" class="btn btn-success">
+                                        <i class="fas fa-save"></i> Save Tool
+                                    </button>
+                                    <button id="delete-tool-btn" class="btn btn-danger" style="display:none;">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                    <button id="cancel-tool-btn" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="tool-tester">
+                                <h3>Test Tool</h3>
+                                <div class="form-group">
+                                    <label for="test-tool-input">Input Parameters (JSON)</label>
+                                    <textarea id="test-tool-input" placeholder='{"param1": "value"}'></textarea>
+                                </div>
+
+                                <button id="test-tool-btn" class="btn btn-primary">
+                                    <i class="fas fa-bolt"></i> Run Test
+                                </button>
+
+                                <div class="form-group">
+                                    <h4>Test Results</h4>
+                                    <pre id="test-tool-output">Results will appear here...</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tool-assignments">
+                        <h3>Assign to Assistants</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tool-assistant-select">Select Assistant</label>
+                                <select id="tool-assistant-select"></select>
+                            </div>
+
+                            <div class="form-group">
+                                <button id="assign-tool-btn" class="btn btn-secondary">
+                                    <i class="fas fa-link"></i> Assign Tool
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <h4>Currently Assigned Tools</h4>
+                            <div id="assigned-tools-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Google Drive Section -->
+        <div id="google-drive-section" class="main-section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fab fa-google-drive"></i> Google Drive Integration</h2>
+                    <p>Connect and access your Google Drive files for use with assistants</p>
+                </div>
+                <div class="card-body">
+                    <div class="action-bar">
+                        <button class="btn btn-primary" id="connect-gdrive-btn">
+                            <i class="fas fa-link"></i> Connect Google Drive
+                        </button>
+                        <button class="btn btn-secondary" id="refresh-gdrive-btn">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                    <div id="gdrive-status">Not connected</div>
+                    <div id="gdrive-files" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Replace the prompt-engineer-section with this simplified version -->
+        <div id="prompt-engineer-section" class="main-section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-magic"></i> Prompt Engineer</h2>
+                    <p>AI-powered prompt generation, refinement, and optimization using DeepSeek with vector store
+                        context</p>
+                    <div class="status-badge secondary" id="prompt-engineer-status">Ready</div>
+                </div>
+                <div class="card-body">
+                    <!-- Two-column layout -->
+                    <div class="prompt-engineer-container">
+                        <!-- Left Column: Context & Configuration -->
+                        <div class="pe-left-panel">
+                            <!-- Assistant Selection -->
+                            <div class="form-group">
+                                <label for="pe-assistant-select">Use Assistant (Optional)</label>
+                                <select id="pe-assistant-select" class="form-control">
+                                    <option value="">No Assistant (Direct Model)</option>
+                                    <!-- Populated by JavaScript -->
+                                </select>
+                                <small class="helper-text">
+                                    Select an assistant to use its configuration, instructions, and collections
+                                </small>
+                            </div>
+
+                            <!-- Context Sources -->
+                            <div class="form-group">
+                                <h4><i class="fas fa-database"></i> Context Sources</h4>
+
+                                <!-- Vector Store Selection -->
+                                <div class="source-item">
+                                    <label>
+                                        <input type="checkbox" id="pe-use-vector-store" checked>
+                                        Use Vector Store
+                                    </label>
+                                    <div id="pe-vector-config" class="sub-options">
+                                        <label for="pe-collection-select">Collection</label>
+                                        <select id="pe-collection-select" name="pe_collection_select">
+                                            <option value="">Select collection...</option>
+                                        </select>
+                                        <div class="form-group" style="margin-top: 10px;">
+                                            <label for="pe-search-limit">Retrieval Limit</label>
+                                            <input type="number" id="pe-search-limit" value="5" min="1" max="20">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- File Upload -->
+                                <div class="source-item">
+                                    <label>
+                                        <input type="checkbox" id="pe-use-files">
+                                        Attach Files
+                                    </label>
+                                    <div id="pe-files-config" class="sub-options" style="display: none;">
+                                        <div class="action-bar">
+                                            <button class="btn btn-secondary btn-sm" id="pe-add-files">
+                                                <i class="fas fa-plus"></i> Add Files
+                                            </button>
+                                            <button class="btn btn-secondary btn-sm" id="pe-clear-files">
+                                                <i class="fas fa-eraser"></i> Clear
+                                            </button>
+                                        </div>
+                                        <input type="file" id="pe-file-input" name="pe_file_input"
+                                            aria-label="Prompt Engineer file upload" multiple style="display: none;">
+                                        <div id="pe-files-list" class="files-list">
+                                            <div class="empty">No files attached</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Reference Prompts -->
+                                <div class="source-item">
+                                    <label>
+                                        <input type="checkbox" id="pe-use-ref-prompts">
+                                        Include Prompt Examples
+                                    </label>
+                                    <div id="pe-ref-prompts-config" class="sub-options" style="display: none;">
+                                        <label for="pe-ref-category">Examples Category</label>
+                                        <select id="pe-ref-category" name="pe_ref_category">
+                                            <option value="general">General</option>
+                                            <option value="creative">Creative Writing</option>
+                                            <option value="technical">Technical</option>
+                                            <option value="analysis">Analysis</option>
+                                            <option value="coding">Coding</option>
+                                            <option value="business">Business</option>
+                                        </select>
+                                        <button class="btn btn-secondary btn-sm" id="pe-load-examples"
+                                            style="margin-top: 10px;">
+                                            <i class="fas fa-download"></i> Load Examples
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Prompt Templates -->
+                            <div class="form-group">
+                                <h4><i class="fas fa-layer-group"></i> Prompt Templates</h4>
+                                <div class="templates-grid" id="pe-templates-list">
+                                    <!-- Templates loaded dynamically -->
+                                </div>
+                                <div class="action-bar">
+                                    <button class="btn btn-secondary btn-sm" id="pe-new-template">
+                                        <i class="fas fa-plus"></i> New Template
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm" id="pe-import-template">
+                                        <i class="fas fa-file-import"></i> Import
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Quality Metrics -->
+                            <div class="form-group">
+                                <h4><i class="fas fa-chart-line"></i> Quality Metrics</h4>
+                                <div class="metrics-grid">
+                                    <div class="metric-item">
+                                        <label for="pe-metric-clarity">Clarity</label>
+                                        <input type="range" id="pe-metric-clarity" name="pe_metric_clarity" min="0"
+                                            max="10" value="8">
+                                        <span id="pe-clarity-value">8</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <label for="pe-metric-specificity">Specificity</label>
+                                        <input type="range" id="pe-metric-specificity" name="pe_metric_specificity"
+                                            min="0" max="10" value="7">
+                                        <span id="pe-specificity-value">7</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <label for="pe-metric-creativity">Creativity</label>
+                                        <input type="range" id="pe-metric-creativity" name="pe_metric_creativity"
+                                            min="0" max="10" value="6">
+                                        <span id="pe-creativity-value">6</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <label for="pe-metric-conciseness">Conciseness</label>
+                                        <input type="range" id="pe-metric-conciseness" name="pe_metric_conciseness"
+                                            min="0" max="10" value="7">
+                                        <span id="pe-conciseness-value">7</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Main Interface -->
+                        <div class="pe-right-panel">
+                            <!-- Input Area with Voice -->
+                            <div class="form-group">
+                                <label for="pe-input-description">Describe Your Needs</label>
+                                <div class="input-with-voice"
+                                    style="display: flex; gap: 10px; align-items: flex-start;">
+                                    <textarea id="pe-input-description" class="form-control" rows="4" placeholder="Describe what you need in a prompt. Be specific about:
+• Goal/Objective
+• Target audience
+• Desired format/style
+• Any constraints or requirements
+• Expected output format" style="flex: 1;"></textarea>
+                                    <button id="pe-voice-btn" class="btn btn-secondary" title="Start Voice Input"
+                                        style="padding: 10px 15px; height: fit-content;">
+                                        <i class="fas fa-microphone"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Quick Actions -->
+                            <div class="quick-actions-bar">
+                                <button class="btn btn-secondary" id="pe-analyze-needs">
+                                    <i class="fas fa-search"></i> Analyze Needs
+                                </button>
+                                <button class="btn btn-secondary" id="pe-generate-variations">
+                                    <i class="fas fa-copy"></i> Generate Variations
+                                </button>
+                                <button class="btn btn-secondary" id="pe-optimize-prompt">
+                                    <i class="fas fa-wand-magic-sparkles"></i> Optimize
+                                </button>
+                                <button class="btn btn-secondary" id="pe-evaluate-prompt">
+                                    <i class="fas fa-star"></i> Evaluate
+                                </button>
+                                <button class="btn btn-secondary" id="pe-suggest-improvements">
+                                    <i class="fas fa-lightbulb"></i> Suggest Improvements
+                                </button>
+                            </div>
+
+                            <!-- Generated Prompts -->
+                            <div class="form-group">
+                                <label for="pe-generated-prompt">Generated Prompt</label>
+                                <div class="prompt-editor-container">
+                                    <textarea id="pe-generated-prompt" rows="10"
+                                        placeholder="Your generated prompt will appear here..."></textarea>
+                                    <div class="prompt-actions">
+                                        <button class="btn btn-secondary btn-sm" id="pe-copy-prompt">
+                                            <i class="fas fa-copy"></i> Copy
+                                        </button>
+                                        <button class="btn btn-secondary btn-sm" id="pe-format-prompt">
+                                            <i class="fas fa-indent"></i> Format
+                                        </button>
+                                        <button class="btn btn-secondary btn-sm" id="pe-save-prompt">
+                                            <i class="fas fa-save"></i> Save
+                                        </button>
+                                        <button class="btn btn-secondary btn-sm" id="pe-export-clean"
+                                            title="Export prompt only">
+                                            <i class="fas fa-file-export"></i> Export Prompt
+                                        </button>
+                                        <button class="btn btn-secondary btn-sm" id="pe-export-markdown"
+                                            title="Export with full context">
+                                            <i class="fas fa-file-download"></i> Export Full
+                                        </button>
+                                        <button class="btn btn-primary btn-sm" id="pe-execute-generate">
+                                            <i class="fas fa-bolt"></i> Generate/Refine
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Prompt Details & Metadata -->
+                            <div class="prompt-details">
+                                <div class="details-header">
+                                    <h5><i class="fas fa-info-circle"></i> Prompt Details</h5>
+                                    <span class="badge" id="pe-quality-score">Quality: N/A</span>
+                                </div>
+                                <div id="pe-details-content">
+                                    <div class="detail-item">
+                                        <span class="detail-label">Tokens:</span>
+                                        <span id="pe-token-count">0</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Readability:</span>
+                                        <span id="pe-readability-score">N/A</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Structure:</span>
+                                        <span id="pe-structure-score">N/A</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Suggestions:</span>
+                                        <span id="pe-suggestions">None yet</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- History & Versions -->
+                            <div class="form-group">
+                                <h4><i class="fas fa-history"></i> Prompt History</h4>
+                                <div class="history-container">
+                                    <label for="pe-history-select">History Versions</label>
+                                    <select id="pe-history-select" name="pe_history_select" size="5"
+                                        style="width: 100%;">
+                                        <option disabled selected>No history yet</option>
+                                    </select>
+                                    <div class="history-actions">
+                                        <button class="btn btn-secondary btn-sm" id="pe-load-version">
+                                            <i class="fas fa-upload"></i> Load
+                                        </button>
+                                        <button class="btn btn-secondary btn-sm" id="pe-compare-versions">
+                                            <i class="fas fa-columns"></i> Compare
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" id="pe-clear-history">
+                                            <i class="fas fa-trash"></i> Clear
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Output Preview -->
+                            <div class="form-group">
+                                <h4><i class="fas fa-eye"></i> Output Preview</h4>
+                                <div class="output-preview-container">
+                                    <div class="preview-tabs">
+                                        <button class="preview-tab active" data-target="pe-raw-preview">Raw</button>
+                                        <button class="preview-tab"
+                                            data-target="pe-formatted-preview">Formatted</button>
+                                        <button class="preview-tab" data-target="pe-analysis-preview">Analysis</button>
+                                    </div>
+                                    <div class="preview-content">
+                                        <div id="pe-raw-preview" class="preview-pane active">
+                                            <pre>No preview available</pre>
+                                        </div>
+                                        <div id="pe-formatted-preview" class="preview-pane">
+                                            <div class="formatted-content"></div>
+                                        </div>
+                                        <div id="pe-analysis-preview" class="preview-pane">
+                                            <div class="analysis-content"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Settings (Collapsible) -->
+                    <div class="advanced-settings">
+                        <h5 class="settings-toggle">
+                            <i class="fas fa-cog"></i> Advanced Settings
+                            <i class="fas fa-chevron-down toggle-icon"></i>
+                        </h5>
+                        <div class="settings-content" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="pe-temperature">Temperature</label>
+                                    <input type="range" id="pe-temperature" min="0" max="2" step="0.1" value="0.7">
+                                    <span id="pe-temperature-value">0.7</span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pe-max-tokens">Max Tokens</label>
+                                    <input type="number" id="pe-max-tokens" value="2000" min="100" max="4000">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pe-top-p">Top P</label>
+                                    <input type="range" id="pe-top-p" min="0" max="1" step="0.05" value="0.9">
+                                    <span id="pe-top-p-value">0.9</span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pe-frequency-penalty">Frequency Penalty</label>
+                                    <input type="range" id="pe-frequency-penalty" min="-2" max="2" step="0.1" value="0">
+                                    <span id="pe-frequency-penalty-value">0</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="pe-system-instruction">System Instruction (Advanced)</label>
+                                <textarea id="pe-system-instruction"
+                                    rows="3">You are a professional prompt engineer. Generate high-quality prompts that are clear, specific, and effective for AI models. Consider context, constraints, and desired outcomes.</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add this new section after the existing sections -->
+        <div id="deepseek-engineer-section" class="main-section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-robot"></i> Ollama Engineer</h2>
+                    <p>AI-powered code analysis and file operations via Ollama (llama3.2:1b)</p>
+                </div>
+                <div class="card-body">
+                    <!-- API Key Configuration -->
+                    <div class="parameter-group" style="margin-bottom: 20px; display:none;">
+                        <label for="deepseek-api-key">API Key</label>
+                        <input type="password" id="deepseek-api-key" placeholder="Not required for Ollama"
+                            style="width: 100%;">
+                        <small style="color: var(--gray-400);">Running locally via Ollama – no API key needed</small>
+                    </div>
+
+                    <!-- File Operations -->
+                    <div class="action-bar" style="margin-bottom: 20px;">
+                        <button class="btn btn-primary" id="add-files-btn">
+                            <i class="fas fa-plus"></i> Add Files/Folder
+                        </button>
+                        <button class="btn btn-secondary" id="clear-context-btn">
+                            <i class="fas fa-eraser"></i> Clear Context
+                        </button>
+                        <input type="file" id="file-input" name="engineer_context_files"
+                            aria-label="Engineer context files" multiple style="display: none;" webkitdirectory>
+                    </div>
+
+                    <!-- Current Context Files -->
+                    <div id="engineer-context-panel" style="margin-bottom: 20px; display: none;">
+                        <h4>📁 Files in Context</h4>
+                        <div id="engineer-files-list" class="files-grid"
+                            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+                        </div>
+                    </div>
+
+                    <!-- Chat Interface -->
+                    <div class="chat-interface">
+                        <div class="parameter-group">
+                            <label for="engineer-prompt">Your Question or Task</label>
+                            <textarea id="engineer-prompt" rows="4"
+                                placeholder="e.g., Analyze this code, create a new file, refactor this function..."
+                                style="width: 100%;"></textarea>
+                        </div>
+
+                        <div class="action-bar">
+                            <button class="btn btn-primary" id="send-to-engineer">
+                                <i class="fas fa-paper-plane"></i> Send to Ollama Engineer
+                            </button>
+                        </div>
+
+                        <!-- Conversation History -->
+                        <div id="engineer-conversation"
+                            style="margin-top: 20px; max-height: 500px; overflow-y: auto; border: 1px solid var(--gray-200); border-radius: 8px; padding: 15px; background: var(--gray-100);">
+                            <div class="conversation-placeholder"
+                                style="text-align: center; color: var(--gray-400); padding: 40px;">
+                                <i class="fas fa-robot" style="font-size: 48px; margin-bottom: 16px;"></i>
+                                <p>Start a conversation with Ollama Engineer to analyze code, create files, or refactor
+                                    code.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="manus-garage-section" class="main-section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-database"></i> Manus Garage</h2>
+                    <p>Run Awareness Agentsagainst Garage files with assistant context.</p>
+                    <div class="status-badge secondary" id="manus-agent-status">Agent Idle</div>
+                </div>
+                <div class="card-body" id="manus-agent-section">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="manus-backend-url">Backend URL</label>
+                            <input type="text" id="manus-backend-url" placeholder="/manus (proxied to localhost:8078)">
+                        </div>
+                        <div class="form-group">
+                            <label for="manus-timeout">Timeout (s)</label>
+                            <input type="number" id="manus-timeout" min="10" value="60">
+                        </div>
+                        <div class="form-group">
+                            <label for="manus-analysis-type">Analysis Type</label>
+                            <select id="manus-analysis-type">
+                                <option value="comprehensive">Comprehensive</option>
+                                <option value="quick">Quick</option>
+                                <option value="diff">Diff</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="manus-llm-provider">LLM Provider</label>
+                            <select id="manus-llm-provider">
+                                <option value="ollama">Ollama</option>
+                                <option value="deepseek">DeepSeek</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="manus-llm-model">LLM Model</label>
+                            <div class="input-with-button">
+                                <select id="manus-llm-model"></select>
+                                <button class="btn btn-secondary btn-sm" type="button" id="manus-refresh-models"
+                                    title="Refresh models from OpenClaude">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="manus-stream-toggle" checked>
+                                Stream output by default
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="action-bar">
+                        <button class="btn btn-secondary" id="manus-test-backend">
+                            <i class="fas fa-stethoscope"></i> Test Backend
+                        </button>
+                        <button class="btn btn-primary" id="manus-start-agent">
+                            <i class="fas fa-play"></i> Start Agent
+                        </button>
+                        <button class="btn btn-danger" id="manus-stop-agent">
+                            <i class="fas fa-stop"></i> Stop Agent
+                        </button>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group stretch">
+                            <label for="manus-files-select">Select Files</label>
+                            <div class="input-with-button">
+                                <select id="manus-files-select" multiple size="6"></select>
+                                <button class="btn btn-secondary btn-sm" type="button" id="manus-upload-file-btn">
+                                    <i class="fas fa-upload"></i>
+                                </button>
+                                <input type="file" id="manus-file-input" name="manus_files"
+                                    aria-label="Manus file upload" multiple style="display:none;">
+                            </div>
+                            <small class="helper-text">Files pulled from /v1/files (Garage registry); Manus chat/agent
+                                on http://localhost:8078</small>
+                            <div class="selected-order-wrapper">
+                                <h4>Selected Order</h4>
+                                <ul id="manus-selected-order" class="chip-list">
+                                    <li class="empty">No files selected.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="form-group stretch">
+                            <label for="manus-assistant-select">Assistant Context</label>
+                            <select id="manus-assistant-select">
+                                <option value="">-- Select assistant --</option>
+                            </select>
+                            <div class="assistant-active">
+                                <span>Active Assistant:</span>
+                                <strong id="manus-active-assistant">None</strong>
+                            </div>
+                            <div class="assistant-files-panel">
+                                <div class="assistant-files-header">
+                                    <span>Assistant Files</span>
+                                    <button class="btn btn-link btn-sm" type="button" id="manus-add-assistant-files">
+                                        <i class="fas fa-plus-circle"></i> Add all
+                                    </button>
+                                </div>
+                                <ul id="manus-assistant-files" class="assistant-files-list">
+                                    <li class="empty">Select an assistant to load files.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="form-group stretch">
+                            <fieldset style="border:0;margin:0;padding:0;min-width:0;">
+                                <legend>Context Sources</legend>
+                                <div class="source-options">
+                                    <label><input type="checkbox" id="manus-source-files" checked> Selected
+                                        Files</label>
+                                    <label><input type="checkbox" id="manus-source-assistant" checked> Assistant
+                                        Profile</label>
+                                    <label><input type="checkbox" id="manus-source-urls"> URLs</label>
+                                </div>
+                                <div id="manus-url-adder" class="url-adder hidden">
+                                    <label for="manus-url-input">Add URL</label>
+                                    <div class="input-group">
+                                        <input type="url" id="manus-url-input" name="manus_url_input"
+                                            placeholder="https://resource.example.com/doc">
+                                        <button class="btn btn-secondary" type="button" id="manus-add-url-btn">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <ul id="manus-url-list" class="tag-list">
+                                        <li class="empty">No URLs added.</li>
+                                    </ul>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="manus-prompt">Prompt</label>
+                        <textarea id="manus-prompt" rows="4"
+                            placeholder="Describe the task or analysis Manus should perform..."></textarea>
+                    </div>
+
+                    <div class="action-bar">
+                        <button class="btn btn-primary" id="manus-run-once">
+                            <i class="fas fa-play-circle"></i> Run Once
+                        </button>
+                        <button class="btn btn-secondary" id="manus-run-stream">
+                            <i class="fas fa-stream"></i> Run Stream
+                        </button>
+                        <button class="btn btn-light" id="manus-clear-response">
+                            <i class="fas fa-eraser"></i> Clear Output
+                        </button>
+                    </div>
+
+                    <div class="progress-bar-container">
+                        <div id="manus-progress-bar" class="progress-bar" style="width:0%;"></div>
+                        <span id="manus-progress-label">Idle</span>
+                    </div>
+
+                    <div id="manus-response" class="response-area hidden">
+                        <h3>Latest Response</h3>
+                        <div class="response-actions">
+                            <button class="btn btn-secondary btn-sm" id="manus-save-outcome">
+                                <i class="fas fa-save"></i> Save Outcome
+                            </button>
+                            <button class="btn btn-light btn-sm" id="manus-export-outcomes">
+                                <i class="fas fa-file-export"></i> Export All
+                            </button>
+                            <button class="btn btn-light btn-sm" id="manus-import-outcomes">
+                                <i class="fas fa-file-import"></i> Import
+                            </button>
+                            <input type="file" id="manus-import-outcomes-input" name="manus_import_outcomes"
+                                aria-label="Import Manus outcomes JSON" accept="application/json" style="display:none;">
+                        </div>
+                        <div id="manus-response-content" class="markdown-body"></div>
+                    </div>
+
+                    <div class="saved-outcomes-panel">
+                        <h3>Saved Outcomes</h3>
+                        <div class="saved-outcomes-grid">
+                            <label for="manus-saved-outcomes">Saved Outcomes List</label>
+                            <select id="manus-saved-outcomes" name="manus_saved_outcomes" size="6">
+                                <option disabled selected>No saved outcomes yet.</option>
+                            </select>
+                            <div class="saved-outcomes-actions">
+                                <button class="btn btn-secondary" id="manus-load-outcome">
+                                    <i class="fas fa-upload"></i> Load Outcome
+                                </button>
+                                <button class="btn btn-primary" id="manus-continue-outcome">
+                                    <i class="fas fa-comments"></i> Continue with Outcome
+                                </button>
+                                <button class="btn btn-danger" id="manus-delete-outcome">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="history-panel">
+                        <h3>Recent Runs</h3>
+                        <ul id="manus-history" class="history-list">
+                            <li class="empty">No Manus runs yet.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lawyer Section - Add after deepseek-engineer-section -->
+        <div id="lawyer-section" class="main-section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-balance-scale"></i> Garage Lawyer</h2>
+                    <p>Assistente jurídico especializado em Direito do Consumidor, Aviação Civil e Responsabilidade
+                        Civil</p>
+                </div>
+                <div class="card-body">
+                    <!-- API Key Configuration -->
+                    <div class="parameter-group" style="margin-bottom: 20px; display:none;">
+                        <label for="lawyer-api-key">Chave API</label>
+                        <input type="password" id="lawyer-api-key" placeholder="Não necessário com Ollama"
+                            style="width: 100%;">
+                        <small style="color: var(--gray-400);">Rodando localmente via Ollama – sem chave de API</small>
+                    </div>
+
+                    <!-- Analysis Type Selector -->
+                    <div class="parameter-group" style="margin-bottom: 20px;">
+                        <label for="analysis-type">Tipo de Análise</label>
+                        <select id="analysis-type"
+                            style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--gray-200);">
+                            <option value="general">Análise Geral</option>
+                            <option value="consumer">Direito do Consumidor (CDC)</option>
+                            <option value="aviation">Direito Aeronáutico (ANAC)</option>
+                            <option value="civil">Responsabilidade Civil</option>
+                            <option value="constitutional">Direitos Fundamentais</option>
+                        </select>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-secondary" id="quick-analyze-case">
+                            <i class="fas fa-search"></i> Analisar Caso
+                        </button>
+                        <button class="btn btn-secondary" id="quick-draft-petition">
+                            <i class="fas fa-file-alt"></i> Elaborar Petição
+                        </button>
+                        <button class="btn btn-secondary" id="quick-calculate-damages">
+                            <i class="fas fa-calculator"></i> Calcular Danos
+                        </button>
+                        <button class="btn btn-secondary" id="quick-find-precedents">
+                            <i class="fas fa-gavel"></i> Buscar Jurisprudência
+                        </button>
+                        <button class="btn btn-secondary" id="quick-identify-violations">
+                            <i class="fas fa-exclamation-triangle"></i> Identificar Violações
+                        </button>
+                    </div>
+
+                    <!-- Evidence Upload -->
+                    <div class="action-bar" style="margin-bottom: 20px;">
+                        <button class="btn btn-primary" id="add-evidence-btn">
+                            <i class="fas fa-plus"></i> Adicionar Evidências
+                        </button>
+                        <button class="btn btn-secondary" id="clear-evidence-btn">
+                            <i class="fas fa-eraser"></i> Limpar Evidências
+                        </button>
+                        <input type="file" id="evidence-file-input" name="evidence_files"
+                            aria-label="Evidence file upload" multiple style="display: none;"
+                            accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.mp3,.mp4,.wav,.md,.markdown,.json,.xml,.html,.csv">
+                    </div>
+
+                    <!-- Evidence Files Panel -->
+                    <div id="evidence-context-panel" style="margin-bottom: 20px; display: none;">
+                        <h4>📁 Evidências do Caso</h4>
+                        <div id="evidence-files-list" class="files-grid" style="margin-top: 10px;"></div>
+                    </div>
+
+                    <!-- Two Column Layout -->
+                    <div style="display: grid; grid-template-columns: 1fr 300px; gap: 20px;">
+                        <!-- Left Column - Chat Interface -->
+                        <div class="chat-interface">
+                            <div class="parameter-group">
+                                <label for="lawyer-prompt">Sua Consulta Jurídica</label>
+                                <textarea id="lawyer-prompt" rows="4"
+                                    placeholder="Descreva o caso, faça perguntas sobre legislação ou solicite elaboração de documentos jurídicos..."
+                                    style="width: 100%;"></textarea>
+                            </div>
+
+                            <div class="action-bar">
+                                <button class="btn btn-primary" id="send-consultation">
+                                    <i class="fas fa-paper-plane"></i> Enviar Consulta
+                                </button>
+                            </div>
+
+                            <!-- Conversation History -->
+                            <div id="lawyer-conversation"
+                                style="margin-top: 20px; max-height: 600px; overflow-y: auto; border: 1px solid var(--gray-200); border-radius: 8px; padding: 15px; background: var(--gray-100);">
+                                <div class="conversation-placeholder"
+                                    style="text-align: center; color: var(--gray-400); padding: 40px;">
+                                    <i class="fas fa-balance-scale" style="font-size: 48px; margin-bottom: 16px;"></i>
+                                    <p>Inicie uma consulta jurídica descrevendo seu caso ou utilizando os botões de ação
+                                        rápida.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column - Legislation Reference -->
+                        <div class="legislation-panel"
+                            style="background: var(--card-bg); border: 1px solid var(--gray-200); border-radius: 8px; padding: 15px; max-height: 700px; overflow-y: auto;">
+                            <h4 style="margin-bottom: 15px; color: var(--primary);">
+                                <i class="fas fa-book"></i> Legislação Aplicável
+                            </h4>
+                            <p style="font-size: 12px; color: var(--gray-400); margin-bottom: 15px;">
+                                Clique em um artigo para inseri-lo na consulta
+                            </p>
+                            <div id="legislation-reference">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Endpoints Section -->
+        <div id="api-section" class="main-section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-code"></i> API Endpoints</h2>
+                    <p>Test all available API endpoints</p>
+                </div>
+                <div class="card-body">
+                    <table class="api-table">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Method</th>
+                                <th>Endpoint</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="api-endpoint-list">
+                            <!-- Endpoints will be dynamically populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vectors Section -->
+        <div id="vectors-section" class="main-section" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-layer-group"></i> Vector Collections</h2>
+                    <p>Manage Qdrant collections, vectors, and queries</p>
+                </div>
+            </div>
+            <div class="card-body">
+
+                <!-- Collections -->
+                <h3>Collections</h3>
+                <div class="action-bar">
+                    <!-- This button triggers the modal -->
+                    <button class="btn btn-primary" id="show-create-collection-modal-btn">
+                        <i class="fas fa-plus"></i> Create Collection
+                    </button>
+                    <button class="btn btn-secondary" id="refresh-collections-btn">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                <div id="collections-list" class="collection-grid"></div>
+                <hr>
+
+                <!-- NEW: File Ingestion Section -->
+                <h3>Ingest Files into Collection</h3>
+                <div class="form-group">
+                    <label for="ingest-collection-select">Target Collection</label>
+                    <select id="ingest-collection-select">
+                        <option value="">Select a collection to ingest into...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="ingest-file-input">Files to Upload (.pdf, .txt, .json)</label>
+                    <input type="file" id="ingest-file-input" multiple accept=".pdf,.txt,.json">
+                </div>
+                <div class="action-bar">
+                    <button class="btn btn-primary" id="ingest-files-btn" disabled>
+                        <i class="fas fa-upload"></i> Ingest Files
+                    </button>
+                </div>
+                <div id="ingest-status" class="response-area" style="display: none;"></div>
+                <hr>
+
+                <!-- NEW: Text Search Section -->
+                <h3>Search with Text</h3>
+                <div class="form-group">
+                    <label for="search-collection-select">Collection to Search</label>
+                    <select id="search-collection-select">
+                        <option value="">Select a collection to search...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="search-text-input">Search Query</label>
+                    <input type="text" id="search-text-input" placeholder="e.g., what are the project goals?">
+                </div>
+                <div class="form-group">
+                    <label for="search-limit-input">Number of Results</label>
+                    <input type="number" id="search-limit-input" value="5" min="1" max="50">
+                </div>
+                <div class="action-bar">
+                    <button class="btn btn-primary" id="text-search-btn" disabled>
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+                <div id="search-results-area" class="response-area" style="display: none;"></div>
+                <hr>
+
+                <!-- Query -->
+                <h3>Query Vectors</h3>
+                <div class="form-group">
+                    <label for="query-collection">Collection</label>
+                    <select id="query-collection"></select>
+                </div>
+                <div class="form-group">
+                    <label for="query-vector">Query Vector (comma-separated)</label>
+                    <textarea id="query-vector" rows="3" placeholder="0.1, 0.2, 0.3..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="query-limit">Limit</label>
+                    <input type="number" id="query-limit" value="10" min="1" max="100">
+                </div>
+                <div class="action-bar">
+                    <button class="btn btn-primary" id="execute-query-btn">
+                        <i class="fas fa-bolt"></i> Execute Query
+                    </button>
+                </div>
+                <div id="query-results"></div>
+                <hr>
+
+                <!-- Points -->
+                <h3>Points Management</h3>
+                <div class="form-group">
+                    <label for="points-collection">Collection</label>
+                    <select id="points-collection"></select>
+                </div>
+                <h4>Add Points</h4>
+                <label for="points-data">Points JSON</label>
+                <textarea id="points-data" name="points_data" rows="5"
+                    placeholder='[{"id":1,"vector":[0.1,0.2],"payload":{"key":"value"}}]'></textarea>
+                <div class="action-bar">
+                    <button class="btn btn-primary" id="upsert-points-btn">
+                        <i class="fas fa-save"></i> Upsert Points
+                    </button>
+                </div>
+                <h4>Delete Points</h4>
+                <label for="points-to-delete">Point IDs to Delete</label>
+                <input type="text" id="points-to-delete" name="points_to_delete" placeholder="1, 2, 3">
+                <div class="action-bar">
+                    <button class="btn btn-danger" id="delete-points-btn">
+                        <i class="fas fa-trash"></i> Delete Points
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- OpenClaude Backstage Section -->
+    <div id="openclaude-section" class="main-section" style="display:none;">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-terminal"></i> OpenClaude Backstage</h2>
+                <p>Manage agents using the markdown standard (.claude/agents/*.md). Create, edit, run, and import
+                    agents.</p>
+                <div class="status-badge secondary" id="oc-agent-count">0 agents</div>
+            </div>
+            <div class="card-body">
+                <div class="action-bar">
+                    <button class="btn btn-primary" id="oc-create-agent-btn">
+                        <i class="fas fa-plus"></i> Create Agent
+                    </button>
+                    <button class="btn btn-secondary" id="oc-refresh-agents-btn">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button class="btn btn-secondary" id="oc-import-agent-btn">
+                        <i class="fas fa-file-upload"></i> Import Agent
+                    </button>
+                    <button class="btn btn-secondary" id="oc-import-assistant-btn">
+                        <i class="fas fa-file-import"></i> Import from Assistant
+                    </button>
+                </div>
+
+                <!-- Agent Grid -->
+                <h3>Available Agents</h3>
+                <div class="collection-grid" id="oc-agents-grid">
+                    <div class="placeholder-text">Loading agents...</div>
+                </div>
+
+                <!-- Agent Detail Panel -->
+                <div id="oc-agent-detail" style="display:none;margin-top:20px"></div>
+
+                <!-- Agent Runner -->
+                <h3 style="margin-top:24px">Run Agent</h3>
+                <div class="playground">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="oc-agent-select">Select Agent</label>
+                            <select id="oc-agent-select">
+                                <option value="">Select an agent to run...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="oc-run-prompt">Prompt</label>
+                        <textarea id="oc-run-prompt" style="min-height:80px"
+                            placeholder="Describe what you want the agent to do..."></textarea>
+                    </div>
+                    <div class="action-bar">
+                        <button class="btn btn-primary" id="oc-run-agent-btn" disabled>
+                            <i class="fas fa-play"></i> Run Agent
+                        </button>
+                        <button class="btn btn-danger" id="oc-stop-agent-btn" style="display:none">
+                            <i class="fas fa-stop"></i> Stop
+                        </button>
+                    </div>
+                    <h4>Output</h4>
+                    <pre id="oc-run-output"
+                        style="display:none;min-height:120px;max-height:400px;font-family:var(--mono);font-size:13px;background:var(--bg-code);color:var(--gray-hi);border:1px solid var(--border);border-radius:var(--r);padding:14px;overflow-y:auto;white-space:pre-wrap;word-break:break-word"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <!-- MODAL: Place the modal here, outside the container, before the script tag -->
+    <div id="create-collection-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Collection</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="collection-name-input">Collection Name</label>
+                    <input type="text" id="collection-name-input" placeholder="e.g., project-docs">
+                </div>
+                <div class="form-group">
+                    <label for="vector-size-input">Vector Size</label>
+                    <input type="number" id="vector-size-input" value="384" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="distance-metric-select">Distance Metric</label>
+                    <select id="distance-metric-select">
+                        <option value="Cosine">Cosine</option>
+                        <option value="Euclid">Euclidean</option>
+                        <option value="Dot">Dot Product</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary close-modal">Cancel</button>
+                <button class="btn btn-primary" id="confirm-create-collection-btn">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Create/Edit Assistant Modal -->
+    <div id="create-assistant-modal" class="modal hidden">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h3 id="assistant-modal-title">Create Assistant</h3>
+                <span class="close-modal"
+                    onclick="document.getElementById('create-assistant-modal').classList.add('hidden')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="assistant-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="assistant-name">Name</label>
+                        <input type="text" id="assistant-name" placeholder="My Assistant">
+                    </div>
+                    <div class="form-group">
+                        <label for="assistant-model">Model</label>
+                        <select id="assistant-model">
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="assistant-language">Language</label>
+                        <select id="assistant-language">
+                            <option value="Portuguese">Portuguese</option>
+                            <option value="Spanish">Spanish</option>
+                            <option value="English">English</option>
+                            <option value="Italian">Italian</option>
+                            <option value="German">German</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="assistant-description">Description</label>
+                    <input type="text" id="assistant-description" placeholder="Short description">
+                </div>
+                <div class="form-group">
+                    <label for="assistant-instructions">Instructions</label>
+                    <textarea id="assistant-instructions" rows="5" placeholder="System instructions..."></textarea>
+                </div>
+
+                <!-- Resources Selection -->
+                <div class="form-group">
+                    <h4>Resources</h4>
+                    <div class="resource-tabs">
+                        <button class="resource-tab active" onclick="switchResourceTab('files')">Files</button>
+                        <button class="resource-tab" onclick="switchResourceTab('tools')">Tools</button>
+                        <button class="resource-tab" onclick="switchResourceTab('collections')">Collections</button>
+                    </div>
+
+                    <div id="resource-files" class="resource-content active">
+                        <div id="assistant-files-list" class="checkbox-list">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                    <div id="resource-tools" class="resource-content" style="display:none;">
+                        <div id="assistant-tools-list" class="checkbox-list">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                    <div id="resource-collections" class="resource-content" style="display:none;">
+                        <div id="assistant-collections-list" class="checkbox-list">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary"
+                    onclick="document.getElementById('create-assistant-modal').classList.add('hidden')">Cancel</button>
+                <button class="btn btn-primary" id="save-assistant-btn">Save Assistant</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Upload File Modal -->
+    <div id="upload-file-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Upload File</h3>
+                <span class="close-modal"
+                    onclick="document.getElementById('upload-file-modal').classList.add('hidden')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="file-upload-select">Select File</label>
+                    <input type="file" id="file-upload-select">
+                </div>
+                <div class="form-group">
+                    <label for="file-purpose">Purpose</label>
+                    <select id="file-purpose">
+                        <option value="assistants">Assistants</option>
+                        <option value="fine-tune">Fine-tune</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary"
+                    onclick="document.getElementById('upload-file-modal').classList.add('hidden')">Cancel</button>
+                <button class="btn btn-primary" id="confirm-upload-btn">Upload</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: File Preview Modal -->
+    <div id="file-preview-modal" class="modal hidden">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h3 id="preview-filename">File Content</h3>
+                <span class="close-modal"
+                    onclick="document.getElementById('file-preview-modal').classList.add('hidden')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <pre id="file-preview-content"
+                    style="background:var(--gray-100); padding:15px; border-radius:4px; overflow:auto; max-height:500px; white-space: pre-wrap;"></pre>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary"
+                    onclick="document.getElementById('file-preview-modal').classList.add('hidden')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Attach File to Assistant Modal -->
+    <div id="attach-assistant-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Attach File to Assistant</h3>
+                <span class="close-modal"
+                    onclick="document.getElementById('attach-assistant-modal').classList.add('hidden')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="attach-file-id">
+                <div class="form-group">
+                    <label for="attach-assistant-select">Select Assistant</label>
+                    <select id="attach-assistant-select">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary"
+                    onclick="document.getElementById('attach-assistant-modal').classList.add('hidden')">Cancel</button>
+                <button class="btn btn-primary" id="confirm-attach-btn">Attach</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/garage-fragmented/garage-globals.js?v=20260502a"></script>
+    <script src="/static/js/garage-fragmented/garage-assistants.js?v=20260503b"></script>
+    <script src="/static/js/garage-fragmented/garage-files.js?v=20260502a"></script>
+    <script src="/static/js/garage-fragmented/garage-vectors.js?v=20260502a"></script>
+    <script src="/static/js/garage-fragmented/garage-knowledge.js?v=20260502a"></script>
+    <script src="/static/js/garage-fragmented/garage-tools.js?v=20260502a"></script>
+    <script src="/static/js/garage-fragmented/garage-deepseek.js?v=20260502a"></script>
+    <script src="/static/js/garage-fragmented/garage-playground.js?v=20260502a"></script>
+    <script src="/static/js/garage-fragmented/garage-lawyer.js?v=20260502a"></script>
+    <script src="/static/js/garage-fragmented/garage-tests.js?v=20260502a"></script>
+    <script src="/static/js/garage-fragmented/garage-openclaude.js?v=20260502b"></script>
+    <script src="/static/js/garage-fragmented/garage-main.js?v=20260502a"></script>
+    <script src="/static/js/garage-fragmented/garage-prompt-engineer.js?v=20260502a"></script>
+    <script src="/static/js/garage-fragmented/manus-garage.js?v=20260503g"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+    </div>
+</body>
+
+</html>

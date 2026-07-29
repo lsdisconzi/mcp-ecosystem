@@ -1,0 +1,136 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://discovery.local/schemas/tree_blueprint.schema.json",
+  "title": "TreeBlueprint",
+  "description": "A proposed directory tree. v1 is generated from intake + template. v2 is generated after L1-L4 ingestion of the corpus. Templates are blueprints with version=='template'.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_version", "blueprint_version", "root_label", "generated_at", "source", "nodes"],
+  "properties": {
+    "spec_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "blueprint_version": {
+      "type": "string",
+      "enum": ["template", "v1", "v2"],
+      "description": "template = ships with the product. v1 = derived from IntakeSpec only. v2 = revised after corpus ingestion."
+    },
+    "root_label": {
+      "type": "string",
+      "description": "Human label for the root, e.g. 'LATAM Case'. Not the filesystem path."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["template", "intake", "corpus_refinement"]
+        },
+        "template_id": { "type": "string" },
+        "intake_spec_ref": { "type": "string", "description": "Path or id of the IntakeSpec that produced this." },
+        "previous_blueprint_ref": { "type": "string", "description": "When kind=='corpus_refinement', the v1 this revises." },
+        "corpus_signals_used": {
+          "type": "array",
+          "description": "Names of corpus-derived inputs that fed v2 generation. For provenance.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "pipeline_stats",
+              "entities",
+              "relationships",
+              "timeline",
+              "comprehend_groups",
+              "comprehend_strategies"
+            ]
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text explanation. For v2, MUST explain why the structure differs from v1."
+    },
+    "nodes": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Node" }
+    }
+  },
+  "definitions": {
+    "Node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "purpose"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Relative path segment from parent. e.g. 'INCIDENT_2024-04-04'. Must not contain '/' or '..'.",
+          "pattern": "^[^/\\\\]+$"
+        },
+        "purpose": {
+          "type": "string",
+          "description": "One-sentence statement of what this directory holds. Becomes the first paragraph of the folder README."
+        },
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Soft-required marker. UI warns the user if they delete a required folder, but allows override."
+        },
+        "expected_contents": {
+          "type": "array",
+          "description": "Bullet list of file kinds expected here. Becomes a section in the README.",
+          "items": { "type": "string" }
+        },
+        "naming_convention": {
+          "type": "string",
+          "description": "How files inside should be named, if applicable. e.g. 'YYYY-MM-DD_<source>_<kind>.<ext>'."
+        },
+        "pipeline_layers": {
+          "type": "array",
+          "description": "Which Discovery layers this directory should run by default. Final config lives in pipeline_plan.json.",
+          "items": {
+            "type": "string",
+            "enum": ["L1-L3", "L4", "L5-L7", "comprehend"]
+          },
+          "uniqueItems": true
+        },
+        "pipeline_hints": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Hints fed to the pipeline modules for this directory.",
+          "properties": {
+            "entity_priorities": {
+              "type": "array",
+              "items": { "type": "string", "enum": ["people", "organizations", "laws", "places", "events", "documents"] }
+            },
+            "language_hint": { "type": "string", "description": "ISO-639-1 code if known (pt, es, en)." },
+            "skip_binary_extraction": { "type": "boolean", "default": false },
+            "intelligence_focus": {
+              "type": "array",
+              "items": { "type": "string", "enum": ["violations", "timeline", "narrative", "gaps", "law_registry"] }
+            }
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Arbitrary tags. Used for cross-cutting filters (e.g. 'jurisdiction:CL', 'incident:2024-07-05')."
+        },
+        "readme_seed": {
+          "type": "string",
+          "description": "Optional seed body for README.md. If absent, README is generated from purpose + expected_contents + pipeline_layers."
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Node" }
+        }
+      }
+    }
+  }
+}
