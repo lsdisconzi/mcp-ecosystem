@@ -24,7 +24,7 @@ def _infer_llm_provider(explicit: str | None, base_url: str | None) -> str:
         return "anthropic"
     if "openai" in host:
         return "openai"
-    if "11434" in host or "ollama" in host:
+    if "11436" in host or "ollama" in host:
         return "ollama"
     return "openrouter"
 

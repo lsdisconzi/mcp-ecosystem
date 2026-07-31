@@ -34,9 +34,10 @@ elif [[ -x "$SCRIPT_DIR/.venv-mcp/bin/uvicorn" ]]; then
   UVICORN_BIN="$SCRIPT_DIR/.venv-mcp/bin/uvicorn"
 fi
 
-LOG_DIR="$SCRIPT_DIR/.logs"
-RUN_DIR="$SCRIPT_DIR/.run"
-mkdir -p "$LOG_DIR" "$RUN_DIR"
+# Source centralized logging
+source "$SCRIPT_DIR/../.dev-logs/common-logging.sh"
+
+mkdir -p "$(dirname "$(get_log_file "audio" "api")")"
 
 if [[ ! -x "$PYTHON_API" ]]; then
   echo "Missing project environment in $SCRIPT_DIR/.venv" >&2
@@ -55,36 +56,15 @@ fi
 
 "$SCRIPT_DIR/stop.sh" --quiet || true
 
-start_bg() {
-  local name="$1"
-  local pid_file="$2"
-  local log_file="$3"
-  shift 3
-
-  nohup "$@" >>"$log_file" 2>&1 &
-  local pid=$!
-  echo "$pid" >"$pid_file"
-
-  if ! kill -0 "$pid" 2>/dev/null; then
-    echo "Failed to start $name. Check $log_file" >&2
-    return 1
-  fi
-
-  echo "Started $name (pid=$pid)"
-}
-
 echo "Starting audio webapp API on ${HOST}:${PORT}"
 if [[ -n "$UVICORN_BIN" ]]; then
-  start_bg "audio-api" "$RUN_DIR/audio-api.pid" "$LOG_DIR/api.log" \
-    env PYTHONUNBUFFERED=1 "$UVICORN_BIN" webapp.server:app --host "$HOST" --port "$PORT"
+  start_logging "audio" "api" env PYTHONUNBUFFERED=1 "$UVICORN_BIN" webapp.server:app --host "$HOST" --port "$PORT"
 else
-  start_bg "audio-api" "$RUN_DIR/audio-api.pid" "$LOG_DIR/api.log" \
-    env PYTHONUNBUFFERED=1 "$PYTHON_API" -m uvicorn webapp.server:app --host "$HOST" --port "$PORT"
+  start_logging "audio" "api" env PYTHONUNBUFFERED=1 "$PYTHON_API" -m uvicorn webapp.server:app --host "$HOST" --port "$PORT"
 fi
 
 echo "Starting audio MCP server (${MCP_TRANSPORT}) on ${MCP_HOST}:${MCP_PORT}"
-start_bg "audio-mcp" "$RUN_DIR/audio-mcp.pid" "$LOG_DIR/mcp.log" \
-  env PYTHONUNBUFFERED=1 MCP_TRANSPORT="$MCP_TRANSPORT" MCP_HOST="$MCP_HOST" MCP_PORT="$MCP_PORT" \
+start_logging "audio" "mcp" env PYTHONUNBUFFERED=1 MCP_TRANSPORT="$MCP_TRANSPORT" MCP_HOST="$MCP_HOST" MCP_PORT="$MCP_PORT" \
   "$PYTHON_MCP" "$SCRIPT_DIR/mcp/torchaudio_mcp/server.py"
 
 echo "Waiting for API readiness"
@@ -99,5 +79,5 @@ echo ""
 echo "audio is running"
 echo "  URL     : $APP_URL"
 echo "  MCP     : ${MCP_TRANSPORT}://${MCP_HOST}:${MCP_PORT}"
-echo "  Logs    : $LOG_DIR"
+echo "  Logs    : .dev-logs/audio/"
 echo "  Stop    : ./stop.sh"

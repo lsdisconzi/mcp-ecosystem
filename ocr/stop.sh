@@ -3,24 +3,25 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-PID_FILE="$SCRIPT_DIR/.ocr.pid"
 PORT="${PORT:-8098}"
+QUIET="${1:-}"
 
-if [[ -f "$PID_FILE" ]]; then
-    pid=$(<"$PID_FILE")
-    if kill "$pid" 2>/dev/null; then
-        echo "Stopped OCR service (PID $pid)"
-    else
-        echo "PID $pid was not running"
-    fi
-    rm -f "$PID_FILE"
-fi
+# Source centralized logging
+source "$SCRIPT_DIR/../.dev-logs/common-logging.sh"
+
+# ── Colors ──
+R='\033[0;31m' G='\033[0;32m' A='\033[0;33m' C='\033[0;36m' W='\033[1;37m' N='\033[0m'
+info()  { printf "${C}▸${N} %s\n" "$*"; }
+ok()    { printf "${G}✓${N} %s\n" "$*"; }
+warn()  { printf "${A}⚠${N} %s\n" "$*"; }
+fail()  { printf "${R}✗${N} %s\n" "$*"; exit 1; }
+
+# ── Stop services ──
+info "Stopping OCR services..."
+
+stop_by_pid_file "ocr" "main"
 
 # Belt-and-braces: clear the port too
-pids=$(lsof -ti :"$PORT" 2>/dev/null || true)
-if [[ -n "$pids" ]]; then
-    echo "$pids" | xargs kill -9 2>/dev/null || true
-    echo "Cleared port :$PORT"
-fi
+kill_port "ocr" "main" "$PORT"
 
-echo "Done"
+[[ "$QUIET" == "--quiet" ]] || ok "OCR stopped — logs preserved in .dev-logs/"

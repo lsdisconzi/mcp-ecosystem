@@ -359,10 +359,11 @@ class Message(BaseModel):
     role: str = Field(..., description="Message role (system, user, assistant)")
     content: Union[str, List[Dict[str, Any]]] = Field(..., description="Message content")
     name: Optional[str] = Field(None, description="Name of the message sender")
+    images: Optional[List[str]] = Field(None, description="Base64-encoded images for vision models")
 
 class ChatRequest(BaseModel):
     """Chat completion request"""
-    model: str = Field(default="llama3-groq-tool-use:8b", description="Model to use")
+    model: str = Field(default="lfm2.5:8b", description="Model to use")
     messages: List[Message] = Field(..., description="Conversation messages")
     temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="Sampling temperature")
     top_p: float = Field(default=1.0, ge=0.0, le=1.0, description="Nucleus sampling")

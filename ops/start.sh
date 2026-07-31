@@ -37,9 +37,11 @@ done
 export OPS_DASHBOARD_PORT="$PORT"
 VENV_BIN="$SCRIPT_DIR/.venv/bin"
 PYTHON_BIN="$VENV_BIN/python"
-LOG_DIR="${DEV_LOG_DIR:-$HOME/.dev-logs}"
-LOG_FILE="$LOG_DIR/ops-dashboard.log"
-PID_FILE="$SCRIPT_DIR/.ops-dashboard.pid"
+
+# Source centralized logging
+source "$SCRIPT_DIR/../.dev-logs/common-logging.sh"
+
+mkdir -p "$(dirname "$(get_log_file "ops" "dashboard")")"
 
 if [[ ! -x "$PYTHON_BIN" ]]; then
     python3 -m venv "$SCRIPT_DIR/.venv"
@@ -60,27 +62,18 @@ if [[ "$MODE" == "foreground" ]]; then
     exec "$PYTHON_BIN" app.py
 fi
 
-mkdir -p "$LOG_DIR"
-: > "$LOG_FILE"
-
 echo "Starting ops-dashboard in daemon mode on port $PORT..."
-nohup "$PYTHON_BIN" app.py >> "$LOG_FILE" 2>&1 &
-pid="$!"
-echo "$pid" > "$PID_FILE"
+start_logging "ops" "dashboard" env PYTHONUNBUFFERED=1 "$PYTHON_BIN" app.py
 
 for ((_try=0; _try<30; _try++)); do
     if lsof -nP -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
-        echo "ops-dashboard started (pid: $pid, port: $PORT)"
-        echo "log: $LOG_FILE"
+        echo "ops-dashboard started (port: $PORT)"
+        echo "log: $(get_log_file "ops" "dashboard")"
         exit 0
-    fi
-    if ! kill -0 "$pid" >/dev/null 2>&1; then
-        break
     fi
     sleep 0.2
 done
 
 echo "ops-dashboard failed to start on port $PORT"
-echo "Last log lines:"
-tail -n 40 "$LOG_FILE" || true
+tail -n 40 "$(get_log_file "ops" "dashboard")" || true
 exit 1

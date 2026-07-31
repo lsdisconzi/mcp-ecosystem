@@ -21,11 +21,11 @@ MCP_HOST="${MCP_HOST:-0.0.0.0}"
 
 PYTHON_BIN="$SCRIPT_DIR/.venv/bin/python"
 UVICORN_BIN="$SCRIPT_DIR/.venv/bin/uvicorn"
-LOG_DIR="$SCRIPT_DIR/.logs"
-RUN_DIR="$SCRIPT_DIR/.run"
-LEGACY_PID_FILE="$SCRIPT_DIR/.transcription.pid"
 
-mkdir -p "$LOG_DIR" "$RUN_DIR"
+# Source centralized logging
+source "$SCRIPT_DIR/../.dev-logs/common-logging.sh"
+
+mkdir -p "$(dirname "$(get_log_file "transcription" "api")")"
 
 if [[ ! -x "$PYTHON_BIN" || ! -x "$UVICORN_BIN" ]]; then
     echo "Missing project Python environment in $SCRIPT_DIR/.venv" >&2
@@ -34,38 +34,15 @@ fi
 
 "$SCRIPT_DIR/stop.sh" --quiet || true
 
-start_bg() {
-    local name="$1"
-    local pid_file="$2"
-    local log_file="$3"
-    shift 3
-
-    nohup "$@" >>"$log_file" 2>&1 &
-    local pid=$!
-    echo "$pid" >"$pid_file"
-
-    if ! kill -0 "$pid" 2>/dev/null; then
-        echo "Failed to start $name. Check $log_file" >&2
-        return 1
-    fi
-
-    echo "Started $name (pid=$pid)"
-}
-
 echo "Starting transcription API on ${HOST}:${PORT}"
-start_bg "transcription-api" "$RUN_DIR/transcription-api.pid" "$LOG_DIR/api.log" \
-    env PYTHONUNBUFFERED=1 "$UVICORN_BIN" src.main:app --host "$HOST" --port "$PORT"
-cp "$RUN_DIR/transcription-api.pid" "$LEGACY_PID_FILE"
+start_logging "transcription" "api" env PYTHONUNBUFFERED=1 "$UVICORN_BIN" src.main:app --host "$HOST" --port "$PORT"
 
 echo "Starting transcription MCP servers (${MCP_TRANSPORT})"
-start_bg "mcp-transcription" "$RUN_DIR/mcp-transcription.pid" "$LOG_DIR/mcp-transcription.log" \
-    env PYTHONUNBUFFERED=1 MCP_TRANSPORT="$MCP_TRANSPORT" MCP_HOST="$MCP_HOST" MCP_PORT=8121 \
+start_logging "transcription" "mcp-transcription" env PYTHONUNBUFFERED=1 MCP_TRANSPORT="$MCP_TRANSPORT" MCP_HOST="$MCP_HOST" MCP_PORT=8121 \
     "$PYTHON_BIN" -m src.mcp.servers.transcription_server
-start_bg "mcp-transcripts" "$RUN_DIR/mcp-transcripts.pid" "$LOG_DIR/mcp-transcripts.log" \
-    env PYTHONUNBUFFERED=1 MCP_TRANSPORT="$MCP_TRANSPORT" MCP_HOST="$MCP_HOST" MCP_PORT=8122 \
+start_logging "transcription" "mcp-transcripts" env PYTHONUNBUFFERED=1 MCP_TRANSPORT="$MCP_TRANSPORT" MCP_HOST="$MCP_HOST" MCP_PORT=8122 \
     "$PYTHON_BIN" -m src.mcp.servers.transcripts_server
-start_bg "mcp-meta" "$RUN_DIR/mcp-meta.pid" "$LOG_DIR/mcp-meta.log" \
-    env PYTHONUNBUFFERED=1 MCP_TRANSPORT="$MCP_TRANSPORT" MCP_HOST="$MCP_HOST" MCP_PORT=8123 \
+start_logging "transcription" "mcp-meta" env PYTHONUNBUFFERED=1 MCP_TRANSPORT="$MCP_TRANSPORT" MCP_HOST="$MCP_HOST" MCP_PORT=8123 \
     "$PYTHON_BIN" -m src.mcp.servers.meta_server
 
 echo "Waiting for API health endpoint"
@@ -87,5 +64,5 @@ fi
 echo ""
 echo "transcription is running"
 echo "  URL  : $APP_URL"
-echo "  Logs : $LOG_DIR"
+echo "  Logs : .dev-logs/transcription/"
 echo "  Stop : ./stop.sh"

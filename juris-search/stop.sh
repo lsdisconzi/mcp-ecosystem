@@ -3,39 +3,27 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-RUN_DIR="$SCRIPT_DIR/.run"
 PORT="${PORT:-8000}"
 QUIET="${1:-}"
 
-stop_pid_file() {
-    local pid_file="$1"
-    local label="$2"
-    [[ -f "$pid_file" ]] || return 0
+# Source centralized logging
+source "$SCRIPT_DIR/../.dev-logs/common-logging.sh"
 
-    local pid
-    pid="$(cat "$pid_file")"
-    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
-        kill "$pid" 2>/dev/null || true
-        sleep 0.2
-        if kill -0 "$pid" 2>/dev/null; then
-            kill -9 "$pid" 2>/dev/null || true
-        fi
-        [[ "$QUIET" == "--quiet" ]] || echo "Stopped $label (pid=$pid)"
-    fi
-    rm -f "$pid_file"
-}
+# ── Colors ──
+R='\033[0;31m' G='\033[0;32m' A='\033[0;33m' C='\033[0;36m' W='\033[1;37m' N='\033[0m'
+info()  { printf "${C}▸${N} %s\n" "$*"; }
+ok()    { printf "${G}✓${N} %s\n" "$*"; }
+warn()  { printf "${A}⚠${N} %s\n" "$*"; }
+fail()  { printf "${R}✗${N} %s\n" "$*"; exit 1; }
 
-if [[ -d "$RUN_DIR" ]]; then
-    stop_pid_file "$RUN_DIR/mcp-juris-search.pid" "mcp-juris-search"
-    stop_pid_file "$RUN_DIR/juris-search-api.pid" "juris-search-api"
-fi
+# ── Stop services ──
+info "Stopping juris-search services..."
 
-pids="$(lsof -ti :"$PORT" 2>/dev/null || true)"
-if [[ -n "$pids" ]]; then
-    echo "$pids" | xargs kill -9 2>/dev/null || true
-    [[ "$QUIET" == "--quiet" ]] || echo "Cleared port :$PORT"
-fi
+stop_by_pid_file "juris-search" "api"
+stop_by_pid_file "juris-search" "mcp"
 
+# Belt-and-braces: kill anything on our ports
+kill_port "juris-search" "api" "$PORT"
 pkill -f "$SCRIPT_DIR/mcp/juris_mcp_server.js" 2>/dev/null || true
 
-[[ "$QUIET" == "--quiet" ]] || echo "Done"
+[[ "$QUIET" == "--quiet" ]] || ok "juris-search stopped — logs preserved in .dev-logs/"

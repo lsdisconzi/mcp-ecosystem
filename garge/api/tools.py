@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, Request, Body
 from pydantic import BaseModel
 
-from data.tools import registry
+# from data.tools import registry
 from api.schemas import ToolCreateRequest, ToolExecuteRequest
 
 logger = logging.getLogger(__name__)

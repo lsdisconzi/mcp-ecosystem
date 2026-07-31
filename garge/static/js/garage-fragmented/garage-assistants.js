@@ -430,6 +430,8 @@ async function showChatModal(assistantId, assistantName) {
     let chatMessages = [];
     let attachedFiles = [];
     let enabledFiles = [];
+    /** Cache for binary file content (e.g. images) keyed by fileId — base64 data URL */
+    let attachedFilesBase64 = {};
     currentThreadId = null;
 
     function isFileAttachedInChat(fileId) {
@@ -770,6 +772,20 @@ async function showChatModal(assistantId, assistantName) {
                 attachedFiles.push(fileMeta.id);
                 availableFiles.push(fileMeta);
                 enabledFiles.push(fileMeta.id);
+
+                // If this is an image, cache its base64 data for vision models
+                const ct = (fileMeta.content_type || file.type || '').toLowerCase();
+                if (isImageType(ct) || isImageExtension(file.name)) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        attachedFilesBase64[fileMeta.id] = e.target.result;
+                    };
+                    reader.onerror = function () {
+                        console.warn(`Failed to read image ${file.name} as base64`);
+                    };
+                    reader.readAsDataURL(file);
+                }
+
                 renderFileList();
                 showNotification(`✅ ${file.name} attached to chat!`, 'success');
             } else {
@@ -778,6 +794,17 @@ async function showChatModal(assistantId, assistantName) {
         } catch (error) {
             showNotification(`❌ Failed to attach file: ${error.message}`, 'error');
         }
+    }
+
+    /** Check if a MIME type is a browser-viewable image. */
+    function isImageType(mime) {
+        return ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/tiff'].includes(mime);
+    }
+
+    /** Fallback: check file extension when content_type is missing. */
+    function isImageExtension(filename) {
+        const ext = (filename || '').split('.').pop().toLowerCase();
+        return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff'].includes(ext);
     }
 
     async function getFileContent(fileId) {
@@ -850,8 +877,10 @@ async function showChatModal(assistantId, assistantName) {
             return;
         }
     
-        // Build file content for system prompt
+        // Build file content for system prompt (text files only)
+        // Image files are handled separately as vision content
         let fileContent = "";
+        const imageDataList = [];
         const processAttachment = async (name, content) => {
             if (!content || content.trim() === "") {
                 return `### FILE: ${name} ###\nFILE EMPTY OR UNREADABLE\n\n`;
@@ -861,6 +890,14 @@ async function showChatModal(assistantId, assistantName) {
         for (const fileId of enabledFiles) {
             const file = availableFiles.find(f => f.id === fileId);
             if (!file) continue;
+
+            // Image file — use cached base64 data for vision models
+            if (attachedFilesBase64[fileId]) {
+                imageDataList.push(attachedFilesBase64[fileId]);
+                continue;
+            }
+
+            // Text file — read content and add to system prompt
             try {
                 const content = await getFileContent(fileId);
                 fileContent += await processAttachment(file.filename, content);
@@ -868,15 +905,18 @@ async function showChatModal(assistantId, assistantName) {
                 fileContent += `### FILE: ${file.filename} ###\nERROR READING FILE\n\n`;
             }
         }
-    
+
         const systemPrompt = (instructions && instructions.trim())
-            ? `${instructions.trim()}\n\n### ATTACHED FILES ###\n${fileContent || 'NO FILES ATTACHED'}`
-            : `You are a helpful assistant. You have access to the following files:\n\n### ATTACHED FILES ###\n${fileContent || 'NO FILES ATTACHED'}`;
-    
-        // Build chat history
+            ? `${instructions.trim()}\n\n### ATTACHED FILES ###\n${fileContent || (imageDataList.length ? 'See images in user message' : 'NO FILES ATTACHED')}`
+            : `You are a helpful assistant. You have access to the following files:\n\n### ATTACHED FILES ###\n${fileContent || (imageDataList.length ? 'See images in user message' : 'NO FILES ATTACHED')}`;
+
+        // Build chat history — include image data for vision models
+        const userMsg = imageDataList.length > 0
+            ? { role: 'user', content: message, images: imageDataList }
+            : { role: 'user', content: message };
         const messages = [
             { role: 'system', content: systemPrompt },
-            { role: 'user', content: message }
+            userMsg
         ];
     
         // Determine endpoint and payload — support local Ollama and external providers

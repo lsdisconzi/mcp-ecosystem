@@ -30,7 +30,7 @@ file browsing — all behind a login gate.
 | legal | 8019 | app |
 | qdrant | 6333 | data |
 | certbot | — | infra |
-| ollama | 11434 | infra |
+| ollama | 11436 | infra |
 
 ## API Endpoints
 

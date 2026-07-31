@@ -333,9 +333,7 @@ if __name__ == "__main__":
     if transport == "stdio":
         mcp.run(transport="stdio")
     elif transport in ("sse", "streamable-http"):
-        mcp.settings.host = host
-        mcp.settings.port = port
-        mcp.run(transport="streamable-http")
+        mcp.run(transport="streamable-http", host=host, port=port)
     else:
         print(f"Unknown transport: {transport}. Using stdio.", file=__import__('sys').stderr)
         mcp.run(transport="stdio")
