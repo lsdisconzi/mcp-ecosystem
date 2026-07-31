@@ -52,6 +52,15 @@ class VectorStore:
             logger.error(f"Error initializing Qdrant client ({getattr(self, '_conn_desc', 'unknown')}): {e}")
             raise QdrantConnectionError(str(e))
     
+    def get_collection_vector_size(self, collection_name: str) -> Optional[int]:
+        """Return the vector size of an existing collection, or None if it does not exist."""
+        try:
+            info = self.client.get_collection(collection_name)
+            vectors = info.config.params.vectors
+            return getattr(vectors, "size", None)
+        except Exception:
+            return None
+
     def create_collection(self, collection_name: str, vector_size: int, force_recreate: bool = False) -> bool:
         """Create or recreate collection in Qdrant."""
         try:
@@ -311,21 +320,22 @@ class VectorStore:
     ) -> List[Dict[str, Any]]:
         """Search for similar documents."""
         try:
-            results = self.client.search(
+            resp = self.client.query_points(
                 collection_name=collection_name,
-                query_vector=query_vector.tolist(),
+                query=query_vector.tolist(),
                 limit=limit,
-                score_threshold=score_threshold
+                score_threshold=score_threshold,
+                with_payload=True,
             )
-            
+
             return [
                 {
                     "id": result.id,
                     "score": result.score,
-                    "text": result.payload.get("text", ""),
-                    "metadata": {k: v for k, v in result.payload.items() if k != "text"}
+                    "text": (result.payload or {}).get("text", ""),
+                    "metadata": {k: v for k, v in (result.payload or {}).items() if k != "text"}
                 }
-                for result in results
+                for result in resp.points
             ]
             
         except Exception as e:

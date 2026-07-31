@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     
     # Ollama Configuration
     ollama_base_url: str = "http://localhost:11436"
-    default_model: str = "llama3.1:8b"
+    default_model: str = "lfm2.5:8b:8b"
     
     # Storage Paths
     base_dir: Path = Path(__file__).parent.parent

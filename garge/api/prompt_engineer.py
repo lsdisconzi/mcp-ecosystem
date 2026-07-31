@@ -17,7 +17,7 @@ router = APIRouter(
 
 class PromptGenerationRequest(BaseModel):
     """Request model for prompt generation"""
-    model: str = Field(..., description="Model to use (llama3.1:8b, dolphin-llama3:8b, etc.)")
+    model: str = Field(..., description="Model to use (lfm2.5:8b:8b, dolphin-llama3:8b, etc.)")
     user_input: str = Field(..., description="User's description of needs")
     system_prompt: str = Field(..., description="System instructions for prompt engineer")
     vector_context: str = Field("", description="Context from vector store")
@@ -31,24 +31,24 @@ class PromptGenerationRequest(BaseModel):
 class AnalysisRequest(BaseModel):
     """Request model for analyzing user needs"""
     user_input: str = Field(..., description="User's input to analyze")
-    model: str = Field(..., description="Model to use for analysis (llama3.1:8b, dolphin-llama3:8b, etc.)")
+    model: str = Field(..., description="Model to use for analysis (lfm2.5:8b:8b, dolphin-llama3:8b, etc.)")
 
 class VariationRequest(BaseModel):
     """Request model for generating variations"""
     prompt: str = Field(..., description="Original prompt")
     count: int = Field(3, ge=1, le=10, description="Number of variations")
-    model: str = Field(..., description="Model to use (llama3.1:8b, dolphin-llama3:8b, etc.)")
+    model: str = Field(..., description="Model to use (lfm2.5:8b:8b, dolphin-llama3:8b, etc.)")
 
 class OptimizationRequest(BaseModel):
     """Request model for prompt optimization"""
     prompt: str = Field(..., description="Prompt to optimize")
     metrics: Dict[str, int] = Field(..., description="Quality metrics (clarity, specificity, creativity, conciseness)")
-    model: str = Field(..., description="Model to use (llama3.1:8b, dolphin-llama3:8b, etc.)")
+    model: str = Field(..., description="Model to use (lfm2.5:8b:8b, dolphin-llama3:8b, etc.)")
 
 class EvaluationRequest(BaseModel):
     """Request model for prompt evaluation"""
     prompt: str = Field(..., description="Prompt to evaluate")
-    model: str = Field(..., description="Model to use (llama3.1:8b, dolphin-llama3:8b, etc.)")
+    model: str = Field(..., description="Model to use (lfm2.5:8b:8b, dolphin-llama3:8b, etc.)")
 
 class ImprovementRequest(BaseModel):
     """Request model for improvement suggestions"""

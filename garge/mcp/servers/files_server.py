@@ -47,7 +47,7 @@ async def files_read(path: str) -> Dict[str, Any]:
 @mcp.tool()
 async def files_summarize(
     file_ids: list[str],
-    model: str = "llama3.1:8b",
+    model: str = "lfm2.5:8b:8b",
     temperature: float = 0.1,
     max_tokens: int = 1000,
 ) -> Dict[str, Any]:

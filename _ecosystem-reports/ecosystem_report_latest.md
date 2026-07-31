@@ -1,6 +1,6 @@
 # Ecosystem Orchestration Report
 
-**Generated:** 2026-07-30 21:41:12 UTC
+**Generated:** 2026-07-31 13:15:22 UTC
 **Host:** MacBook-Pro-de-Leandro.local
 
 ## Service Status Overview
@@ -15,7 +15,7 @@
 | discovery          | UP     | 1/1 | 30 | Discovery intelligence platform (FastAPI + stdio MCP) |
 | audio              | UP     | 2/2 | 8 | Torchaudio-based audio processing (FastAPI + MCP) |
 | ops-dashboard      | UP     | port 9000 | — | Ops dashboard |
-| **TOTAL**          | **11 UP / 9 DOWN** |         | 290 | |
+| **TOTAL**          | **17 UP / 3 DOWN** |         | 290 | |
 
 ## Ecosystem Summary
 

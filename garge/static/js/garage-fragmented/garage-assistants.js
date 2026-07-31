@@ -149,7 +149,7 @@ async function loadAssistants() {
             const current = String(currentModel || '').trim();
 
             if (provider === 'ollama' || provider === 'local') {
-                const DEFAULT = 'llama3.1:8b';
+                const DEFAULT = 'lfm2.5:8b:8b';
                 const models = availableModels.length ? availableModels : [{ id: DEFAULT }];
                 return models.map((m, i) => {
                     const id = m.id;
@@ -290,7 +290,7 @@ async function loadAssistants() {
                 
                 <div class="parameter-group">
                     <label for="modal-assistant-model">Model *</label>
-                    ${buildAssistantProviderPicker('modal-assistant-model', 'llama3.1:8b')}
+                    ${buildAssistantProviderPicker('modal-assistant-model', 'lfm2.5:8b:8b')}
                 </div>
                 
                 <div class="parameter-group">

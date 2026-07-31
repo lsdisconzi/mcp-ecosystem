@@ -53,7 +53,7 @@ if not _LAWS_PATH.is_absolute():
 class FileSummarizeRequest(BaseModel):
     """Request schema for file summarization"""
     file_ids: List[str] = Field(..., min_items=1, description="List of file IDs to summarize")
-    model: str = Field(default="llama3.1:8b", description="AI model to use")
+    model: str = Field(default="lfm2.5:8b:8b", description="AI model to use")
     temperature: float = Field(default=0.1, ge=0.0, le=2.0, description="Sampling temperature")
     max_tokens: int = Field(default=1000, ge=1, le=4000, description="Maximum tokens for summary")
 

@@ -212,7 +212,7 @@ class AssistantCreateRequest(BaseModel):
     """Request to create a new assistant"""
     name: str = Field(..., description="Assistant name")
     description: Optional[str] = Field(None, description="Assistant description")
-    model: str = Field(..., description="Model to use (e.g., llama3.1:8b)")
+    model: str = Field(..., description="Model to use (e.g., lfm2.5:8b:8b)")
     instructions: Optional[str] = Field(None, description="System instructions")
     tools: Optional[List[ToolObject]] = Field(default_factory=list, description="Available tools")
     file_ids: Optional[List[str]] = Field(default_factory=list, description="Attached file IDs")
@@ -228,7 +228,7 @@ class AssistantCreateRequest(BaseModel):
             "example": {
                 "name": "Security Analyst",
                 "description": "Analyzes aviation security violations",
-                "model": "llama3.1:8b",
+                "model": "lfm2.5:8b:8b",
                 "instructions": "You are an expert in aviation security regulations and incident analysis.",
                 "tools": [],
                 "file_ids": [],
@@ -293,7 +293,7 @@ class AssistantObject(BaseModel):
                 "created_at": 1672531200,
                 "name": "Security Analyst",
                 "description": "Analyzes aviation security violations",
-                "model": "llama3.1:8b",
+                "model": "lfm2.5:8b:8b",
                 "instructions": "You are an expert in aviation security...",
                 "tools": [],
                 "file_ids": ["file-abc123"],
@@ -324,7 +324,7 @@ class AssistantListResponse(BaseModel):
                         "created_at": 1672531200,
                         "name": "Security Analyst",
                         "description": "Analyzes aviation security violations",
-                        "model": "llama3.1:8b",
+                        "model": "lfm2.5:8b:8b",
                         "instructions": "You are an expert...",
                         "tools": [],
                         "file_ids": ["file-abc123"],
@@ -381,7 +381,7 @@ class ChatRequest(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "model": "llama3.1:8b",
+                "model": "lfm2.5:8b:8b",
                 "messages": [
                     {
                         "role": "user",
@@ -425,7 +425,7 @@ class ChatResponse(BaseModel):
                 "id": "chat_123",
                 "object": "chat.completion",
                 "created": 1672531200,
-                "model": "llama3.1:8b",
+                "model": "lfm2.5:8b:8b",
                 "choices": [
                     {
                         "index": 0,
@@ -524,7 +524,7 @@ class MessageListResponse(BaseModel):
 class RunCreateRequest(BaseModel):
     """Request to create a run"""
     assistant_id: Optional[str] = Field(None, description="Assistant ID")
-    model: Optional[str] = Field(default="llama3.1:8b", description="Model to use")
+    model: Optional[str] = Field(default="lfm2.5:8b:8b", description="Model to use")
     instructions: Optional[str] = Field(None, description="Override instructions")
     tools: Optional[List[ToolObject]] = Field(None, description="Available tools")
     metadata: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Metadata")
@@ -666,7 +666,7 @@ class ModelList(BaseModel):
                 "object": "list",
                 "data": [
                     {
-                        "id": "llama3.1:8b",
+                        "id": "lfm2.5:8b:8b",
                         "object": "model",
                         "created": 1672531200,
                         "owned_by": "ollama"
@@ -790,7 +790,7 @@ class ModelsListResponse(BaseModel):
                 "object": "list",
                 "data": [
                     {
-                        "id": "llama3.1:8b",
+                        "id": "lfm2.5:8b:8b",
                         "object": "model",
                         "created": 1672531200,
                         "owned_by": "ollama"

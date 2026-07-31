@@ -16,7 +16,7 @@ router = APIRouter()
 
 # Try to import optional dependencies
 try:
-    from core.embeddings import get_embedding_service
+    from core.embeddings import get_embedding_service, get_embedding_service_for_dim
     EMBEDDINGS_AVAILABLE = True
 except ImportError:
     logger.warning("Embeddings service not available. Install sentence-transformers: pip install sentence-transformers")
@@ -107,6 +107,20 @@ def load_assistant_collections(assistant_id: str) -> List[str]:
         logger.error(f"Error loading assistant collections: {e}")
         return []
 
+def _embedding_service_for_collection(qdrant, collection_name: str):
+    """Pick an embedding service matching the collection's vector dimension."""
+    try:
+        info = qdrant.get_collection(collection_name)
+        vectors = info.config.params.vectors
+        dim = getattr(vectors, "size", None)
+        if dim is not None:
+            return get_embedding_service_for_dim(dim)
+    except Exception as e:
+        logger.warning(f"Could not resolve dimension for collection {collection_name}: {e}")
+    # Fall back to the default 384-dim model when the collection is unknown
+    return get_embedding_service()
+
+
 def check_dependencies():
     """Check if required dependencies are available and reachable."""
     if not EMBEDDINGS_AVAILABLE:
@@ -146,28 +160,31 @@ async def knowledge_query(req: KnowledgeQueryRequest):
             )
         
         qdrant = get_qdrant_client()
-        embedding_service = get_embedding_service()
-        
+        # Resolve the embedding model from the target collection's vector dimension
+        embedding_service = _embedding_service_for_collection(qdrant, req.collection_name)
+
         # Generate query embedding
         query_embedding = embedding_service.embed_text(query_text)
-        
-        # Search in collection
-        search_results = qdrant.search(
+
+        # Search in collection (query_points API; .search removed in qdrant-client >= 1.10)
+        resp = qdrant.query_points(
             collection_name=req.collection_name,
-            query_vector=query_embedding,
+            query=query_embedding,
             limit=req.limit,
             score_threshold=req.score_threshold,
-            query_filter=req.filter
+            query_filter=req.filter,
+            with_payload=True,
         )
-        
+
         # Format results
         results = []
-        for result in search_results:
+        for result in resp.points:
+            payload = result.payload or {}
             results.append(KnowledgeSearchResult(
                 id=str(result.id),
                 score=result.score,
-                content=result.payload.get("content", ""),
-                metadata=result.payload.get("metadata")
+                content=payload.get("text", "") or payload.get("content", ""),
+                metadata={k: v for k, v in payload.items() if k not in ("text", "content")} or None
             ))
         
         return KnowledgeQueryResponse(
@@ -203,22 +220,21 @@ async def assistant_query_knowledge(assistant_id: str, req: KnowledgeQueryReques
             )
         
         qdrant = get_qdrant_client()
-        embedding_service = get_embedding_service()
-        
-        # Generate query embedding
-        query_embedding = embedding_service.embed_text(req.query)
-        
-        # Search across all collections
+
+        # Search across all collections (embed per collection to match its dimension)
         all_results = []
         for collection in collections:
             try:
-                search_results = qdrant.search(
+                embedding_service = _embedding_service_for_collection(qdrant, collection)
+                query_embedding = embedding_service.embed_text(req.query)
+                resp = qdrant.query_points(
                     collection_name=collection,
-                    query_vector=query_embedding,
-                    limit=req.limit
+                    query=query_embedding,
+                    limit=req.limit,
+                    with_payload=True,
                 )
-                
-                for result in search_results:
+
+                for result in resp.points:
                     all_results.append({
                         "collection": collection,
                         "result": result
@@ -235,12 +251,13 @@ async def assistant_query_knowledge(assistant_id: str, req: KnowledgeQueryReques
         results = []
         for item in all_results:
             result = item["result"]
+            payload = result.payload or {}
             results.append(KnowledgeSearchResult(
                 id=str(result.id),
                 score=result.score,
-                content=result.payload.get("content", ""),
+                content=payload.get("text", "") or payload.get("content", ""),
                 metadata={
-                    **result.payload.get("metadata", {}),
+                    **{k: v for k, v in payload.items() if k not in ("text", "content")},
                     "collection": item["collection"]
                 }
             ))

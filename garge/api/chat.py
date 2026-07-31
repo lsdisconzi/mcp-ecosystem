@@ -62,12 +62,12 @@ async def _get_ollama_models() -> List[str]:
 # Endpoints
 # ---------------------------------------------------------------------------
 
-_DEFAULT_LOCAL_MODEL = "llama3.1:8b"
+_DEFAULT_LOCAL_MODEL = "lfm2.5:8b:8b"
 
 
 @router.get("/v1/models", tags=["Models"], response_model=ModelsListResponse)
 async def list_models():
-    """List available local Ollama models, with llama3.1:8b pinned first."""
+    """List available local Ollama models, with lfm2.5:8b:8b pinned first."""
     try:
         ollama_names = await _get_ollama_models()
     except Exception as e:

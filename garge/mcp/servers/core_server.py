@@ -447,7 +447,7 @@ async def garage_create_tool(tool_function: Dict[str, Any]) -> Dict[str, Any]:
     try:
         return await garage_request(
             "POST",
-            "/v1/v1/tools",
+            "/v1/tools",
             json_body={"type": "function", "function": tool_function},
         )
     except GarageApiError as exc:

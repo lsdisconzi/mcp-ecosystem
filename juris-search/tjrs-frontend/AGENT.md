@@ -172,7 +172,7 @@ Agent creation request body:
 {
   "name": "juris-search-agent",
   "description": "Legal document search agent for Brazilian jurisprudence",
-  "model": "llama3.1:8b",
+  "model": "lfm2.5:8b:8b",
   "tools": ["search", "read_file"],
   "permissionMode": "auto",
   "maxTurns": 10,
