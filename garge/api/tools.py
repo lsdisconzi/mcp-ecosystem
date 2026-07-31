@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, Request, Body
 from pydantic import BaseModel
 
-# from data.tools import registry
+from data.tools import registry
 from api.schemas import ToolCreateRequest, ToolExecuteRequest
 
 logger = logging.getLogger(__name__)
@@ -95,7 +95,7 @@ async def execute_tool_by_name(request: ToolExecuteRequest = Body(...)):
         raise HTTPException(status_code=500, detail=result.error)
 
 
-@router.post("/v1/tools")
+@router.post("/tools")
 def create_tool(req: ToolCreateRequest):
     """Create a new user-defined tool."""
     try:
@@ -149,6 +149,7 @@ async def delete_tool(tool_name: str):
         raise HTTPException(status_code=404, detail=f"Tool '{tool_name}' not found")
     
     os.remove(tool_path)
+    registry.unregister(tool_name)
     return {"success": True, "message": f"Tool '{tool_name}' deleted"}
 
 

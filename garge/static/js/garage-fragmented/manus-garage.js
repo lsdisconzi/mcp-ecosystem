@@ -6,7 +6,7 @@
  */
 const DEFAULT_LLM_CONFIG = {
     provider: 'ollama',
-    model: 'llama3.1:8b',
+    model: 'lfm2.5:8b:8b',
     max_tokens: 8192,
     temperature: 0.0
 };
@@ -14,7 +14,7 @@ const DEFAULT_LLM_CONFIG = {
 const SUPPORTED_MANUS_PROVIDERS = ['ollama', 'deepseek'];
 
 const FALLBACK_PROVIDER_MODELS = [
-    { provider: 'ollama', model: 'llama3.1:8b', label: 'llama3.1:8b' },
+    { provider: 'ollama', model: 'lfm2.5:8b:8b', label: 'lfm2.5:8b:8b' },
     { provider: 'ollama', model: 'qwen2.5:7b', label: 'qwen2.5:7b' },
     { provider: 'deepseek', model: 'deepseek-v4-flash', label: 'deepseek-v4-flash' },
     { provider: 'deepseek', model: 'deepseek-v4-pro', label: 'deepseek-v4-pro' }

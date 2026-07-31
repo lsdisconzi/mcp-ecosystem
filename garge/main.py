@@ -39,7 +39,7 @@ from pydantic import BaseModel
 # Import Core Services and Schemas
 from core.assistant import AssistantCore
 from config.settings import settings
-# from data.tools import registry  # Use the singleton registry
+from data.tools import registry  # Use the singleton registry
 from api.tools import router as tools_router
 
 from api.schemas import (

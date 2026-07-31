@@ -47,32 +47,46 @@ class IngestionPipeline:
             preserve_speaker_turns=True
         )
     
+    def _embedding_generator_for(self, collection_name: str) -> EmbeddingGenerator:
+        """Return an EmbeddingGenerator matching the target collection's vector dimension."""
+        target_size = self.vector_store.get_collection_vector_size(collection_name)
+        if target_size is None:
+            return self.embedding_generator
+        if target_size == self.embedding_generator.get_embedding_dimension():
+            return self.embedding_generator
+        try:
+            return EmbeddingGenerator.for_dimension(target_size)
+        except ValueError:
+            logger.warning(f"No embedding model for dimension {target_size}; using default")
+            return self.embedding_generator
+
     def ingest_directory(
-        self, 
-        directory_path: str, 
+        self,
+        directory_path: str,
         collection_name: str,
         force_recreate: bool = False,
         exclude_dirs: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """Complete ingestion pipeline for a directory."""
         start_time = time.time()
-        
+
         logger.info(f"Starting ingestion pipeline for: {directory_path}")
-        
-        # Step 1: Create collection
-        vector_size = self.embedding_generator.get_embedding_dimension()
+
+        # Step 1: Create collection (match the target collection's dimension if it exists)
+        generator = self._embedding_generator_for(collection_name)
+        vector_size = generator.get_embedding_dimension()
         if not self.vector_store.create_collection(collection_name, vector_size, force_recreate):
             return {"success": False, "error": "Failed to create collection"}
-        
+
         # Step 2: Process documents
         chunks = self.processor.process_directory(directory_path, exclude_dirs)
-        
+
         if not chunks:
             logger.warning("No chunks created from directory")
             return {"success": False, "error": "No documents processed"}
-        
+
         # Step 3: Generate embeddings
-        embeddings = self.embedding_generator.generate_embeddings(chunks)
+        embeddings = generator.generate_embeddings(chunks)
         
         # Step 4: Ingest to vector store
         success = self.vector_store.ingest_documents(collection_name, chunks, embeddings)
@@ -94,29 +108,30 @@ class IngestionPipeline:
         return stats
     
     def ingest_file(
-        self, 
-        file_path: str, 
+        self,
+        file_path: str,
         collection_name: str,
         force_recreate: bool = False
     ) -> Dict[str, Any]:
         """Ingest a single file."""
         start_time = time.time()
-        
+
         logger.info(f"Starting file ingestion for: {file_path}")
-        
-        # Step 1: Create collection
-        vector_size = self.embedding_generator.get_embedding_dimension()
+
+        # Step 1: Create collection (match the target collection's dimension if it exists)
+        generator = self._embedding_generator_for(collection_name)
+        vector_size = generator.get_embedding_dimension()
         if not self.vector_store.create_collection(collection_name, vector_size, force_recreate):
             return {"success": False, "error": "Failed to create collection"}
-        
+
         # Step 2: Process file
         chunks = self.processor.process_file(file_path)
-        
+
         if not chunks:
             return {"success": False, "error": "No content extracted from file"}
-        
+
         # Step 3: Generate embeddings
-        embeddings = self.embedding_generator.generate_embeddings(chunks)
+        embeddings = generator.generate_embeddings(chunks)
         
         # Step 4: Ingest to vector store
         success = self.vector_store.ingest_documents(collection_name, chunks, embeddings)

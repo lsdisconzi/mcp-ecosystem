@@ -78,7 +78,7 @@ function selectPlaygroundProvider(provider, btn) {
 function refreshModelListFromCache() {
     const modelList = document.getElementById('model-list');
     const modelSelect = document.getElementById('selected-model');
-    const DEFAULT = 'llama3.1:8b';
+    const DEFAULT = 'lfm2.5:8b:8b';
 
     if (!modelList || !modelSelect) return;
     modelList.innerHTML = '';
@@ -139,7 +139,7 @@ function populateExternalModels(provider) {
 }
 
 async function loadModels() {
-    const DEFAULT = 'llama3.1:8b';
+    const DEFAULT = 'lfm2.5:8b:8b';
     try {
         const response = await fetch('/v1/models');
         const data = await response.json();
@@ -339,7 +339,7 @@ async function testEndpoint(row) {
 }
 
 function getTestPayload(endpoint) {
-    const model = availableModels[0]?.id || 'llama3.1:8b';
+    const model = availableModels[0]?.id || 'lfm2.5:8b:8b';
     const payloads = {
         // Chat & Completions
         '/v1/chat/completions': {

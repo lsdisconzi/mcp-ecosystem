@@ -2469,7 +2469,7 @@ async function createCollectionFromModal() {
             }
         
             const payload = {
-                model: stepConfig.ai_config.model || 'llama3.1:8b',
+                model: stepConfig.ai_config.model || 'lfm2.5:8b:8b',
                 messages: [{ role: 'user', content: prompt }],
                 ...stepConfig.parameters
             };

@@ -121,29 +121,46 @@ class EmbeddingService:
             raise
 
 
-# Global instance
-_embedding_service: Optional[EmbeddingService] = None
+# Global instances (per-model cache so 384- and 768-dim paths can coexist)
+_embedding_services: Dict[str, "EmbeddingService"] = {}
+
+# Model registry keyed by embedding dimension (must match routes/qdrant_router.py)
+EMBEDDING_MODELS_BY_DIM: Dict[int, str] = {
+    384: "all-MiniLM-L6-v2",
+    768: "all-mpnet-base-v2",
+}
 
 
 def get_embedding_service(model_name: str = "all-MiniLM-L6-v2") -> EmbeddingService:
     """
-    Get or create the global embedding service instance.
-    
+    Get or create the global embedding service instance (one per model_name).
+
     Args:
         model_name: Name of the embedding model to use
-        
+
     Returns:
         EmbeddingService instance
     """
-    global _embedding_service
-    
-    if _embedding_service is None:
-        _embedding_service = EmbeddingService(model_name)
-    
-    return _embedding_service
+    global _embedding_services
+
+    if model_name not in _embedding_services:
+        _embedding_services[model_name] = EmbeddingService(model_name)
+
+    return _embedding_services[model_name]
+
+
+def get_embedding_service_for_dim(dimension: int) -> EmbeddingService:
+    """Return the embedding service whose output dimension matches ``dimension``."""
+    model_name = EMBEDDING_MODELS_BY_DIM.get(dimension)
+    if model_name is None:
+        raise ValueError(
+            f"No embedding model registered for dimension {dimension}; "
+            f"known dimensions: {sorted(EMBEDDING_MODELS_BY_DIM)}"
+        )
+    return get_embedding_service(model_name)
 
 
 def reset_embedding_service():
-    """Reset the global embedding service (useful for testing)."""
-    global _embedding_service
-    _embedding_service = None
+    """Reset the global embedding services (useful for testing)."""
+    global _embedding_services
+    _embedding_services = {}

@@ -309,7 +309,7 @@ class LocalLLMClient:
     def generate_chat_completion(
         self,
         messages: List[Dict[str, Any]],
-        model: str = "llama3.1:8b",
+        model: str = "lfm2.5:8b:8b",
         temperature: float = 0.7,
         max_tokens: int = 2000,
         stream: bool = False

@@ -257,7 +257,7 @@ async def create_run(
         # Use the assistant to generate a response
         response = await assistant_core.generate_response(
             messages=formatted_messages,
-            model=request.model or "llama3.1:8b"
+            model=request.model or "lfm2.5:8b:8b"
         )
         
         # Extract the response content

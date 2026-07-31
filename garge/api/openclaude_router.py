@@ -667,7 +667,7 @@ async def export_to_assistant(name: str):
         ).strip()
 
         raw_model = fm.get("model")
-        assistant_model = str(raw_model).strip() if isinstance(raw_model, str) and raw_model.strip() else "llama3.1:8b"
+        assistant_model = str(raw_model).strip() if isinstance(raw_model, str) and raw_model.strip() else "lfm2.5:8b:8b"
 
         assistant_id = f"asst_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
         rel_path = _get_agent_relpath(f)

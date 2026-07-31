@@ -1,27 +1,27 @@
 # Ecosystem Orchestration Report
 
-**Generated:** 2026-07-29 04:41:35 UTC
-**Host:** instance-20260707-132913
+**Generated:** 2026-07-31 13:15:22 UTC
+**Host:** MacBook-Pro-de-Leandro.local
 
 ## Service Status Overview
 
 | Project | Status | Ports | Tools | Notes |
 |---------|--------|-------|-------|-------|
-| transcription      | UP     | 4/4 | 11 | Audio transcription & diarization service (FastAPI + 3 MCP servers, 61 tools) |
-| juris-search       | UP     | 2/2 | 33 | Legal document search & analysis engine (FastAPI + MCP, 44 tools) |
-| garge              | UP     | 6/6 | 87 | Main AI tools & services hub (FastAPI + 5 MCP servers, 107 tools) |
-| violation-refiner  | UP     | 1/1 | 39 | Legal violation analysis & refinement pipeline (MCP only, 15 tools) |
-| ocr                | UP     | 3/3 | 12 | OCR & PDF processing service (FastAPI + 2 MCP servers, 10 tools) |
-| discovery          | UP     | 1/1 | 30 | Discovery intelligence platform (FastAPI + stdio MCP, 11 tools) |
-| audio              | UP     | 2/2 | 8 | Torchaudio-based audio processing (FastAPI + MCP, 8 tools) |
+| transcription      | UP     | 4/4 | 11 | Audio transcription & diarization service (FastAPI + 3 MCP servers) |
+| juris-search       | UP     | 2/2 | 33 | Legal document search & analysis engine (FastAPI + MCP) |
+| garge              | UP     | 6/6 | 157 | Main AI tools & services hub (FastAPI + 5 MCP servers) |
+| violation-refiner  | DOWN     | — | 39 | Legal violation analysis & refinement pipeline (MCP only) |
+| ocr                | UP     | 3/3 | 12 | OCR & PDF processing service (FastAPI + 2 MCP servers) |
+| discovery          | UP     | 1/1 | 30 | Discovery intelligence platform (FastAPI + stdio MCP) |
+| audio              | UP     | 2/2 | 8 | Torchaudio-based audio processing (FastAPI + MCP) |
 | ops-dashboard      | UP     | port 9000 | — | Ops dashboard |
-| **TOTAL**          | **8 UP / 0 DOWN** |         | 220 | |
+| **TOTAL**          | **17 UP / 3 DOWN** |         | 290 | |
 
 ## Ecosystem Summary
 
-- **Projects:** 7
-- **Defined Agents (LLM‑facing):** 19
-- **Total MCP Tools:** 220
+- **Projects:** 8
+- **Defined Agents (LLM-facing):** 19
+- **Total MCP Tools:** 290
 - **Human Interfaces (UIs & APIs):** 18
 - **Configurable Parameters:** 15
 
@@ -29,13 +29,13 @@
 
 | Project | Agents | Human Interfaces | Key Parameters |
 |---------|--------|------------------|----------------|
-| transcription      | transcriber,diarizer,translator | Pinocchio Transcription UI,Revision UI,Curadoria UI,REST API,Health | model,language                 |
-| juris-search       | legal_searcher,legal_indexer,legal_analyst | Juris Search UI,REST API,Swagger Docs | jurisdiction,collections       |
+| transcription      | transcriber,diarizer,translator | Pinocchio Transcription UI,Revision UI,Curadoria UI,REST API,Health | model,language |
+| juris-search       | legal_searcher,legal_indexer,legal_analyst | Juris Search UI,REST API,Swagger Docs | jurisdiction,collections |
 | garge              | garage_assistant,qdrant_manager,file_manager,prompt_engineer | Swagger UI,Garage UI,Qdrant UI,REST API | QDRANT_URL,OLLAMA_HOST,DEEPSEEK_BASE_URL,embedding_model |
-| violation-refiner  | violation_checker,authority_verifier,qdrant_indexer |                                | schema_version,top_k           |
-| ocr                | ocr_reader,pdf_processor       | OCR UI                         | engine,llm_enhancement         |
-| discovery          | discovery_agent,intelligence_analyst | Discovery UI,REST API,Case API | start_path                     |
-| audio              | audio_processor,asr_manager    | Audio Processing Unit UI,REST API | sample_rate,asr_bundle         |
+| violation-refiner  | violation_checker,authority_verifier,qdrant_indexer |  | schema_version,top_k |
+| ocr                | ocr_reader,pdf_processor | OCR UI | engine,llm_enhancement |
+| discovery          | discovery_agent,intelligence_analyst | Discovery UI,REST API,Case API | start_path |
+| audio              | audio_processor,asr_manager | Audio Processing Unit UI,REST API | sample_rate,asr_bundle |
 
 ## Detailed MCP Server Inventory
 
@@ -81,7 +81,6 @@
 |------|-------------|-----------|-------|
 | 8765 | audio-mcp | sse | transcription_healthcheck, transcription_audio_info, transcription_resample_audio, transcription_slice_audio, transcription_extract_features, transcription_list_asr_bundles, transcription_transcribe_greedy, transcription_list_project_paths |
 
-
 ## Qdrant Collections Map (live)
 
 ⚠️ Could not fetch Qdrant collections.
@@ -118,92 +117,89 @@
 - Audio Processing Unit UI: http://localhost:8777/
 - REST API: /api/v1/audio/upload
 
-
 ## Configuration Parameters Reference
 
 ### transcription
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| model  |  string  |  default: base  |  Whisper model size |
-| language  |  string  |  default: auto  |  Language code or auto-detect |
+| model | string | default: base | Whisper model size |
+| language | string | default: auto | Language code or auto-detect |
 
 ### juris-search
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| jurisdiction  |  string  |  default: BR  |  Legal jurisdiction for search scope |
-| collections  |  string  |  default: all  |  Qdrant collections to search across |
+| jurisdiction | string | default: BR | Legal jurisdiction for search scope |
+| collections | string | default: all | Qdrant collections to search across |
 
 ### garge
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| QDRANT_URL  |  string  |  default: http://localhost:6333  |  Qdrant vector database URL |
-| OLLAMA_HOST  |  string  |  default: http://localhost:11434  |  Ollama LLM host |
-| DEEPSEEK_BASE_URL  |  string  |  default: https://api.deepseek.com/v1  |  DeepSeek API base URL |
-| embedding_model  |  string  |  default: all-MiniLM-L6-v2  |  Sentence transformer model for embeddings |
+| QDRANT_URL | string | default: http://localhost:6333 | Qdrant vector database URL |
+| OLLAMA_HOST | string | default: http://localhost:11436 | Ollama LLM host |
+| DEEPSEEK_BASE_URL | string | default: https://api.deepseek.com/v1 | DeepSeek API base URL |
+| embedding_model | string | default: all-MiniLM-L6-v2 | Sentence transformer model for embeddings |
 
 ### violation-refiner
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| schema_version  |  string  |  default: 3.0  |  Violation bundle schema version |
-| top_k  |  int  |  default: 5  |  Default top-K for Qdrant searches |
+| schema_version | string | default: 3.0 | Violation bundle schema version |
+| top_k | int | default: 5 | Default top-K for Qdrant searches |
 
 ### ocr
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| engine  |  string  |  default: tesseract  |  OCR engine to use |
-| llm_enhancement  |  boolean  |  default: true  |  Enable LLM post-processing of OCR results |
+| engine | string | default: tesseract | OCR engine to use |
+| llm_enhancement | boolean | default: true | Enable LLM post-processing of OCR results |
 
 ### discovery
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| start_path  |  string  |  default: .  |  Root directory for file discovery |
+| start_path | string | default: . | Root directory for file discovery |
 
 ### audio
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| sample_rate  |  int  |  default: 16000  |  Target sample rate for audio processing |
-| asr_bundle  |  string  |  default: default  |  ASR model bundle to use for transcription |
+| sample_rate | int | default: 16000 | Target sample rate for audio processing |
+| asr_bundle | string | default: default | ASR model bundle to use for transcription |
 
-
-## Agent Quick‑Start Guide
+## Agent Quick-Start Guide
 
 1. **Check overall status:** read the Service Status table above.
-2. **Search document embeddings:** use the `garage-qdrant` MCP tools (e.g., `qdrant_search` on collection `uploads-global`).
-3. **Ingest new files:** call `qdrant_ingest_directory` with the desired directory path and collection name.
-4. **Transcribe audio:** use the transcription MCP servers on ports 8121‑8123.
+2. **Search document embeddings:** use the garage-qdrant MCP tools (e.g., qdrant_search on collection uploads-global).
+3. **Ingest new files:** call qdrant_ingest_directory with the desired directory path and collection name.
+4. **Transcribe audio:** use the transcription MCP servers on ports 8121-8123.
 5. **Retrieve tool details:** refer to the MCP Server Inventory section.
-6. **Access human‑facing UIs:** see Human Interaction Endpoints.
+6. **Access human-facing UIs:** see Human Interaction Endpoints.
 
 *All tool names and parameters are documented in the tables above.*
 
 ## Live Component Status
 
-- **transcription**: port `8049` ✅ UP
-- **transcription**: port `8121` ✅ UP
-- **transcription**: port `8122` ✅ UP
-- **transcription**: port `8123` ✅ UP
-- **juris-search**: port `8000` ✅ UP
-- **juris-search**: port `8116` ✅ UP
-- **garge**: port `8066` ✅ UP
-- **garge**: port `8110` ✅ UP
-- **garge**: port `8111` ✅ UP
-- **garge**: port `8112` ✅ UP
-- **garge**: port `8113` ✅ UP
-- **garge**: port `8114` ✅ UP
-- **violation-refiner**: port `8124` ✅ UP
-- **ocr**: port `8098` ✅ UP
-- **ocr**: port `8125` ✅ UP
-- **ocr**: port `8126` ✅ UP
-- **discovery**: port `3010` ✅ UP
-- **audio**: port `8777` ✅ UP
-- **audio**: port `8765` ✅ UP
+- **transcription**: port '' DOWN
+- **transcription**: port '' DOWN
+- **transcription**: port '' DOWN
+- **transcription**: port '' DOWN
+- **juris-search**: port '' DOWN
+- **juris-search**: port '' DOWN
+- **garge**: port '' DOWN
+- **garge**: port '' DOWN
+- **garge**: port '' DOWN
+- **garge**: port '' DOWN
+- **garge**: port '' DOWN
+- **garge**: port '' DOWN
+- **violation-refiner**: port '' DOWN
+- **ocr**: port '' DOWN
+- **ocr**: port '' DOWN
+- **ocr**: port '' DOWN
+- **discovery**: port '' DOWN
+- **audio**: port '' DOWN
+- **audio**: port '' DOWN
 
 ## Ops Dashboard
 
 - **URL:** http://localhost:9000
 - **Status:** ✅ UP
-- **Ecosystem data source:** `ecosystem_metadata.json`
 
 ---
 
-*Report generated by `manage_ecosystem.sh report`*
+*Report generated by start-all.sh*

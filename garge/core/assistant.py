@@ -12,7 +12,7 @@ from config.settings import settings
 from core.file_processor import FileProcessor
 from core.local_llm import LocalLLMClient
 from core.memory import MemoryManager
-# from data.tools import registry
+from data.tools import registry
 
 logger = logging.getLogger(__name__)
 
