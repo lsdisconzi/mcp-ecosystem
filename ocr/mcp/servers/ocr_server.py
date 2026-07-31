@@ -186,8 +186,6 @@ if __name__ == "__main__":
     port = int(os.environ.get("MCP_PORT", "8125"))
 
     if transport in ("sse", "streamable-http"):
-        mcp.settings.host = host
-        mcp.settings.port = port
-        mcp.run(transport="streamable-http")
+        mcp.run(transport="streamable-http", host=host, port=port)
     else:
         mcp.run(transport="stdio")

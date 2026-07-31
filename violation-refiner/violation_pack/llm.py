@@ -8,7 +8,7 @@ are supported, selected via `LLM_PROVIDER`:
     anthropic    (Anthropic native messages API)
     deepseek     (OpenAI-compatible, https://api.deepseek.com)
     openai       (OpenAI native, https://api.openai.com/v1)
-    ollama       (local, http://localhost:11434, OpenAI-compatible /v1 or
+    ollama       (local, http://localhost:11436, OpenAI-compatible /v1 or
                   native /api/chat with JSON mode)
 
 Why one method? Enrichment never streams; it asks for a structured JSON
@@ -244,7 +244,7 @@ PROVIDER_DEFAULTS: dict[str, dict[str, str]] = {
     },
     "ollama": {
         # Ollama's OpenAI-compatible endpoint lives under /v1 since 0.1.34.
-        "base_url": "http://127.0.0.1:11434/v1",
+        "base_url": "http://127.0.0.1:11436/v1",
         "api_key_env": "OLLAMA_API_KEY",  # usually unset; bearer ignored
         "default_model": "qwen2.5:14b-instruct",
     },

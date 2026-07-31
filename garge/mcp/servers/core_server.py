@@ -44,7 +44,7 @@ async def garage_list_models() -> Dict[str, Any]:
 @mcp.tool()
 async def garage_chat_completions(
     messages: List[Dict[str, Any]],
-    model: str = "llama3-groq-tool-use:8b",
+    model: str = "lfm2.5:8b",
     temperature: float = 0.7,
     top_p: float = 1.0,
     max_tokens: int = 1000,

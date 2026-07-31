@@ -3,50 +3,35 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-RUN_DIR="$SCRIPT_DIR/.run"
-LEGACY_PID_FILE="$SCRIPT_DIR/.garage.pid"
 PORT="${PORT:-8066}"
 QUIET="${1:-}"
 
-stop_pid_file() {
-    local pid_file="$1"
-    local label="$2"
-    [[ -f "$pid_file" ]] || return 0
+# Source centralized logging
+source "$SCRIPT_DIR/../.dev-logs/common-logging.sh"
 
-    local pid
-    pid="$(cat "$pid_file")"
-    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
-        kill "$pid" 2>/dev/null || true
-        sleep 0.2
-        if kill -0 "$pid" 2>/dev/null; then
-            kill -9 "$pid" 2>/dev/null || true
-        fi
-        [[ "$QUIET" == "--quiet" ]] || echo "Stopped $label (pid=$pid)"
-    fi
-    rm -f "$pid_file"
-}
+# ── Colors ──
+R='\033[0;31m' G='\033[0;32m' A='\033[0;33m' C='\033[0;36m' W='\033[1;37m' N='\033[0m'
+info()  { printf "${C}▸${N} %s\n" "$*"; }
+ok()    { printf "${G}✓${N} %s\n" "$*"; }
+warn()  { printf "${A}⚠${N} %s\n" "$*"; }
+fail()  { printf "${R}✗${N} %s\n" "$*"; exit 1; }
 
-if [[ -d "$RUN_DIR" ]]; then
-    stop_pid_file "$RUN_DIR/mcp-qdrant.pid" "mcp-qdrant"
-    stop_pid_file "$RUN_DIR/mcp-prompt.pid" "mcp-prompt"
-    stop_pid_file "$RUN_DIR/mcp-ingestion.pid" "mcp-ingestion"
-    stop_pid_file "$RUN_DIR/mcp-files.pid" "mcp-files"
-    stop_pid_file "$RUN_DIR/mcp-core.pid" "mcp-core"
-    stop_pid_file "$RUN_DIR/garge-api.pid" "garge-api"
-fi
+# ── Stop services ──
+info "Stopping garge services..."
 
-stop_pid_file "$LEGACY_PID_FILE" "garge-api"
+stop_by_pid_file "garge" "api"
+stop_by_pid_file "garge" "mcp-core"
+stop_by_pid_file "garge" "mcp-files"
+stop_by_pid_file "garge" "mcp-ingestion"
+stop_by_pid_file "garge" "mcp-prompt"
+stop_by_pid_file "garge" "mcp-qdrant"
 
-pids="$(lsof -ti :"$PORT" 2>/dev/null || true)"
-if [[ -n "$pids" ]]; then
-    echo "$pids" | xargs kill -9 2>/dev/null || true
-    [[ "$QUIET" == "--quiet" ]] || echo "Cleared port :$PORT"
-fi
-
+# Belt-and-braces: kill anything on our ports
+kill_port "garge" "api" "$PORT"
 pkill -f "$SCRIPT_DIR/mcp/servers/core_server.py" 2>/dev/null || true
 pkill -f "$SCRIPT_DIR/mcp/servers/files_server.py" 2>/dev/null || true
 pkill -f "$SCRIPT_DIR/mcp/servers/ingestion_server.py" 2>/dev/null || true
 pkill -f "$SCRIPT_DIR/mcp/servers/prompt_server.py" 2>/dev/null || true
 pkill -f "$SCRIPT_DIR/mcp/servers/qdrant_server.py" 2>/dev/null || true
 
-[[ "$QUIET" == "--quiet" ]] || echo "Done"
+[[ "$QUIET" == "--quiet" ]] || ok "garge stopped — logs preserved in .dev-logs/"

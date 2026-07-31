@@ -39,7 +39,7 @@ from pydantic import BaseModel
 # Import Core Services and Schemas
 from core.assistant import AssistantCore
 from config.settings import settings
-from data.tools import registry  # Use the singleton registry
+# from data.tools import registry  # Use the singleton registry
 from api.tools import router as tools_router
 
 from api.schemas import (
@@ -312,7 +312,7 @@ except Exception as e:
 app.state.assistant = assistant
 
 # Tool Registry is already initialized via import
-logger.info(f"🔧 Tool registry initialized with {len(registry.list_tools())} tools")
+# logger.info(f"🔧 Tool registry initialized with {len(registry.list_tools())} tools")
 
 # --- Router Inclusion ---
 
@@ -336,7 +336,7 @@ app.include_router(openclaude_router)
 # can fetch it at startup to discover available MCP tools and endpoints.
 _ECOSYSTEM_REPORT_PATH = os.getenv(
     "ECOSYSTEM_REPORT_PATH",
-    str(Path("/home/disconzi1986_gmail_com/ecosystem_report_latest.md"))
+    str(Path("/Users/dev/_sell/mcp-ecosystem/_ecosystem-reports/ecosystem_report_latest.md"))
 )
 
 @app.get("/v1/ecosystem/report", tags=["Ecosystem"], summary="Get latest ecosystem MCP report")
@@ -368,12 +368,12 @@ async def get_ecosystem_metadata():
     The 'host' field is resolved from ECOSYSTEM_HOST env var (or defaults
     to localhost) so consumers always get reachable URLs.
     """
-    meta_path = Path("/home/disconzi1986_gmail_com/ecosystem_metadata.json")
+    meta_path = Path("/Users/dev/_sell/olivia/config/ecosystem_metadata.json")
     if not meta_path.is_file():
         return JSONResponse(status_code=404, content={"error": "Metadata not found"})
     try:
         content = meta_path.read_text(encoding="utf-8")
-        host = os.getenv("ECOSYSTEM_HOST", "35.239.183.104")
+        host = os.getenv("ECOSYSTEM_HOST", "[IP_ADDRESS]")
         content = content.replace("{{ECOSYSTEM_HOST}}", host)
         # Return as JSON with the right content-type
         data = json.loads(content)
@@ -772,7 +772,7 @@ async def deepseek_proxy(assistant_id: str, request: Request):
 
         async with httpx.AsyncClient(timeout=360) as client:
             resp = await client.post(
-                "http://localhost:11434/v1/chat/completions",
+                "http://localhost:11436/v1/chat/completions",
                 headers=headers,
                 json=payload
             )
@@ -805,7 +805,7 @@ async def deepseek_engineer_chat(request: DeepSeekRequest):
 
         async with httpx.AsyncClient(timeout=800.0) as client:
             resp = await client.post(
-                "http://localhost:11434/v1/chat/completions",
+                "http://localhost:11436/v1/chat/completions",
                 headers=headers,
                 json=payload
             )
@@ -896,7 +896,7 @@ async def deepseek_streaming_proxy(request: Request):
         upstream_url = f"{deepseek_base_url}/chat/completions"
         upstream_name = "DeepSeek"
     else:
-        upstream_url = "http://localhost:11434/v1/chat/completions"
+        upstream_url = "http://localhost:11436/v1/chat/completions"
         upstream_name = "Ollama"
 
     headers = {
@@ -991,7 +991,7 @@ async def deepseek_streaming_proxy(request: Request):
     include_in_schema=False,
 )
 async def deepseek_gateway(path: str, request: Request):
-    """Transparent proxy: /api/deepseek/{path} → http://localhost:11434/{path}
+    """Transparent proxy: /api/deepseek/{path} → http://localhost:11436/{path}
 
     Routes all frontend AI requests to the local Ollama instance.
     """
@@ -1000,7 +1000,7 @@ async def deepseek_gateway(path: str, request: Request):
         if k.lower() not in ("host", "content-length")
     }
 
-    target_url = f"http://localhost:11434/{path}"
+    target_url = f"http://localhost:11436/{path}"
     query = request.url.query
     if query:
         target_url = f"{target_url}?{query}"

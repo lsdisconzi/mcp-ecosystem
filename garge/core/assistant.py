@@ -12,7 +12,7 @@ from config.settings import settings
 from core.file_processor import FileProcessor
 from core.local_llm import LocalLLMClient
 from core.memory import MemoryManager
-from data.tools import registry
+# from data.tools import registry
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class AssistantCore:
         _ollama_url = (
             os.environ.get('OLLAMA_BASE_URL')
             or getattr(settings, 'ollama_base_url', None)
-            or 'http://localhost:11434'
+            or 'http://localhost:11436'
         )
         self.client = ollama.Client(host=_ollama_url)
         self.memory = MemoryManager()
@@ -155,23 +155,38 @@ class AssistantCore:
                 logger.info(f"Enriched context for assistant {assistant_id}")
 
         formatted_messages = []
+        has_images = any("images" in msg for msg in dict_messages)
         try:
             for msg in dict_messages:
-                formatted_messages.append({
+                entry: Dict[str, Any] = {
                     "role": msg.get("role", ""),
                     "content": msg.get("content", "")
-                })
+                }
+                # Preserve images field for vision models
+                if "images" in msg:
+                    entry["images"] = msg["images"]
+                formatted_messages.append(entry)
 
             current_message = dict_messages[-1].get('content', '') if dict_messages else ''
 
             if tools and len(tools) > 0:
                 # Pass formatted_messages to preserve context
                 response_content = await self._process_with_tools(
-                    current_message, 
-                    tools, 
+                    current_message,
+                    tools,
                     formatted_messages=formatted_messages,
                     model_name=model_name,
                 )
+            elif has_images:
+                # Use chat endpoint for vision/multimodal messages
+                response = self.llm_client.generate_chat_completion(
+                    messages=formatted_messages,
+                    model=model_name,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    stream=stream
+                )
+                response_content = response["choices"][0]["message"]["content"]
             else:
                 response = self.llm_client.generate_completion(
                     messages=formatted_messages,
@@ -234,12 +249,21 @@ class AssistantCore:
         if tool_name == "none":
             # Use the full context from formatted_messages instead of raw query
             if formatted_messages:
-                response = self.llm_client.generate_completion(
-                    messages=formatted_messages,
-                    model=selected_model,
-                    temperature=0.2,
-                    stream=False
-                )
+                has_images = any("images" in msg for msg in formatted_messages)
+                if has_images:
+                    response = self.llm_client.generate_chat_completion(
+                        messages=formatted_messages,
+                        model=selected_model,
+                        temperature=0.2,
+                        stream=False
+                    )
+                else:
+                    response = self.llm_client.generate_completion(
+                        messages=formatted_messages,
+                        model=selected_model,
+                        temperature=0.2,
+                        stream=False
+                    )
                 return response["choices"][0]["message"]["content"]
             else:
                 response = self.client.generate(

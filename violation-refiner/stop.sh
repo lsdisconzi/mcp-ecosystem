@@ -3,39 +3,27 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-RUN_DIR="$SCRIPT_DIR/.run"
 MCP_PORT="${MCP_PORT:-8124}"
 QUIET="${1:-}"
 
-stop_pid_file() {
-  local pid_file="$1"
-  local label="$2"
-  [[ -f "$pid_file" ]] || return 0
+# Source centralized logging
+source "$SCRIPT_DIR/../.dev-logs/common-logging.sh"
 
-  local pid
-  pid="$(cat "$pid_file")"
-  if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
-    kill "$pid" 2>/dev/null || true
-    sleep 0.2
-    if kill -0 "$pid" 2>/dev/null; then
-      kill -9 "$pid" 2>/dev/null || true
-    fi
-    [[ "$QUIET" == "--quiet" ]] || echo "Stopped $label (pid=$pid)"
-  fi
-  rm -f "$pid_file"
-}
+# ── Colors ──
+R='\033[0;31m' G='\033[0;32m' A='\033[0;33m' C='\033[0;36m' W='\033[1;37m' N='\033[0m'
+info()  { printf "${C}▸${N} %s\n" "$*"; }
+ok()    { printf "${G}✓${N} %s\n" "$*"; }
+warn()  { printf "${A}⚠${N} %s\n" "$*"; }
+fail()  { printf "${R}✗${N} %s\n" "$*"; exit 1; }
 
-if [[ -d "$RUN_DIR" ]]; then
-  stop_pid_file "$RUN_DIR/violation-refiner-mcp.pid" "violation-refiner-mcp"
-fi
+# ── Stop services ──
+info "Stopping ViolationRefiner services..."
 
-mcp_pids="$(lsof -ti :"$MCP_PORT" 2>/dev/null || true)"
-if [[ -n "$mcp_pids" ]]; then
-  echo "$mcp_pids" | xargs kill -9 2>/dev/null || true
-  [[ "$QUIET" == "--quiet" ]] || echo "Cleared MCP port :$MCP_PORT"
-fi
+stop_by_pid_file "violation-refiner" "mcp"
 
+# Belt-and-braces: kill anything on our ports
+kill_port "violation-refiner" "mcp" "$MCP_PORT"
 pkill -f "violation_pack.mcp_server" 2>/dev/null || true
 pkill -f "violation-pack-mcp" 2>/dev/null || true
 
-[[ "$QUIET" == "--quiet" ]] || echo "Done"
+[[ "$QUIET" == "--quiet" ]] || ok "ViolationRefiner stopped — logs preserved in .dev-logs/"

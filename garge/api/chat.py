@@ -38,7 +38,7 @@ async def _get_ollama_models() -> List[str]:
     from config.settings import settings as _settings
     # Honour OLLAMA_BASE_URL env var (set in docker-compose for container access)
     env_url = _os.environ.get('OLLAMA_BASE_URL', '')
-    base = (env_url or getattr(_settings, 'ollama_base_url', 'http://localhost:11434')).rstrip('/')
+    base = (env_url or getattr(_settings, 'ollama_base_url', 'http://localhost:11436')).rstrip('/')
     # Strip OpenAI-compat /v1 suffix to get native Ollama API root
     api_root = base[:-3] if base.endswith('/v1') else base
 

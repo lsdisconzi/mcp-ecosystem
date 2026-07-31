@@ -145,7 +145,7 @@ async function loadModels() {
         const data = await response.json();
 
         if (response.ok && data.data && data.data.length) {
-            // Backend already returns them sorted (llama3-groq-tool-use:8b first), but honour that here too
+            // Backend already returns them sorted (lfm2.5:8b first), but honour that here too
             const pinned = data.data.filter(m => m.id === DEFAULT);
             const rest = data.data.filter(m => m.id !== DEFAULT).sort((a, b) => a.id.localeCompare(b.id));
             availableModels = [...pinned, ...rest];
@@ -281,7 +281,7 @@ function clearPlayground() {
 
 /** Keep assistant modal model selects in sync with locally loaded models. */
 function syncAssistantModelSelects() {
-    const DEFAULT = 'llama3-groq-tool-use:8b';
+    const DEFAULT = 'lfm2.5:8b';
     const selects = [
         document.getElementById('modal-assistant-model'),
         document.getElementById('modal-edit-assistant-model'),

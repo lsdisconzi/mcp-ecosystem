@@ -23,12 +23,13 @@ MCP_PORT="${MCP_PORT:-8116}"
 
 PYTHON_BIN="$SCRIPT_DIR/.venv/bin/python"
 UVICORN_BIN="$SCRIPT_DIR/.venv/bin/uvicorn"
-LOG_DIR="$SCRIPT_DIR/.logs"
-RUN_DIR="$SCRIPT_DIR/.run"
 FRONTEND_DIR="$SCRIPT_DIR/tjrs-frontend"
 MCP_DIR="$SCRIPT_DIR/mcp"
 
-mkdir -p "$LOG_DIR" "$RUN_DIR"
+# Source centralized logging
+source "$SCRIPT_DIR/../.dev-logs/common-logging.sh"
+
+mkdir -p "$(dirname "$(get_log_file "juris-search" "api")")" "$(dirname "$(get_pid_file "juris-search" "api")")"
 
 if [[ ! -x "$PYTHON_BIN" || ! -x "$UVICORN_BIN" ]]; then
     echo "Missing project Python environment in $SCRIPT_DIR/.venv" >&2
@@ -42,7 +43,7 @@ fi
 
 if ! NODE_PATH="$MCP_DIR/node_modules${NODE_PATH:+:$NODE_PATH}" node -e "require('@modelcontextprotocol/sdk/server/index.js')" >/dev/null 2>&1; then
     echo "Installing juris-search MCP node dependencies"
-    npm --prefix "$MCP_DIR" install --omit=dev >>"$LOG_DIR/npm-mcp.log" 2>&1
+    npm --prefix "$MCP_DIR" install --omit=dev >>"$(get_log_file "juris-search" "bootstrap")" 2>&1
 fi
 
 "$SCRIPT_DIR/stop.sh" --quiet || true
@@ -69,8 +70,8 @@ if [[ "$BUILD_FRONTEND" == "1" && -f "$FRONTEND_DIR/package.json" ]]; then
     echo "Building frontend"
     (
         cd "$FRONTEND_DIR"
-        npm install >>"$LOG_DIR/frontend-build.log" 2>&1
-        npm run build >>"$LOG_DIR/frontend-build.log" 2>&1
+        npm install >>"$(get_log_file "juris-search" "frontend-build")" 2>&1
+        npm run build >>"$(get_log_file "juris-search" "frontend-build")" 2>&1
     )
 fi
 
@@ -79,22 +80,24 @@ if [[ -f "$SCRIPT_DIR/render_masterjurisprudence.py" && -f "$SCRIPT_DIR/master_i
     echo "Generating master jurisprudence index"
     "$PYTHON_BIN" "$SCRIPT_DIR/render_masterjurisprudence.py" \
         --input "$SCRIPT_DIR/master_index/master_index.json" \
-        >>"$LOG_DIR/jurisprudence.log" 2>&1 || \
+        >>"$(get_log_file "juris-search" "jurisprudence")" 2>&1 || \
         echo "Warning: master jurisprudence index generation failed" >&2
 else
     echo "Skipping master jurisprudence index (source data not present)"
 fi
 
 echo "Starting juris-search API on ${HOST}:${PORT}"
-start_bg "juris-search-api" "$RUN_DIR/juris-search-api.pid" "$LOG_DIR/api.log" \
-    env PYTHONUNBUFFERED=1 "$PYTHON_BIN" -m uvicorn main:app --host "$HOST" --port "$PORT"
+api_log=$(get_log_file "juris-search" "api")
+api_pid=$(get_pid_file "juris-search" "api")
+start_logging "juris-search" "api" env PYTHONUNBUFFERED=1 "$PYTHON_BIN" -m uvicorn main:app --host "$HOST" --port "$PORT" >"$api_pid" 2>&1
 
 echo "Starting juris-search MCP (${MCP_TRANSPORT})"
-start_bg "mcp-juris-search" "$RUN_DIR/mcp-juris-search.pid" "$LOG_DIR/mcp-juris-search.log" \
-  env MCP_TRANSPORT="$MCP_TRANSPORT" MCP_HOST="$MCP_HOST" MCP_PORT="$MCP_PORT" \
+mcp_log=$(get_log_file "juris-search" "mcp")
+mcp_pid=$(get_pid_file "juris-search" "mcp")
+start_logging "juris-search" "mcp" env MCP_TRANSPORT="$MCP_TRANSPORT" MCP_HOST="$MCP_HOST" MCP_PORT="$MCP_PORT" \
   JURIS_SEARCH_BASE_URL="http://127.0.0.1:${PORT}" \
   NODE_PATH="$MCP_DIR/node_modules${NODE_PATH:+:$NODE_PATH}" \
-  node "$SCRIPT_DIR/mcp/juris_mcp_server.js"
+  node "$SCRIPT_DIR/mcp/juris_mcp_server.js" >"$mcp_pid" 2>&1
 
 echo "Waiting for API health endpoint"
 for _ in $(seq 1 30); do
@@ -115,5 +118,5 @@ fi
 echo ""
 echo "juris-search is running"
 echo "  URL  : $APP_URL"
-echo "  Logs : $LOG_DIR"
+echo "  Logs : $(get_log_file "juris-search" "api")"
 echo "  Stop : ./stop.sh"

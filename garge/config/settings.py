@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     port: int = 8066
     
     # Ollama Configuration
-    ollama_base_url: str = "http://localhost:11434"
+    ollama_base_url: str = "http://localhost:11436"
     default_model: str = "llama3.1:8b"
     
     # Storage Paths

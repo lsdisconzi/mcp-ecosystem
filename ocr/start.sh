@@ -16,17 +16,14 @@ APP_URL="${APP_URL:-http://${HOST}:${PORT}/docs}"
 VENV_BIN="$SCRIPT_DIR/.venv/bin"
 REQUIREMENTS_FILE="$SCRIPT_DIR/requirements.txt"
 REQUIREMENTS_STAMP="$SCRIPT_DIR/.venv/.requirements-stamp"
-PID_FILE="$SCRIPT_DIR/.ocr.pid"
-LOG_DIR="${LOG_DIR:-$HOME/.dev-logs}"
-LOG_FILE="$LOG_DIR/ocr.log"
+
+# Source centralized logging
+source "$SCRIPT_DIR/../.dev-logs/common-logging.sh"
+
+mkdir -p "$(dirname "$(get_log_file "ocr" "main")")"
 
 # ── stop any existing instance ───────────────────────────────────────────────
-if [[ -f "$PID_FILE" ]]; then
-    old_pid=$(<"$PID_FILE")
-    kill "$old_pid" 2>/dev/null || true
-    rm -f "$PID_FILE"
-fi
-lsof -ti :"$PORT" 2>/dev/null | xargs kill -9 2>/dev/null || true
+"$SCRIPT_DIR/stop.sh" --quiet || true
 
 # ── python venv ──────────────────────────────────────────────────────────────
 if [[ ! -x "$VENV_BIN/python" ]]; then
@@ -44,11 +41,8 @@ fi
 
 # ── start backend ────────────────────────────────────────────────────────────
 echo "Starting OCR service on :${PORT}…"
-mkdir -p "$LOG_DIR"
-nohup env PYTHONUNBUFFERED=1 \
-    "$VENV_BIN/uvicorn" ocr_server:app --host "$HOST" --port "$PORT" \
-    >> "$LOG_FILE" 2>&1 &
-echo $! > "$PID_FILE"
+start_logging "ocr" "main" env PYTHONUNBUFFERED=1 \
+    "$VENV_BIN/uvicorn" ocr_server:app --host "$HOST" --port "$PORT"
 
 # ── wait until backend is ready (up to 15 s) ─────────────────────────────────
 echo "Waiting for backend…"
@@ -62,6 +56,5 @@ done
 echo ""
 echo "OCR service is running."
 echo "  URL  : $APP_URL"
-echo "  PID  : $(cat "$PID_FILE")"
-echo "  Log  : $LOG_FILE"
+echo "  Logs : .dev-logs/ocr/"
 echo "  Stop : ./stop.sh"

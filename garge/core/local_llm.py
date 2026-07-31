@@ -22,7 +22,7 @@ class LocalLLMClient:
                 env_url = settings.ollama_base_url
             except Exception:
                 pass
-        self.base_url = (env_url or 'http://localhost:11434').rstrip('/')
+        self.base_url = (env_url or 'http://localhost:11436').rstrip('/')
         
         # Increase timeout for large documents
         self.timeout = 300  # 5 minutes instead of 120 seconds
@@ -102,7 +102,9 @@ class LocalLLMClient:
                     "error": str(chunk.get("error"))
                 }
 
-            token_piece = chunk.get("response", "")
+            # For /api/chat endpoint the token is under message.content
+            msg = chunk.get("message", {})
+            token_piece = msg.get("content", "") if msg else chunk.get("response", "")
             if token_piece:
                 full_text += token_piece
 
@@ -303,7 +305,128 @@ class LocalLLMClient:
                 ],
                 "error": str(e)
             }
-    
+
+    def generate_chat_completion(
+        self,
+        messages: List[Dict[str, Any]],
+        model: str = "llama3.1:8b",
+        temperature: float = 0.7,
+        max_tokens: int = 2000,
+        stream: bool = False
+    ) -> Dict[str, Any]:
+        """Generate completion using Ollama /api/chat (supports multimodal/vision).
+
+        Accepts messages with an optional ``images`` list (base64 data URLs) per
+        message — the format Ollama vision models expect.
+        """
+        # Strip data:image/...;base64, prefix from Ollama images payload
+        chat_messages = []
+        for msg in messages:
+            entry = {"role": msg.get("role", "user"), "content": msg.get("content", "")}
+            raw_images = msg.get("images", [])
+            if raw_images:
+                cleaned = []
+                for img in raw_images:
+                    # data:image/jpeg;base64,XXXX → XXXX
+                    if "," in img:
+                        img = img.split(",", 1)[1]
+                    cleaned.append(img)
+                entry["images"] = cleaned
+            chat_messages.append(entry)
+
+        payload = {
+            "model": model,
+            "messages": chat_messages,
+            "stream": stream,
+            "options": {
+                "temperature": temperature,
+                "num_predict": max_tokens,
+            }
+        }
+
+        url = f"{self.base_url}/api/chat"
+
+        try:
+            if stream:
+                response = requests.post(url, json=payload, stream=True, timeout=self.timeout)
+            else:
+                response = requests.post(url, json=payload, timeout=self.timeout)
+
+            if not response.ok:
+                try:
+                    detail = response.json()
+                except Exception:
+                    detail = response.text
+                logger.error(f"Ollama chat error {response.status_code}: {detail}")
+                return {
+                    "id": f"chatcmpl-{int(time.time())}",
+                    "object": "chat.completion",
+                    "created": int(time.time()),
+                    "model": model,
+                    "choices": [{
+                        "index": 0,
+                        "message": {"role": "assistant", "content": f"API error: {detail}"},
+                        "finish_reason": "error"
+                    }],
+                    "error": str(detail)
+                }
+
+            if stream:
+                return self._parse_ollama_stream(response, model)
+
+            data = response.json()
+            msg = data.get("message", {})
+            content = msg.get("content", "")
+
+            return {
+                "id": f"chatcmpl-{int(time.time())}",
+                "object": "chat.completion",
+                "created": int(time.time()),
+                "model": data.get("model", model),
+                "choices": [{
+                    "index": 0,
+                    "message": {
+                        "role": "assistant",
+                        "content": content
+                    },
+                    "finish_reason": "stop"
+                }],
+                "usage": {
+                    "prompt_tokens": data.get("prompt_eval_count", 0),
+                    "completion_tokens": data.get("eval_count", 0),
+                    "total_tokens": data.get("prompt_eval_count", 0) + data.get("eval_count", 0)
+                }
+            }
+
+        except requests.exceptions.Timeout:
+            logger.error("Ollama chat request timed out")
+            return {
+                "id": f"chatcmpl-{int(time.time())}",
+                "object": "chat.completion",
+                "created": int(time.time()),
+                "model": model,
+                "choices": [{
+                    "index": 0,
+                    "message": {"role": "assistant", "content": "Error: Request timed out"},
+                    "finish_reason": "error"
+                }],
+                "error": "Request timed out"
+            }
+        except Exception as e:
+            logger.error(f"Error generating chat completion: {e}")
+            return {
+                "id": f"chatcmpl-{int(time.time())}",
+                "object": "chat.completion",
+                "created": int(time.time()),
+                "model": model,
+                "choices": [{
+                    "index": 0,
+                    "message": {"role": "assistant", "content": f"Error: {str(e)}"},
+                    "finish_reason": "error"
+                }],
+                "error": str(e)
+            }
+
     def health_check(self) -> bool:
         """Check if Ollama is available and responsive - synchronous version"""
         try:

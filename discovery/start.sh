@@ -11,15 +11,11 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 CASE_PORT="${PORT:-${CASE_PORT:-3010}}"
-HOME_LOGDIR="$HOME/.dev-logs"
-PROJECT_LOGDIR="$ROOT/.dev-discovery-log"
-LOGDIR="$HOME_LOGDIR"
-mkdir -p "$HOME_LOGDIR" "$PROJECT_LOGDIR"
 
-sync_logs_to_project() {
-  # Mirror all discovery-related logs from ~/.dev-logs into the project for local traceability.
-  find "$HOME_LOGDIR" -maxdepth 1 -type f \( -name "*.log" -o -name "*.pid" -o -name "*.env" \) -exec cp -f {} "$PROJECT_LOGDIR"/ \; 2>/dev/null || true
-}
+# Source centralized logging
+source "$ROOT/../.dev-logs/common-logging.sh"
+LOGDIR=$(get_log_file "discovery" "main")
+mkdir -p "$(dirname "$LOGDIR")"
 
 # ── Colors ──
 R='\033[0;31m' G='\033[0;32m' A='\033[0;33m' C='\033[0;36m' W='\033[1;37m' N='\033[0m'
@@ -75,9 +71,14 @@ start_case_server() {
   export DISCOVERY_ALLOW_GLOBAL_ROOT="${DISCOVERY_ALLOW_GLOBAL_ROOT:-false}"
   export DISCOVERY_WORKSPACE_BASE_DIR="${DISCOVERY_WORKSPACE_BASE_DIR:-$ROOT/documents_scanned/sessions}"
   export PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-http://localhost:${CASE_PORT}}"
-  nohup sh -c "node case-server/auto_server_builder.js 2>&1 | tee -a '$HOME_LOGDIR/discovery.log' '$PROJECT_LOGDIR/discovery.log' >/dev/null" >/dev/null 2>&1 &
-  echo $! > "$HOME_LOGDIR/case-server.pid"
-  cp -f "$HOME_LOGDIR/case-server.pid" "$PROJECT_LOGDIR/case-server.pid" 2>/dev/null || true
+
+  local log_file=$(get_log_file "discovery" "case-server")
+  local pid_file=$(get_pid_file "discovery" "case-server")
+  mkdir -p "$(dirname "$log_file")"
+
+  nohup sh -c "node case-server/auto_server_builder.js 2>&1 | tee -a '$log_file' >/dev/null" >/dev/null 2>&1 &
+  echo $! > "$pid_file"
+  log_ok "discovery" "case-server" "Started PID $!, logging to $log_file"
   cd "$ROOT"
 }
 
@@ -126,8 +127,6 @@ printf "\n${W}══════════════════════
 printf "${W}  Discovery · Awareness-AI${N}\n"
 printf "${W}═══════════════════════════════════════════════${N}\n\n"
 
-sync_logs_to_project
-
 stop_existing
 
 if ! runtime_deps_ready; then
@@ -161,7 +160,4 @@ else
   warn "Skipping browser open in headless session. From your Mac, use: ssh -L ${CASE_PORT}:localhost:${CASE_PORT} root@72.60.143.139"
 fi
 
-sync_logs_to_project
-
-ok "Ready — logs in $LOGDIR/"
-ok "Project logs mirrored in $PROJECT_LOGDIR/"
+log_ok "discovery" "main" "Ready — logs in $LOGDIR"
