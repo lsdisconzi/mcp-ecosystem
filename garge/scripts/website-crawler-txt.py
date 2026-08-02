@@ -13,8 +13,8 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ===================== CONFIGURATION =====================
-BASE_URL = 'https://italianscotland.com/'
-SAVE_DIR = '/home/garge/crawler_output/italianscotland'  # where to save HTML and text
+BASE_URL = 'https://comunitamonzabrianza.it/'
+SAVE_DIR = './crawler_output/comunitamonzabrianza'  # where to save HTML and text
 MAX_PAGES = 100                  # max pages to fetch
 MAX_DEPTH = 3                    # link depth
 DOWNLOAD_ASSETS = False          # set True to download CSS/JS/images
