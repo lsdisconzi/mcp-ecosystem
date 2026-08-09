@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 
 # ===================== CONFIGURATION =====================
 # The directory that contains /pages and /texts subdirectories
-CRAWL_OUTPUT_DIR = './crawler_output/vinci-airports'
+CRAWL_OUTPUT_DIR = './crawler_output/shawfield-timber'
 
 # Output filenames (will be saved inside CRAWL_OUTPUT_DIR)
 PAGES_OUTPUT = 'combined_pages.md'      # from HTML
@@ -21,6 +21,9 @@ TEXTS_OUTPUT = 'combined_texts.md'      # from plain text
 # If True, skip creating a file when no source files are found
 SKIP_EMPTY = True
 # =========================================================
+
+# Extract the source folder name to use in output filenames and headers
+SOURCE_FOLDER_NAME = os.path.basename(os.path.normpath(CRAWL_OUTPUT_DIR))
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -107,6 +110,8 @@ def build_combined_markdown(file_list, output_path, file_type):
     with open(output_path, 'w', encoding='utf-8') as out:
         out.write(f"# Combined {file_type.capitalize()} Content\n\n")
         out.write(f"*Generated from {len(entries)} {file_type} files*\n\n")
+        # Mention the source folder so the reader knows where this came from
+        out.write(f"*Source folder: `{CRAWL_OUTPUT_DIR}`*\n\n")
 
         # Table of Contents
         out.write("## Table of Contents\n\n")
@@ -156,19 +161,21 @@ def build_combined_markdown(file_list, output_path, file_type):
 
 
 def main():
+    # Build output filenames that include the source folder name
+    pages_output_file = os.path.join(CRAWL_OUTPUT_DIR, f"{SOURCE_FOLDER_NAME}_{PAGES_OUTPUT}")
+    texts_output_file = os.path.join(CRAWL_OUTPUT_DIR, f"{SOURCE_FOLDER_NAME}_{TEXTS_OUTPUT}")
+
     # Process HTML pages
     html_files = gather_files(CRAWL_OUTPUT_DIR, 'pages', '.html')
     if html_files or not SKIP_EMPTY:
-        output_html = os.path.join(CRAWL_OUTPUT_DIR, PAGES_OUTPUT)
-        build_combined_markdown(html_files, output_html, 'html')
+        build_combined_markdown(html_files, pages_output_file, 'html')
     else:
         logger.info("No HTML pages found – skipping HTML Markdown generation.")
 
     # Process plain text files
     text_files = gather_files(CRAWL_OUTPUT_DIR, 'texts', '.txt')
     if text_files or not SKIP_EMPTY:
-        output_txt = os.path.join(CRAWL_OUTPUT_DIR, TEXTS_OUTPUT)
-        build_combined_markdown(text_files, output_txt, 'text')
+        build_combined_markdown(text_files, texts_output_file, 'text')
     else:
         logger.info("No text files found – skipping text Markdown generation.")
 

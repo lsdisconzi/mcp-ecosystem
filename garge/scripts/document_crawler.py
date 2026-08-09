@@ -21,8 +21,8 @@ import xml.etree.ElementTree as ET
 # ------------------------------
 # CONFIGURATION
 # ------------------------------
-BASE_URL = "https://alta.aero/ccma/2026/"
-DOWNLOAD_DIR = "alta"          # where documents will be saved
+BASE_URL = "https://www.deanbanks.co.uk/"
+DOWNLOAD_DIR = "crawler_output/deanbanks"          # where documents will be saved
 REQUEST_DELAY = 0.3                         # polite delay between requests
 MAX_PAGE_CRAWL = 500                        # max HTML pages to crawl (safety)
 MAX_WORKERS = 5                             # concurrent downloads/requests
@@ -30,7 +30,7 @@ RESTRICT_CRAWL_TO_BASE_PATH = False         # set True to stay strictly under BA
 ALLOW_SUBDOMAINS = True                     # include subdomains like *.frigo-data.com.br
 ALLOW_EXTERNAL_DOCUMENTS = False            # keep only target domain docs by default
 PRIORITY_SEED_URLS = [
-    "https://alta.aero/ccma/2026/"]                                           # pages worth crawling even if sitemap is missing
+    "https://www.deanbanks.co.uk/"]                                           # pages worth crawling even if sitemap is missing
 EXPORT_DISCOVERED_URLS_CSV = "discovered_documents.csv"
 ENABLE_CRAWL_CHECKPOINT = True
 CRAWL_CHECKPOINT_FILE = "crawl_state.json"
