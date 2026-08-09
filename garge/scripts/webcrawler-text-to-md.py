@@ -16,8 +16,8 @@ from markdownify import markdownify as md
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ===================== CONFIGURATION =====================
-BASE_URL = 'https://comunitamonzabrianza.it/'
-SAVE_DIR = './crawler_output/comunitamonzabrianza'
+BASE_URL = 'https://www.icao.int/'
+SAVE_DIR = './crawler_output/icao'
 MAX_PAGES = 100
 MAX_DEPTH = 3
 DOWNLOAD_ASSETS = False

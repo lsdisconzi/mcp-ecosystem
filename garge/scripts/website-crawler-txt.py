@@ -13,12 +13,12 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ===================== CONFIGURATION =====================
-BASE_URL = 'https://comunitamonzabrianza.it/'
-SAVE_DIR = './crawler_output/comunitamonzabrianza'  # where to save HTML and text
-MAX_PAGES = 100                  # max pages to fetch
-MAX_DEPTH = 3                    # link depth
+BASE_URL = 'https://www.jewson.co.uk/timber/'
+SAVE_DIR = './crawler_output/jewson-timber'  # where to save HTML and text
+MAX_PAGES = 200                  # max pages to fetch
+MAX_DEPTH = 5                    # link depth
 DOWNLOAD_ASSETS = False          # set True to download CSS/JS/images
-SAME_DOMAIN_ONLY = True          # stay within bidx.ai
+SAME_DOMAIN_ONLY = True          # stay within latamairlines.com
 TIMEOUT = 60                     # seconds per page
 
 # Paths to skip
@@ -27,9 +27,7 @@ SKIP_PATHS = {
     '/wp-admin/', '/wp-includes/', '/wp-json/', '/wp-content/uploads/',
     '/feed/', '/trackback/', '/xmlrpc.php', '/search/'
 }
-SKIP_EXTENSIONS = ('.pdf', '.jpg', '.jpeg', '.png', '.gif', '.svg',
-                   '.css', '.js', '.doc', '.docx', '.xls', '.xlsx',
-                   '.zip', '.rar', '.xml', '.txt', '.csv')
+SKIP_EXTENSIONS = ()
 # =========================================================
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -183,19 +181,26 @@ async def crawl():
                 assets = []
                 for img in soup.find_all('img', src=True):
                     src = img['src']
+                    if isinstance(src, list): src = src[0]
                     if not src.startswith('data:'):
                         assets.append(urljoin(url, src))
                 for link in soup.find_all('link', href=True, rel=lambda x: x and 'stylesheet' in x):
-                    assets.append(urljoin(url, link['href']))
+                    href = link['href']
+                    if isinstance(href, list): href = href[0]
+                    assets.append(urljoin(url, href))
                 for script in soup.find_all('script', src=True):
-                    assets.append(urljoin(url, script['src']))
+                    src = script['src']
+                    if isinstance(src, list): src = src[0]
+                    assets.append(urljoin(url, src))
                 for asset in set(assets):
                     if is_same_domain(BASE_URL, asset):
                         download_file(asset, SAVE_DIR)
 
             # Extract new links
             for link in soup.find_all('a', href=True):
-                href = urljoin(url, link['href']).split('#')[0].rstrip('/')
+                href_attr = link['href']
+                if isinstance(href_attr, list): href_attr = href_attr[0]
+                href = urljoin(url, href_attr).split('#')[0].rstrip('/')
                 if href in visited:
                     continue
                 # Skip file downloads
