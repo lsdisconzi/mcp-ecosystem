@@ -762,8 +762,27 @@ To re-enable: uncomment the section and update the API endpoints.
           <div class="obs-section-title"><i class="fas fa-server"></i> MCP Servers</div>
           <div class="obs-table-wrap">
             <table class="obs-table">
-              <thead><tr><th style="width:200px">Server</th><th style="width:90px">Tools</th><th style="width:100px">Required</th><th style="width:100px">Available</th><th>Status</th></tr></thead>
+              <thead><tr><th style="width:200px">Server</th><th style="width:90px">Tools</th><th style="width:100px">Required</th><th style="width:100px">Available</th><th>Status</th><th style="width:200px">Actions</th></tr></thead>
               <tbody id="mcpServersTbody">
+                <tr><td colspan="6" class="obs-table-empty">Loading MCP servers...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+            <div class="obs-section-title" style="margin:0"><i class="fas fa-power-off"></i> Ecosystem MCP Servers — Control</div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <span style="font-size:11px;color:var(--gray)"><b id="mcpControlRunning">0</b> / <b id="mcpControlTotal">0</b> running</span>
+              <button class="btn btn-primary btn-sm" onclick="loadMcpControl()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--gray);margin:6px 0 10px">Start, stop or restart any MCP server in the ecosystem (control API <code>/ops/api/mcp-servers</code>).</div>
+          <div class="obs-table-wrap">
+            <table class="obs-table">
+              <thead><tr><th style="width:200px">Server</th><th style="width:80px">Port</th><th style="width:70px">Tools</th><th>Status</th><th style="width:230px">Actions</th></tr></thead>
+              <tbody id="mcpControlTbody">
                 <tr><td colspan="5" class="obs-table-empty">Loading MCP servers...</td></tr>
               </tbody>
             </table>
@@ -1052,7 +1071,7 @@ const _viewLoaders = {
   services: () => { loadServices(); loadEcoMap(); loadServiceLogs(); },
   agents: () => { loadAgents(); },
   architecture: () => { loadArchitectureWorkspace(); },
-  mcp: () => { loadMcpRegistry(); },
+  mcp: () => { loadMcpRegistry(); loadMcpControl(); },
   memory: () => loadMemory(),
   models: () => loadModels(),
   import: () => { renderSessionChips(); /* loadAwarenessGroups() — DEPRECATED */ },
@@ -2180,7 +2199,7 @@ async function loadMcpRegistry(){
 
   if(metaEl) metaEl.textContent = 'Loading MCP registry...';
   if(endpointEl) endpointEl.textContent = '';
-  if(serversTbody) serversTbody.innerHTML = '<tr><td colspan="5" class="obs-table-empty">Loading MCP servers...</td></tr>';
+  if(serversTbody) serversTbody.innerHTML = '<tr><td colspan="6" class="obs-table-empty">Loading MCP servers...</td></tr>';
   if(toolsTbody) toolsTbody.innerHTML = '<tr><td colspan="4" class="obs-table-empty">Loading MCP tools...</td></tr>';
 
   // Local ops routes (from mcp-files-used-in-OliviaLegal) take priority.
@@ -2273,7 +2292,7 @@ async function loadMcpRegistry(){
 
     // Render servers
     if(!servers.length){
-      if(serversTbody) serversTbody.innerHTML = '<tr><td colspan="5" class="obs-table-empty">No MCP servers configured.</td></tr>';
+      if(serversTbody) serversTbody.innerHTML = '<tr><td colspan="6" class="obs-table-empty">No MCP servers configured.</td></tr>';
     }else if(serversTbody){
       serversTbody.innerHTML = servers.map(s=>{
         const id = s.id || s.service || s.name || 'unknown';
@@ -2287,8 +2306,10 @@ async function loadMcpRegistry(){
           <td>${reqChip}</td>
           <td>${availChip}</td>
           <td>${esc(status)}</td>
+          <td class="mcp-reg-actions" data-id="${esc(id)}"></td>
         </tr>`;
       }).join('');
+      _renderMcpRegistryActions();
     }
 
     // Store tools for filtering
@@ -2299,10 +2320,106 @@ async function loadMcpRegistry(){
     if(metaEl) metaEl.textContent = 'MCP registry unavailable.';
     if(endpointEl) endpointEl.textContent = 'Check that the ops dashboard is running and the mcp-files-used-in-OliviaLegal directory exists.';
     if(navCountEl) navCountEl.textContent = '0';
-    if(serversTbody) serversTbody.innerHTML = `<tr><td colspan="5" class="obs-table-empty">Failed: ${esc(e.message)}</td></tr>`;
+    if(serversTbody) serversTbody.innerHTML = `<tr><td colspan="6" class="obs-table-empty">Failed: ${esc(e.message)}</td></tr>`;
     if(toolsTbody) toolsTbody.innerHTML = '<tr><td colspan="4" class="obs-table-empty">No MCP tools available.</td></tr>';
     toast('MCP registry unavailable: ' + e.message, 'err');
   }
+}
+
+// ── Ecosystem MCP server control (start/stop/restart via ops API) ───────────
+function _mcpCtrlServer(srv){
+  return {
+    id: srv.id,
+    project: srv.project || '',
+    port: srv.port,
+    tool_count: (srv.tool_count !== undefined && srv.tool_count !== null) ? srv.tool_count : null,
+    transport: srv.transport || 'streamable-http',
+    running: !!srv.running,
+  };
+}
+
+async function loadMcpControl(){
+  const tbody = document.getElementById('mcpControlTbody');
+  if(tbody) tbody.innerHTML = '<tr><td colspan="5" class="obs-table-empty">Loading MCP servers...</td></tr>';
+  try{
+    const r = await fetch(BASE + '/api/mcp-servers');
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    const servers = Array.isArray(data && data.servers) ? data.servers : [];
+    const norm = servers.map(_mcpCtrlServer);
+    window._mcpControlServers = norm;
+    const running = norm.filter(s=>s.running).length;
+    const totalEl = document.getElementById('mcpControlTotal');
+    const runningEl = document.getElementById('mcpControlRunning');
+    if(totalEl) totalEl.textContent = String(norm.length);
+    if(runningEl) runningEl.textContent = String(running);
+    if(tbody){
+      if(!norm.length){
+        tbody.innerHTML = '<tr><td colspan="5" class="obs-table-empty">No MCP servers found.</td></tr>';
+      }else{
+        tbody.innerHTML = norm.map(srv=>`<tr>
+          <td><code>${esc(srv.id)}</code><div style="font-size:10px;color:var(--gray)">${esc(srv.project)} · ${esc(srv.transport)}</div></td>
+          <td>${esc(srv.port)}</td>
+          <td>${srv.tool_count === null ? '—' : esc(String(srv.tool_count))}</td>
+          <td>${_mcpStatusChip(srv.running, 'running', 'stopped')}</td>
+          <td>${mcpActionButtons(srv, false)}</td>
+        </tr>`).join('');
+      }
+    }
+    _renderMcpRegistryActions();
+  }catch(e){
+    if(tbody) tbody.innerHTML = `<tr><td colspan="5" class="obs-table-empty">Failed: ${esc(e.message)}</td></tr>`;
+    toast('MCP control unavailable: ' + e.message, 'err');
+  }
+}
+
+function mcpActionButtons(srv, compact){
+  const id = encodeURIComponent(srv.id);
+  const run = srv.running;
+  const btn = (a,label,icon,extraCls,disabled)=>{
+    return `<button class="btn btn-sm ${extraCls||''}" onclick="mcpAction('${id}','${a}',this)" ${disabled?'disabled':''}><i class="fas ${icon}"></i> ${label}</button>`;
+  };
+  const start = btn('start','Start','fa-play','btn-primary',run);
+  const stop  = btn('stop','Stop','fa-stop','btn-danger',!run);
+  const restart = compact ? '' : btn('restart','Restart','fa-sync-alt','',!run);
+  return start + stop + restart;
+}
+
+async function mcpAction(id, action, btn){
+  if(btn){
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+  }
+  try{
+    const r = await fetch(`${BASE}/api/mcp-servers/${encodeURIComponent(id)}/${action}`, { method:'POST' });
+    let data = {};
+    try{ data = await r.json(); }catch(_){}
+    if(!r.ok || data.ok === false){
+      throw new Error((data && data.message) || ('HTTP ' + r.status));
+    }
+    toast((data.message || (action.charAt(0).toUpperCase() + action.slice(1))), 'ok');
+  }catch(e){
+    toast('MCP ' + action + ' failed: ' + e.message, 'err');
+  }finally{
+    loadMcpControl();
+  }
+}
+
+function _renderMcpRegistryActions(){
+  const control = window._mcpControlServers || [];
+  document.querySelectorAll('.mcp-reg-actions').forEach(cell=>{
+    const id = cell.getAttribute('data-id');
+    if(!id){ cell.innerHTML = '—'; return; }
+    const matches = control.filter(srv =>
+      srv.id === id || srv.project === id ||
+      id.startsWith(srv.project + '-') || srv.id.startsWith(id + '-')
+    );
+    if(!matches.length){ cell.innerHTML = '<span style="color:var(--gray);font-size:10px">no control</span>'; return; }
+    cell.innerHTML = matches.map(srv=>{
+      const label = (srv.id !== id) ? `<span style="font-size:10px;color:var(--gray);margin-right:4px">${esc(srv.id)}</span>` : '';
+      return `<div style="display:flex;align-items:center;gap:4px;margin:2px 0">${label}${mcpActionButtons(srv, true)}</div>`;
+    }).join('');
+  });
 }
 
 function _renderMcpTools(tools){

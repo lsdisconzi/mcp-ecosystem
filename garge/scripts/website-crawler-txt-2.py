@@ -13,8 +13,8 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ===================== CONFIGURATION =====================
-BASE_URL = 'https://www.sophos.com/en-us/'
-SAVE_DIR = './crawler_output/sophos-2'  # where to save HTML and text
+BASE_URL = 'https://codeandcounsel.ai/'
+SAVE_DIR = './crawler_output/codeandcounsel'  # where to save HTML and text
 MAX_PAGES = 100                  # max pages to fetch
 MAX_DEPTH = 3                    # link depth
 DOWNLOAD_ASSETS = False          # set True to download CSS/JS/images

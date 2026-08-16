@@ -13,8 +13,8 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ===================== CONFIGURATION =====================
-BASE_URL = 'https://www.jewson.co.uk/timber/'
-SAVE_DIR = './crawler_output/jewson-timber'  # where to save HTML and text
+BASE_URL = 'https://sixthstreet.com/'
+SAVE_DIR = './crawler_output/sixthstreet'  # where to save HTML and text
 MAX_PAGES = 200                  # max pages to fetch
 MAX_DEPTH = 5                    # link depth
 DOWNLOAD_ASSETS = False          # set True to download CSS/JS/images
