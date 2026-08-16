@@ -314,6 +314,301 @@ LOCAL_SERVICES = [
      "log_file": _dev_log_path("agent-architecture.log")},
 ]
 
+# ── MCP server registry (per-server control from the ops dashboard) ─────────
+# Each entry mirrors the launch line in the owning project's start.sh
+# (garge, juris-search, violation-refiner, ocr, transcription, audio,
+# comfyui). PID/log files are co-located with the ecosystem start scripts in
+# <mcp-ecosystem>/.dev-logs so ecosystem stop scripts see the same servers.
+COMFYUI_ROOT = Path(os.environ.get("COMFYUI_ROOT", str(PROJECT_ROOT.parent / "ComfyUI"))).resolve()
+_MCP_LOG_ROOT = LEGACY_DEV_LOG_DIR
+
+
+def _mcp_venv_py(project: str, venv: str = ".venv-mcp") -> str:
+    return str(PROJECT_ROOT / project / venv / "bin" / "python")
+
+
+def _mcp_proj(project: str, *parts: str) -> str:
+    return str(PROJECT_ROOT / project / Path(*parts))
+
+
+MCP_SERVERS = [
+    # ── garge (ports 8110-8114) ──
+    {"id": "garge-core", "name": "garge core", "project": "garge", "port": 8110,
+     "transport": "streamable-http", "tool_count": 87,
+     "pid_project": "garge", "pid_service": "mcp-core",
+     "python": _mcp_venv_py("garge"),
+     "script": _mcp_proj("garge", "mcp", "servers", "core_server.py"),
+     "cwd": _mcp_proj("garge"), "env": {}},
+    {"id": "garge-files", "name": "garge files", "project": "garge", "port": 8111,
+     "transport": "streamable-http", "tool_count": 18,
+     "pid_project": "garge", "pid_service": "mcp-files",
+     "python": _mcp_venv_py("garge"),
+     "script": _mcp_proj("garge", "mcp", "servers", "files_server.py"),
+     "cwd": _mcp_proj("garge"), "env": {}},
+    {"id": "garge-ingestion", "name": "garge ingestion", "project": "garge", "port": 8112,
+     "transport": "streamable-http", "tool_count": 20,
+     "pid_project": "garge", "pid_service": "mcp-ingestion",
+     "python": _mcp_venv_py("garge"),
+     "script": _mcp_proj("garge", "mcp", "servers", "ingestion_server.py"),
+     "cwd": _mcp_proj("garge"), "env": {}},
+    {"id": "garge-prompt", "name": "garge prompt", "project": "garge", "port": 8113,
+     "transport": "streamable-http", "tool_count": 7,
+     "pid_project": "garge", "pid_service": "mcp-prompt",
+     "python": _mcp_venv_py("garge"),
+     "script": _mcp_proj("garge", "mcp", "servers", "prompt_server.py"),
+     "cwd": _mcp_proj("garge"), "env": {}},
+    {"id": "garge-qdrant", "name": "garge qdrant", "project": "garge", "port": 8114,
+     "transport": "streamable-http", "tool_count": 25,
+     "pid_project": "garge", "pid_service": "mcp-qdrant",
+     "python": _mcp_venv_py("garge"),
+     "script": _mcp_proj("garge", "mcp", "servers", "qdrant_server.py"),
+     "cwd": _mcp_proj("garge"), "env": {}},
+    # ── juris-search (port 8116, node) ──
+    {"id": "juris-search-mcp", "name": "juris-search MCP", "project": "juris-search", "port": 8116,
+     "transport": "streamable-http", "tool_count": 33,
+     "pid_project": "juris-search", "pid_service": "mcp",
+     "command": "node",
+     "script": _mcp_proj("juris-search", "mcp", "juris_mcp_server.js"),
+     "cwd": _mcp_proj("juris-search"),
+     "env": {"JURIS_SEARCH_BASE_URL": "http://127.0.0.1:8000",
+             "NODE_PATH": _mcp_proj("juris-search", "mcp", "node_modules")}},
+    # ── violation-refiner (port 8124) ──
+    {"id": "violation-refiner-mcp", "name": "ViolationRefiner MCP", "project": "violation-refiner", "port": 8124,
+     "transport": "streamable-http", "tool_count": 39,
+     "pid_project": "violation-refiner", "pid_service": "mcp",
+     "python": _mcp_venv_py("violation-refiner", ".venv"),
+     "module": "violation_pack.mcp_server",
+     "cwd": _mcp_proj("violation-refiner"), "env": {}},
+    # ── ocr (ports 8125-8126; NOT started by ocr/start.sh — controlled here) ──
+    {"id": "ocr-core", "name": "ocr core", "project": "ocr", "port": 8125,
+     "transport": "streamable-http", "tool_count": 5,
+     "pid_project": "ocr", "pid_service": "mcp-core",
+     "python": _mcp_venv_py("ocr", ".venv"),
+     "script": _mcp_proj("ocr", "mcp", "servers", "ocr_server.py"),
+     "cwd": _mcp_proj("ocr"), "env": {}},
+    {"id": "ocr-pdf", "name": "ocr pdf", "project": "ocr", "port": 8126,
+     "transport": "streamable-http", "tool_count": 7,
+     "pid_project": "ocr", "pid_service": "mcp-pdf",
+     "python": _mcp_venv_py("ocr", ".venv"),
+     "script": _mcp_proj("ocr", "mcp", "servers", "pdf_server.py"),
+     "cwd": _mcp_proj("ocr"), "env": {}},
+    # ── transcription (ports 8121-8123) ──
+    {"id": "transcription-mcp", "name": "transcription MCP", "project": "transcription", "port": 8121,
+     "transport": "streamable-http", "tool_count": None,
+     "pid_project": "transcription", "pid_service": "mcp-transcription",
+     "python": _mcp_venv_py("transcription", ".venv"),
+     "module": "src.mcp.servers.transcription_server",
+     "cwd": _mcp_proj("transcription"), "env": {}},
+    {"id": "transcription-transcripts", "name": "transcription transcripts", "project": "transcription", "port": 8122,
+     "transport": "streamable-http", "tool_count": None,
+     "pid_project": "transcription", "pid_service": "mcp-transcripts",
+     "python": _mcp_venv_py("transcription", ".venv"),
+     "module": "src.mcp.servers.transcripts_server",
+     "cwd": _mcp_proj("transcription"), "env": {}},
+    {"id": "transcription-meta", "name": "transcription meta", "project": "transcription", "port": 8123,
+     "transport": "streamable-http", "tool_count": None,
+     "pid_project": "transcription", "pid_service": "mcp-meta",
+     "python": _mcp_venv_py("transcription", ".venv"),
+     "module": "src.mcp.servers.meta_server",
+     "cwd": _mcp_proj("transcription"), "env": {}},
+    # ── audio (port 8765) ──
+    {"id": "audio-mcp", "name": "audio MCP", "project": "audio", "port": 8765,
+     "transport": "streamable-http", "tool_count": 8,
+     "pid_project": "audio", "pid_service": "mcp",
+     "python": _mcp_venv_py("audio"),
+     "script": _mcp_proj("audio", "mcp", "torchaudio_mcp", "server.py"),
+     "cwd": _mcp_proj("audio"), "env": {}},
+    # ── comfyui (ports 8130-8133; HTTP clients to ComfyUI :8188) ──
+    {"id": "comfyui-workflow", "name": "comfyui workflow", "project": "comfyui", "port": 8130,
+     "transport": "streamable-http", "tool_count": 12,
+     "pid_project": "comfyui", "pid_service": "mcp-workflow",
+     "python": _mcp_venv_py("comfyui"),
+     "script": str(COMFYUI_ROOT / "mcp" / "servers" / "workflow_server.py"),
+     "cwd": _mcp_proj("comfyui"),
+     "env": {"COMFYUI_BASE_URL": "http://127.0.0.1:8188"}},
+    {"id": "comfyui-model", "name": "comfyui model", "project": "comfyui", "port": 8131,
+     "transport": "streamable-http", "tool_count": 4,
+     "pid_project": "comfyui", "pid_service": "mcp-model",
+     "python": _mcp_venv_py("comfyui"),
+     "script": str(COMFYUI_ROOT / "mcp" / "servers" / "model_server.py"),
+     "cwd": _mcp_proj("comfyui"),
+     "env": {"COMFYUI_BASE_URL": "http://127.0.0.1:8188"}},
+    {"id": "comfyui-node", "name": "comfyui node", "project": "comfyui", "port": 8132,
+     "transport": "streamable-http", "tool_count": 2,
+     "pid_project": "comfyui", "pid_service": "mcp-node",
+     "python": _mcp_venv_py("comfyui"),
+     "script": str(COMFYUI_ROOT / "mcp" / "servers" / "node_server.py"),
+     "cwd": _mcp_proj("comfyui"),
+     "env": {"COMFYUI_BASE_URL": "http://127.0.0.1:8188"}},
+    {"id": "comfyui-system", "name": "comfyui system", "project": "comfyui", "port": 8133,
+     "transport": "streamable-http", "tool_count": 4,
+     "pid_project": "comfyui", "pid_service": "mcp-system",
+     "python": _mcp_venv_py("comfyui"),
+     "script": str(COMFYUI_ROOT / "mcp" / "servers" / "system_server.py"),
+     "cwd": _mcp_proj("comfyui"),
+     "env": {"COMFYUI_BASE_URL": "http://127.0.0.1:8188"}},
+]
+
+MCP_SERVER_IDS = {srv["id"] for srv in MCP_SERVERS}
+
+
+def _mcp_by_id(mcp_id: str) -> dict | None:
+    return next((s for s in MCP_SERVERS if s["id"] == mcp_id), None)
+
+
+def _mcp_pid_file(srv: dict) -> Path:
+    return _MCP_LOG_ROOT / f"{srv['pid_project']}-{srv['pid_service']}.pid"
+
+
+def _mcp_log_file(srv: dict) -> Path:
+    stamp = datetime.now().strftime("%Y-%m-%d")
+    return _MCP_LOG_ROOT / f"{srv['pid_project']}-{srv['pid_service']}-{stamp}.log"
+
+
+def _mcp_start_cmd(srv: dict) -> tuple[list[str], str]:
+    """Build the launch command mirroring the project's start.sh."""
+    if srv.get("module"):
+        python = srv.get("python")
+        if not python or not Path(python).exists():
+            return [], ""
+        return [python, "-m", srv["module"]], srv.get("cwd", "")
+    if srv.get("script"):
+        script_path = Path(srv["script"])
+        if not script_path.exists():
+            return [], ""
+        if srv.get("command") == "node":
+            return ["node", str(script_path)], srv.get("cwd", "")
+        python = srv.get("python")
+        if not python or not Path(python).exists():
+            return [], ""
+        return [python, str(script_path)], srv.get("cwd", "")
+    return [], ""
+
+
+def _pids_on_port(port: int) -> list[int]:
+    pids = set()
+    try:
+        for conn in psutil.net_connections(kind="inet"):
+            if conn.laddr and conn.laddr.port == port and conn.pid:
+                pids.add(conn.pid)
+    except (psutil.AccessDenied, psutil.Error):
+        pass
+    return sorted(pids)
+
+
+def _kill_process_tree(pid: int) -> None:
+    try:
+        parent = psutil.Process(pid)
+        procs = [parent] + parent.children(recursive=True)
+        for p in procs:
+            try:
+                p.terminate()
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+        _, alive = psutil.wait_procs(procs, timeout=4)
+        for p in alive:
+            try:
+                p.kill()
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        pass
+
+
+def _mcp_server_status(srv: dict) -> dict:
+    port = int(srv["port"])
+    listening = _is_tcp_port_listening(port)
+    pid_file = _mcp_pid_file(srv)
+    pid = None
+    if pid_file.exists():
+        try:
+            pid = int(pid_file.read_text().strip() or "0") or None
+        except ValueError:
+            pid = None
+    alive = False
+    if pid:
+        try:
+            alive = psutil.pid_exists(pid)
+        except Exception:
+            alive = False
+    return {
+        "id": srv["id"],
+        "name": srv["name"],
+        "project": srv.get("project", ""),
+        "port": port,
+        "transport": srv.get("transport", "streamable-http"),
+        "tool_count": srv.get("tool_count"),
+        "status": "running" if listening else "stopped",
+        "running": listening,
+        "pid": pid if (alive and listening) else None,
+        "pid_file": str(pid_file),
+        "log_file": str(_mcp_log_file(srv)),
+    }
+
+
+def _start_mcp_server(srv: dict) -> tuple[bool, str]:
+    port = int(srv["port"])
+    if _is_tcp_port_listening(port):
+        return True, f"{srv['name']} already running on port {port}"
+    cmd, cwd = _mcp_start_cmd(srv)
+    if not cmd:
+        return False, f"Launch config missing for {srv['name']} (venv or script not found)"
+    log_file = _mcp_log_file(srv)
+    log_file.parent.mkdir(parents=True, exist_ok=True)
+    pid_file = _mcp_pid_file(srv)
+    env = dict(os.environ)
+    env.update({
+        "MCP_TRANSPORT": srv.get("transport", "streamable-http"),
+        "MCP_HOST": srv.get("host", "0.0.0.0"),
+        "MCP_PORT": str(port),
+    })
+    if srv.get("python"):
+        env["PYTHONUNBUFFERED"] = "1"
+    env.update(srv.get("env", {}))
+    try:
+        with open(log_file, "a", encoding="utf-8") as lf:
+            proc = subprocess.Popen(
+                cmd, cwd=cwd, env=env, stdout=lf, stderr=subprocess.STDOUT,
+                start_new_session=True,
+            )
+        pid_file.write_text(str(proc.pid))
+    except Exception as exc:
+        return False, str(exc)
+    for _ in range(20):
+        if _is_tcp_port_listening(port):
+            return True, f"{srv['name']} started on port {port} (pid {proc.pid})"
+        time.sleep(0.4)
+    return True, f"{srv['name']} launch issued (pid {proc.pid}); port {port} not yet listening"
+
+
+def _stop_mcp_server(srv: dict) -> tuple[bool, str]:
+    port = int(srv["port"])
+    killed = []
+    pid_file = _mcp_pid_file(srv)
+    if pid_file.exists():
+        try:
+            pid = int(pid_file.read_text().strip() or "0")
+        except ValueError:
+            pid = None
+        if pid:
+            _kill_process_tree(pid)
+            killed.append(str(pid))
+        pid_file.unlink(missing_ok=True)
+    for pid in _pids_on_port(port):
+        if str(pid) in killed:
+            continue
+        _kill_process_tree(pid)
+        killed.append(str(pid))
+    if killed:
+        return True, f"{srv['name']} stopped (pids {', '.join(killed)})"
+    return True, f"{srv['name']} not running (no pid file, port {port} free)"
+
+
+def _restart_mcp_server(srv: dict) -> tuple[bool, str]:
+    _stop_mcp_server(srv)
+    return _start_mcp_server(srv)
+
+
 SERVICE_ALIASES = {
     "awareness": ["manus", "agents"],
     "awareness-qdrant": ["qdrant", "qdrant-api"],
@@ -1629,6 +1924,54 @@ def start_service(service):
             return jsonify({"ok": False, "message": result.stderr}), 500
     except Exception as e:
         return jsonify({"ok": False, "message": str(e)}), 500
+
+
+# ── MCP server control (any ecosystem MCP server, per server) ───────────────
+@app.route("/api/mcp-servers")
+@ops_login_required
+def list_mcp_servers():
+    """List every ecosystem MCP server with live port status."""
+    servers = [_mcp_server_status(srv) for srv in MCP_SERVERS]
+    return jsonify({
+        "servers": servers,
+        "count": len(servers),
+        "running": sum(1 for s in servers if s["status"] == "running"),
+    })
+
+
+@app.route("/api/mcp-servers/<mcp_id>/start", methods=["POST"])
+@ops_login_required
+def start_mcp_server(mcp_id):
+    """Start a single ecosystem MCP server."""
+    srv = _mcp_by_id(mcp_id)
+    if not srv:
+        return jsonify({"error": f"Unknown MCP server '{mcp_id}'"}), 404
+    ok, message = _start_mcp_server(srv)
+    code = 200 if ok else 500
+    return jsonify({"ok": ok, "message": message, "server": _mcp_server_status(srv)}), code
+
+
+@app.route("/api/mcp-servers/<mcp_id>/stop", methods=["POST"])
+@ops_login_required
+def stop_mcp_server(mcp_id):
+    """Stop a single ecosystem MCP server."""
+    srv = _mcp_by_id(mcp_id)
+    if not srv:
+        return jsonify({"error": f"Unknown MCP server '{mcp_id}'"}), 404
+    ok, message = _stop_mcp_server(srv)
+    return jsonify({"ok": ok, "message": message, "server": _mcp_server_status(srv)}), 200
+
+
+@app.route("/api/mcp-servers/<mcp_id>/restart", methods=["POST"])
+@ops_login_required
+def restart_mcp_server(mcp_id):
+    """Restart a single ecosystem MCP server."""
+    srv = _mcp_by_id(mcp_id)
+    if not srv:
+        return jsonify({"error": f"Unknown MCP server '{mcp_id}'"}), 404
+    ok, message = _restart_mcp_server(srv)
+    code = 200 if ok else 500
+    return jsonify({"ok": ok, "message": message, "server": _mcp_server_status(srv)}), code
 
 
 @app.route("/api/services/<service>/launch", methods=["POST"])

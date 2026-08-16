@@ -1,6 +1,6 @@
 # Ecosystem Orchestration Report
 
-**Generated:** 2026-08-05 13:50:25 UTC
+**Generated:** 2026-08-13 02:05:47 UTC
 **Host:** MacBook-Pro-de-Leandro.local
 
 ## Service Status Overview
@@ -15,13 +15,14 @@
 | discovery          | UP     | 1/1 | 30 | Discovery intelligence platform (FastAPI + stdio MCP) |
 | audio              | UP     | 2/2 | 8 | Torchaudio-based audio processing (FastAPI + MCP) |
 | ops-dashboard      | UP     | port 9000 | — | Ops dashboard |
-| **TOTAL**          | **17 UP / 3 DOWN** |         | 290 | |
+| comfyui            | UP     | 4/4 | 22 | ComfyUI workflow/model/node/system MCP servers (4) |
+| **TOTAL**          | **21 UP / 3 DOWN** |         | 312 | |
 
 ## Ecosystem Summary
 
-- **Projects:** 8
+- **Projects:** 9
 - **Defined Agents (LLM-facing):** 19
-- **Total MCP Tools:** 290
+- **Total MCP Tools:** 312
 - **Human Interfaces (UIs & APIs):** 18
 - **Configurable Parameters:** 15
 
@@ -36,6 +37,7 @@
 | ocr                | ocr_reader,pdf_processor | OCR UI | engine,llm_enhancement |
 | discovery          | discovery_agent,intelligence_analyst | Discovery UI,REST API,Case API | start_path |
 | audio              | audio_processor,asr_manager | Audio Processing Unit UI,REST API | sample_rate,asr_bundle |
+| comfyui            | workflow_manager,model_manager,node_inspector,system_ops | ComfyUI UI (localhost:8188) | COMFYUI_BASE_URL |
 
 ## Detailed MCP Server Inventory
 
@@ -80,6 +82,14 @@
 | Port | Server Name | Transport | Tools |
 |------|-------------|-----------|-------|
 | 8765 | audio-mcp | sse | transcription_healthcheck, transcription_audio_info, transcription_resample_audio, transcription_slice_audio, transcription_extract_features, transcription_list_asr_bundles, transcription_transcribe_greedy, transcription_list_project_paths |
+
+### comfyui
+| Port | Server Name | Transport | Tools |
+|------|-------------|-----------|-------|
+| 8130 | comfyui-workflow | streamable-http | comfyui_list_jobs, comfyui_get_job, comfyui_cancel_job, comfyui_list_history, comfyui_get_history, comfyui_get_queue, comfyui_clear_queue, comfyui_delete_queue_item, comfyui_interrupt, comfyui_free_memory, comfyui_clear_history, comfyui_delete_history_item |
+| 8131 | comfyui-model | streamable-http | comfyui_list_model_folders, comfyui_list_models, comfyui_list_embeddings, comfyui_view_metadata |
+| 8132 | comfyui-node | streamable-http | comfyui_list_nodes, comfyui_get_node_info |
+| 8133 | comfyui-system | streamable-http | comfyui_system_stats, comfyui_list_features, comfyui_get_extensions, comfyui_ecosystem_report |
 
 ## Qdrant Collections Map (live)
 
@@ -194,6 +204,10 @@
 - **discovery**: port '' DOWN
 - **audio**: port '' DOWN
 - **audio**: port '' DOWN
+- **comfyui**: port '' DOWN
+- **comfyui**: port '' DOWN
+- **comfyui**: port '' DOWN
+- **comfyui**: port '' DOWN
 
 ## Ops Dashboard
 

@@ -13,8 +13,8 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ===================== CONFIGURATION =====================
-BASE_URL = 'https://www.sophos.com/en-us/'
-SAVE_DIR = './crawler_output/sophos'  # where to save HTML and text
+BASE_URL = 'https://sixthstreetlendingpartners.com/team/'
+SAVE_DIR = './crawler_output/sixthstreet-team'  # where to save HTML and text
 MAX_PAGES = 100
 MAX_DEPTH = 3
 DOWNLOAD_ASSETS = False
