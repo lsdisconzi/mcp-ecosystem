@@ -1,6 +1,6 @@
 ---
 name: audio-dev
-description: Development and infrastructure agent for audio — PyTorch torchaudio service wrapper with FastAPI webapp, browser UI (24 endpoints), and MCP server (8 tools) for audio processing and ASR.
+description: Development and infrastructure agent for audio — PyTorch torchaudio service wrapper with FastAPI webapp, browser UI (24 endpoints), and MCP server (34 tools) for audio processing and ASR.
 tools: Read, Glob, Grep, Bash, Write, Edit
 model: sonnet
 ---
@@ -33,8 +33,7 @@ audio/
 │   ├── server.py            FastAPI app (850 lines) — 24 endpoints + session state
 │   └── static/index.html    SPA frontend (~1164 lines) — 8 sections, all JS handlers
 ├── mcp/
-│   └── torchaudio_mcp/
-│       └── server.py        MCP server (314 lines) — 8 tools, multi-transport (stdio/SSE/streamable-http)
+│   └── dynamic_server.py    MCP server (314 lines) — 34 tools dynamically generated from OpenAPI spec, multi-transport (stdio/SSE/streamable-http)
 ├── start.sh                 Starts webapp + MCP server — startup fragility (see issues)
 ├── stop.sh                  Shutdown script
 ├── requirements.txt         Python dependencies
@@ -104,7 +103,7 @@ audio/
 - **Frontend**: Single-file SPA in `webapp/static/index.html`. No React/Node build step — all vanilla JS.
 - **Audio processing**: Stateless functions. Write WAV to bytes buffer, return base64 JSON. Use torchaudio functional/transforms APIs.
 - **Sessions**: `sessions: dict[str, dict]` in webapp/server.py. Keyed by session_id. Add TTL eviction.
-- **MCP server**: FastMCP with multi-transport support (stdio, SSE, streamable-http). 8 tools.
+- **MCP server**: FastMCP with multi-transport support (stdio, SSE, streamable-http). 34 tools dynamically generated from OpenAPI spec.
 - **Models**: Lazy-loaded on first use via torch.hub or pipeline bundles. Don't preload unless configured.
 
 ## Infrastructure

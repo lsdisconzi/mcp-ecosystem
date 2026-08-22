@@ -3,13 +3,16 @@ TorchAudio Web Application - FastAPI Backend
 Provides REST API endpoints for all torchaudio audio processing capabilities.
 """
 
+import base64
 import io
+import math
 import tempfile
 import os
 from pathlib import Path
 from typing import Optional
 
 import torch
+import torch.nn.functional as F
 import torchaudio
 from fastapi import FastAPI, File, UploadFile, Form, Query
 from fastapi.responses import FileResponse, JSONResponse
@@ -76,6 +79,200 @@ def _get_session(session_id: str) -> dict:
     if session_id not in sessions:
         sessions[session_id] = {}
     return sessions[session_id]
+
+
+# ──────────────────────────────────────────────
+# Spectral enhancement DSP (denoise / de-reverb)
+# ──────────────────────────────────────────────
+
+def _stft(waveform: torch.Tensor, n_fft: int, hop_length: int):
+    """Single shared STFT config: Hann window, centered, onesided complex STFT."""
+    win = torch.hann_window(n_fft, dtype=waveform.dtype, device=waveform.device)
+    X = torch.stft(waveform, n_fft, hop_length, window=win, return_complex=True)
+    return X, win
+
+
+def _smooth_spectrogram(m: torch.Tensor, frames: int) -> torch.Tensor:
+    """Smooth a [C, F, T] magnitude/power spectrogram along time with a box filter."""
+    if frames <= 1 or m.shape[-1] <= 1:
+        return m
+    if frames % 2 == 0:
+        frames += 1
+    if m.shape[-1] <= frames:
+        return m
+    n_ch, n_freq, n_frames = m.shape
+    kernel = torch.ones(1, 1, frames, dtype=m.dtype, device=m.device) / frames
+    flat = m.reshape(n_ch * n_freq, 1, n_frames)
+    pad = frames // 2
+    flat = torch.nn.functional.pad(flat, (pad, pad), mode="replicate")
+    smoothed = torch.nn.functional.conv1d(flat, kernel)[..., :n_frames].reshape(n_ch, n_freq, n_frames)
+    return smoothed
+
+
+def _estimate_noise_profile(mag: torch.Tensor, frac: float = 0.15) -> torch.Tensor:
+    """Estimate a stationary noise magnitude profile from the quietest frames.
+
+    Assumes the noise floor dominates the lowest-energy STFT frames (typical for
+    stationary noise). Returns a [C, F, 1] per-channel noise magnitude profile.
+    """
+    C, F, T = mag.shape
+    if T < 2:
+        return mag.mean(dim=-1, keepdim=True)
+    frame_energy = mag.pow(2).mean(dim=1)  # [C, T]
+    k = max(1, int(T * frac))
+    profiles = []
+    for c in range(C):
+        idx = torch.topk(frame_energy[c], k, largest=False).indices
+        profiles.append(mag[c, :, idx].mean(dim=-1))
+    return torch.stack(profiles, dim=0).unsqueeze(-1)  # [C, F, 1]
+
+
+def _estimate_rt60(waveform: torch.Tensor, sample_rate: int) -> Optional[float]:
+    """Estimate RT60 (reverb decay time) via Schroeder backward integration.
+
+    Returns seconds, or None when the estimate is unreliable so the caller can
+    fall back to a default.
+    """
+    x = waveform.mean(dim=0) if waveform.dim() > 1 else waveform
+    hop = max(1, int(sample_rate * 0.01))        # 10 ms
+    win_len = max(2, int(sample_rate * 0.02))    # 20 ms
+    if x.shape[-1] < win_len * 2:
+        return None
+    frames = x.unfold(-1, win_len, hop).pow(2).mean(dim=-1)
+    if frames.numel() < 10:
+        return None
+    # Schroeder backward integration of the energy envelope
+    bi = torch.flip(torch.cumsum(torch.flip(frames, [0]), 0), [0])
+    bi_db = 10 * torch.log10(bi.clamp_min(torch.finfo(bi.dtype).tiny))
+    bi_db = bi_db - bi_db.max()
+
+    def crossing(level: float) -> Optional[float]:
+        idx = torch.nonzero(bi_db < level).flatten()
+        if idx.numel() == 0:
+            return None
+        i = int(idx[0].item())
+        if i == 0:
+            return 0.0
+        a, b = bi_db[i - 1].item(), bi_db[i].item()
+        frac = (level - a) / (b - a) if b != a else 0.0
+        return (i + frac) * hop / sample_rate
+
+    t5 = crossing(-5.0)
+    # Use the -25 dB crossing and extrapolate to -60 dB. This tolerates signals
+    # whose reverb tail is truncated at the end of the file (never reaching
+    # -35 dB) as long as the early decay is captured.
+    t25 = crossing(-25.0)
+    if t5 is None or t25 is None or t25 <= t5:
+        return None
+    rt60 = 60.0 * (t25 - t5) / 20.0
+    if not (0.05 <= rt60 <= 3.0):
+        return None
+    return rt60
+
+
+def spectral_denoise(
+    waveform: torch.Tensor,
+    sample_rate: int,
+    noise_waveform: Optional[torch.Tensor] = None,
+    *,
+    n_fft: int = 2048,
+    hop_length: int = 0,
+    stationary: bool = True,
+    alpha: float = 2.0,
+    floor_db: float = -40.0,
+    smoothing_frames: int = 5,
+) -> torch.Tensor:
+    """True spectral-gating denoiser.
+
+    Computes an STFT-domain Wiener mask from the noise power profile and applies
+    it to the magnitude spectrum before resynthesis. When `noise_waveform` is
+    given its average spectrogram is used as the noise profile; otherwise the
+    profile is estimated from the quietest frames of the input.
+    """
+    if n_fft < 8 or n_fft % 2 != 0:
+        raise ValueError("n_fft must be an even integer >= 8")
+    if hop_length <= 0:
+        hop_length = n_fft // 4
+
+    X, win = _stft(waveform, n_fft, hop_length)
+    mag = X.abs()
+    phase = X.angle()
+
+    if noise_waveform is not None:
+        Xn, _ = _stft(noise_waveform, n_fft, hop_length)
+        nmag = Xn.abs()
+        if stationary:
+            noise_profile = nmag.mean(dim=-1, keepdim=True)  # [C, F, 1]
+        else:
+            noise_profile = _smooth_spectrogram(nmag, max(smoothing_frames, 1))
+    else:
+        # Auto-estimate the noise floor from the quietest frames.
+        noise_profile = _estimate_noise_profile(mag)
+
+    # Wiener mask: G = Px / (Px + alpha * Pn)
+    Px = mag.pow(2)
+    Pn = noise_profile.pow(2)
+    gain = Px / (Px + alpha * Pn).clamp_min(1e-12)
+    gain = gain.clamp(10 ** (floor_db / 20.0), 1.0)
+    if smoothing_frames > 1:
+        gain = _smooth_spectrogram(gain, smoothing_frames)
+
+    clean = (mag * gain) * torch.exp(1j * phase)
+    return torch.istft(clean, n_fft, hop_length, window=win, length=waveform.shape[-1])
+
+
+def spectral_dereverb(
+    waveform: torch.Tensor,
+    sample_rate: int,
+    *,
+    n_fft: int = 2048,
+    hop_length: int = 0,
+    rt60_s: float = 0.0,
+    attenuation_db: float = 20.0,
+    mix: float = 1.0,
+) -> torch.Tensor:
+    """Spectral de-reverberation by late-reverberation attenuation (Lebart-style).
+
+    Models the late reverb energy in each STFT bin as an exponentially decaying
+    copy of the past power spectrum and applies a Wiener gain to suppress it.
+    RT60 is estimated automatically from the input unless `rt60_s` is given.
+    """
+    if n_fft < 8 or n_fft % 2 != 0:
+        raise ValueError("n_fft must be an even integer >= 8")
+    if hop_length <= 0:
+        hop_length = n_fft // 4
+
+    X, win = _stft(waveform, n_fft, hop_length)
+    mag = X.abs()
+    phase = X.angle()
+    P = mag.pow(2)  # [C, F, T]
+
+    if rt60_s is None or rt60_s <= 0.0:
+        rt60_s = _estimate_rt60(waveform, sample_rate) or 0.4
+    rt60_s = float(min(max(rt60_s, 0.05), 3.0))
+
+    hop_dur = hop_length / sample_rate
+    # Amplitude decay rate delta satisfies e^{-2*delta*RT60} = 1e-6 (power).
+    delta = 3.0 * math.log(10.0) / rt60_s
+    decay_per_frame = math.exp(-2.0 * delta * hop_dur)
+    max_lag = max(2, min(int(rt60_s / hop_dur), 2048))
+
+    # late[t] = sum_{tau=1..max_lag} P[t-tau] * decay_per_frame^tau
+    weights = (decay_per_frame ** torch.arange(max_lag, 0, -1, dtype=torch.float64))
+    weights = weights.to(dtype=P.dtype, device=P.device).view(1, 1, -1)
+    n_ch, n_freq, n_frames = P.shape
+    late = torch.nn.functional.conv1d(P.reshape(n_ch * n_freq, 1, n_frames), weights, padding=max_lag)[..., :n_frames]
+    late = late.reshape(n_ch, n_freq, n_frames)
+
+    gain = P / (P + late).clamp_min(1e-12)
+    gain = gain.clamp(10 ** (-attenuation_db / 20.0), 1.0)
+
+    clean = (mag * gain) * torch.exp(1j * phase)
+    y = torch.istft(clean, n_fft, hop_length, window=win, length=waveform.shape[-1])
+    if mix >= 1.0:
+        return y
+    mix = min(max(mix, 0.0), 1.0)
+    return mix * y + (1.0 - mix) * waveform
 
 
 # ──────────────────────────────────────────────
@@ -446,6 +643,114 @@ async def add_noise(
 
 
 # ──────────────────────────────────────────────
+# 4b. SPECTRAL ENHANCEMENT (DENOISE / DEREVERB)
+# ──────────────────────────────────────────────
+
+@app.post("/api/enhance/denoise")
+async def spectral_denoise_endpoint(
+    file: UploadFile = File(...),
+    noise_file: UploadFile = File(None),
+    noise_file_base64: str = Form(None),
+    n_fft: int = Form(2048),
+    hop_length: int = Form(0),
+    stationary: bool = Form(True),
+    alpha: float = Form(2.0),
+    floor_db: float = Form(-40.0),
+    smoothing_frames: int = Form(5),
+):
+    """
+    True spectral-gating denoiser (STFT Wiener mask).
+
+    Suppresses noise by computing a spectral mask from a noise profile and
+    applying it to the STFT magnitude before resynthesis. The noise profile is
+    taken from `noise_file`/`noise_file_base64` (a noise-only reference sample)
+    when provided; otherwise it is auto-estimated from the quietest frames of
+    the input.
+
+    Parameters:
+    - noise_file: optional upload of a noise-only reference sample
+    - noise_file_base64: optional base64-encoded WAV of the reference noise
+    - n_fft: FFT size (default 2048)
+    - hop_length: STFT hop (default: n_fft/4)
+    - stationary: True if the noise is stationary (default true)
+    - alpha: noise oversubtraction factor 0.5-4.0 (default 2.0)
+    - floor_db: maximum attenuation floor in dB (default -40)
+    - smoothing_frames: time-smoothing of the gain mask in frames (default 5)
+    """
+    try:
+        waveform, sample_rate = _load_upload(file)
+        noise_waveform = None
+        if noise_file is not None:
+            noise_waveform, _ = _load_upload(noise_file)
+        elif noise_file_base64:
+            raw = base64.b64decode(noise_file_base64)
+            noise_waveform, _ = torchaudio.load(io.BytesIO(raw))
+        result = spectral_denoise(
+            waveform,
+            sample_rate,
+            noise_waveform,
+            n_fft=n_fft,
+            hop_length=hop_length,
+            stationary=stationary,
+            alpha=alpha,
+            floor_db=floor_db,
+            smoothing_frames=smoothing_frames,
+        )
+        return JSONResponse({
+            "audio_base64": _tensor_to_b64(result, sample_rate),
+            "sample_rate": sample_rate,
+            "applied": "denoise",
+            "noise_source": "upload" if noise_waveform is not None else "auto",
+        })
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+
+
+@app.post("/api/enhance/dereverb")
+async def spectral_dereverb_endpoint(
+    file: UploadFile = File(...),
+    n_fft: int = Form(2048),
+    hop_length: int = Form(0),
+    rt60_s: float = Form(0.0),
+    attenuation_db: float = Form(20.0),
+    mix: float = Form(1.0),
+):
+    """
+    Spectral de-reverberation (late-reverb attenuation).
+
+    Suppresses reverberation by modeling the late reverb energy in each STFT
+    bin as an exponentially decaying copy of the past power spectrum, then
+    applying a Wiener gain. RT60 is measured from the input via Schroeder
+    backward integration unless `rt60_s` is provided.
+
+    Parameters:
+    - n_fft: FFT size (default 2048)
+    - hop_length: STFT hop (default: n_fft/4)
+    - rt60_s: reverb decay time override in seconds (default 0 = auto-detect)
+    - attenuation_db: max late-reverb attenuation in dB (default 20)
+    - mix: wet/dry blend, 0 = original, 1 = fully processed (default 1)
+    """
+    try:
+        waveform, sample_rate = _load_upload(file)
+        result = spectral_dereverb(
+            waveform,
+            sample_rate,
+            n_fft=n_fft,
+            hop_length=hop_length,
+            rt60_s=rt60_s,
+            attenuation_db=attenuation_db,
+            mix=mix,
+        )
+        return JSONResponse({
+            "audio_base64": _tensor_to_b64(result, sample_rate),
+            "sample_rate": sample_rate,
+            "applied": "dereverb",
+        })
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+
+
+# ──────────────────────────────────────────────
 # 5. SPECTRAL ANALYSIS
 # ──────────────────────────────────────────────
 
@@ -732,7 +1037,7 @@ async def apply_ir_convolve(file: UploadFile = File(...), ir_file: UploadFile = 
 async def time_stretch(file: UploadFile = File(...), rate: float = Form(1.0)):
     """Time-stretch audio without changing pitch."""
     waveform, sample_rate = _load_upload(file)
-    transform = torchaudio.transforms.TimeStretch(rate=rate)
+    transform = torchaudio.transforms.TimeStretch(hop_length=128, n_freq=257)
     # TimeStretch works on complex spectrograms
     spec = torch.stft(
         waveform,
@@ -740,8 +1045,9 @@ async def time_stretch(file: UploadFile = File(...), rate: float = Form(1.0)):
         hop_length=128,
         return_complex=True,
     )
-    stretched = transform(spec)
-    result = torch.istft(stretched, n_fft=512, hop_length=128, return_complex=False, length=waveform.shape[-1])
+    stretched = transform(spec, overriding_rate=rate)
+    expected_length = round(waveform.shape[-1] / rate)
+    result = torch.istft(stretched, n_fft=512, hop_length=128, return_complex=False, length=expected_length)
     return JSONResponse({
         "audio_base64": _tensor_to_b64(result, sample_rate),
         "sample_rate": sample_rate,
@@ -798,6 +1104,8 @@ async def get_info():
             {"name": "Dither"},
             {"name": "Gain"},
             {"name": "Convolution (reverb)"},
+            {"name": "Spectral Denoise", "param": "spectral-gating Wiener mask, noise profile auto/upload"},
+            {"name": "Spectral Dereverb", "param": "late-reverb attenuation, RT60 auto-detect"},
         ],
         "available_models": [
             {"name": "HDemucs", "desc": "Music source separation (drums, bass, other, vocals)"},

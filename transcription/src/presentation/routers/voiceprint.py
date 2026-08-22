@@ -166,6 +166,9 @@ async def voiceprint_from_file(
             # Fallback: treat whole audio as one turn
             turns = []
         else:
+            # pyannote >= 4 returns a DiarizeOutput wrapper; 3.x returns the Annotation directly.
+            if hasattr(diarization, "exclusive_speaker_diarization"):
+                diarization = diarization.exclusive_speaker_diarization
             turns = []
             for turn, _, speaker in diarization.itertracks(yield_label=True):
                 turns.append({

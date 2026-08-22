@@ -36,6 +36,9 @@ class PyAnnoteDiarizerAdapter:
         pipeline.max_speakers = max_speakers
 
         diarization = pipeline(audio_path)
+        # pyannote >= 4 returns a DiarizeOutput wrapper; 3.x returns the Annotation directly.
+        if hasattr(diarization, "exclusive_speaker_diarization"):
+            diarization = diarization.exclusive_speaker_diarization
         return [
             DiarizationTurn(speaker=speaker, start=float(turn.start), end=float(turn.end))
             for turn, _, speaker in diarization.itertracks(yield_label=True)
@@ -65,6 +68,9 @@ class PyAnnoteDiarizerAdapter:
             kwargs["max_speakers"] = max_speakers
 
         diarization = pipeline({"waveform": waveform, "sample_rate": sample_rate}, **kwargs)
+        # pyannote >= 4 returns a DiarizeOutput wrapper; 3.x returns the Annotation directly.
+        if hasattr(diarization, "exclusive_speaker_diarization"):
+            diarization = diarization.exclusive_speaker_diarization
         return [
             DiarizationTurn(speaker=speaker, start=float(turn.start), end=float(turn.end))
             for turn, _, speaker in diarization.itertracks(yield_label=True)

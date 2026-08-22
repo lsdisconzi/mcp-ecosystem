@@ -46,8 +46,8 @@ This is a **service wrapper** around the [PyTorch torchaudio](https://github.com
 **Webapp API endpoints** (24 total):
 `POST /api/upload`, `POST /api/upload-session`, `GET /api/audio/{session_id}`, `POST /api/filter`, `POST /api/filter-chain`, `POST /api/effects/gain`, `POST /api/effects/dither`, `POST /api/effects/dcshift`, `POST /api/effects/overdrive`, `POST /api/effects/contrast`, `POST /api/effects/flanger`, `POST /api/effects/phaser`, `POST /api/effects/convolve`, `POST /api/effects/ir-convolve`, `POST /api/enhance/pitch-shift`, `POST /api/enhance/speed`, `POST /api/enhance/preemphasis`, `POST /api/enhance/deemphasis`, `POST /api/enhance/volume`, `POST /api/enhance/fade`, `POST /api/enhance/add-noise`, `POST /api/enhance/time-stretch`, `POST /api/analysis/spectrogram`, `POST /api/analysis/mel-spectrogram`, `POST /api/analysis/mfcc`, `POST /api/analysis/loudness`, `POST /api/analysis/spectral-centroid`, `POST /api/analysis/pitch`, `POST /api/separate`, `POST /api/vad`, `POST /api/resample`, `GET /api/info`, `GET /`
 
-**MCP tools** (8 total):
-`transcription_healthcheck`, `transcription_audio_info`, `transcription_resample_audio`, `transcription_slice_audio`, `transcription_extract_features`, `transcription_list_asr_bundles`, `transcription_transcribe_greedy`, `transcription_list_project_paths`
+**MCP tools** (34 total, dynamically generated from OpenAPI spec):
+`audio_info`, `audio_upload`, `biquad_filter`, `effects_gain`, `effects_dither`, `effects_dcshift`, `effects_overdrive`, `effects_contrast`, `effects_flanger`, `effects_phaser`, `enhance_pitch_shift`, `enhance_speed`, `enhance_preemphasis`, `enhance_deemphasis`, `enhance_volume`, `enhance_fade`, `enhance_add_noise`, `enhance_time_stretch`, `analysis_spectrogram`, `analysis_mel_spectrogram`, `analysis_mfcc`, `analysis_loudness`, `analysis_spectral_centroid`, `analysis_pitch`, `separate_hdemucs`, `vad`, `resample`, `transcription_healthcheck`, `transcription_audio_info`, `transcription_resample_audio`, `transcription_slice_audio`, `transcription_extract_features`, `transcription_list_asr_bundles`, `transcription_transcribe_greedy`, `transcription_list_project_paths`
 
 ## 3. Feature Completeness Matrix
 
@@ -64,14 +64,14 @@ This is a **service wrapper** around the [PyTorch torchaudio](https://github.com
 | Voice activity detection | Webapp API | `webapp/server.py:658-670` | LIKELY | Function exists in source, not verified in logs |
 | Time stretch | Webapp API | `webapp/server.py:731-748` | LIKELY | Function exists in source |
 | Custom IR convolution | Webapp API | `webapp/server.py:713-724` | LIKELY | Requires second file upload |
-| MCP health check | MCP server | `mcp/server.py:53-60` | YES | Verified in logs |
-| MCP audio info | MCP server | `mcp/server.py:63-73` | YES | |
-| MCP resample | MCP server | `mcp/server.py:76-95` | YES | |
-| MCP slice audio | MCP server | `mcp/server.py:98-142` | YES | |
-| MCP extract features | MCP server | `mcp/server.py:145-200` | YES | |
-| MCP list ASR bundles | MCP server | `mcp/server.py:203-214` | LIKELY | |
-| MCP transcribe greedy | MCP server | `mcp/server.py:217-257` | LIKELY | Downloads model on first use |
-| MCP list project paths | MCP server | `mcp/server.py:260-275` | YES | |
+| MCP health check | MCP server | `mcp/dynamic_server.py:53-60` | YES | Verified in logs |
+| MCP audio info | MCP server | `mcp/dynamic_server.py:63-73` | YES | |
+| MCP resample | MCP server | `mcp/dynamic_server.py:76-95` | YES | |
+| MCP slice audio | MCP server | `mcp/dynamic_server.py:98-142` | YES | |
+| MCP extract features | MCP server | `mcp/dynamic_server.py:145-200` | YES | |
+| MCP list ASR bundles | MCP server | `mcp/dynamic_server.py:203-214` | LIKELY | |
+| MCP transcribe greedy | MCP server | `mcp/dynamic_server.py:217-257` | LIKELY | Downloads model on first use |
+| MCP list project paths | MCP server | `mcp/dynamic_server.py:260-275` | YES | |
 | Frontend UI | `index.html` | Complete | YES | All 8 sections implemented with JS handlers |
 | Waveform visualization | Frontend JS | `/webapp/static/index.html:718-744` | YES | Placeholder (sin+random) — not real waveform data |
 | `/api/info` endpoint | Webapp API | `webapp/server.py:755-811` | YES | Verified 200 OK in logs (line 372) |
@@ -98,7 +98,7 @@ The project has three distinct layers:
 
 **Layer 3: MCP server** (`mcp/torchaudio_mcp/server.py`, 314 lines)
 - Uses `FastMCP` from `mcp` package
-- Exposes 8 tools with type annotations for safe parameter handling
+- Exposes 34 tools dynamically generated from OpenAPI spec with type annotations for safe parameter handling
 - Supports 3 transports: stdio (for Claude Desktop), SSE, streamable-http (for networked use)
 - Configurable via environment variables: `MCP_TRANSPORT`, `MCP_HOST`, `MCP_PORT`
 

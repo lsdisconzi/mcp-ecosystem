@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 
 # ===================== CONFIGURATION =====================
 # The directory that contains /pages and /texts subdirectories
-CRAWL_OUTPUT_DIR = './crawler_output/irys'
+CRAWL_OUTPUT_DIR = './crawler_output/redeconfigas'
 
 # Output filenames (will be saved inside CRAWL_OUTPUT_DIR)
 PAGES_OUTPUT = 'combined_pages.md'      # from HTML

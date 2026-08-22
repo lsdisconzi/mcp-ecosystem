@@ -1,0 +1,1802 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "TorchAudio Processing Suite API",
+    "version": "1.0.0",
+    "description": "REST API for TorchAudio audio processing capabilities"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Development server"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check endpoint for VPS connectivity tests",
+        "description": "Health check endpoint for VPS connectivity tests",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "OK response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {"type": "string", "enum": ["ok"]},
+                    "service": {"type": "string"},
+                    "torch": {"type": "string"},
+                    "torchaudio": {"type": "string"}
+                  },
+                  "required": ["status", "service", "torch", "torchaudio"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/upload": {
+      "post": {
+        "summary": "Upload an audio file and return its info",
+        "description": "Upload an audio file and return metadata including filename, sample_rate, channels, num_frames, duration, dtype, and max_amplitude",
+        "operationId": "uploadAudio",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Audio info response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "filename": {"type": "string"},
+                    "sample_rate": {"type": "integer"},
+                    "channels": {"type": "integer"},
+                    "num_frames": {"type": "integer"},
+                    "duration": {"type": "number"},
+                    "dtype": {"type": "string"},
+                    "max_amplitude": {"type": "number"}
+                  },
+                  "required": ["filename", "sample_rate", "channels", "num_frames", "duration", "dtype", "max_amplitude"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/upload-session": {
+      "post": {
+        "summary": "Upload audio and store in session for subsequent processing",
+        "description": "Upload audio and store in session for subsequent processing. Accepts optional session_id form field (default: 'default')",
+        "operationId": "uploadToSession",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "session_id": {
+                    "type": "string",
+                    "description": "Session ID to store audio under (default: 'default')"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session upload response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {"type": "string"},
+                    "sample_rate": {"type": "integer"},
+                    "channels": {"type": "integer"},
+                    "num_frames": {"type": "integer"},
+                    "duration": {"type": "number"}
+                  },
+                  "required": ["status", "sample_rate", "channels", "num_frames", "duration"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audio/{session_id}": {
+      "get": {
+        "summary": "Download the processed audio from a session",
+        "description": "Download the processed audio from a session as WAV bytes",
+        "operationId": "getAudio",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audio file response",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No audio in session"
+          }
+        }
+      }
+    },
+    "/api/filter": {
+      "post": {
+        "summary": "Apply a basic filter to audio",
+        "description": "Apply a basic filter enhancement to uploaded audio",
+        "operationId": "applyFilter",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "enhancement_amount": {
+                    "type": "number",
+                    "description": "Enhancement amount (default: 75.0)",
+                    "default": 75.0
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Filtered audio response with base64 encoding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/filter-chain": {
+      "post": {
+        "summary": "Apply a filter chain to audio",
+        "description": "Apply a chain of filter effects to uploaded audio",
+        "operationId": "applyFilterChain",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "params": {
+                    "type": "object",
+                    "description": "Filter chain parameters"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Filtered chain audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/effects/gain": {
+      "post": {
+        "summary": "Apply gain effect to audio",
+        "description": "Apply gain effect to uploaded audio with specified enhancement amount in dB",
+        "operationId": "applyGain",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "enhancement_amount": {
+                    "type": "number",
+                    "description": "Gain amount in dB",
+                    "default": 0.0
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Gain-processed audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/effects/dither": {
+      "post": {
+        "summary": "Apply dither effect to audio",
+        "description": "Apply dither effect to uploaded audio",
+        "operationId": "applyDither",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dither-processed audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/effects/dcshift": {
+      "post": {
+        "summary": "Apply DC shift effect to audio",
+        "description": "Apply DC shift effect to uploaded audio with specified shift amount",
+        "operationId": "applyDcshift",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "shift": {
+                    "type": "number",
+                    "description": "DC shift amount"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "DC-shifted audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/effects/overdrive": {
+      "post": {
+        "summary": "Apply overdrive effect to audio",
+        "description": "Apply overdrive effect to uploaded audio",
+        "operationId": "applyOverdrive",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Overdrive-processed audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/effects/contrast": {
+      "post": {
+        "summary": "Apply contrast enhancement to audio",
+        "description": "Apply contrast enhancement to uploaded audio with specified enhancement amount (percentage)",
+        "operationId": "applyContrast",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "enhancement_amount": {
+                    "type": "number",
+                    "description": "Contrast enhancement amount in percentage (default: 75.0)",
+                    "default": 75.0
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Contrast-processed audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/effects/flanger": {
+      "post": {
+        "summary": "Apply flanger effect to audio",
+        "description": "Apply flanger effect to uploaded audio with parameters: delay, depth, regen, width, speed, phase, modulation, interpolation",
+        "operationId": "applyFlanger",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "delay": {
+                    "type": "number",
+                    "description": "Delay in seconds (default: 0.0)",
+                    "default": 0.0
+                  },
+                  "depth": {
+                    "type": "number",
+                    "description": "Depth of flanger (default: 2.0)",
+                    "default": 2.0
+                  },
+                  "regen": {
+                    "type": "number",
+                    "description": "Reinforcement (default: 0.0)",
+                    "default": 0.0
+                  },
+                  "width": {
+                    "type": "number",
+                    "description": "Width parameter (default: 71.0)",
+                    "default": 71.0
+                  },
+                  "speed": {
+                    "type": "number",
+                    "description": "Speed of modulation (default: 0.5)",
+                    "default": 0.5
+                  },
+                  "phase": {
+                    "type": "number",
+                    "description": "Phase parameter in degrees (default: 25.0)",
+                    "default": 25.0
+                  },
+                  "modulation": {
+                    "type": "string",
+                    "description": "Modulation type (default: 'sinusoidal')",
+                    "enum": ["sinusoidal", "triangular", "sawtooth"],
+                    "default": "sinusoidal"
+                  },
+                  "interpolation": {
+                    "type": "string",
+                    "description": "Interpolation type (default: 'linear')",
+                    "enum": ["linear", "cubic"],
+                    "default": "linear"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flanger-processed audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/effects/phaser": {
+      "post": {
+        "summary": "Apply phaser effect to audio",
+        "description": "Apply phaser effect to uploaded audio with parameters: gain_in, gain_out, delay_ms, decay, mod_speed, sinusoidal",
+        "operationId": "applyPhaser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "gain_in": {
+                    "type": "number",
+                    "description": "Input gain (default: 0.4)",
+                    "default": 0.4
+                  },
+                  "gain_out": {
+                    "type": "number",
+                    "description": "Output gain (default: 0.74)",
+                    "default": 0.74
+                  },
+                  "delay_ms": {
+                    "type": "number",
+                    "description": "Delay in milliseconds (default: 3.0)",
+                    "default": 3.0
+                  },
+                  "decay": {
+                    "type": "number",
+                    "description": "Decay parameter (default: 0.4)",
+                    "default": 0.4
+                  },
+                  "mod_speed": {
+                    "type": "number",
+                    "description": "Modulation speed (default: 0.5)",
+                    "default": 0.5
+                  },
+                  "sinusoidal": {
+                    "type": "boolean",
+                    "description": "Whether to use sinusoidal modulation (default: true)",
+                    "default": true
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Phaser-processed audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enhance/pitch-shift": {
+      "post": {
+        "summary": "Apply pitch shift enhancement to audio",
+        "description": "Apply pitch shift enhancement to uploaded audio in cents",
+        "operationId": "applyPitchShift",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "cents": {
+                    "type": "integer",
+                    "description": "Pitch shift amount in cents",
+                    "default": 0
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pitch-shifted audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enhance/speed": {
+      "post": {
+        "summary": "Apply speed change to audio",
+        "description": "Apply speed change to uploaded audio with specified factor",
+        "operationId": "applySpeed",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "factor": {
+                    "type": "number",
+                    "description": "Speed factor (default: 1.0)",
+                    "default": 1.0
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Speed-changed audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enhance/preemphasis": {
+      "post": {
+        "summary": "Apply preemphasis filter to audio",
+        "description": "Apply preemphasis filter to uploaded audio with specified coefficient",
+        "operationId": "applyPreemphasis",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "coefficient": {
+                    "type": "number",
+                    "description": "Preemphasis coefficient (default: 0.97)",
+                    "default": 0.97
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Preemphasis-processed audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enhance/deemphasis": {
+      "post": {
+        "summary": "Apply deemphasis filter to audio",
+        "description": "Apply deemphasis filter to uploaded audio with specified coefficient",
+        "operationId": "applyDeemphasis",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "coefficient": {
+                    "type": "number",
+                    "description": "Deemphasis coefficient (default: 0.97)",
+                    "default": 0.97
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Deemphasis-processed audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enhance/volume": {
+      "post": {
+        "summary": "Apply volume adjustment to audio",
+        "description": "Apply volume adjustment to uploaded audio in dB",
+        "operationId": "applyVolume",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "gain_db": {
+                    "type": "number",
+                    "description": "Gain adjustment in dB",
+                    "default": 0.0
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Volume-adjusted audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enhance/fade": {
+      "post": {
+        "summary": "Apply fade effect to audio",
+        "description": "Apply fade effect to uploaded audio with start_db, end_db, fade_type, and duration_ms parameters",
+        "operationId": "applyFade",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "start_db": {
+                    "type": "number",
+                    "description": "Starting fade level in dB (default: 0.0)",
+                    "default": 0.0
+                  },
+                  "end_db": {
+                    "type": "number",
+                    "description": "Ending fade level in dB (default: 0.0)",
+                    "default": 0.0
+                  },
+                  "fade_type": {
+                    "type": "string",
+                    "description": "Type of fade ('linear' or 'logarithmic', default: 'linear')",
+                    "enum": ["linear", "logarithmic"],
+                    "default": "linear"
+                  },
+                  "duration_ms": {
+                    "type": "integer",
+                    "description": "Fade duration in milliseconds (default: 1000)",
+                    "default": 1000
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Fade-processed audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enhance/add-noise": {
+      "post": {
+        "summary": "Add noise to audio",
+        "description": "Add noise to uploaded audio with specified noise_amount",
+        "operationId": "applyAddNoise",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "noise_amount": {
+                    "type": "number",
+                    "description": "Noise amount (default: 0.001)",
+                    "default": 0.001
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Noisy audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enhance/denoise": {
+      "post": {
+        "summary": "Spectral-gating denoiser",
+        "description": "Suppress noise with an STFT Wiener mask. The noise profile is taken from noise_file/noise_file_base64 (noise-only reference sample) when provided, otherwise auto-estimated from the quietest frames. Parameters: noise_file, noise_file_base64, n_fft, hop_length, stationary, alpha, floor_db, smoothing_frames.",
+        "operationId": "spectralDenoise",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "noise_file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Optional noise-only reference sample (WAV)"
+                  },
+                  "noise_file_base64": {
+                    "type": "string",
+                    "description": "Optional base64-encoded WAV reference noise sample"
+                  },
+                  "n_fft": {
+                    "type": "integer",
+                    "description": "FFT size (default: 2048)",
+                    "default": 2048
+                  },
+                  "hop_length": {
+                    "type": "integer",
+                    "description": "STFT hop (default: n_fft/4)",
+                    "default": 0
+                  },
+                  "stationary": {
+                    "type": "boolean",
+                    "description": "True if the noise is stationary (default: true)",
+                    "default": true
+                  },
+                  "alpha": {
+                    "type": "number",
+                    "description": "Noise oversubtraction factor 0.5-4.0 (default: 2.0)",
+                    "default": 2.0
+                  },
+                  "floor_db": {
+                    "type": "number",
+                    "description": "Maximum attenuation floor in dB (default: -40)",
+                    "default": -40.0
+                  },
+                  "smoothing_frames": {
+                    "type": "integer",
+                    "description": "Time-smoothing of the gain mask in frames (default: 5)",
+                    "default": 5
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Denoised audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"},
+                    "applied": {"type": "string"},
+                    "noise_source": {"type": "string"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enhance/dereverb": {
+      "post": {
+        "summary": "Spectral de-reverberation",
+        "description": "Suppress reverberation via late-reverb attenuation. RT60 is measured from the input via Schroeder backward integration unless rt60_s is provided. Parameters: n_fft, hop_length, rt60_s, attenuation_db, mix.",
+        "operationId": "spectralDereverb",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "n_fft": {
+                    "type": "integer",
+                    "description": "FFT size (default: 2048)",
+                    "default": 2048
+                  },
+                  "hop_length": {
+                    "type": "integer",
+                    "description": "STFT hop (default: n_fft/4)",
+                    "default": 0
+                  },
+                  "rt60_s": {
+                    "type": "number",
+                    "description": "Reverb decay time override in seconds (default: 0 = auto-detect)",
+                    "default": 0.0
+                  },
+                  "attenuation_db": {
+                    "type": "number",
+                    "description": "Max late-reverb attenuation in dB (default: 20)",
+                    "default": 20.0
+                  },
+                  "mix": {
+                    "type": "number",
+                    "description": "Wet/dry blend, 0 = original, 1 = fully processed (default: 1)",
+                    "default": 1.0
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dereverbed audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"},
+                    "applied": {"type": "string"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analysis/spectrogram": {
+      "post": {
+        "summary": "Compute spectrogram analysis of audio",
+        "description": "Compute spectrogram of uploaded audio with parameters: n_fft, hop_length, win_length, window_fn",
+        "operationId": "analysisSpectrogram",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "n_fft": {
+                    "type": "integer",
+                    "description": "FFT size (default: 400)",
+                    "default": 400
+                  },
+                  "hop_length": {
+                    "type": "integer",
+                    "description": "Hop length (default: 160)",
+                    "default": 160
+                  },
+                  "win_length": {
+                    "type": "integer",
+                    "description": "Window length (default: null, uses n_fft)",
+                    "default": null
+                  },
+                  "window_fn": {
+                    "type": "string",
+                    "description": "Window function (default: 'hann')",
+                    "enum": ["hann", "hamming", "blackman", "blackman_harris"],
+                    "default": "hann"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Spectrogram analysis response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "shape": {
+                      "type": "array",
+                      "items": {"type": "integer"},
+                      "description": "Feature tensor shape"
+                    },
+                    "mean": {"type": "number"},
+                    "std": {"type": "number"},
+                    "min": {"type": "number"},
+                    "max": {"type": "number"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["shape", "mean", "std", "min", "max", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analysis/mel-spectrogram": {
+      "post": {
+        "summary": "Compute mel-spectrogram analysis of audio",
+        "description": "Compute mel-spectrogram of uploaded audio with parameters: n_fft, hop_length, win_length, n_mels, window_fn",
+        "operationId": "analysisMelSpectrogram",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "n_fft": {
+                    "type": "integer",
+                    "description": "FFT size (default: 400)",
+                    "default": 400
+                  },
+                  "hop_length": {
+                    "type": "integer",
+                    "description": "Hop length (default: 160)",
+                    "default": 160
+                  },
+                  "win_length": {
+                    "type": "integer",
+                    "description": "Window length (default: null, uses n_fft)",
+                    "default": null
+                  },
+                  "n_mels": {
+                    "type": "integer",
+                    "description": "Number of mel bands (default: 80)",
+                    "default": 80
+                  },
+                  "window_fn": {
+                    "type": "string",
+                    "description": "Window function (default: 'hann')",
+                    "enum": ["hann", "hamming", "blackman", "blackman_harris"],
+                    "default": "hann"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mel-spectrogram analysis response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "shape": {
+                      "type": "array",
+                      "items": {"type": "integer"},
+                      "description": "Feature tensor shape"
+                    },
+                    "mean": {"type": "number"},
+                    "std": {"type": "number"},
+                    "min": {"type": "number"},
+                    "max": {"type": "number"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["shape", "mean", "std", "min", "max", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analysis/mfcc": {
+      "post": {
+        "summary": "Compute MFCC features of audio",
+        "description": "Compute MFCC (Mel-frequency cepstral coefficients) of uploaded audio with parameters: n_fft, hop_length, n_mfcc, melkwargs",
+        "operationId": "analysisMfcc",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "n_fft": {
+                    "type": "integer",
+                    "description": "FFT size (default: 400)",
+                    "default": 400
+                  },
+                  "hop_length": {
+                    "type": "integer",
+                    "description": "Hop length (default: 160)",
+                    "default": 160
+                  },
+                  "n_mfcc": {
+                    "type": "integer",
+                    "description": "Number of MFCC coefficients (default: 40)",
+                    "default": 40
+                  },
+                  "melkwargs": {
+                    "type": "object",
+                    "description": "Additional mel transform kwargs",
+                    "properties": {
+                      "n_fft": {"type": "integer"},
+                      "hop_length": {"type": "integer"},
+                      "n_mels": {"type": "integer"}
+                    }
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "MFCC features response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "shape": {
+                      "type": "array",
+                      "items": {"type": "integer"},
+                      "description": "Feature tensor shape"
+                    },
+                    "mean": {"type": "number"},
+                    "std": {"type": "number"},
+                    "min": {"type": "number"},
+                    "max": {"type": "number"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["shape", "mean", "std", "min", "max", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analysis/loudness": {
+      "post": {
+        "summary": "Compute loudness analysis of audio",
+        "description": "Compute loudness analysis of uploaded audio",
+        "operationId": "analysisLoudness",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Loudness analysis response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "loudness": {"type": "number"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["loudness", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analysis/spectral-centroid": {
+      "post": {
+        "summary": "Compute spectral centroid of audio",
+        "description": "Compute spectral centroid (center of mass of the spectrum) of uploaded audio with parameters: n_fft, hop_length",
+        "operationId": "analysisSpectralCentroid",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "n_fft": {
+                    "type": "integer",
+                    "description": "FFT size (default: 400)",
+                    "default": 400
+                  },
+                  "hop_length": {
+                    "type": "integer",
+                    "description": "Hop length (default: 160)",
+                    "default": 160
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Spectral centroid analysis response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "value": {"type": "number"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["value", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analysis/pitch": {
+      "post": {
+        "summary": "Compute pitch analysis of audio",
+        "description": "Compute pitch analysis of uploaded audio",
+        "operationId": "analysisPitch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pitch analysis response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "frequency": {"type": "number"},
+                    "confidence": {"type": "number"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["frequency", "confidence", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/separate": {
+      "post": {
+        "summary": "Separate audio into sources using HDemucs",
+        "description": "Separate audio into sources (drums, bass, other, vocals) using HDemucs model. Model sizes: low (fast), medium (balanced), high (best quality)",
+        "operationId": "separateSources",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "model_size": {
+                    "type": "string",
+                    "description": "Model size: low (fast), medium (balanced), high (best quality)",
+                    "enum": ["low", "medium", "high"],
+                    "default": "low"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Audio separation response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["status", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/vad": {
+      "post": {
+        "summary": "Voice activity detection on audio",
+        "description": "Perform voice activity detection on uploaded audio",
+        "operationId": "voiceActivityDetection",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "VAD response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "voice_frames": {"type": "integer"},
+                    "total_frames": {"type": "integer"},
+                    "speech_percentage": {"type": "number"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["voice_frames", "total_frames", "speech_percentage", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/resample": {
+      "post": {
+        "summary": "Resample audio to target sample rate",
+        "description": "Resample uploaded audio to target sample rate",
+        "operationId": "resampleAudio",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "target_sample_rate": {
+                    "type": "integer",
+                    "description": "Target sample rate in Hz",
+                    "default": 16000
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resampled audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/effects/convolve": {
+      "post": {
+        "summary": "Apply convolution reverb to audio",
+        "description": "Apply convolution reverb using an impulse response file. Parameters: impath (path to impulse response), normalize",
+        "operationId": "applyConvolve",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "impath": {
+                    "type": "string",
+                    "description": "Path to impulse response WAV file"
+                  },
+                  "normalize": {
+                    "type": "boolean",
+                    "description": "Normalize the impulse response (default: true)",
+                    "default": true
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Convolved audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/effects/ir-convolve": {
+      "post": {
+        "summary": "Apply impulse response convolution to audio",
+        "description": "Apply impulse response convolution to uploaded audio using a single impulse response file",
+        "operationId": "applyIrConvolve",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "impath": {
+                    "type": "string",
+                    "description": "Path to impulse response WAV file"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "IR-convolved audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enhance/time-stretch": {
+      "post": {
+        "summary": "Apply time stretch to audio",
+        "description": "Apply time stretching to uploaded audio with rate and kernel_size parameters",
+        "operationId": "applyTimeStretch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "rate": {
+                    "type": "number",
+                    "description": "Time stretch rate (default: 1.0)",
+                    "default": 1.0
+                  },
+                  "kernel_size": {
+                    "type": "integer",
+                    "description": "Kernel size for phase vocoder (default: 512)",
+                    "default": 512
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Time-stretched audio response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "audio_base64": {"type": "string"},
+                    "sample_rate": {"type": "integer"}
+                  },
+                  "required": ["audio_base64", "sample_rate"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/info": {
+      "get": {
+        "summary": "Get info about the processing suite",
+        "description": "Get information about available capabilities and settings",
+        "operationId": "getInfo",
+        "responses": {
+          "200": {
+            "description": "Info response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {"type": "string"},
+                    "torch_version": {"type": "string"},
+                    "torchaudio_version": {"type": "string"}
+                  },
+                  "required": ["version", "torch_version", "torchaudio_version"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root endpoint",
+        "description": "Root path, typically serves as API documentation landing",
+        "operationId": "rootEndpoint",
+        "responses": {
+          "200": {
+            "description": "Root response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {"type": "string"}
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

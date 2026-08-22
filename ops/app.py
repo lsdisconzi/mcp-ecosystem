@@ -306,12 +306,96 @@ VPS_SERVICES = [
 ]
 
 LOCAL_SERVICES = [
-    # Legacy services removed — only current live services remain
-    {"name": "ops-dashboard",     "port": "9000",  "desc": "Ops dashboard (this app)",                       "type": "infra", "compose": None,
-    "log_file": _dev_log_path("ops-dashboard.log")},
-    {"name": "agent-architecture", "port": str(AGENT_ARCH_PORT), "desc": "Agent architecture visual workspace", "type": "app",   "compose": None,
-        "start_script": str(AGENT_ARCH_DIR / "start.sh"),
-     "log_file": _dev_log_path("agent-architecture.log")},
+    {
+        "name": "transcription",
+        "port": "8049",
+        "desc": "Audio transcription & diarization service (FastAPI + 3 MCP servers)",
+        "type": "app",
+        "compose": None,
+        "start_script": str(PROJECT_ROOT / "transcription" / "start.sh"),
+        "stop_script": str(PROJECT_ROOT / "transcription" / "stop.sh"),
+        "log_file": str(LEGACY_DEV_LOG_DIR / "transcription-api.log"),
+    },
+    {
+        "name": "juris-search",
+        "port": "8000",
+        "desc": "Legal document search & analysis engine (FastAPI + MCP)",
+        "type": "app",
+        "compose": None,
+        "start_script": str(PROJECT_ROOT / "juris-search" / "start.sh"),
+        "stop_script": str(PROJECT_ROOT / "juris-search" / "stop.sh"),
+        "log_file": str(LEGACY_DEV_LOG_DIR / "juris-search-api.log"),
+    },
+    {
+        "name": "garge",
+        "port": "8066",
+        "desc": "Main AI tools & services hub (FastAPI + 5 MCP servers)",
+        "type": "app",
+        "compose": None,
+        "start_script": str(PROJECT_ROOT / "garge" / "start.sh"),
+        "stop_script": str(PROJECT_ROOT / "garge" / "stop.sh"),
+        "log_file": str(LEGACY_DEV_LOG_DIR / "garge-api.log"),
+    },
+    {
+        "name": "violation-refiner",
+        "port": "8124",
+        "desc": "Legal violation analysis & refinement pipeline (MCP only)",
+        "type": "mcp",
+        "compose": None,
+        "start_script": str(PROJECT_ROOT / "violation-refiner" / "start.sh"),
+        "stop_script": str(PROJECT_ROOT / "violation-refiner" / "stop.sh"),
+        "log_file": str(LEGACY_DEV_LOG_DIR / "violation-refiner-mcp.log"),
+    },
+    {
+        "name": "ocr",
+        "port": "8098",
+        "desc": "OCR & PDF processing service (FastAPI + 2 MCP servers)",
+        "type": "app",
+        "compose": None,
+        "start_script": str(PROJECT_ROOT / "ocr" / "start.sh"),
+        "stop_script": str(PROJECT_ROOT / "ocr" / "stop.sh"),
+        "log_file": str(LEGACY_DEV_LOG_DIR / "ocr-main.log"),
+    },
+    {
+        "name": "discovery",
+        "port": "3010",
+        "desc": "Discovery intelligence platform (FastAPI + stdio MCP)",
+        "type": "app",
+        "compose": None,
+        "start_script": str(PROJECT_ROOT / "discovery" / "start.sh"),
+        "stop_script": str(PROJECT_ROOT / "discovery" / "stop.sh"),
+        "log_file": str(LEGACY_DEV_LOG_DIR / "discovery-case-server.log"),
+    },
+    {
+        "name": "audio",
+        "port": "8777",
+        "desc": "Torchaudio-based audio processing (FastAPI + MCP)",
+        "type": "app",
+        "compose": None,
+        "start_script": str(PROJECT_ROOT / "audio" / "start.sh"),
+        "stop_script": str(PROJECT_ROOT / "audio" / "stop.sh"),
+        "log_file": str(LEGACY_DEV_LOG_DIR / "audio-api.log"),
+    },
+    {
+        "name": "comfyui",
+        "port": "8130",
+        "desc": "ComfyUI workflow/model/node/system MCP servers (4)",
+        "type": "mcp",
+        "compose": None,
+        "start_script": str(PROJECT_ROOT / "comfyui" / "start.sh"),
+        "stop_script": str(PROJECT_ROOT / "comfyui" / "stop.sh"),
+        "log_file": str(LEGACY_DEV_LOG_DIR / "comfyui-mcp-workflow.log"),
+    },
+    {
+        "name": "ops-dashboard",
+        "port": "9000",
+        "desc": "Ops dashboard (this app)",
+        "type": "infra",
+        "compose": None,
+        "start_script": str(PROJECT_ROOT / "ops" / "start.sh"),
+        "stop_script": str(PROJECT_ROOT / "ops" / "stop.sh"),
+        "log_file": str(LEGACY_DEV_LOG_DIR / "ops-dashboard.log"),
+    },
 ]
 
 # ── MCP server registry (per-server control from the ops dashboard) ─────────
@@ -1220,7 +1304,7 @@ def _stop_host_service(svc_def: dict) -> tuple[bool, str]:
         if not sp.exists():
             return False, f"Stop script not found: {script}"
         try:
-            result = subprocess.run(_script_cmd(sp), capture_output=True, text=True, timeout=45)
+            result = subprocess.run(_script_cmd(sp), cwd=str(sp.parent), capture_output=True, text=True, timeout=45)
             if result.returncode == 0:
                 return True, result.stdout.strip() or f"{svc_def['name']} stopped"
             return False, result.stderr.strip() or result.stdout.strip() or "Stop command failed"
@@ -1307,7 +1391,7 @@ def _restart_host_service(svc_def: dict) -> tuple[bool, str]:
             return False, f"Restart script not found: {script}"
         cmd = _script_cmd(sp)
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
+            result = subprocess.run(cmd, cwd=str(sp.parent), capture_output=True, text=True, timeout=90)
             if result.returncode == 0:
                 return True, result.stdout.strip() or f"{svc_def['name']} restarted"
             return False, result.stderr.strip() or result.stdout.strip() or "Restart command failed"
@@ -1318,6 +1402,7 @@ def _restart_host_service(svc_def: dict) -> tuple[bool, str]:
     if not stopped_ok and not str(stopped_msg).startswith("No running process found"):
         return False, stopped_msg
 
+    time.sleep(1)
     started_ok, started_msg = _start_host_service(svc_def)
     if started_ok:
         return True, started_msg
@@ -1332,6 +1417,124 @@ def _restart_host_service(svc_def: dict) -> tuple[bool, str]:
         return True, f"Sent reload signal to process(es): {', '.join(str(p) for p in pids)}"
 
     return False, started_msg
+
+
+def _candidate_service_log_files(svc_def: dict) -> list[str]:
+    service_name = str(svc_def.get("name") or "").strip()
+    aliases = _service_aliases_for(service_name)
+    configured = str(svc_def.get("log_file") or "").strip()
+    candidates: list[str] = []
+
+    def add(path: str) -> None:
+        candidate = str(path or "").strip()
+        if candidate and candidate not in candidates and os.path.exists(candidate):
+            candidates.append(candidate)
+
+    if configured:
+        add(configured)
+
+    names_to_match = [service_name] + [a for a in aliases if a]
+    log_dirs = [LEGACY_DEV_LOG_DIR, DEV_LOG_DIR]
+
+    for ldir in log_dirs:
+        if not ldir.exists():
+            continue
+        matching_files = []
+        for n in names_to_match:
+            matching_files.extend(ldir.glob(f"{n}*.log"))
+        # Sort by mtime descending (most recently updated first)
+        matching_files.sort(key=lambda p: p.stat().st_mtime if p.exists() else 0, reverse=True)
+        for mf in matching_files:
+            add(str(mf))
+
+    basenames: list[str] = []
+    if configured:
+        basenames.append(Path(configured).name)
+    if service_name:
+        basenames.append(f"{service_name}.log")
+    for alias in aliases:
+        basenames.append(f"{alias}.log")
+
+    for basename in basenames:
+        add(str(DEV_LOG_DIR / basename))
+        add(str(LEGACY_DEV_LOG_DIR / basename))
+
+    return candidates
+
+
+def _read_service_logs_snapshot(svc_def: dict, lines: int) -> dict:
+    service_name = str(svc_def.get("name") or "unknown")
+    compose_name = svc_def.get("compose")
+    service_type = str(svc_def.get("type") or "app")
+    port_value = svc_def.get("port")
+    port_num = _extract_primary_port(port_value)
+    service_port = f"{service_name}.{port_num}" if port_num is not None else f"{service_name}.{port_value or 'unknown'}"
+
+    payload = {
+        "service": service_name,
+        "canonical_name": _canonical_service_name(service_name),
+        "aliases": _service_aliases_for(service_name),
+        "port": port_value,
+        "port_number": port_num,
+        "service_port": service_port,
+        "type": service_type,
+        "compose": compose_name,
+        "lines": int(lines),
+        "source": "none",
+        "logs": "",
+        "pids": _host_service_pids(svc_def) if compose_name is None and service_type != "cloud" else [],
+    }
+
+    if service_type == "cloud":
+        payload["source"] = "cloud"
+        payload["logs"] = "Cloud service has no local process logs. Check provider dashboard/metrics."
+        return payload
+
+    if compose_name:
+        payload["source"] = "docker"
+        payload["container"] = container_name(compose_name)
+        try:
+            client = get_docker_client()
+            container = client.containers.get(payload["container"])
+            payload["logs"] = container.logs(tail=int(lines), timestamps=True).decode("utf-8", errors="replace")
+            return payload
+        except docker.errors.NotFound:
+            payload["logs"] = "Container not found"
+            return payload
+        except Exception as exc:
+            payload["logs"] = f"Error: {exc}"
+            return payload
+
+    log_candidates = _candidate_service_log_files(svc_def)
+    found_logs: list[str] = []
+
+    for log_file in log_candidates:
+        if not os.path.isfile(log_file):
+            continue
+        try:
+            result = subprocess.run(
+                ["tail", "-n", str(lines), log_file],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            out = (result.stdout or "").strip()
+            if out:
+                fname = Path(log_file).name
+                found_logs.append(f"─── {fname} ───\n{out}")
+        except Exception as exc:
+            pass
+
+    if found_logs:
+        payload["source"] = "file"
+        payload["log_file"] = log_candidates[0]
+        # Show newest logs (limit to top 4 log files for readability)
+        payload["logs"] = "\n\n".join(found_logs[:4])
+        return payload
+
+    payload["source"] = "none"
+    payload["logs"] = f"No active log file found for {service_name} in .dev-logs/."
+    return payload
 
 
 # ── Auth ─────────────────────────────────────────────────────────────────────
@@ -1562,133 +1765,6 @@ def _resolve_service_definition(service: str, include_all: bool = False) -> tupl
     return None, canonical if canonical != "unknown" else candidate
 
 
-def _candidate_service_log_files(svc_def: dict) -> list[str]:
-    service_name = str(svc_def.get("name") or "").strip()
-    aliases = _service_aliases_for(service_name)
-    configured = str(svc_def.get("log_file") or "").strip()
-    candidates: list[str] = []
-
-    def add(path: str) -> None:
-        candidate = str(path or "").strip()
-        if candidate and candidate not in candidates:
-            candidates.append(candidate)
-
-    if configured:
-        add(configured)
-
-    basenames: list[str] = []
-    if configured:
-        basenames.append(Path(configured).name)
-    if service_name:
-        basenames.append(f"{service_name}.log")
-    for alias in aliases:
-        basenames.append(f"{alias}.log")
-
-    for basename in basenames:
-        add(str(DEV_LOG_DIR / basename))
-        add(str(LEGACY_DEV_LOG_DIR / basename))
-
-    if service_name == "thebridge":
-        add(str(PROJECT_ROOT / "awareness-ai" / "bridge" / ".logs" / "case-server.log"))
-    elif service_name == "thebridge-ui":
-        add(str(PROJECT_ROOT / "awareness-ai" / "bridge" / ".logs" / "bridge-ui.log"))
-
-    return candidates
-
-
-def _read_service_logs_snapshot(svc_def: dict, lines: int) -> dict:
-    service_name = str(svc_def.get("name") or "unknown")
-    compose_name = svc_def.get("compose")
-    service_type = str(svc_def.get("type") or "app")
-    port_value = svc_def.get("port")
-    port_num = _extract_primary_port(port_value)
-    service_port = f"{service_name}.{port_num}" if port_num is not None else f"{service_name}.{port_value or 'unknown'}"
-
-    payload = {
-        "service": service_name,
-        "canonical_name": _canonical_service_name(service_name),
-        "aliases": _service_aliases_for(service_name),
-        "port": port_value,
-        "port_number": port_num,
-        "service_port": service_port,
-        "type": service_type,
-        "compose": compose_name,
-        "lines": int(lines),
-        "source": "none",
-        "logs": "",
-        "pids": _host_service_pids(svc_def) if compose_name is None and service_type != "cloud" else [],
-    }
-
-    if service_type == "cloud":
-        payload["source"] = "cloud"
-        payload["logs"] = "Cloud service has no local process logs. Check provider dashboard/metrics."
-        return payload
-
-    if compose_name:
-        payload["source"] = "docker"
-        payload["container"] = container_name(compose_name)
-        try:
-            client = get_docker_client()
-            container = client.containers.get(payload["container"])
-            payload["logs"] = container.logs(tail=int(lines), timestamps=True).decode("utf-8", errors="replace")
-            return payload
-        except docker.errors.NotFound:
-            payload["logs"] = "Container not found"
-            return payload
-        except Exception as exc:
-            payload["logs"] = f"Error: {exc}"
-            return payload
-
-    log_candidates = _candidate_service_log_files(svc_def)
-    for log_file in log_candidates:
-        if not os.path.isfile(log_file):
-            continue
-
-        payload["source"] = "file"
-        payload["log_file"] = log_file
-        try:
-            result = subprocess.run(
-                ["tail", "-n", str(lines), log_file],
-                capture_output=True,
-                text=True,
-                timeout=10,
-            )
-            payload["logs"] = result.stdout
-        except Exception as exc:
-            payload["logs"] = f"Error reading log file: {exc}"
-        return payload
-
-    if log_candidates:
-        payload["source"] = "file"
-        payload["log_file"] = log_candidates[0]
-        try:
-            target = Path(log_candidates[0])
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.touch(exist_ok=True)
-            payload["logs"] = "Log file is configured but has no output yet."
-        except Exception as exc:
-            payload["logs"] = f"Log file is configured but unavailable: {exc}"
-        return payload
-
-    if shutil.which("journalctl"):
-        payload["source"] = "journalctl"
-        try:
-            result = subprocess.run(
-                ["journalctl", "-u", service_name, "-n", str(lines), "--no-pager"],
-                capture_output=True,
-                text=True,
-                timeout=10,
-            )
-            payload["logs"] = result.stdout
-        except Exception as exc:
-            payload["logs"] = f"Error: {exc}"
-        return payload
-
-    payload["source"] = "none"
-    payload["logs"] = "No log file configured for this service on this host. journalctl is unavailable."
-    return payload
-
-
 @app.route("/api/services")
 @ops_login_required
 def list_services():
@@ -1804,6 +1880,64 @@ def service_logs(service):
     payload["requested_service"] = service
     payload["service"] = canonical
     return jsonify(payload)
+
+
+@app.route("/api/services/<service>/stats")
+@ops_login_required
+def service_stats(service):
+    """Return live CPU% and memory usage for a named ecosystem service.
+
+    Reads all PID files in .dev-logs/ whose basename starts with '<service>-'
+    (e.g. garge-api.pid, garge-mcp-core.pid, …) and aggregates psutil stats
+    across every live process found.
+    """
+    prefix = service.lower().replace(" ", "-") + "-"
+    pid_dir = LEGACY_DEV_LOG_DIR
+
+    pids: list[int] = []
+    if pid_dir.exists():
+        for pid_file in pid_dir.glob("*.pid"):
+            stem = pid_file.stem.lower()  # e.g. "garge-api"
+            if stem.startswith(prefix) or stem == service.lower():
+                try:
+                    pid = int(pid_file.read_text().strip())
+                    if pid > 0:
+                        pids.append(pid)
+                except (ValueError, OSError):
+                    pass
+
+    # ops-dashboard self-pid
+    if not pids and service == "ops-dashboard":
+        pids = [os.getpid()]
+
+    total_cpu = 0.0
+    total_mem_mb = 0.0
+    process_count = 0
+    alive_pids: list[int] = []
+
+    for pid in pids:
+        try:
+            proc = psutil.Process(pid)
+            if not proc.is_running():
+                continue
+            # cpu_percent with interval=None returns instant reading; call twice
+            # for a real delta requires state — use a short interval instead.
+            cpu = proc.cpu_percent(interval=0.05)
+            mem = proc.memory_info().rss / (1024 * 1024)  # bytes → MB
+            total_cpu += cpu
+            total_mem_mb += mem
+            process_count += 1
+            alive_pids.append(pid)
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+
+    return jsonify({
+        "service": service,
+        "cpu_pct": round(total_cpu, 1),
+        "mem_used_mb": round(total_mem_mb, 1),
+        "process_count": process_count,
+        "pids": alive_pids,
+    })
 
 
 @app.route("/api/observatory/services/logs")
@@ -2095,47 +2229,70 @@ def nginx_status():
 
 # ── Quick Links catalog ────────────────────────────────────────────────────
 QUICK_LINKS = [
-    # Platform
-    {"group": "Platform", "name": "Portal",               "path": "/",                          "desc": "Awareness AI service portal hub",              "icon": "home",             "service": None},
-    {"group": "Platform", "name": "Awareness AI",         "path": "/awareness",                 "desc": "Main Awareness AI platform workspace",         "icon": "robot",            "service": "awareness"},
-    {"group": "Platform", "name": "Viewer Paths",         "path": "/viewer-paths",               "desc": "Path viewer and navigation tool",              "icon": "map",              "service": "awareness"},
-    # Ops
-    {"group": "Ops",      "name": "Ops Dashboard",        "path": "/ops",                       "desc": "Service control center (this app)",            "icon": "tachometer-alt",   "service": "ops-dashboard"},
-    {"group": "Ops",      "name": "Observatory",          "path": "/observatory",               "desc": "System monitoring observatory",                "icon": "eye",              "service": "ops-dashboard"},
-    {"group": "Ops",      "name": "Agent Architecture",   "path": "/ops/agent-architecture",   "desc": "Visual + editable architecture workspace",     "icon": "project-diagram",  "service": "agent-architecture"},
-    {"group": "Ops",      "name": "Dashboard",            "path": "/dashboard",                 "desc": "Legal Intelligence dashboard view",            "icon": "sitemap",          "service": "ops-dashboard"},
-    {"group": "Ops",      "name": "Login",                "path": "/ops/login",                 "desc": "Ops dashboard authentication",                 "icon": "sign-in-alt",      "service": "ops-dashboard"},
-    # Bridge
-    {"group": "Bridge",   "name": "Discovery",            "path": "/discovery",                 "desc": "Data discovery and file explorer interface",   "icon": "search",           "service": "bridge-ui"},
-    {"group": "Bridge",   "name": "Agent Residência",     "path": "/agent-residencia",          "desc": "Medical residency agent for UNIRG",            "icon": "hospital",         "service": "bridge"},
-    # Olivia
-    {"group": "Olivia",   "name": "Olivia Home",          "path": "/pages/olivia/olivia-home-br.html",                 "desc": "Olivia main home page — conversational AI",    "icon": "leaf",             "service": "olivia"},
-    {"group": "Olivia",   "name": "Olivia Architecture",  "path": "/pages/olivia/olivia-arquitetura.html",             "desc": "Olivia ecosystem architecture documentation",  "icon": "drafting-compass", "service": "olivia"},
-    {"group": "Olivia",   "name": "Olivia Workspace",     "path": "/pages/olivia/olivia-workspace-index.html",         "desc": "Olivia workspace index — tools and spaces",    "icon": "th-large",         "service": "olivia"},
-    {"group": "Olivia",   "name": "Olivia Shaderbench",   "path": "/pages/olivia/olivia-workspace-shaderbench.html",   "desc": "Olivia shader workbench integration",          "icon": "paint-brush",      "service": "olivia"},
-    {"group": "Olivia",   "name": "Olivia (live)",        "path": "/olivia/",                   "desc": "Olivia live service proxy",                    "icon": "comments",         "service": "olivia"},
-    # Legal
-    {"group": "Legal",    "name": "Jurisprudence",        "path": "/jurisprudence",             "desc": "Legal research and jurisprudence analysis",    "icon": "balance-scale",    "service": "jurisprudence"},
-    {"group": "Legal",    "name": "Pinocchio",            "path": "/pinocchio",                 "desc": "Content verification and analysis",            "icon": "theater-masks",    "service": "pinocchio"},
-    # Clients
-    {"group": "Clients",  "name": "UNIRG Coremu",         "path": "/unirg-coremu",              "desc": "UNIRG medical residency commission portal",    "icon": "graduation-cap",   "service": "bridge"},
-    {"group": "Clients",  "name": "Resolvvi",             "path": "/resolvvi",                  "desc": "Resolvvi — dispute resolution platform",       "icon": "check-circle",     "service": None},
-    # Shaders
-    {"group": "Shaders",  "name": "Shaderbench",          "path": "/shaderbench",               "desc": "WebGL shader workbench — visual experiments",  "icon": "sparkles",         "service": None},
-    {"group": "Shaders",  "name": "Shaderbench 2",        "path": "/shaderbench-2",             "desc": "Advanced shader benchmark v2",                 "icon": "magic",            "service": None},
-    {"group": "Shaders",  "name": "Shader Workbench",     "path": "/shader-workbench",          "desc": "Shader development workbench",                 "icon": "tools",            "service": None},
+    # Ecosystem Core UIs
+    {"group": "Core",     "name": "Pinocchio",            "path": "http://localhost:8049/pinocchio", "desc": "Audio transcription & verification UI",       "icon": "microphone",       "service": "transcription"},
+    {"group": "Core",     "name": "Revision UI",          "path": "http://localhost:8049/revision",  "desc": "Audio revision & editing workspace",          "icon": "edit",             "service": "transcription"},
+    {"group": "Core",     "name": "Curadoria UI",         "path": "http://localhost:8049/curadoria", "desc": "Dataset curation & alignment",                "icon": "check-double",     "service": "transcription"},
+    {"group": "Core",     "name": "Juris Search",         "path": "http://localhost:8000/",          "desc": "Legal document search & analysis engine",     "icon": "balance-scale",    "service": "juris-search"},
+    {"group": "Core",     "name": "Garage UI",            "path": "http://localhost:8066/garage",    "desc": "Main AI tools & assistants hub",              "icon": "robot",            "service": "garge"},
+    {"group": "Core",     "name": "Discovery",            "path": "http://localhost:3010/",          "desc": "Discovery intelligence & file platform",       "icon": "search",           "service": "discovery"},
+    {"group": "Core",     "name": "OCR UI",               "path": "http://localhost:8098/",          "desc": "Document OCR & PDF processing service",       "icon": "file-alt",         "service": "ocr"},
+    {"group": "Core",     "name": "Audio Processing",     "path": "http://localhost:8777/",          "desc": "Torchaudio audio processing unit",            "icon": "waveform",         "service": "audio"},
+    {"group": "Core",     "name": "ComfyUI",              "path": "http://localhost:8188/",          "desc": "ComfyUI visual generation node canvas",       "icon": "palette",          "service": "comfyui"},
+    # Ops & Tools
+    {"group": "Ops",      "name": "Ops Dashboard",        "path": "http://localhost:9000/ops",       "desc": "Service control center (this app)",           "icon": "tachometer-alt",   "service": "ops-dashboard"},
+    {"group": "Ops",      "name": "Observatory",          "path": "http://localhost:9000/observatory","desc": "Live monitoring observatory",                "icon": "eye",              "service": "ops-dashboard"},
+    # Docs
+    {"group": "Docs",     "name": "Juris API Docs",       "path": "http://localhost:8000/docs",      "desc": "FastAPI Swagger docs for Juris Search",       "icon": "book",             "service": "juris-search"},
+    {"group": "Docs",     "name": "Garage API Docs",      "path": "http://localhost:8066/docs",      "desc": "FastAPI Swagger docs for Garage",             "icon": "book",             "service": "garge"},
+    {"group": "Docs",     "name": "OCR API Docs",         "path": "http://localhost:8098/docs",      "desc": "FastAPI Swagger docs for OCR Service",        "icon": "book",             "service": "ocr"},
 ]
 
 DOMAIN = "https://awareness-ai.com.br"
 
 LOCAL_LINK_OVERRIDES = {
-    "Portal":               "http://localhost:8090/",
-    "Awareness AI":         "http://localhost:8078/",
+    "Pinocchio":            "http://localhost:8049/pinocchio",
+    "Revision UI":          "http://localhost:8049/revision",
+    "Curadoria UI":         "http://localhost:8049/curadoria",
+    "Juris Search":         "http://localhost:8000/",
+    "Jurisprudence":        "http://localhost:8000/",
+    "Garage UI":            "http://localhost:8066/garage",
+    "Discovery":            "http://localhost:3010/",
+    "OCR UI":               "http://localhost:8098/",
+    "Audio Processing":     "http://localhost:8777/",
+    "ComfyUI":              "http://localhost:8188/",
     "Ops Dashboard":        "http://localhost:9000/ops",
-    "Discovery":            "http://localhost:8075/",
-    "Agent Architecture":   f"http://localhost:{AGENT_ARCH_PORT}/",
-    "Olivia (live)":        "http://localhost:3005/",
+    "Observatory":          "http://localhost:9000/observatory",
+    "Juris API Docs":       "http://localhost:8000/docs",
+    "Garage API Docs":      "http://localhost:8066/docs",
+    "OCR API Docs":         "http://localhost:8098/docs",
 }
+
+
+def _format_link_url(link: dict) -> str:
+    name = link.get("name", "")
+    if _is_local_mode() and name in LOCAL_LINK_OVERRIDES:
+        return LOCAL_LINK_OVERRIDES[name]
+
+    custom_url = str(link.get("custom_url") or "").strip()
+    if custom_url:
+        return custom_url
+
+    path = str(link.get("path") or "/").strip()
+    if path.startswith("http://") or path.startswith("https://"):
+        return path
+
+    svc_name = link.get("service")
+    if _is_local_mode() and svc_name:
+        for s in LOCAL_SERVICES:
+            if s.get("name") == svc_name and s.get("port"):
+                p = s["port"]
+                clean_path = path if path.startswith("/") else f"/{path}"
+                return f"http://localhost:{p}{clean_path}"
+
+    base = "http://localhost:9000" if _is_local_mode() else DOMAIN
+    clean_path = path if path.startswith("/") else f"/{path}"
+    return f"{base}{clean_path}"
 
 
 # ── Quick Links CRUD helpers ────────────────────────────────────────────────
@@ -2182,18 +2339,10 @@ def _generate_link_id() -> str:
 def quicklinks():
     """Return all quick links with full URLs."""
     all_links = _get_all_quicklinks()
-    if _is_local_mode():
-        return jsonify([
-            {
-                **l,
-                "url": LOCAL_LINK_OVERRIDES.get(l["name"], l.get("custom_url") or f"http://localhost:8090{l.get('path', '/')}")
-            }
-            for l in all_links
-        ])
     return jsonify([
         {
             **l,
-            "url": l.get("custom_url") or (DOMAIN + l.get("path", "/"))
+            "url": _format_link_url(l),
         }
         for l in all_links
     ])
@@ -2206,28 +2355,22 @@ def quicklinks_manage():
     all_links = []
     custom_links = _load_custom_links()
     custom_names = {l.get("name") for l in custom_links}
-    is_local = _is_local_mode()
-    
+
     # Mark builtin links (skip those that have custom overrides)
     for l in QUICK_LINKS:
         if l["name"] in custom_names:
             continue  # Skip - has custom override
         entry = {**l, "builtin": True, "id": f"builtin_{l['name'].lower().replace(' ', '_')}"}
-        if is_local:
-            entry["url"] = LOCAL_LINK_OVERRIDES.get(l["name"], l.get("custom_url") or f"http://localhost:8080{l.get('path', '/')}")
-        else:
-            entry["url"] = l.get("custom_url") or (DOMAIN + l.get("path", "/"))
+        entry["url"] = _format_link_url(l)
         all_links.append(entry)
-    
+
     # Add custom links (these replace builtins with same name)
     for l in custom_links:
         entry = {**l, "builtin": False}
-        if is_local:
-            entry["url"] = l.get("custom_url") or f"http://localhost:8080{l.get('path', '/')}"
-        else:
-            entry["url"] = l.get("custom_url") or (DOMAIN + l.get("path", "/"))
+        entry["url"] = _format_link_url(l)
         all_links.append(entry)
     return jsonify(all_links)
+
 
 
 @app.route("/api/quicklinks", methods=["POST"])

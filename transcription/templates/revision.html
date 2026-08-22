@@ -418,6 +418,7 @@
                 <label for="importZipInput">📦 Importar ZIP (exportado do Pinocchio)</label>
                 <div class="row" style="gap:8px;">
                   <input type="file" id="importZipInput" accept=".zip" style="display:none;">
+                  <input type="file" id="segmentAudioFileInput" accept="audio/*,.wav,.mp3,.m4a" style="display:none;">
                   <button id="importZipBtn" class="btn small primary"><i class="fas fa-file-archive"></i> Select
                     ZIP</button>
                   <span id="zipImportStatus" style="font-size:0.7rem;color:var(--gray);"></span>
@@ -435,137 +436,137 @@
             </div>
           </div>
 
-            <!-- METADATA EDITOR (collapsible) -->
-            <div id="metadataEditor" class="subcard metadata-editor" style="display:none; margin-bottom:14px;">
-              <details class="meta-details" open>
-                <summary class="meta-summary">
-                  <strong>📋 Metadados da Transcrição</strong>
-                  <button id="saveMetadataBtn" class="btn small primary" style="padding:4px 12px; flex-shrink:0;"
-                    onclick="event.stopPropagation()"><i class="fas fa-save"></i> Salvar Metadados</button>
-                </summary>
-                <div class="meta-body">
-                  <div class="split-2">
-                    <div class="field"><label for="meta_title">Título</label><input type="text" id="meta_title"
-                        placeholder="title" name="meta_title"></div>
-                    <div class="field"><label for="meta_subtitle">Subtítulo</label><input type="text" id="meta_subtitle"
-                        placeholder="subtitle" name="meta_subtitle"></div>
-                    <div class="field"><label for="meta_recording_datetime">Data/Hora Gravação (ISO)</label><input
-                        type="text" id="meta_recording_datetime" placeholder="2024-07-05T13:08:00"
-                        name="meta_recording_datetime"></div>
-                    <div class="field"><label for="meta_location">Localização</label><input type="text"
-                        id="meta_location" placeholder="location" name="meta_location"></div>
-                    <div class="field"><label for="meta_audio_id">ID do Áudio</label><input type="text"
-                        id="meta_audio_id" placeholder="audio_id" name="meta_audio_id"></div>
-                    <div class="field"><label for="meta_case_id">ID do Caso</label><input type="text" id="meta_case_id"
-                        placeholder="case_id" name="meta_case_id"></div>
-                    <div class="field"><label for="meta_narrative_id">ID Narrativa</label><input type="text"
-                        id="meta_narrative_id" placeholder="narrative_id" name="meta_narrative_id"></div>
-                    <div class="field"><label for="meta_chronological_order">Ordem Cronológica</label><input
-                        type="number" id="meta_chronological_order" placeholder="6" name="meta_chronological_order">
-                    </div>
-                    <div class="field"><label for="meta_prior_stage">Estágio Anterior</label><input type="text"
-                        id="meta_prior_stage" placeholder="prior_stage" name="meta_prior_stage"></div>
-                    <div class="field"><label for="meta_next_stage">Próximo Estágio</label><input type="text"
-                        id="meta_next_stage" placeholder="next_stage" name="meta_next_stage"></div>
-                    <div class="field"><label for="meta_classification">Classificação</label><input type="text"
-                        id="meta_classification" placeholder="classification" name="meta_classification"></div>
+          <!-- METADATA EDITOR (collapsible) -->
+          <div id="metadataEditor" class="subcard metadata-editor" style="display:none; margin-bottom:14px;">
+            <details class="meta-details" open>
+              <summary class="meta-summary">
+                <strong>📋 Metadados da Transcrição</strong>
+                <button id="saveMetadataBtn" class="btn small primary" style="padding:4px 12px; flex-shrink:0;"
+                  onclick="event.stopPropagation()"><i class="fas fa-save"></i> Salvar Metadados</button>
+              </summary>
+              <div class="meta-body">
+                <div class="split-2">
+                  <div class="field"><label for="meta_title">Título</label><input type="text" id="meta_title"
+                      placeholder="title" name="meta_title"></div>
+                  <div class="field"><label for="meta_subtitle">Subtítulo</label><input type="text" id="meta_subtitle"
+                      placeholder="subtitle" name="meta_subtitle"></div>
+                  <div class="field"><label for="meta_recording_datetime">Data/Hora Gravação (ISO)</label><input
+                      type="text" id="meta_recording_datetime" placeholder="2024-07-05T13:08:00"
+                      name="meta_recording_datetime"></div>
+                  <div class="field"><label for="meta_location">Localização</label><input type="text" id="meta_location"
+                      placeholder="location" name="meta_location"></div>
+                  <div class="field"><label for="meta_audio_id">ID do Áudio</label><input type="text" id="meta_audio_id"
+                      placeholder="audio_id" name="meta_audio_id"></div>
+                  <div class="field"><label for="meta_case_id">ID do Caso</label><input type="text" id="meta_case_id"
+                      placeholder="case_id" name="meta_case_id"></div>
+                  <div class="field"><label for="meta_narrative_id">ID Narrativa</label><input type="text"
+                      id="meta_narrative_id" placeholder="narrative_id" name="meta_narrative_id"></div>
+                  <div class="field"><label for="meta_chronological_order">Ordem Cronológica</label><input type="number"
+                      id="meta_chronological_order" placeholder="6" name="meta_chronological_order">
                   </div>
-                  <div class="field"><label for="meta_participants">Participantes (array de objetos)</label>
-                    <textarea id="meta_participants" rows="3" class="json-field"
-                      placeholder='[{"canonical_name": "...", "role": "...", "speaker_label": "..."}]'
-                      name="meta_participants"></textarea>
-                  </div>
-                  <div class="field"><label for="meta_violations_cited">Violacões Citadas (array)</label>
-                    <textarea id="meta_violations_cited" rows="2" class="json-field" placeholder='["BR-001", "CL-002"]'
-                      name="meta_violations_cited"></textarea>
-                  </div>
-                  <div class="field"><label for="meta_tags">Tags (array)</label>
-                    <textarea id="meta_tags" rows="2" class="json-field" placeholder='["transcript", "narrative"]'
-                      name="meta_tags"></textarea>
-                  </div>
-                  <div class="field"><label for="meta_forensic_clusters">Clusters Forenses (objeto)</label>
-                    <textarea id="meta_forensic_clusters" rows="4" class="json-field" placeholder='{"cluster_A": {...}}'
-                      name="meta_forensic_clusters"></textarea>
-                  </div>
-                  <div class="field"><label for="meta_key_evidentiary_findings">Evidências Chave (array)</label>
-                    <textarea id="meta_key_evidentiary_findings" rows="4" class="json-field"
-                      placeholder='[{"id": "S2-1", "finding": "...", "strength": "High"}]'
-                      name="meta_key_evidentiary_findings"></textarea>
-                  </div>
-                  <div class="field"><label for="meta_corrections_applied">Correções Aplicadas (array)</label>
-                    <textarea id="meta_corrections_applied" rows="3" class="json-field"
-                      placeholder='[{"segment": "2", "original": "...", "corrected": "..."}]'
-                      name="meta_corrections_applied"></textarea>
-                  </div>
-                  <div class="tip-card">Os campos em JSON devem ser válidos. Após salvar, use o botão "Indexar no
-                    Qdrant"
-                    para atualizar o índice.</div>
+                  <div class="field"><label for="meta_prior_stage">Estágio Anterior</label><input type="text"
+                      id="meta_prior_stage" placeholder="prior_stage" name="meta_prior_stage"></div>
+                  <div class="field"><label for="meta_next_stage">Próximo Estágio</label><input type="text"
+                      id="meta_next_stage" placeholder="next_stage" name="meta_next_stage"></div>
+                  <div class="field"><label for="meta_classification">Classificação</label><input type="text"
+                      id="meta_classification" placeholder="classification" name="meta_classification"></div>
                 </div>
-              </details>
-            </div>
-
-            <div id="reviewMetaRow" class="row"
-              style="gap:14px;margin-bottom:14px;display:none;border-bottom:1px solid var(--border);padding-bottom:10px;">
-              <span><i class="fas fa-file-audio"></i> Áudio: <strong id="reviewAudioName"
-                  style="color:var(--white);">—</strong></span>
-              <span><i class="fas fa-list-ol"></i> Total: <strong id="reviewTotalSegs">0</strong> segs</span>
-              <span><i class="fas fa-check-circle" style="color:var(--green);"></i> Revisados: <strong
-                  id="reviewCheckedSegs">0</strong></span>
-              <span><i class="fas fa-database" style="color:var(--amber);"></i> Indexados (Qdrant): <strong
-                  id="reviewQdrantSegs">0</strong></span>
-            </div>
-
-            <div id="reviewSegmentsWrap" class="subcard"
-              style="width:100%;overflow:auto;max-height:65vh;display:none;margin-bottom:14px;">
-              <div class="row" style="justify-content:space-between;margin-bottom:6px;">
-                <span style="font-size:.7rem;font-weight:600;">SEGMENTOS EM REVISÃO</span>
-                <div style="display:flex;gap:8px;">
-                  <button id="selectAllUnreviewedBtn" class="tag-btn">Selecionar Não Revisados</button>
-                  <button id="clearSelectionBtn" class="tag-btn">Limpar Seleção</button>
-                  <button id="toggleTextRowsBtn" class="tag-btn">Expandir textos</button>
+                <div class="field"><label for="meta_participants">Participantes (array de objetos)</label>
+                  <textarea id="meta_participants" rows="3" class="json-field"
+                    placeholder='[{"canonical_name": "...", "role": "...", "speaker_label": "..."}]'
+                    name="meta_participants"></textarea>
                 </div>
+                <div class="field"><label for="meta_violations_cited">Violacões Citadas (array)</label>
+                  <textarea id="meta_violations_cited" rows="2" class="json-field" placeholder='["BR-001", "CL-002"]'
+                    name="meta_violations_cited"></textarea>
+                </div>
+                <div class="field"><label for="meta_tags">Tags (array)</label>
+                  <textarea id="meta_tags" rows="2" class="json-field" placeholder='["transcript", "narrative"]'
+                    name="meta_tags"></textarea>
+                </div>
+                <div class="field"><label for="meta_forensic_clusters">Clusters Forenses (objeto)</label>
+                  <textarea id="meta_forensic_clusters" rows="4" class="json-field" placeholder='{"cluster_A": {...}}'
+                    name="meta_forensic_clusters"></textarea>
+                </div>
+                <div class="field"><label for="meta_key_evidentiary_findings">Evidências Chave (array)</label>
+                  <textarea id="meta_key_evidentiary_findings" rows="4" class="json-field"
+                    placeholder='[{"id": "S2-1", "finding": "...", "strength": "High"}]'
+                    name="meta_key_evidentiary_findings"></textarea>
+                </div>
+                <div class="field"><label for="meta_corrections_applied">Correções Aplicadas (array)</label>
+                  <textarea id="meta_corrections_applied" rows="3" class="json-field"
+                    placeholder='[{"segment": "2", "original": "...", "corrected": "..."}]'
+                    name="meta_corrections_applied"></textarea>
+                </div>
+                <div class="tip-card">Os campos em JSON devem ser válidos. Após salvar, use o botão "Indexar no
+                  Qdrant"
+                  para atualizar o índice.</div>
               </div>
-              <table id="reviewSegmentsTable">
-                <thead>
-                  <tr>
-                    <th>Rev. <input type="checkbox" id="selectAllRevChk" title="Selecionar todos"></th>
-                    <th>Sel.</th>
-                    <th>#</th>
-                    <th>Local time</th>
-                    <th>Falante</th>
-                    <th>Início</th>
-                    <th>Fim</th>
-                    <th>Ações</th>
-                    <th>Texto</th>
-                    <th>Correção</th>
-                    <th>Backchannel</th>
-                  </tr>
-                </thead>
-                <tbody id="reviewSegmentsBody"></tbody>
-              </table>
-            </div>
+            </details>
+          </div>
 
-            <div class="row" id="reviewActionsRow" style="justify-content:space-between;display:none;">
-              <div style="display:flex; gap:8px;">
-                <button id="saveReviewBtn" class="btn primary small"><i class="fas fa-save"></i> Salvar Revisão de
-                  Segmentos</button>
-                <button id="exportModifiedZipBtn" class="btn small"><i class="fas fa-download"></i> Export Modified
-                  ZIP</button>
-                <button id="indexReviewedBtn" class="btn small" style="border-color:var(--amber);"><i
-                    class="fas fa-database"></i> Indexar no Qdrant</button>
+          <div id="reviewMetaRow" class="row"
+            style="gap:14px;margin-bottom:14px;display:none;border-bottom:1px solid var(--border);padding-bottom:10px;">
+            <span><i class="fas fa-file-audio"></i> Áudio: <strong id="reviewAudioName"
+                style="color:var(--white);">—</strong></span>
+            <span><i class="fas fa-list-ol"></i> Total: <strong id="reviewTotalSegs">0</strong> segs</span>
+            <span><i class="fas fa-check-circle" style="color:var(--green);"></i> Revisados: <strong
+                id="reviewCheckedSegs">0</strong></span>
+            <span><i class="fas fa-database" style="color:var(--amber);"></i> Indexados (Qdrant): <strong
+                id="reviewQdrantSegs">0</strong></span>
+          </div>
+
+          <div id="reviewSegmentsWrap" class="subcard"
+            style="width:100%;overflow:auto;max-height:95vh;resize:vertical;margin-bottom:14px;">
+            <div class="row" style="justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:.7rem;font-weight:600;">SEGMENTOS EM REVISÃO</span>
+              <div style="display:flex;gap:8px;">
+                <button id="selectAllUnreviewedBtn" class="tag-btn">Selecionar Não Revisados</button>
+                <button id="clearSelectionBtn" class="tag-btn">Limpar Seleção</button>
+                <button id="toggleTextRowsBtn" class="tag-btn">Expandir textos</button>
               </div>
-              <div class="field" style="margin:0;">
-                <label for="qdrantCollection">Qdrant Collection</label>
-                <input id="qdrantCollection" type="text" value="reviewed_transcripts" style="width:160px;">
-                <button id="createCollectionBtn" class="tag-btn">Criar</button>
-              </div>
-              <div style="display:flex; gap:8px;">
-                <span style="font-size:11px;">Transcrever selecionados (não revisados):</span>
-                <button id="runRetranscribeBtn" class="btn small" style="background:var(--amber);color:#fff;"><i
-                    class="fas fa-play"></i> Rodar Transcrição</button>
-              </div>
+            </div>
+            <table id="reviewSegmentsTable">
+              <thead>
+                <tr>
+                  <th>Rev. <input type="checkbox" id="selectAllRevChk" title="Selecionar todos"></th>
+                  <th>Sel.</th>
+                  <th>#</th>
+                  <th>Local time</th>
+                  <th>Falante</th>
+                  <th>Início</th>
+                  <th>Fim</th>
+                  <th>Ações</th>
+                  <th>Texto</th>
+                  <th>Correção</th>
+                  <th>Backchannel</th>
+                </tr>
+              </thead>
+              <tbody id="reviewSegmentsBody"></tbody>
+            </table>
+          </div>
+
+          <div class="row" id="reviewActionsRow" style="justify-content:space-between;display:none;">
+            <div style="display:flex; gap:8px;">
+              <button id="saveReviewBtn" class="btn primary small"><i class="fas fa-save"></i> Salvar Revisão de
+                Segmentos</button>
+              <button id="exportModifiedZipBtn" class="btn small"><i class="fas fa-download"></i> Export Modified
+                ZIP</button>
+              <button id="indexReviewedBtn" class="btn small" style="border-color:var(--amber);"><i
+                  class="fas fa-database"></i> Indexar no Qdrant</button>
+            </div>
+            <div class="field" style="margin:0;">
+              <label for="qdrantCollection">Qdrant Collection</label>
+              <input id="qdrantCollection" type="text" value="reviewed_transcripts" style="width:160px;">
+              <button id="createCollectionBtn" class="tag-btn">Criar</button>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <span style="font-size:11px;">Transcrever selecionados (não revisados):</span>
+              <button id="runRetranscribeBtn" class="btn small" style="background:var(--amber);color:#fff;"><i
+                  class="fas fa-play"></i> Rodar Transcrição</button>
             </div>
           </div>
+        </div>
       </section>
     </div>
   </main>
@@ -615,8 +616,12 @@
     }
 
     let currentTranscript = null;
-    let zipSegmentAudioBlobs = {};
+    let segmentAudioBlobs = {};
     let zipOriginalFilename = null;
+    // 'backend' = transcript loaded from the backend (source audio available server-side),
+    // 'zip'     = transcript imported from an exported ZIP (audio blobs in memory only).
+    let currentAudioSource = 'backend';
+    let pendingUploadDispIdx = null;
 
     // ---------- PATCH STATE ----------
     let originalSegments = [];
@@ -643,6 +648,103 @@
         correction_note: seg.correction_note || '',
         backchannel_events: seg.backchannel_events || ''
       }));
+    }
+
+    // ---------- SEGMENT AUDIO (play / download / upload / auto-generate) ----------
+    function segmentAudioUrl(dseg) {
+      if (!currentTranscript) return null;
+      const idx = dseg.origIndex !== undefined ? dseg.origIndex : -1;
+      const s = parseFloat(dseg.start) || 0;
+      const e = parseFloat(dseg.end) || s;
+      return `/api/transcripts/${encodeURIComponent(currentTranscript.transcript_id)}/segment_audio/${idx}?start=${s}&end=${e}`;
+    }
+
+    async function fetchSegmentBlob(dseg) {
+      const url = segmentAudioUrl(dseg);
+      if (!url) throw new Error('Sem URL de áudio');
+      const res = await fetch(url);
+      if (!res.ok) {
+        let detail = `HTTP ${res.status}`;
+        try { const j = await res.json(); if (j.detail) detail = j.detail; } catch { /* ignore */ }
+        throw new Error(detail);
+      }
+      const blob = await res.blob();
+      const idx = dseg.origIndex !== undefined ? dseg.origIndex : -1;
+      segmentAudioBlobs[idx] = blob;
+      return blob;
+    }
+
+    async function playSegmentAudio(dseg) {
+      const idx = dseg.origIndex !== undefined ? dseg.origIndex : -1;
+      let blob = segmentAudioBlobs[idx];
+      if (!blob && currentAudioSource === 'backend') {
+        try { blob = await fetchSegmentBlob(dseg); }
+        catch (e) { alert('Sem áudio para este segmento: ' + e.message); return; }
+      }
+      if (!blob) { alert('Sem áudio para este segmento.'); return; }
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.onended = () => URL.revokeObjectURL(url);
+      audio.play().catch(e => alert(e.message));
+    }
+
+    async function downloadSegmentAudio(dseg) {
+      let blob = dseg.origIndex !== undefined ? segmentAudioBlobs[dseg.origIndex] : null;
+      if (!blob && currentAudioSource === 'backend') {
+        try { blob = await fetchSegmentBlob(dseg); }
+        catch (e) { alert('Erro ao baixar áudio: ' + e.message); return; }
+      }
+      if (!blob) { alert('Sem áudio para este segmento.'); return; }
+      const name = `segment_${dseg.origIndex !== undefined ? dseg.origIndex : 'new'}.wav`;
+      saveAs(blob, name);
+    }
+
+    async function uploadSegmentAudio(dseg, file) {
+      const idx = dseg.origIndex;
+      if (idx === undefined) throw new Error('Não é possível substituir áudio de segmento sem índice.');
+      if (currentAudioSource === 'backend') {
+        const fd = new FormData();
+        fd.append('file', file);
+        const res = await fetch(`/api/transcripts/${encodeURIComponent(currentTranscript.transcript_id)}/segment_audio/${idx}`, { method: 'POST', body: fd });
+        if (!res.ok) {
+          let detail = `HTTP ${res.status}`;
+          try { const j = await res.json(); if (j.detail) detail = j.detail; } catch { /* ignore */ }
+          throw new Error(detail);
+        }
+      }
+      segmentAudioBlobs[idx] = file;
+      showToast('Áudio do segmento substituído — ouça e edite');
+    }
+
+    async function regenerateSegmentAudio(dseg) {
+      if (dseg.origIndex === undefined || currentAudioSource !== 'backend') return;
+      try {
+        const res = await fetch(`/api/transcripts/${encodeURIComponent(currentTranscript.transcript_id)}/segment_audio/${dseg.origIndex}/regenerate`, { method: 'POST' });
+        if (!res.ok) {
+          let detail = `HTTP ${res.status}`;
+          try { const j = await res.json(); if (j.detail) detail = j.detail; } catch { /* ignore */ }
+          throw new Error(detail);
+        }
+        delete segmentAudioBlobs[dseg.origIndex];
+        await fetchSegmentBlob(dseg);
+        showToast('Áudio regenerado a partir da fonte');
+      } catch (e) { alert('Erro: ' + e.message); }
+    }
+
+    async function autoGenerateSegmentAudio(dseg, { clearUpload = false } = {}) {
+      if (currentAudioSource !== 'backend') {
+        showToast('Geração automática de áudio requer uma transcrição do backend');
+        return;
+      }
+      try {
+        const idx = dseg.origIndex !== undefined ? dseg.origIndex : -1;
+        if (clearUpload && idx >= 0) {
+          await fetch(`/api/transcripts/${encodeURIComponent(currentTranscript.transcript_id)}/segment_audio/${idx}/regenerate`, { method: 'POST' });
+          delete segmentAudioBlobs[idx];
+        }
+        await fetchSegmentBlob(dseg);
+        renderReviewSegments();
+      } catch (e) { showToast('Erro ao gerar áudio: ' + e.message); }
     }
 
     // ---------- METADATA EDITOR ----------
@@ -757,7 +859,7 @@
             }
           }
         }
-        zipSegmentAudioBlobs = audioSegments;
+        segmentAudioBlobs = audioSegments;
         zipOriginalFilename = zipFile.name;
         await loadTranscriptIntoReview(transcriptData);
         statusSpan.innerHTML = `✅ ZIP loaded – ${transcriptData.segments.length} segments, ${Object.keys(audioSegments).length} audio clips`;
@@ -766,6 +868,7 @@
 
     async function loadTranscriptIntoReview(transcript) {
       currentTranscript = transcript;
+      currentAudioSource = 'zip';
       resetPatchState();
       buildDisplaySegments(transcript);
 
@@ -865,12 +968,38 @@
         // Actions (patch buttons)
         const tdActions = document.createElement('td');
         tdActions.style.whiteSpace = 'nowrap';
-        if (dseg.origIndex !== undefined && zipSegmentAudioBlobs[dseg.origIndex]) {
+
+        // Play — backend transcripts can always generate audio on demand
+        const hasAudio = dseg.origIndex !== undefined
+          && (segmentAudioBlobs[dseg.origIndex] || currentAudioSource === 'backend');
+        if (hasAudio) {
           const playBtn = document.createElement('button');
           playBtn.className = 'tag-btn'; playBtn.innerHTML = '<i class="fas fa-play"></i>';
           playBtn.title = 'Play segment audio';
-          playBtn.onclick = () => playSegmentAudio(dseg.origIndex);
+          playBtn.onclick = () => playSegmentAudio(dseg);
           tdActions.appendChild(playBtn);
+        }
+        // Download segment audio
+        const dlBtn = document.createElement('button');
+        dlBtn.className = 'tag-btn'; dlBtn.innerHTML = '<i class="fas fa-download"></i>';
+        dlBtn.title = 'Download segment audio';
+        dlBtn.onclick = () => downloadSegmentAudio(dseg);
+        tdActions.appendChild(dlBtn);
+        // Upload a replacement audio clip for this segment
+        if (dseg.origIndex !== undefined) {
+          const upBtn = document.createElement('button');
+          upBtn.className = 'tag-btn'; upBtn.innerHTML = '<i class="fas fa-upload"></i>';
+          upBtn.title = 'Upload replacement audio (ex.: transcrito em outro lugar)';
+          upBtn.onclick = () => { pendingUploadDispIdx = dispIdx; $('#segmentAudioFileInput').click(); };
+          tdActions.appendChild(upBtn);
+        }
+        // Re-cut from the source (drops an uploaded replacement)
+        if (dseg.origIndex !== undefined && currentAudioSource === 'backend') {
+          const regenBtn = document.createElement('button');
+          regenBtn.className = 'tag-btn'; regenBtn.innerHTML = '<i class="fas fa-refresh"></i>';
+          regenBtn.title = 'Regenerate audio from source';
+          regenBtn.onclick = () => regenerateSegmentAudio(dseg);
+          tdActions.appendChild(regenBtn);
         }
         const delBtn = document.createElement('button');
         delBtn.className = 'tag-btn'; delBtn.innerHTML = '<i class="fas fa-trash"></i>';
@@ -932,15 +1061,6 @@
       });
     }
 
-    function playSegmentAudio(origIdx) {
-      const blob = zipSegmentAudioBlobs[origIdx];
-      if (!blob) { alert('No audio clip.'); return; }
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audio.onended = () => URL.revokeObjectURL(url);
-      audio.play().catch(e => alert(e.message));
-    }
-
     function deleteDisplaySegment(dispIdx) {
       const dseg = displaySegments[dispIdx];
       if (dseg.origIndex !== undefined) {
@@ -983,6 +1103,8 @@
       displaySegments.splice(dispIdx + 1, 0, newSeg);
       renderReviewSegments();
       updateReviewCounts();
+      // Auto-generate audio for the new (inserted) segment so it can be heard/edited now
+      autoGenerateSegmentAudio(newSeg);
     }
 
     function mergeWithNext(dispIdx) {
@@ -1004,6 +1126,8 @@
       displaySegments.splice(dispIdx + 1, 1);
       renderReviewSegments();
       updateReviewCounts();
+      // Re-cut the merged segment audio (spans both originals) so it can be heard now
+      autoGenerateSegmentAudio(segA, { clearUpload: true });
     }
 
     function splitSegment(dispIdx) {
@@ -1034,6 +1158,9 @@
       displaySegments.splice(dispIdx + 1, 0, newSeg);
       renderReviewSegments();
       updateReviewCounts();
+      // Auto-generate audio for both halves of the clipped segment
+      autoGenerateSegmentAudio(dseg, { clearUpload: true });
+      autoGenerateSegmentAudio(newSeg);
     }
 
     function buildPatchesFromDisplay() {
@@ -1096,13 +1223,16 @@
       if (!tid) {
         $('#reviewMetaRow').style.display = 'none'; $('#reviewSegmentsWrap').style.display = 'none';
         $('#reviewActionsRow').style.display = 'none'; $('#metadataEditor').style.display = 'none';
-        currentTranscript = null; resetPatchState(); return;
+        currentTranscript = null; resetPatchState();
+        segmentAudioBlobs = {}; currentAudioSource = 'backend'; return;
       }
       try {
         const res = await fetch('/api/transcripts/' + encodeURIComponent(tid));
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
         currentTranscript = data;
+        segmentAudioBlobs = {};
+        currentAudioSource = 'backend';
         resetPatchState();
         buildDisplaySegments(data);
 
@@ -1156,8 +1286,8 @@
         const speaker = seg.speaker.replace(/[,\n]/g, '');
         const idxStr = String(i + 1).padStart(4, '0');
         const wavName = `audio_${idxStr}_${speaker}.wav`;
-        if (seg.origIndex !== undefined && zipSegmentAudioBlobs[seg.origIndex]) {
-          audioFolder.file(wavName, zipSegmentAudioBlobs[seg.origIndex]);
+        if (seg.origIndex !== undefined && segmentAudioBlobs[seg.origIndex]) {
+          audioFolder.file(wavName, segmentAudioBlobs[seg.origIndex]);
         }
         segFolder.file(`segment_${idxStr}.json`, JSON.stringify(seg, null, 2));
         csvRows.push([i, speaker, seg.start, seg.end, (seg.end - seg.start).toFixed(3), seg.text, seg.reviewed, seg.correction_note || '', seg.backchannel_events || ''].join(','));
@@ -1224,6 +1354,17 @@
     });
     document.getElementById('importZipBtn')?.addEventListener('click', () => document.getElementById('importZipInput').click());
     document.getElementById('importZipInput')?.addEventListener('change', (e) => { if (e.target.files[0]) importExportedZip(e.target.files[0]); e.target.value = ''; });
+    document.getElementById('segmentAudioFileInput')?.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      e.target.value = '';
+      if (!file || pendingUploadDispIdx === null) return;
+      const dispIdx = pendingUploadDispIdx;
+      pendingUploadDispIdx = null;
+      const dseg = displaySegments[dispIdx];
+      if (!dseg) return;
+      try { await uploadSegmentAudio(dseg, file); }
+      catch (err) { alert('Erro no upload de áudio: ' + err.message); }
+    });
     document.getElementById('exportModifiedZipBtn')?.addEventListener('click', exportModifiedZip);
     document.getElementById('saveMetadataBtn')?.addEventListener('click', saveMetadata);
     document.getElementById('toggleTextRowsBtn')?.addEventListener('click', () => {

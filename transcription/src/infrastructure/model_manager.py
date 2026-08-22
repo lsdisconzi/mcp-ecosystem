@@ -151,7 +151,7 @@ class ModelManager:
             try:
                 self._diarization_pipeline = Pipeline.from_pretrained(
                     "pyannote/speaker-diarization-3.1",
-                    use_auth_token=token,
+                    token=token,
                 )
                 if self._diarization_pipeline is None:
                     raise RuntimeError(
@@ -169,7 +169,7 @@ class ModelManager:
                     os.environ["CUDA_VISIBLE_DEVICES"] = ""
                     self._diarization_pipeline = Pipeline.from_pretrained(
                         "pyannote/speaker-diarization-3.1",
-                        use_auth_token=token,
+                        token=token,
                     )
                     if self._diarization_pipeline is None:
                         raise RuntimeError(

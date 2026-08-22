@@ -61,7 +61,7 @@ body {
 /* ── Main Layout ── */
 .main { display: flex; flex: 1; overflow: hidden; }
 
-/* ── Sidebar ── */
+/* ── Sidebar (left navigation) ── */
 .sidebar {
   width: 240px;
   background: var(--surface);
@@ -104,6 +104,53 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+/* ── Info Sidebar (right) ── */
+.info-sidebar {
+  width: 300px;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  padding: 16px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.info-sidebar h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.info-sidebar .info-block {
+  margin-bottom: 18px;
+}
+.info-sidebar .info-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.info-sidebar .info-text {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+.info-sidebar .info-warning {
+  font-size: 13px;
+  color: var(--orange);
+  line-height: 1.6;
+}
+.info-sidebar .info-tip {
+  font-size: 13px;
+  color: var(--green);
+  line-height: 1.6;
+}
+.info-sidebar .info-separator {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 12px 0;
 }
 
 /* ── Panel ── */
@@ -271,7 +318,7 @@ canvas.visualize {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── Tabs ── */
-.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 16px; flex-wrap: wrap; }
 .tab {
   padding: 8px 16px;
   font-size: 13px;
@@ -301,6 +348,40 @@ canvas.visualize {
 /* ── Section visibility ── */
 .section { display: none; }
 .section.visible { display: flex; flex-direction: column; gap: 20px; }
+
+/* ── Tooltip Styles ── */
+.tooltip {
+  position: relative;
+  cursor: help;
+}
+.tooltip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1c2128;
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s, visibility 0.15s;
+  z-index: 1000;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  width: max-content;
+  max-width: 280px;
+  text-align: left;
+}
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
 </style>
 </head>
 <body>
@@ -315,35 +396,51 @@ canvas.visualize {
 <!-- ── Main Layout ── -->
 <div class="main">
 
-  <!-- Sidebar -->
+  <!-- Left Navigation Sidebar -->
   <nav class="sidebar" id="sidebar">
     <div class="section-title">Audio I/O</div>
-    <button class="nav-item active" data-section="upload"><span class="icon">📂</span> Upload &amp; Info</button>
+    <button class="nav-item tooltip active" data-section="upload" data-tip="Upload audio, inspect file info, and view waveform.">
+      <span class="icon">📂</span> Upload &amp; Info
+    </button>
 
     <div class="section-title">Filters &amp; EQ</div>
-    <button class="nav-item" data-section="filters"><span class="icon">🎚️</span> Parametric Filters</button>
-    <button class="nav-item" data-section="effects"><span class="icon">🎛️</span> Audio Effects</button>
+    <button class="nav-item tooltip" data-section="filters" data-tip="Apply biquad filters: highpass, lowpass, notch, shelving, peaking EQ.">
+      <span class="icon">🎚️</span> Parametric Filters
+    </button>
+    <button class="nav-item tooltip" data-section="effects" data-tip="Creative and corrective effects: flanger, phaser, overdrive, denoise, dereverb, etc.">
+      <span class="icon">🎛️</span> Audio Effects
+    </button>
 
     <div class="section-title">Voice Enhancement</div>
-    <button class="nav-item" data-section="voice"><span class="icon">🎤</span> Voice Processing</button>
+    <button class="nav-item tooltip" data-section="voice" data-tip="Pitch, speed, time-stretch, pre-emphasis, volume, and fades.">
+      <span class="icon">🎤</span> Voice Processing
+    </button>
 
     <div class="section-title">Spectral Analysis</div>
-    <button class="nav-item" data-section="spectral"><span class="icon">📊</span> Spectrograms &amp; Analysis</button>
+    <button class="nav-item tooltip" data-section="spectral" data-tip="Generate spectrograms, Mel spectrograms, MFCCs, and measure loudness, centroid, pitch.">
+      <span class="icon">📊</span> Spectrograms &amp; Analysis
+    </button>
 
     <div class="section-title">Advanced</div>
-    <button class="nav-item" data-section="separation"><span class="icon">🔊</span> Source Separation</button>
-    <button class="nav-item" data-section="vad"><span class="icon">🗣️</span> Voice Detection</button>
-    <button class="nav-item" data-section="resample"><span class="icon">🔄</span> Resample</button>
+    <button class="nav-item tooltip" data-section="separation" data-tip="Separate music into vocals, drums, bass, and other stems using HDemucs.">
+      <span class="icon">🔊</span> Source Separation
+    </button>
+    <button class="nav-item tooltip" data-section="vad" data-tip="Detect regions of voice activity to quickly locate speech segments.">
+      <span class="icon">🗣️</span> Voice Detection
+    </button>
+    <button class="nav-item tooltip" data-section="resample" data-tip="Change sample rate to match target systems or reduce file size.">
+      <span class="icon">🔄</span> Resample
+    </button>
   </nav>
 
-  <!-- Content -->
+  <!-- Main Content -->
   <div class="content" id="content">
 
     <!-- ── Section: Upload ── -->
     <div class="section visible" id="sec-upload">
       <div class="panel">
         <h2><span class="icon">📂</span> Upload Audio File</h2>
-        <div class="upload-zone" id="upload-zone">
+        <div class="upload-zone tooltip" id="upload-zone" data-tip="Click or drop an audio file. Supported formats: WAV, MP3, FLAC, OGG, M4A, AAC.">
           <div class="icon">🎵</div>
           <p>Drop an audio file here or click to browse</p>
           <p style="font-size:12px;margin-top:4px">Supports: WAV, MP3, FLAC, OGG, M4A, AAC, and more</p>
@@ -352,7 +449,7 @@ canvas.visualize {
         <input type="file" id="file-input" accept="audio/*" aria-label="Audio file">
         <div class="player-bar" id="player-bar" style="display:none; margin-top:12px">
           <audio id="audio-player" controls></audio>
-          <button class="btn danger" id="btn-clear">Clear</button>
+          <button class="btn danger tooltip" id="btn-clear" data-tip="Clear the current file and all results.">Clear</button>
         </div>
       </div>
 
@@ -384,7 +481,7 @@ canvas.visualize {
       <div class="panel">
         <h2><span class="icon">🎚️</span> Parametric Biquad Filters</h2>
         <div class="controls-grid">
-          <div class="control-group">
+          <div class="control-group tooltip" data-tip="Choose the type of biquad filter to apply.">
             <label for="filter-type">Filter Type</label>
             <select id="filter-type">
               <option value="lowpass">Lowpass</option>
@@ -397,21 +494,21 @@ canvas.visualize {
               <option value="equalizer">Peaking EQ</option>
             </select>
           </div>
-          <div class="control-group">
+          <div class="control-group tooltip" data-tip="Cutoff or center frequency in Hz. Adjustable from 20 Hz to 20 kHz.">
             <label for="filter-freq">Cutoff / Center Frequency (Hz)</label>
             <div class="range-row">
               <input type="range" id="filter-freq" min="20" max="20000" value="1000" step="1">
               <span class="range-val" id="filter-freq-val">1000</span>
             </div>
           </div>
-          <div class="control-group">
+          <div class="control-group tooltip" data-tip="Q factor: higher values create narrower / more resonant filters.">
             <label for="filter-q">Q Factor</label>
             <div class="range-row">
               <input type="range" id="filter-q" min="0.1" max="10" value="0.707" step="0.001">
               <span class="range-val" id="filter-q-val">0.707</span>
             </div>
           </div>
-          <div class="control-group" id="filter-gain-group" style="display:none">
+          <div class="control-group" id="filter-gain-group" style="display:none" data-tip="Gain in dB for shelf and peaking EQ filters.">
             <label for="filter-gain">Gain (dB)</label>
             <div class="range-row">
               <input type="range" id="filter-gain" min="-20" max="20" value="0" step="0.1">
@@ -420,8 +517,8 @@ canvas.visualize {
           </div>
         </div>
         <div class="btn-row">
-          <button class="btn primary" id="btn-apply-filter">Apply Filter</button>
-          <button class="btn" id="btn-preview-filter">Preview</button>
+          <button class="btn primary tooltip" id="btn-apply-filter" data-tip="Apply the selected filter to the uploaded audio and show the result.">Apply Filter</button>
+          <button class="btn tooltip" id="btn-preview-filter" data-tip="Preview the filter effect (if supported).">Preview</button>
         </div>
         <div class="results" id="filter-results"></div>
       </div>
@@ -432,18 +529,20 @@ canvas.visualize {
       <div class="panel">
         <h2><span class="icon">🎛️</span> Audio Effects</h2>
         <div class="tabs" id="effects-tabs">
-          <button class="tab active" data-effect="flanger">Flanger</button>
-          <button class="tab" data-effect="phaser">Phaser</button>
-          <button class="tab" data-effect="overdrive">Overdrive</button>
-          <button class="tab" data-effect="contrast">Contrast</button>
-          <button class="tab" data-effect="dither">Dither</button>
-          <button class="tab" data-effect="dcshift">DC Shift</button>
-          <button class="tab" data-effect="gain">Gain</button>
-          <button class="tab" data-effect="reverb">Reverb (Convolution)</button>
+          <button class="tab active tooltip" data-effect="flanger" data-tip="Creates a sweeping comb-filter effect by delaying and mixing the signal.">Flanger</button>
+          <button class="tab tooltip" data-effect="phaser" data-tip="Similar to flanger but uses all-pass filters for a phasey sound.">Phaser</button>
+          <button class="tab tooltip" data-effect="overdrive" data-tip="Adds distortion by clipping the waveform.">Overdrive</button>
+          <button class="tab tooltip" data-effect="contrast" data-tip="Enhances transient contrast to make quiet parts quieter and loud parts louder.">Contrast</button>
+          <button class="tab tooltip" data-effect="dither" data-tip="Adds low-level noise to reduce quantization distortion.">Dither</button>
+          <button class="tab tooltip" data-effect="dcshift" data-tip="Adds a DC offset to the signal.">DC Shift</button>
+          <button class="tab tooltip" data-effect="gain" data-tip="Amplifies or attenuates the overall volume.">Gain</button>
+          <button class="tab tooltip" data-effect="reverb" data-tip="Simulates reverb by convolving the audio with an impulse response.">Reverb (Convolution)</button>
+          <button class="tab tooltip" data-effect="denoise" data-tip="Removes stationary noise using a spectral Wiener filter.">Spectral Denoise</button>
+          <button class="tab tooltip" data-effect="dereverb" data-tip="Reduces late reverberation / echo from the audio.">Spectral Dereverb</button>
         </div>
         <div id="effects-controls"></div>
         <div class="btn-row">
-          <button class="btn primary" id="btn-apply-effect">Apply Effect</button>
+          <button class="btn primary tooltip" id="btn-apply-effect" data-tip="Apply the selected effect with current settings.">Apply Effect</button>
         </div>
         <div class="results" id="effect-results"></div>
       </div>
@@ -454,42 +553,42 @@ canvas.visualize {
       <div class="panel">
         <h2><span class="icon">🎤</span> Voice Processing</h2>
         <div class="controls-grid">
-          <div class="control-group">
+          <div class="control-group tooltip" data-tip="Shifts pitch up or down in semitones without changing speed.">
             <label for="pitch-steps">Pitch Shift (semitones)</label>
             <div class="range-row">
               <input type="range" id="pitch-steps" min="-12" max="12" value="0" step="0.5">
               <span class="range-val" id="pitch-steps-val">0</span>
             </div>
           </div>
-          <div class="control-group">
+          <div class="control-group tooltip" data-tip="Changes both speed and pitch (like a tape speed control).">
             <label for="speed-factor">Speed Factor</label>
             <div class="range-row">
               <input type="range" id="speed-factor" min="0.5" max="3.0" value="1.0" step="0.05">
               <span class="range-val" id="speed-factor-val">1.0</span>
             </div>
           </div>
-          <div class="control-group">
+          <div class="control-group tooltip" data-tip="Changes speed while preserving pitch (useful for slowing down speech).">
             <label for="time-stretch">Time Stretch (preserves pitch)</label>
             <div class="range-row">
               <input type="range" id="time-stretch" min="0.5" max="2.0" value="1.0" step="0.05">
               <span class="range-val" id="time-stretch-val">1.0</span>
             </div>
           </div>
-          <div class="control-group">
+          <div class="control-group tooltip" data-tip="Boosts high frequencies for clarity. Higher coefficient = more high-frequency boost.">
             <label for="preemph-coeff">Pre-emphasis Coefficient</label>
             <div class="range-row">
               <input type="range" id="preemph-coeff" min="0.0" max="1.0" value="0.97" step="0.01">
               <span class="range-val" id="preemph-coeff-val">0.97</span>
             </div>
           </div>
-          <div class="control-group">
+          <div class="control-group tooltip" data-tip="Attenuates high frequencies (opposite of pre-emphasis).">
             <label for="deemph-coeff">De-emphasis Coefficient</label>
             <div class="range-row">
               <input type="range" id="deemph-coeff" min="0.0" max="1.0" value="0.97" step="0.01">
               <span class="range-val" id="deemph-coeff-val">0.97</span>
             </div>
           </div>
-          <div class="control-group">
+          <div class="control-group tooltip" data-tip="Adjust volume in dB. Positive values amplify, negative values attenuate.">
             <label for="vol-gain">Volume Gain (dB)</label>
             <div class="range-row">
               <input type="range" id="vol-gain" min="-40" max="40" value="0" step="0.5">
@@ -498,13 +597,13 @@ canvas.visualize {
           </div>
         </div>
         <div class="btn-row">
-          <button class="btn primary" id="btn-pitch-shift">Pitch Shift</button>
-          <button class="btn primary" id="btn-change-speed">Change Speed</button>
-          <button class="btn primary" id="btn-time-stretch">Time Stretch</button>
-          <button class="btn" id="btn-preemphasis">Pre-emphasis (Clarity Boost)</button>
-          <button class="btn" id="btn-deemphasis">De-emphasis</button>
-          <button class="btn" id="btn-gain">Apply Gain</button>
-          <button class="btn" id="btn-fade">Fade In/Out (1s)</button>
+          <button class="btn primary tooltip" id="btn-pitch-shift" data-tip="Shift pitch using the selected number of semitones.">Pitch Shift</button>
+          <button class="btn primary tooltip" id="btn-change-speed" data-tip="Change speed using the selected factor.">Change Speed</button>
+          <button class="btn primary tooltip" id="btn-time-stretch" data-tip="Time-stretch audio to the selected rate without changing pitch.">Time Stretch</button>
+          <button class="btn tooltip" id="btn-preemphasis" data-tip="Apply pre-emphasis filter to boost speech clarity.">Pre-emphasis (Clarity Boost)</button>
+          <button class="btn tooltip" id="btn-deemphasis" data-tip="Apply de-emphasis filter to reduce high frequencies.">De-emphasis</button>
+          <button class="btn tooltip" id="btn-gain" data-tip="Apply the selected volume gain in dB.">Apply Gain</button>
+          <button class="btn tooltip" id="btn-fade" data-tip="Apply 1-second fade in and fade out.">Fade In/Out (1s)</button>
         </div>
         <div class="results" id="voice-results"></div>
       </div>
@@ -515,7 +614,7 @@ canvas.visualize {
       <div class="panel">
         <h2><span class="icon">📊</span> Spectrogram</h2>
         <div class="controls-grid">
-          <div class="control-group">
+          <div class="control-group tooltip" data-tip="FFT window size. Larger values give better frequency resolution but less time resolution.">
             <label for="spec-nfft">FFT Size</label>
             <select id="spec-nfft">
               <option value="256">256</option>
@@ -525,7 +624,7 @@ canvas.visualize {
               <option value="2048">2048</option>
             </select>
           </div>
-          <div class="control-group">
+          <div class="control-group tooltip" data-tip="Hop length between frames. Smaller values give smoother spectrogram but larger output.">
             <label for="spec-hop">Hop Length</label>
             <select id="spec-hop">
               <option value="80">80</option>
@@ -536,9 +635,9 @@ canvas.visualize {
           </div>
         </div>
         <div class="btn-row">
-          <button class="btn primary" id="btn-spectrogram">Compute Spectrogram</button>
-          <button class="btn primary" id="btn-mel">Mel Spectrogram</button>
-          <button class="btn primary" id="btn-mfcc">MFCC</button>
+          <button class="btn primary tooltip" id="btn-spectrogram" data-tip="Compute and display a linear-frequency spectrogram.">Compute Spectrogram</button>
+          <button class="btn primary tooltip" id="btn-mel" data-tip="Compute and display a Mel-frequency spectrogram (perceptual).">Mel Spectrogram</button>
+          <button class="btn primary tooltip" id="btn-mfcc" data-tip="Compute Mel-frequency cepstral coefficients (MFCCs).">MFCC</button>
         </div>
         <canvas class="visualize" id="canvas-spec" style="display:none; margin-top:12px"></canvas>
       </div>
@@ -546,9 +645,9 @@ canvas.visualize {
       <div class="panel">
         <h2><span class="icon">📏</span> Audio Metrics</h2>
         <div class="btn-row">
-          <button class="btn" id="btn-loudness">Measure Loudness (LUFS)</button>
-          <button class="btn" id="btn-centroid">Spectral Centroid</button>
-          <button class="btn" id="btn-pitch-detect">Detect Pitch (F0)</button>
+          <button class="btn tooltip" id="btn-loudness" data-tip="Measure integrated loudness per ITU-R BS.1770-4 (LUFS).">Measure Loudness (LUFS)</button>
+          <button class="btn tooltip" id="btn-centroid" data-tip="Calculate average spectral centroid (brightness).">Spectral Centroid</button>
+          <button class="btn tooltip" id="btn-pitch-detect" data-tip="Estimate fundamental frequency (F0) of voiced audio.">Detect Pitch (F0)</button>
         </div>
         <div class="metric-cards" id="metrics-cards" style="margin-top:12px"></div>
       </div>
@@ -563,7 +662,7 @@ canvas.visualize {
           First use downloads the model (~330MB for "low").
         </p>
         <div class="controls-grid">
-          <div class="control-group">
+          <div class="control-group tooltip" data-tip="Model size: higher = better separation quality but slower and more memory.">
             <label for="sep-model">Model Size</label>
             <select id="sep-model">
               <option value="low" selected>Low (fastest, good quality)</option>
@@ -573,7 +672,7 @@ canvas.visualize {
           </div>
         </div>
         <div class="btn-row">
-          <button class="btn primary" id="btn-separate">Separate Sources</button>
+          <button class="btn primary tooltip" id="btn-separate" data-tip="Run HDemucs separation. Results appear as separate audio players below.">Separate Sources</button>
         </div>
         <div class="results" id="sep-results" style="margin-top:16px"></div>
       </div>
@@ -584,7 +683,7 @@ canvas.visualize {
       <div class="panel">
         <h2><span class="icon">🗣️</span> Voice Activity Detection</h2>
         <div class="controls-grid">
-          <div class="control-group">
+          <div class="control-group tooltip" data-tip="Higher values require louder voice to trigger detection. Lower values are more sensitive.">
             <label for="vad-trigger">Trigger Level</label>
             <div class="range-row">
               <input type="range" id="vad-trigger" min="1" max="20" value="7" step="0.5">
@@ -593,7 +692,7 @@ canvas.visualize {
           </div>
         </div>
         <div class="btn-row">
-          <button class="btn primary" id="btn-vad">Detect Voice Activity</button>
+          <button class="btn primary tooltip" id="btn-vad" data-tip="Detect voice activity and highlight speech regions in green.">Detect Voice Activity</button>
         </div>
         <canvas class="visualize" id="canvas-vad" style="display:none; margin-top:12px; height:150px"></canvas>
       </div>
@@ -604,7 +703,7 @@ canvas.visualize {
       <div class="panel">
         <h2><span class="icon">🔄</span> Resample Audio</h2>
         <div class="controls-grid">
-          <div class="control-group">
+          <div class="control-group tooltip" data-tip="Choose a target sample rate. Lower rates reduce file size but may lose high frequencies.">
             <label for="target-sr">Target Sample Rate (Hz)</label>
             <select id="target-sr">
               <option value="8000">8000 (telephone)</option>
@@ -617,13 +716,22 @@ canvas.visualize {
           </div>
         </div>
         <div class="btn-row">
-          <button class="btn primary" id="btn-resample">Resample</button>
+          <button class="btn primary tooltip" id="btn-resample" data-tip="Resample the uploaded audio to the selected sample rate.">Resample</button>
         </div>
         <div class="results" id="resample-results" style="margin-top:12px"></div>
       </div>
     </div>
 
   </div><!-- /content -->
+
+  <!-- Right Info Sidebar -->
+  <aside class="info-sidebar" id="info-sidebar">
+    <h3>Tool Information</h3>
+    <div id="info-content">
+      <!-- Dynamic info injected here -->
+    </div>
+  </aside>
+
 </div><!-- /main -->
 
 <script>
@@ -636,6 +744,186 @@ let currentAudioB64 = null;
 let currentSampleRate = null;
 
 // ──────────────────────────────────────────────
+// Info Sidebar Content
+// ──────────────────────────────────────────────
+const infoData = {
+  upload: {
+    title: 'Upload & Info',
+    html: `
+      <div class="info-block">
+        <div class="info-title">Expected Effects</div>
+        <div class="info-text">Upload an audio file to inspect its properties: sample rate, channels, duration, and max amplitude. A waveform preview will be shown.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">How to Use</div>
+        <div class="info-text">Click the drop zone or drag &amp; drop a file. Supported formats: WAV, MP3, FLAC, OGG, M4A, AAC. After upload, the file appears in the player below.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Recommendations</div>
+        <div class="info-tip">Start here before applying any processing. The file metrics help you decide which tools to use (e.g., denoise for high background noise, dereverb for echo).</div>
+      </div>
+      <hr class="info-separator">
+      <div class="info-block">
+        <div class="info-warning">Make sure the server is running on port 8765. If not, you will see a connection error.</div>
+      </div>
+    `
+  },
+  filters: {
+    title: 'Parametric Filters',
+    html: `
+      <div class="info-block">
+        <div class="info-title">Expected Effects</div>
+        <div class="info-text">Biquad filters shape the frequency content. Lowpass removes highs, highpass removes lows, bandpass isolates a band, notch removes a narrow band, shelving boosts/cuts lows or highs, and peaking EQ boosts/cuts a specific band.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Common Uses</div>
+        <div class="info-text">Highpass at 80-120 Hz removes rumble. Lowpass at 8-10 kHz reduces hiss. Notch at 50/60 Hz removes hum. Peaking EQ around 2-4 kHz can improve speech intelligibility.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Settings</div>
+        <div class="info-text">Q controls width: lower Q = broader, higher Q = narrower. For highpass/lowpass, Q = 0.707 (Butterworth) is a good starting point.</div>
+      </div>
+      <hr class="info-separator">
+      <div class="info-block">
+        <div class="info-warning">Applying multiple filters sequentially can cause phase shifts. Use the filter chain if available to combine them more cleanly.</div>
+      </div>
+    `
+  },
+  effects: {
+    title: 'Audio Effects',
+    html: `
+      <div class="info-block">
+        <div class="info-title">Expected Effects</div>
+        <div class="info-text">This tab includes both creative effects (flanger, phaser, overdrive, reverb) and corrective tools (denoise, dereverb, gain, DC shift, dither).</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Denoise & Dereverb</div>
+        <div class="info-text">These are the most useful for cleaning noisy recordings. Denoise removes steady background noise; dereverb reduces echo and room reverberation. Adjust the strength parameters carefully to avoid artifacts.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Other Effects</div>
+        <div class="info-text">Flanger, phaser, and overdrive are for creative sound design and will likely harm speech intelligibility. Use them only for experimentation.</div>
+      </div>
+      <hr class="info-separator">
+      <div class="info-block">
+        <div class="info-tip">For airport recordings or far-field speech, try Spectral Denoise followed by Spectral Dereverb, then a highpass filter at 100 Hz and pre-emphasis at 0.97.</div>
+      </div>
+    `
+  },
+  voice: {
+    title: 'Voice Processing',
+    html: `
+      <div class="info-block">
+        <div class="info-title">Expected Effects</div>
+        <div class="info-text">Pitch shift changes the perceived tone without altering duration. Speed change alters both speed and pitch. Time-stretch changes speed while preserving pitch. Pre-emphasis boosts high frequencies for clarity; de-emphasis cuts them.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Common Uses</div>
+        <div class="info-text">Slowing down speech with time-stretch can aid transcription. Pre-emphasis (coeff ~0.97) is excellent for making distant or muffled speech clearer. Volume gain adjusts overall level; fades smooth abrupt starts/ends.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Settings</div>
+        <div class="info-text">For speech clarity, apply pre-emphasis after denoising. For slowing speech, use time-stretch around 0.8-0.9 to maintain naturalness.</div>
+      </div>
+      <hr class="info-separator">
+      <div class="info-block">
+        <div class="info-warning">Excessive pitch shift or speed change can cause artifacts. Use moderate values for forensic or review purposes.</div>
+      </div>
+    `
+  },
+  spectral: {
+    title: 'Spectrograms & Analysis',
+    html: `
+      <div class="info-block">
+        <div class="info-title">Expected Effects</div>
+        <div class="info-text">Spectrograms visualize frequency content over time. Mel spectrograms use a perceptual frequency scale, and MFCCs compress spectral information into coefficients often used for speech recognition.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Audio Metrics</div>
+        <div class="info-text">Loudness (LUFS) measures perceived volume. Spectral centroid indicates brightness (higher = brighter). Pitch detection estimates the fundamental frequency (F0) of voiced sounds.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Settings</div>
+        <div class="info-text">FFT size: 1024 or 2048 gives good frequency resolution for speech. Hop length: 256 or 512 smooths the display. Larger FFT = better frequency detail, less time detail.</div>
+      </div>
+      <hr class="info-separator">
+      <div class="info-block">
+        <div class="info-tip">Use the spectrogram before and after processing to visually confirm noise reduction and filter effectiveness.</div>
+      </div>
+    `
+  },
+  separation: {
+    title: 'Source Separation',
+    html: `
+      <div class="info-block">
+        <div class="info-title">Expected Effects</div>
+        <div class="info-text">HDemucs separates a music mix into vocals, drums, bass, and other. It is not designed for isolating multiple speakers, but the "vocals" stem can sometimes contain the clearest speech.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Model Sizes</div>
+        <div class="info-text">Low: fastest, lower quality. Medium: balanced. High: best quality, slowest and requires more memory.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Recommendations</div>
+        <div class="info-text">For speech in noisy environments, first denoise and dereverb, then try separation. If the vocals stem is worse, use the cleaned full track instead.</div>
+      </div>
+      <hr class="info-separator">
+      <div class="info-block">
+        <div class="info-warning">First use downloads a model file (~330 MB for low). This may take time depending on internet speed.</div>
+      </div>
+    `
+  },
+  vad: {
+    title: 'Voice Activity Detection',
+    html: `
+      <div class="info-block">
+        <div class="info-title">Expected Effects</div>
+        <div class="info-text">VAD analyzes the audio and marks regions where voice activity is likely present. This helps you quickly locate spoken segments in long recordings.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Settings</div>
+        <div class="info-text">Trigger level controls sensitivity. Lower values (e.g., 5) detect quieter speech but may also trigger on background noise. Higher values (e.g., 10) require louder voice.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Recommendations</div>
+        <div class="info-text">Run VAD after cleaning to get more accurate detection. The result is displayed as a green bar graph.</div>
+      </div>
+      <hr class="info-separator">
+      <div class="info-block">
+        <div class="info-tip">Use VAD to mark segments for later review, especially in recordings with long silences or constant background noise.</div>
+      </div>
+    `
+  },
+  resample: {
+    title: 'Resample Audio',
+    html: `
+      <div class="info-block">
+        <div class="info-title">Expected Effects</div>
+        <div class="info-text">Resampling changes the sample rate of the audio file. Lower rates reduce file size and compatibility requirements but remove high frequencies.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Common Targets</div>
+        <div class="info-text">16 kHz is typical for speech processing. 44.1 kHz for CD audio, 48 kHz for video. 8 kHz is telephone quality (band-limited to ~4 kHz).</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Recommendations</div>
+        <div class="info-text">For speech review, 16 kHz is usually sufficient and reduces file size. Avoid upsampling if the original is low-rate; it does not add information.</div>
+      </div>
+      <hr class="info-separator">
+      <div class="info-block">
+        <div class="info-warning">Resampling may introduce aliasing if not done properly. The backend uses torchaudio's resampler, which is generally high quality.</div>
+      </div>
+    `
+  }
+};
+
+function updateInfoSidebar(sectionId) {
+  const info = infoData[sectionId] || infoData.upload;
+  const content = document.getElementById('info-content');
+  content.innerHTML = info.html;
+}
+
+// ──────────────────────────────────────────────
 // Navigation
 // ──────────────────────────────────────────────
 document.querySelectorAll('.nav-item').forEach(item => {
@@ -645,8 +933,12 @@ document.querySelectorAll('.nav-item').forEach(item => {
     const secId = item.dataset.section;
     document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
     document.getElementById('sec-' + secId).classList.add('visible');
+    updateInfoSidebar(secId);
   });
 });
+
+// Initialize info sidebar
+updateInfoSidebar('upload');
 
 // ──────────────────────────────────────────────
 // Upload Handling
@@ -894,6 +1186,27 @@ const effectConfigs = {
     endpoint: '/api/effects/convolve',
     params: d => ({ mode: d['fx-mode'] }),
   },
+  denoise: {
+    fields: [
+      { id: 'fx-nfft', label: 'FFT Size', type: 'select', options: ['512','1024','2048','4096'] },
+      { id: 'fx-alpha', label: 'Subtraction Strength (alpha)', min: 0.5, max: 6.0, val: 2.0, step: 0.1 },
+      { id: 'fx-floor', label: 'Gain Floor (dB)', min: -60, max: 0, val: -40, step: 1 },
+      { id: 'fx-smooth', label: 'Smoothing Frames', min: 0, max: 15, val: 5, step: 1 },
+      { id: 'fx-stationary', label: 'Noise Model', type: 'select', options: ['stationary', 'adaptive'] },
+    ],
+    endpoint: '/api/enhance/denoise',
+    params: d => ({ n_fft: d['fx-nfft'], alpha: d['fx-alpha'], floor_db: d['fx-floor'], smoothing_frames: d['fx-smooth'], stationary: d['fx-stationary'] === 'stationary' }),
+  },
+  dereverb: {
+    fields: [
+      { id: 'fx-nfft', label: 'FFT Size', type: 'select', options: ['512','1024','2048','4096'] },
+      { id: 'fx-rt60', label: 'RT60 (s, 0 = auto)', min: 0, max: 3.0, val: 0, step: 0.05 },
+      { id: 'fx-atten', label: 'Attenuation (dB)', min: 0, max: 40, val: 20, step: 1 },
+      { id: 'fx-mix', label: 'Mix', min: 0, max: 1, val: 1.0, step: 0.05 },
+    ],
+    endpoint: '/api/enhance/dereverb',
+    params: d => ({ n_fft: d['fx-nfft'], rt60_s: d['fx-rt60'], attenuation_db: d['fx-atten'], mix: d['fx-mix'] }),
+  },
 };
 
 let currentEffect = 'flanger';
@@ -913,11 +1226,11 @@ function renderEffectControls() {
   let html = '<div class="controls-grid">';
   cfg.fields.forEach(f => {
     if (f.type === 'select') {
-      html += `<div class="control-group"><label for="${f.id}">${f.label}</label><select id="${f.id}">${f.options.map(o => `<option>${o}</option>`).join('')}</select></div>`;
+      html += `<div class="control-group tooltip" data-tip="${f.label}"><label for="${f.id}">${f.label}</label><select id="${f.id}">${f.options.map(o => `<option>${o}</option>`).join('')}</select></div>`;
     } else if (f.type === 'checkbox') {
-      html += `<div class="control-group"><label for="${f.id}">${f.label}</label><input type="checkbox" id="${f.id}"></div>`;
+      html += `<div class="control-group tooltip" data-tip="${f.label}"><label for="${f.id}">${f.label}</label><input type="checkbox" id="${f.id}"></div>`;
     } else {
-      html += `<div class="control-group"><label for="${f.id}">${f.label}</label><div class="range-row">
+      html += `<div class="control-group tooltip" data-tip="${f.label}"><label for="${f.id}">${f.label}</label><div class="range-row">
         <input type="range" id="${f.id}" min="${f.min}" max="${f.max}" value="${f.val}" step="${f.step}">
         <span class="range-val" id="${f.id}-val">${f.val}</span></div></div>`;
     }

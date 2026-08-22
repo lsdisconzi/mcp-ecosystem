@@ -6,11 +6,15 @@ import json
 import logging
 import os
 import re
+import shutil
+import tempfile
 import time
+import unicodedata
 from dataclasses import replace as _replace
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, File, HTTPException, Query, Request, UploadFile
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 
@@ -78,6 +82,159 @@ def _sanitize_filename_stem(name: str) -> str:
     stem, _ext = os.path.splitext(base)
     cleaned = _SAFE_NAME_RE.sub("_", stem).strip("._-")
     return cleaned[:180]
+
+
+# ------------------------------------------------------------------
+# Segment audio (cut from source, cached on disk; uploads replace)
+# ------------------------------------------------------------------
+def _data_root_dir() -> str:
+    base = os.path.dirname(settings.AUDIO_DIR) or settings.AUDIO_DIR
+    if not os.path.isdir(base):
+        base = "/home/leandrodisconzi/transcription/data"
+    return base
+
+
+def _segment_audio_dir(transcript_id: str) -> str:
+    safe = _sanitize_filename_stem(transcript_id) or f"transcript_{abs(hash(transcript_id))}"
+    d = os.path.join(_data_root_dir(), "segment_audio", safe)
+    os.makedirs(d, exist_ok=True)
+    return d
+
+
+_AUDIO_EXTS = ("wav", "mp3", "m4a", "mp4")
+# Tokens that carry no disambiguating value when matching a transcript to its source audio.
+_NOISE_TOKENS = {"json", "curated", "final", "v1", "v2", "v3", "att", "aux", "sup"}
+_TRANSCRIPT_ID_PREFIXES = ("json_", "json-", "json.")
+
+
+def _normalize_for_match(value: str) -> str:
+    """Lowercase, strip accents/diacritics, and collapse any non-alphanumeric run to a single space."""
+    if not value:
+        return ""
+    value = unicodedata.normalize("NFKD", str(value))
+    value = "".join(ch for ch in value if not unicodedata.combining(ch))
+    value = value.lower()
+    value = re.sub(r"[^a-z0-9]+", " ", value)
+    return re.sub(r"\s+", " ", value).strip()
+
+
+def _candidate_stems(transcript, transcript_id: str) -> list[str]:
+    """Ordered, normalized candidate stems derived from every identifying field available."""
+    stems: list[str] = []
+
+    def add(value: str) -> None:
+        norm = _normalize_for_match(value)
+        if norm and norm not in stems:
+            stems.append(norm)
+
+    add(transcript.source_file)
+    add(os.path.splitext(os.path.basename(transcript.source_file or ""))[0])
+    add(getattr(transcript, "audio_id", ""))
+    add(getattr(transcript, "title", ""))
+    add(getattr(transcript, "transcript_id", "") or transcript_id)
+
+    tid = getattr(transcript, "transcript_id", "") or transcript_id
+    lowered = tid.lower()
+    for prefix in _TRANSCRIPT_ID_PREFIXES:
+        if lowered.startswith(prefix):
+            add(tid[len(prefix):])
+            break
+
+    return stems
+
+
+def _stem_tokens(stem: str) -> set[str]:
+    return {tok for tok in stem.split() if tok not in _NOISE_TOKENS}
+
+
+def _match_score(audio_tokens: set[str], cand_tokens: set[str]) -> float:
+    """Jaccard overlap, with a hard requirement that any number the candidate specifies
+    must also appear in the audio filename (disambiguates 'Benítez.m4a' vs 'Benítez 29.m4a')."""
+    if not audio_tokens or not cand_tokens:
+        return 0.0
+    audio_nums = {t for t in audio_tokens if t.isdigit()}
+    cand_nums = {t for t in cand_tokens if t.isdigit()}
+    if cand_nums and not cand_nums <= audio_nums:
+        return 0.0
+    inter = audio_tokens & cand_tokens
+    union = audio_tokens | cand_tokens
+    return len(inter) / len(union) if union else 0.0
+
+
+def _iter_audio_files(folder: str) -> list[str]:
+    if not folder or not os.path.isdir(folder):
+        return []
+    return sorted(f for f in os.listdir(folder) if f.rsplit(".", 1)[-1].lower() in _AUDIO_EXTS)
+
+
+def _locate_source_audio(transcript, transcript_id: str) -> Optional[str]:
+    """Find the full source recording for a transcript (mirrors retranscribe logic)."""
+    # 1) Fast path: exact filename (source_file or transcript_id fallback).
+    audio_filename = transcript.source_file or f"{transcript_id}.m4a"
+    search_names = [audio_filename, audio_filename + ".wav", os.path.basename(audio_filename)]
+    for folder in [settings.AUDIO_DIR, settings.ORIGINALS_DIR, "/home/leandrodisconzi/transcription/data/audio"]:
+        for name in search_names:
+            possible_path = os.path.join(folder, name)
+            if os.path.exists(possible_path):
+                return possible_path
+
+    # 2) Legacy stem match (kept for exact underscore/space-prefix behaviour).
+    stems = [transcript_id]
+    if transcript.source_file:
+        stems.append(transcript.source_file)
+        base = os.path.splitext(transcript.source_file)[0]
+        if "_" in base:
+            parts = base.split("_", 1)
+            if parts[0] in ("audio", "segments"):
+                stems.append(parts[1])
+    for folder in [settings.AUDIO_DIR, settings.ORIGINALS_DIR]:
+        for f in _iter_audio_files(folder):
+            fl = os.path.splitext(f)[0].lower()
+            for stem in stems:
+                if fl == stem.lower() or fl.startswith(stem.lower().replace(" ", "_")):
+                    return os.path.join(folder, f)
+
+    # 3) Fuzzy match: accent-insensitive, prefix-aware, numeric-preserving token overlap.
+    candidates = _candidate_stems(transcript, transcript_id)
+    best_path = None
+    best_score = 0.0
+    for folder in [settings.AUDIO_DIR, settings.ORIGINALS_DIR]:
+        for f in _iter_audio_files(folder):
+            audio_tokens = _stem_tokens(_normalize_for_match(os.path.splitext(f)[0]))
+            if not audio_tokens:
+                continue
+            for stem in candidates:
+                score = _match_score(audio_tokens, _stem_tokens(stem))
+                if score > best_score:
+                    best_score = score
+                    best_path = os.path.join(folder, f)
+
+    if best_score >= 0.5:
+        return best_path
+    return None
+
+
+def _extract_segment_cached(audio_path: str, seg_dir: str, segment_index: int, start_ms: int, end_ms: int) -> str:
+    """Cut [start_ms, end_ms) from source audio, caching the result on disk."""
+    cache_path = os.path.join(seg_dir, f"cut_{segment_index}_{int(start_ms)}_{int(end_ms)}.wav")
+    if os.path.exists(cache_path):
+        return cache_path
+
+    temp_wav = None
+    source_path = audio_path
+    if not audio_path.lower().endswith(".wav"):
+        _, ext = os.path.splitext(audio_path)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tf:
+            shutil.copy(audio_path, tf.name)
+            temp_copy = tf.name
+        temp_wav = _audio_files.convert_to_wav(temp_copy)  # removes temp_copy
+        source_path = temp_wav
+    try:
+        _audio_files.extract_segment(source_path, int(start_ms), int(end_ms), cache_path)
+    finally:
+        if temp_wav and os.path.exists(temp_wav):
+            os.remove(temp_wav)
+    return cache_path
 
 
 # ------------------------------------------------------------------
@@ -890,10 +1047,15 @@ async def save_review(transcript_id: str, payload: SegmentUpdate):
     else:
         patched = base
 
-    # Mark reviewed segments
+    # Sync reviewed state: listed indices are reviewed, everything else is cleared so
+    # un-checking a previously reviewed segment is persisted on save.
+    reviewed_set = {int(i) for i in payload.reviewed_indices}
+    patched.segments = [
+        _replace(seg, reviewed=(i in reviewed_set))
+        for i, seg in enumerate(patched.segments)
+    ]
     for idx in payload.reviewed_indices:
         if 0 <= idx < len(patched.segments):
-            patched.segments[idx] = _replace(patched.segments[idx], reviewed=True)
             emit(idx, "segment_reviewed", {})
 
     for idx, text in payload.edited_texts.items():
@@ -947,47 +1109,12 @@ async def retranscribe_segments(transcript_id: str, payload: RetranscribeSegment
     if transcript is None:
         raise HTTPException(status_code=404, detail=f"Transcript not found: {transcript_id}")
 
-    audio_filename = transcript.source_file
-    if not audio_filename:
-        audio_filename = f"{transcript_id}.m4a"
-
-    audio_path = None
-    search_names = [audio_filename, audio_filename + ".wav", os.path.basename(audio_filename)]
-    for folder in [settings.AUDIO_DIR, settings.ORIGINALS_DIR, "/home/leandrodisconzi/transcription/data/audio"]:
-        for name in search_names:
-            possible_path = os.path.join(folder, name)
-            if os.path.exists(possible_path):
-                audio_path = possible_path
-                break
-        if audio_path:
-            break
-
+    audio_path = _locate_source_audio(transcript, transcript_id)
     if not audio_path:
-        stems = [transcript_id]
-        if transcript.source_file:
-            stems.append(transcript.source_file)
-            base = os.path.splitext(transcript.source_file)[0]
-            if "_" in base:
-                parts = base.split("_", 1)
-                if parts[0] in ("audio", "segments"):
-                    stems.append(parts[1])
-        for folder in [settings.AUDIO_DIR, settings.ORIGINALS_DIR]:
-            if os.path.isdir(folder):
-                for f in sorted(os.listdir(folder)):
-                    fl = os.path.splitext(f)[0].lower()
-                    for stem in stems:
-                        if fl == stem.lower() or fl.startswith(stem.lower().replace(" ", "_")):
-                            ext = f.split(".")[-1].lower()
-                            if ext in ("wav", "mp3", "m4a", "mp4"):
-                                audio_path = os.path.join(folder, f)
-                                break
-                    if audio_path:
-                        break
-            if audio_path:
-                break
-
-    if not audio_path:
-        raise HTTPException(status_code=400, detail=f"Could not locate audio file for '{audio_filename}' or '{transcript_id}'")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Could not locate audio file for '{transcript.source_file or transcript_id}' or '{transcript_id}'",
+        )
 
     # Prepare WAV source
     temp_wav_source = None
@@ -1012,7 +1139,11 @@ async def retranscribe_segments(transcript_id: str, payload: RetranscribeSegment
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as turn_file:
                     turn_path = turn_file.name
                 try:
-                    _audio_files.extract_segment(source_path, start_ms, end_ms, turn_path)
+                    uploaded_path = os.path.join(_segment_audio_dir(transcript_id), f"upload_{s.index}.wav")
+                    if os.path.exists(uploaded_path):
+                        shutil.copy(uploaded_path, turn_path)
+                    else:
+                        _audio_files.extract_segment(source_path, start_ms, end_ms, turn_path)
                     asr_result = _asr.transcribe(
                         turn_path,
                         language=payload.language,
@@ -1048,6 +1179,100 @@ async def retranscribe_segments(transcript_id: str, payload: RetranscribeSegment
     transcript.segments = updated_segments
     _store.save(transcript)
     return {"status": "updated", "transcript_id": transcript_id, "updated_indices": list(indices_set)}
+
+
+# ------------------------------------------------------------------
+# Per-segment audio: play / download / upload replacement / regenerate
+# ------------------------------------------------------------------
+@router.get("/{transcript_id}/segment_audio/{segment_index}")
+async def get_segment_audio(
+    transcript_id: str,
+    segment_index: int,
+    start: float | None = Query(default=None),
+    end: float | None = Query(default=None),
+):
+    """Return a segment's audio. Serves an uploaded replacement when present,
+    otherwise cuts [start, end) (or the stored segment times) from the source."""
+    if _store is None or _audio_files is None:
+        raise HTTPException(status_code=503, detail="Audio store not initialized")
+    transcript = _store.load(transcript_id)
+    if transcript is None:
+        raise HTTPException(status_code=404, detail=f"Transcript not found: {transcript_id}")
+
+    seg_dir = _segment_audio_dir(transcript_id)
+    upload_path = os.path.join(seg_dir, f"upload_{segment_index}.wav")
+    if os.path.exists(upload_path):
+        return FileResponse(upload_path, media_type="audio/wav", filename=f"segment_{segment_index}.wav")
+
+    seg = next((s for s in transcript.segments if s.index == segment_index), None)
+    s_start = float(start) if start is not None else (seg.start if seg else 0.0)
+    s_end = float(end) if end is not None else (seg.end if seg else s_start)
+    if s_end < s_start:
+        s_end = s_start
+
+    audio_path = _locate_source_audio(transcript, transcript_id)
+    if not audio_path:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Could not locate source audio for transcript '{transcript_id}'",
+        )
+
+    try:
+        cache_path = _extract_segment_cached(
+            audio_path, seg_dir, segment_index, int(s_start * 1000), int(s_end * 1000)
+        )
+    except Exception as e:
+        logger.exception("[error] segment audio cut failed")
+        raise HTTPException(status_code=500, detail=f"Failed to cut segment audio: {e}") from e
+    return FileResponse(cache_path, media_type="audio/wav", filename=f"segment_{segment_index}.wav")
+
+
+@router.post("/{transcript_id}/segment_audio/{segment_index}")
+async def upload_segment_audio(
+    transcript_id: str, segment_index: int, file: UploadFile = File(...)
+):
+    """Upload a replacement audio clip for one segment (converted to WAV)."""
+    if _store is None or _audio_files is None:
+        raise HTTPException(status_code=503, detail="Audio store not initialized")
+    transcript = _store.load(transcript_id)
+    if transcript is None:
+        raise HTTPException(status_code=404, detail=f"Transcript not found: {transcript_id}")
+
+    seg_dir = _segment_audio_dir(transcript_id)
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in (".wav", ".mp3", ".m4a", ".mp4", ".flac", ".ogg", ".aac", ".wma", ".webm"):
+        ext = ".wav"
+    tmp_path = os.path.join(seg_dir, f"upload_{segment_index}_incoming{ext}")
+    with open(tmp_path, "wb") as f:
+        f.write(await file.read())
+
+    try:
+        wav_path = _audio_files.convert_to_wav(tmp_path)  # converts + removes tmp_path
+    except Exception as e:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+        logger.exception("[error] segment audio upload conversion failed")
+        raise HTTPException(status_code=500, detail=f"Failed to convert uploaded audio: {e}") from e
+
+    final_path = os.path.join(seg_dir, f"upload_{segment_index}.wav")
+    if wav_path != final_path:
+        os.replace(wav_path, final_path)
+    return {"status": "ok", "transcript_id": transcript_id, "segment_index": segment_index, "path": final_path}
+
+
+@router.post("/{transcript_id}/segment_audio/{segment_index}/regenerate")
+async def regenerate_segment_audio(transcript_id: str, segment_index: int):
+    """Drop an uploaded replacement so the audio is re-cut from source on next fetch."""
+    if _store is None:
+        raise HTTPException(status_code=503, detail="Transcript store not initialized")
+    transcript = _store.load(transcript_id)
+    if transcript is None:
+        raise HTTPException(status_code=404, detail=f"Transcript not found: {transcript_id}")
+    seg_dir = _segment_audio_dir(transcript_id)
+    upload_path = os.path.join(seg_dir, f"upload_{segment_index}.wav")
+    if os.path.exists(upload_path):
+        os.remove(upload_path)
+    return {"status": "ok", "transcript_id": transcript_id, "segment_index": segment_index}
 
 
 @router.get("/audio/list")
@@ -1093,4 +1318,4 @@ async def save_review_legacy(transcript_id: str, payload: ReviewSavePayload):
         edited_speakers={int(k): v for k, v in (payload.edited_speakers or {}).items()},
         recording_datetime=payload.recording_datetime,
     )
-    return await save_transcript_review(transcript_id, segment_update)
+    return await save_review(transcript_id, segment_update)

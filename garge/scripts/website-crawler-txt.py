@@ -13,9 +13,9 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ===================== CONFIGURATION =====================
-BASE_URL = 'https://sixthstreet.com/'
-SAVE_DIR = './crawler_output/sixthstreet'  # where to save HTML and text
-MAX_PAGES = 200                  # max pages to fetch
+BASE_URL = 'https://dynamaster.com.mx/'
+SAVE_DIR = './crawler_output/dynamaster'  # where to save HTML and text
+MAX_PAGES = 500                  # max pages to fetch
 MAX_DEPTH = 5                    # link depth
 DOWNLOAD_ASSETS = False          # set True to download CSS/JS/images
 SAME_DOMAIN_ONLY = True          # stay within latamairlines.com

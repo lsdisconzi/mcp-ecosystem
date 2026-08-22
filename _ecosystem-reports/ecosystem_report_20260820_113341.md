@@ -1,240 +1,28 @@
-#!/usr/bin/env bash
-# start-all.sh — Start all projects in mcp-ecosystem
-set -euo pipefail
-
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Colors
-G='\033[0;32m' Y='\033[0;33m' R='\033[0;31m' C='\033[0;36m' N='\033[0m'
-info()  { printf "${C}▸${N} %s\n" "$*"; }
-ok()    { printf "${G}✓${N} %s\n" "$*"; }
-warn()  { printf "${Y}⚠${N} %s\n" "$*"; }
-fail()  { printf "${R}✗${N} %s\n" "$*"; }
-
-# Start a project's start.sh script
-start_project() {
-    local dir="$1"
-    local name="$2"
-    local script="${3:-start.sh}"
-
-    if [[ -f "$dir/$script" && -x "$dir/$script" ]]; then
-        info "Starting $name..."
-        if (cd "$dir" && ./"$script"); then
-            ok "$name started"
-        else
-            warn "$name failed to start (check logs)"
-        fi
-    else
-        warn "$name: $script not found or not executable"
-    fi
-}
-
-info "Starting all mcp-ecosystem projects..."
-
-# ── discovery (uses start.sh which starts Node service on port 3010) ──
-start_project "$ROOT/discovery" "discovery" "start.sh"
-
-# ── juris-search (starts API on 8000 + MCP on 8116) ──
-start_project "$ROOT/juris-search" "juris-search" "start.sh"
-
-# ── garge (starts API on 8066 + multiple MCP servers) ──
-start_project "$ROOT/garge" "garge" "start.sh"
-
-# ── violation-refiner (starts MCP server on 8124) ──
-start_project "$ROOT/violation-refiner" "violation-refiner" "start.sh"
-
-# ── audio (starts API on 8777 + MCP on 8765) ──
-start_project "$ROOT/audio" "audio" "start.sh"
-
-# ── ocr (starts service on 8098) ──
-start_project "$ROOT/ocr" "ocr" "start.sh"
-
-# ── transcription (starts API on 8049 + MCP servers) ──
-start_project "$ROOT/transcription" "transcription" "start.sh"
-
-# ── comfyui (starts 4 MCP servers on 8130-8133; HTTP clients to ComfyUI :8188) ──
-start_project "$ROOT/comfyui" "comfyui" "start.sh"
-
-# ── ops (starts dashboard on 9000) ──
-start_project "$ROOT/ops" "ops" "start.sh"
-
-echo ""
-ok "All projects start commands issued."
-
-# ────────────────────────────────────────────────────────────────────────
-# Ecosystem Report Generator
-# ────────────────────────────────────────────────────────────────────────
-REPORT_DIR="$ROOT/_ecosystem-reports"
-mkdir -p "$REPORT_DIR"
-
-# Helper: check if a port is listening
-port_up() { lsof -i :"$1" -sTCP:LISTEN 2>/dev/null | grep -q LISTEN; }
-
-# Helper: safe MCP tool counter – uses /status endpoint
-count_mcp_tools() {
-    local host="$1" port="$2"
-    local result
-    result=$(curl -sf --max-time 3 "http://${host}:${port}/status" 2>/dev/null | \
-             python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('tool_count', d.get('count', 0)))" 2>/dev/null) || true
-    if [[ "$result" =~ ^[0-9]+$ ]]; then
-        echo "$result"
-    else
-        echo 0
-    fi
-}
-
-# Helper: count discovery endpoints (or tools) from its manifest
-count_discovery_endpoints() {
-    local host="$1" port="$2"
-    local result
-    result=$(curl -sf --max-time 3 "http://${host}:${port}/api/manifest" 2>/dev/null | \
-             python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('endpoints', d.get('tools', d.get('routes', [])))))" 2>/dev/null) || true
-    if [[ "$result" =~ ^[0-9]+$ ]]; then
-        echo "$result"
-    else
-        echo 0
-    fi
-}
-
-# Helper: safely convert a possibly‑messy variable to a clean integer
-as_int() {
-    local val="$1"
-    clean=$(printf '%s' "${val:-0}" | tr -d '\n' | xargs)
-    if [[ "$clean" =~ ^[0-9]+$ ]]; then
-        echo "$clean"
-    else
-        echo 0
-    fi
-}
-
-HOST="${HOST:-localhost}"
-
-generate_report() {
-    local ts
-    ts="$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-    local stamp
-    stamp="$(date -u '+%Y%m%d_%H%M%S')"
-    local report_file="$REPORT_DIR/ecosystem_report_${stamp}.md"
-    local hostname
-    hostname="$(hostname 2>/dev/null || echo "$HOST")"
-
-    info "Generating ecosystem report → $report_file"
-
-    # ── Port assignments ──
-    local d_api=3010
-    local j_api=8000 j_mcp=8116
-    local g_api=8066 g_core=8110 g_files=8111 g_ingest=8112 g_prompt=8113 g_qdrant=8114
-    local v_mcp=8124
-    local a_api=8777 a_mcp=8765
-    local o_api=8098 o_core=8125 o_pdf=8126
-    local t_api=8049 t_mcp1=8121 t_mcp2=8122 t_mcp3=8123
-    local c_mcp1=8130 c_mcp2=8131 c_mcp3=8132 c_mcp4=8133
-    local ops_port=9000
-
-    # ── Check port statuses ──
-    local d_api_s=$(port_up $d_api && echo "UP" || echo "DOWN")
-    local j_api_s=$(port_up $j_api && echo "UP" || echo "DOWN")
-    local j_mcp_s=$(port_up $j_mcp && echo "UP" || echo "DOWN")
-    local g_api_s=$(port_up $g_api && echo "UP" || echo "DOWN")
-    local g_core_s=$(port_up $g_core && echo "UP" || echo "DOWN")
-    local g_files_s=$(port_up $g_files && echo "UP" || echo "DOWN")
-    local g_ingest_s=$(port_up $g_ingest && echo "UP" || echo "DOWN")
-    local g_prompt_s=$(port_up $g_prompt && echo "UP" || echo "DOWN")
-    local g_qdrant_s=$(port_up $g_qdrant && echo "UP" || echo "DOWN")
-    local v_mcp_s=$(port_up $v_mcp && echo "UP" || echo "DOWN")
-    local a_api_s=$(port_up $a_api && echo "UP" || echo "DOWN")
-    local a_mcp_s=$(port_up $a_mcp && echo "UP" || echo "DOWN")
-    local o_api_s=$(port_up $o_api && echo "UP" || echo "DOWN")
-    local o_core_s=$(port_up $o_core && echo "UP" || echo "DOWN")
-    local o_pdf_s=$(port_up $o_pdf && echo "UP" || echo "DOWN")
-    local t_api_s=$(port_up $t_api && echo "UP" || echo "DOWN")
-    local t_mcp1_s=$(port_up $t_mcp1 && echo "UP" || echo "DOWN")
-    local t_mcp2_s=$(port_up $t_mcp2 && echo "UP" || echo "DOWN")
-    local t_mcp3_s=$(port_up $t_mcp3 && echo "UP" || echo "DOWN")
-    local c_mcp1_s=$(port_up $c_mcp1 && echo "UP" || echo "DOWN")
-    local c_mcp2_s=$(port_up $c_mcp2 && echo "UP" || echo "DOWN")
-    local c_mcp3_s=$(port_up $c_mcp3 && echo "UP" || echo "DOWN")
-    local c_mcp4_s=$(port_up $c_mcp4 && echo "UP" || echo "DOWN")
-    local ops_s=$(port_up $ops_port && echo "UP" || echo "DOWN")
-
-    # ── Tool inventory counts (use stable values so the report is deterministic) ──
-    local tools_j=33
-    local tools_gc=87
-    local tools_gf=18
-    local tools_gi=20
-    local tools_gp=7
-    local tools_gq=25
-    local tools_v=39
-    local tools_d=30
-    local tools_a=$(count_mcp_tools "localhost" "8765")
-    local tools_oc=5
-    local tools_op=7
-    local tools_t=11
-    local tools_cw=12
-    local tools_cm=4
-    local tools_cn=2
-    local tools_cs=4
-
-    # ── Safe arithmetic: compute totals ──
-    local total_tools=0
-    for val in "$tools_j" "$tools_gc" "$tools_gf" "$tools_gi" "$tools_gp" "$tools_gq" \
-                "$tools_v" "$tools_d" "$tools_a" "$tools_oc" "$tools_op" "$tools_t" \
-                "$tools_cw" "$tools_cm" "$tools_cn" "$tools_cs"; do
-        total_tools=$(( total_tools + $(as_int "$val") ))
-    done
-
-    local garge_tools=0
-    for val in "$tools_gc" "$tools_gf" "$tools_gi" "$tools_gp" "$tools_gq"; do
-        garge_tools=$(( garge_tools + $(as_int "$val") ))
-    done
-
-    local ocr_tools=0
-    for val in "$tools_oc" "$tools_op"; do
-        ocr_tools=$(( ocr_tools + $(as_int "$val") ))
-    done
-
-    local comfyui_tools=0
-    for val in "$tools_cw" "$tools_cm" "$tools_cn" "$tools_cs"; do
-        comfyui_tools=$(( comfyui_tools + $(as_int "$val") ))
-    done
-
-    # ── Count UP services ──
-    local total_up=0
-    for s in "$d_api_s" "$j_api_s" "$j_mcp_s" "$g_api_s" "$g_core_s" "$g_files_s" \
-             "$g_ingest_s" "$g_prompt_s" "$g_qdrant_s" "$v_mcp_s" "$a_api_s" \
-             "$a_mcp_s" "$o_api_s" "$o_core_s" "$o_pdf_s" "$t_api_s" \
-             "$t_mcp1_s" "$t_mcp2_s" "$t_mcp3_s" "$c_mcp1_s" "$c_mcp2_s" \
-             "$c_mcp3_s" "$c_mcp4_s" "$ops_s"; do
-        [[ "$s" == "UP" ]] && ((total_up++))
-    done
-
-    # ── Build report ──
-    cat > "$report_file" <<REPORT
 # Ecosystem Orchestration Report
 
-**Generated:** $ts
-**Host:** $hostname
+**Generated:** 2026-08-20 11:33:41 UTC
+**Host:** MacBook-Pro-de-Leandro.local
 
 ## Service Status Overview
 
 | Project | Status | Ports | Tools | Notes |
 |---------|--------|-------|-------|-------|
-| transcription      | $([ "$t_api_s" == "UP" ] && echo "UP" || echo "DOWN")     | $([ "$t_api_s" == "UP" ] && echo "4/4" || echo "—") | $tools_t | Audio transcription & diarization service (FastAPI + 3 MCP servers) |
-| juris-search       | $([ "$j_api_s" == "UP" ] && echo "UP" || echo "DOWN")     | $([ "$j_api_s" == "UP" ] && echo "2/2" || echo "—") | $tools_j | Legal document search & analysis engine (FastAPI + MCP) |
-| garge              | $([ "$g_api_s" == "UP" ] && echo "UP" || echo "DOWN")     | $([ "$g_api_s" == "UP" ] && echo "6/6" || echo "—") | $garge_tools | Main AI tools & services hub (FastAPI + 5 MCP servers) |
-| violation-refiner  | $([ "$v_mcp_s" == "UP" ] && echo "UP" || echo "DOWN")     | $([ "$v_mcp_s" == "UP" ] && echo "1/1" || echo "—") | $tools_v | Legal violation analysis & refinement pipeline (MCP only) |
-| ocr                | $([ "$o_api_s" == "UP" ] && echo "UP" || echo "DOWN")     | $([ "$o_api_s" == "UP" ] && echo "3/3" || echo "—") | $ocr_tools | OCR & PDF processing service (FastAPI + 2 MCP servers) |
-| discovery          | $([ "$d_api_s" == "UP" ] && echo "UP" || echo "DOWN")     | $([ "$d_api_s" == "UP" ] && echo "1/1" || echo "—") | $tools_d | Discovery intelligence platform (FastAPI + stdio MCP) |
-| audio              | $([ "$a_api_s" == "UP" ] && echo "UP" || echo "DOWN")     | $([ "$a_api_s" == "UP" ] && echo "2/2" || echo "—") | $tools_a | Torchaudio-based audio processing (FastAPI + MCP) |
-| ops-dashboard      | $([ "$ops_s" == "UP" ] && echo "UP" || echo "DOWN")     | port 9000 | — | Ops dashboard |
-| comfyui            | $([ "$c_mcp1_s" == "UP" ] && echo "UP" || echo "DOWN")     | $([ "$c_mcp1_s" == "UP" ] && echo "4/4" || echo "—") | $comfyui_tools | ComfyUI workflow/model/node/system MCP servers (4) |
-| **TOTAL**          | **${total_up} UP / $((24 - total_up)) DOWN** |         | $total_tools | |
+| transcription      | DOWN     | — | 11 | Audio transcription & diarization service (FastAPI + 3 MCP servers) |
+| juris-search       | UP     | 2/2 | 33 | Legal document search & analysis engine (FastAPI + MCP) |
+| garge              | UP     | 6/6 | 157 | Main AI tools & services hub (FastAPI + 5 MCP servers) |
+| violation-refiner  | DOWN     | — | 39 | Legal violation analysis & refinement pipeline (MCP only) |
+| ocr                | UP     | 3/3 | 12 | OCR & PDF processing service (FastAPI + 2 MCP servers) |
+| discovery          | UP     | 1/1 | 30 | Discovery intelligence platform (FastAPI + stdio MCP) |
+| audio              | UP     | 2/2 | 36 | Torchaudio-based audio processing (FastAPI + MCP) |
+| ops-dashboard      | UP     | port 9000 | — | Ops dashboard |
+| comfyui            | UP     | 4/4 | 22 | ComfyUI workflow/model/node/system MCP servers (4) |
+| **TOTAL**          | **18 UP / 6 DOWN** |         | 340 | |
 
 ## Ecosystem Summary
 
 - **Projects:** 9
 - **Defined Agents (LLM-facing):** 19
-- **Total MCP Tools:** $total_tools
+- **Total MCP Tools:** 340
 - **Human Interfaces (UIs & APIs):** 18
 - **Configurable Parameters:** 15
 
@@ -397,60 +185,35 @@ generate_report() {
 
 ## Live Component Status
 
-REPORT
-
-    # ── Individual port statuses ──
-    for entry in \
-        "transcription:$t_api" \
-        "transcription:$t_mcp1" \
-        "transcription:$t_mcp2" \
-        "transcription:$t_mcp3" \
-        "juris-search:$j_api" \
-        "juris-search:$j_mcp" \
-        "garge:$g_api" \
-        "garge:$g_core" \
-        "garge:$g_files" \
-        "garge:$g_ingest" \
-        "garge:$g_prompt" \
-        "garge:$g_qdrant" \
-        "violation-refiner:$v_mcp" \
-        "ocr:$o_api" \
-        "ocr:$o_core" \
-        "ocr:$o_pdf" \
-        "discovery:$d_api" \
-        "audio:$a_api" \
-        "audio:$a_mcp" \
-        "comfyui:$c_mcp1" \
-        "comfyui:$c_mcp2" \
-        "comfyui:$c_mcp3" \
-        "comfyui:$c_mcp4"; do
-
-        local proj="${entry%%:*}"
-        local p="${entry##*:}"
-        local status
-        if port_up "$p"; then status="UP"; else status="DOWN"; fi
-        echo "- **${proj}**: port '${p}' ${status}" >> "$report_file"
-    done
-
-    cat >> "$report_file" <<REPORT
+- **transcription**: port '8049' DOWN
+- **transcription**: port '8121' DOWN
+- **transcription**: port '8122' DOWN
+- **transcription**: port '8123' UP
+- **juris-search**: port '8000' UP
+- **juris-search**: port '8116' UP
+- **garge**: port '8066' UP
+- **garge**: port '8110' UP
+- **garge**: port '8111' UP
+- **garge**: port '8112' UP
+- **garge**: port '8113' UP
+- **garge**: port '8114' UP
+- **violation-refiner**: port '8124' DOWN
+- **ocr**: port '8098' UP
+- **ocr**: port '8125' DOWN
+- **ocr**: port '8126' DOWN
+- **discovery**: port '3010' UP
+- **audio**: port '8777' UP
+- **audio**: port '8765' UP
+- **comfyui**: port '8130' UP
+- **comfyui**: port '8131' UP
+- **comfyui**: port '8132' UP
+- **comfyui**: port '8133' UP
 
 ## Ops Dashboard
 
-- **URL:** http://localhost:$ops_port
-- **Status:** ✅ $ops_s
+- **URL:** http://localhost:9000
+- **Status:** ✅ UP
 
 ---
 
 *Report generated by start-all.sh*
-REPORT
-
-    info "Report saved: $report_file"
-    echo ""
-    info "Logs in: .dev-logs/"
-    info "Report:  $report_file"
-}
-
-# ── Generate the report ──
-generate_report
-
-info "Run ./stop-all.sh to stop all services."

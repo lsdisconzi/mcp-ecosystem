@@ -639,7 +639,7 @@ FASTAPI SHUTDOWN
 | `JURIS_SEARCH_MASTER_INDEX_DIR` | `master_index/` | Master index |
 | `JURIS_SEARCH_EXTRACTIONS_DIR` | `extracted_documents/` | Extraction output |
 | `JURIS_SEARCH_QDRANT_INGEST` | `1` | Auto Qdrant ingestion |
-| `JURIS_SEARCH_QDRANT_API` | `http://localhost:8114` | Qdrant management URL |
+| `JURIS_SEARCH_QDRANT_API` | `http://localhost:8066` | Qdrant management URL (garage REST bridge exposing `/v1/qdrant/*`; 8114 is only the garage-qdrant MCP proxy and returns 404) |
 | `JURIS_SEARCH_QDRANT_COLLECTION` | `juris_br_v1` | Qdrant collection |
 | `JURIS_SEARCH_AWARENESS_INGEST` | `0` | Awareness memory |
 | `JURIS_SEARCH_DOCX_WATCH` | `1` | DOCX watcher enabled |

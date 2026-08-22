@@ -65,7 +65,7 @@ fi
 
 echo "Starting audio MCP server (${MCP_TRANSPORT}) on ${MCP_HOST}:${MCP_PORT}"
 start_logging "audio" "mcp" env PYTHONUNBUFFERED=1 MCP_TRANSPORT="$MCP_TRANSPORT" MCP_HOST="$MCP_HOST" MCP_PORT="$MCP_PORT" \
-  "$PYTHON_MCP" "$SCRIPT_DIR/mcp/torchaudio_mcp/server.py"
+  "$PYTHON_MCP" "$SCRIPT_DIR/mcp/dynamic_server.py"
 
 echo "Waiting for API readiness"
 for _ in $(seq 1 30); do

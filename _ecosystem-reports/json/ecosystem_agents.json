@@ -1,0 +1,1307 @@
+{
+  "generated_at": "2026-07-29T05:33:09.167426Z",
+  "project_count": 7,
+  "projects": {
+    "transcription": {
+      "description": "Audio transcription & diarization service (FastAPI + 3 MCP servers, 61 tools)",
+      "agents": [
+        {
+          "name": "transcriber",
+          "role": "Transcribes audio to text with speaker diarization",
+          "tools": [
+            "whisper",
+            "transcribe_audio",
+            "transcribe_audio_async"
+          ]
+        },
+        {
+          "name": "diarizer",
+          "role": "Identifies speakers in audio transcriptions",
+          "tools": [
+            "diarization",
+            "speaker_id"
+          ]
+        },
+        {
+          "name": "translator",
+          "role": "Translates and analyzes transcribed content",
+          "tools": [
+            "translation",
+            "sentiment"
+          ]
+        }
+      ],
+      "mcp_servers": [
+        {
+          "name": "transcription-core",
+          "port": 8121,
+          "transport": "sse",
+          "tool_count": 5,
+          "tools": [
+            "transcription_transcribe_audio",
+            "transcription_transcribe_audio_async",
+            "transcription_list_models",
+            "transcription_get_status",
+            "transcription_cancel_job"
+          ]
+        },
+        {
+          "name": "diarization",
+          "port": 8122,
+          "transport": "sse",
+          "tool_count": 3,
+          "tools": [
+            "transcription_diarize",
+            "transcription_speaker_id",
+            "transcription_segment_speakers"
+          ]
+        },
+        {
+          "name": "translate",
+          "port": 8123,
+          "transport": "sse",
+          "tool_count": 3,
+          "tools": [
+            "transcription_translate",
+            "transcription_sentiment",
+            "transcription_summarize"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "model",
+          "type": "string",
+          "default": "base",
+          "options": [
+            "tiny",
+            "base",
+            "small",
+            "medium",
+            "large"
+          ],
+          "description": "Whisper model size"
+        },
+        {
+          "name": "language",
+          "type": "string",
+          "default": "auto",
+          "description": "Language code or auto-detect"
+        }
+      ],
+      "interfaces": [
+        {
+          "type": "Pinocchio Transcription UI",
+          "url": "http://127.0.0.1:8049/pinocchio"
+        },
+        {
+          "type": "Revision UI",
+          "url": "http://127.0.0.1:8049/revision"
+        },
+        {
+          "type": "Curadoria UI",
+          "url": "http://127.0.0.1:8049/curadoria"
+        },
+        {
+          "type": "REST API",
+          "url": "/api/v1/transcribe"
+        },
+        {
+          "type": "Health",
+          "url": "http://127.0.0.1:8049/health"
+        }
+      ]
+    },
+    "juris-search": {
+      "description": "Legal document search & analysis engine (FastAPI + MCP, 44 tools)",
+      "agents": [
+        {
+          "name": "legal_searcher",
+          "role": "Searches legal documents and jurisprudence across Brazilian courts",
+          "tools": [
+            "juris_search_start",
+            "juris_search_status",
+            "juris_results",
+            "juris_master_index_search",
+            "juris_legal_framework_search"
+          ]
+        },
+        {
+          "name": "legal_indexer",
+          "role": "Manages document indexing and corpus rebuilds",
+          "tools": [
+            "juris_docx_index",
+            "juris_json_index",
+            "juris_master_index_rebuild",
+            "juris_storage_rebuild"
+          ]
+        },
+        {
+          "name": "legal_analyst",
+          "role": "Analyzes legal documents and citations",
+          "tools": [
+            "juris_citations",
+            "juris_relator_network",
+            "juris_master_index_summary",
+            "juris_flat_corpus_stats"
+          ]
+        }
+      ],
+      "mcp_servers": [
+        {
+          "name": "juris-mcp",
+          "port": 8116,
+          "transport": "sse",
+          "tool_count": 33,
+          "tools": [
+            "juris_chat",
+            "juris_search_start",
+            "juris_search_status",
+            "juris_results",
+            "juris_search_history",
+            "juris_search_history_file",
+            "juris_storage_paths",
+            "juris_download",
+            "juris_download_status",
+            "juris_download_batch",
+            "juris_health",
+            "juris_stats",
+            "juris_docx_index",
+            "juris_json_index",
+            "juris_docx_rebuild",
+            "juris_json_rebuild",
+            "juris_storage_rebuild",
+            "juris_master_index_stats",
+            "juris_master_index_documents",
+            "juris_master_index_document",
+            "juris_master_index_rebuild",
+            "juris_master_index_markdown",
+            "juris_master_index_search",
+            "juris_flat_corpus_stats",
+            "juris_citations",
+            "juris_relator_network",
+            "juris_master_index_summary",
+            "juris_legal_framework_search",
+            "juris_legal_framework_stats",
+            "juris_upload_file",
+            "juris_set_base_url",
+            "juris_start_service",
+            "juris_stop_service"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "jurisdiction",
+          "type": "string",
+          "default": "BR",
+          "description": "Legal jurisdiction for search scope"
+        },
+        {
+          "name": "collections",
+          "type": "string",
+          "default": "all",
+          "description": "Qdrant collections to search across"
+        }
+      ],
+      "interfaces": [
+        {
+          "type": "Juris Search UI",
+          "url": "http://127.0.0.1:8000/"
+        },
+        {
+          "type": "REST API",
+          "url": "/api/v1/search"
+        },
+        {
+          "type": "Swagger Docs",
+          "url": "http://127.0.0.1:8000/docs"
+        }
+      ]
+    },
+    "garge": {
+      "description": "Main AI tools & services hub (FastAPI + 5 MCP servers, 107 tools)",
+      "agents": [
+        {
+          "name": "garage_assistant",
+          "role": "Orchestrates AI assistants, knowledge management, and LLM interactions",
+          "tools": [
+            "garage_list_assistants",
+            "garage_chat_completions",
+            "garage_assistant_chat",
+            "garage_query_knowledge",
+            "garage_deep_reasoning"
+          ]
+        },
+        {
+          "name": "qdrant_manager",
+          "role": "Manages Qdrant vector collections, ingestion, and semantic search",
+          "tools": [
+            "qdrant_search",
+            "qdrant_ingest_directory",
+            "qdrant_list_collections",
+            "qdrant_create_collection",
+            "embed_uploads_global",
+            "embed_project_uploads",
+            "embed_dev_code"
+          ]
+        },
+        {
+          "name": "file_manager",
+          "role": "Reads, writes, uploads, and manages files and transcripts",
+          "tools": [
+            "files_list",
+            "files_read",
+            "files_upload",
+            "files_delete"
+          ]
+        },
+        {
+          "name": "prompt_engineer",
+          "role": "Generates, optimizes, and evaluates LLM prompts",
+          "tools": [
+            "prompt_generate",
+            "prompt_optimize",
+            "prompt_evaluate",
+            "prompt_variations"
+          ]
+        }
+      ],
+      "mcp_servers": [
+        {
+          "name": "garage-core",
+          "port": 8110,
+          "transport": "sse",
+          "tool_count": 40,
+          "tools": [
+            "garage_health",
+            "garage_list_models",
+            "garage_chat_completions",
+            "garage_list_assistants",
+            "garage_list_files",
+            "garage_get_assistant",
+            "garage_update_assistant",
+            "garage_replace_assistant",
+            "garage_create_assistant",
+            "garage_delete_assistant",
+            "garage_assistant_chat",
+            "garage_attach_file_to_assistant",
+            "garage_list_assistant_files",
+            "garage_detach_file_from_assistant",
+            "garage_query_assistant_knowledge",
+            "garage_assign_tool_to_assistant",
+            "garage_assistant_deepseek",
+            "garage_deepseek_engineer_chat",
+            "garage_deepseek_stream_proxy",
+            "garage_query_knowledge",
+            "garage_query_assistant_knowledge_collections",
+            "garage_ingest_knowledge_text",
+            "garage_ingest_knowledge_file",
+            "garage_clear_knowledge_collection",
+            "garage_get_knowledge_collection_stats",
+            "garage_list_tools",
+            "garage_get_tool",
+            "garage_delete_tool",
+            "garage_execute_tool",
+            "garage_execute_tool_by_name",
+            "garage_create_tool",
+            "garage_deep_reasoning",
+            "garage_create_thread",
+            "garage_list_threads",
+            "garage_get_thread",
+            "garage_delete_thread",
+            "garage_add_thread_message",
+            "garage_list_thread_messages",
+            "garage_create_thread_run",
+            "garage_attach_file_to_thread"
+          ]
+        },
+        {
+          "name": "garage-files",
+          "port": 8111,
+          "transport": "sse",
+          "tool_count": 10,
+          "tools": [
+            "files_list",
+            "files_read",
+            "files_summarize",
+            "files_upload",
+            "files_upload_transcript",
+            "files_upload_law",
+            "files_get_content",
+            "files_delete",
+            "files_list_transcripts",
+            "files_list_laws"
+          ]
+        },
+        {
+          "name": "garage-ingestion",
+          "port": 8112,
+          "transport": "sse",
+          "tool_count": 12,
+          "tools": [
+            "ingestion_collection_info",
+            "ingestion_search",
+            "ingestion_ingest_directory",
+            "ingestion_ingest_files",
+            "ingestion_list_collections",
+            "ingestion_delete_collection",
+            "ingestion_collection_stats",
+            "ingestion_batch_ingest",
+            "ingestion_status",
+            "ingestion_legal_ingest",
+            "ingestion_transcript_ingest",
+            "ingestion_legal_v2_ingest"
+          ]
+        },
+        {
+          "name": "garage-prompt",
+          "port": 8113,
+          "transport": "sse",
+          "tool_count": 7,
+          "tools": [
+            "prompt_generate",
+            "prompt_analyze",
+            "prompt_variations",
+            "prompt_optimize",
+            "prompt_evaluate",
+            "prompt_improve",
+            "prompt_examples"
+          ]
+        },
+        {
+          "name": "garage-qdrant",
+          "port": 8114,
+          "transport": "sse",
+          "tool_count": 18,
+          "tools": [
+            "qdrant_connect",
+            "qdrant_list_collections",
+            "qdrant_create_collection",
+            "qdrant_collection_summary",
+            "qdrant_search",
+            "qdrant_structured_ingest",
+            "qdrant_ensure_legal_indexes",
+            "qdrant_ingest_file",
+            "qdrant_ingest_directory",
+            "embed_uploads_global",
+            "embed_project_uploads",
+            "embed_dev_code",
+            "qdrant_embed_case_directory",
+            "qdrant_query",
+            "qdrant_search_legacy",
+            "qdrant_index_reviewed_transcript",
+            "qdrant_query_vector",
+            "qdrant_delete_collection"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "QDRANT_URL",
+          "type": "string",
+          "default": "http://127.0.0.1:6333",
+          "description": "Qdrant vector database URL"
+        },
+        {
+          "name": "OLLAMA_HOST",
+          "type": "string",
+          "default": "http://127.0.0.1:11434",
+          "description": "Ollama LLM host"
+        },
+        {
+          "name": "DEEPSEEK_BASE_URL",
+          "type": "string",
+          "default": "https://api.deepseek.com/v1",
+          "description": "DeepSeek API base URL"
+        },
+        {
+          "name": "embedding_model",
+          "type": "string",
+          "default": "all-MiniLM-L6-v2",
+          "description": "Sentence transformer model for embeddings"
+        }
+      ],
+      "interfaces": [
+        {
+          "type": "Swagger UI",
+          "url": "http://127.0.0.1:8066/docs"
+        },
+        {
+          "type": "Garage UI",
+          "url": "http://127.0.0.1:8066/garage"
+        },
+        {
+          "type": "Qdrant UI",
+          "url": "http://127.0.0.1:8066/qdrant"
+        },
+        {
+          "type": "REST API",
+          "url": "/api/v1/*"
+        }
+      ]
+    },
+    "violation-refiner": {
+      "description": "Legal violation analysis & refinement pipeline (MCP only, 15 tools)",
+      "agents": [
+        {
+          "name": "violation_checker",
+          "role": "Analyses transcripts and builds structured violation reports",
+          "tools": [
+            "init_violation",
+            "build_evidence_layer_tool",
+            "build_norms_layer_tool",
+            "build_nexus_layer_tool",
+            "run_pipeline_tool"
+          ]
+        },
+        {
+          "name": "authority_verifier",
+          "role": "Verifies legal authorities and statute citations",
+          "tools": [
+            "verify_statute_in_bundle_tool",
+            "verify_statute_external_fetch_tool",
+            "verify_human_attested_tool",
+            "jurisprudence_verify_tool"
+          ]
+        },
+        {
+          "name": "qdrant_indexer",
+          "role": "Indexes and searches violation data in Qdrant",
+          "tools": [
+            "qdrant_index_violation_tool",
+            "qdrant_search_segments_tool",
+            "qdrant_search_articles_tool",
+            "qdrant_search_jurisprudence_tool"
+          ]
+        }
+      ],
+      "mcp_servers": [
+        {
+          "name": "violation-mcp",
+          "port": 8124,
+          "transport": "sse",
+          "tool_count": 39,
+          "tools": [
+            "init_violation",
+            "build_evidence_layer_tool",
+            "build_norms_layer_tool",
+            "add_element_grid_tool",
+            "build_nexus_layer_tool",
+            "add_authority_stub_tool",
+            "verify_statute_in_bundle_tool",
+            "verify_statute_external_fetch_tool",
+            "verify_human_attested_tool",
+            "derive_confidence_tool",
+            "attach_confidence_tool",
+            "run_pipeline_tool",
+            "write_violation_json_tool",
+            "build_manifest_tool",
+            "zip_bundle_tool",
+            "copy_source_into_bundle_tool",
+            "refine_batch_tool",
+            "qdrant_index_violation_tool",
+            "qdrant_search_segments_tool",
+            "qdrant_search_articles_tool",
+            "qdrant_search_authorities_tool",
+            "qdrant_search_jurisprudence_tool",
+            "qdrant_upsert_jurisprudence_tool",
+            "neo4j_upsert_violation_tool",
+            "neo4j_find_violations_citing_tool",
+            "neo4j_find_violations_with_contested_element_tool",
+            "neo4j_walk_implications_tool",
+            "jurisprudence_search_tool",
+            "jurisprudence_verify_tool",
+            "qdrant_reset_collections_tool",
+            "neo4j_reset_database_tool",
+            "embedder_info_tool",
+            "jurisprudence_ingest_tool",
+            "transcript_ingest_tool",
+            "framework_ingest_tool",
+            "enrich_violation_tool",
+            "enrich_stage_tool",
+            "verify_enrichment_tool",
+            "llm_provider_info_tool"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "schema_version",
+          "type": "string",
+          "default": "3.0",
+          "description": "Violation bundle schema version"
+        },
+        {
+          "name": "top_k",
+          "type": "int",
+          "default": "5",
+          "description": "Default top-K for Qdrant searches"
+        }
+      ],
+      "interfaces": []
+    },
+    "ocr": {
+      "description": "OCR & PDF processing service (FastAPI + 2 MCP servers, 10 tools)",
+      "agents": [
+        {
+          "name": "ocr_reader",
+          "role": "Extracts text from images and scanned PDFs",
+          "tools": [
+            "ocr_list_images",
+            "ocr_process_image",
+            "ocr_run_batch"
+          ]
+        },
+        {
+          "name": "pdf_processor",
+          "role": "Processes PDF files for text extraction and analysis",
+          "tools": [
+            "pdf_scan_files",
+            "pdf_extract_text",
+            "pdf_analyze_pdf",
+            "pdf_run_pipeline"
+          ]
+        }
+      ],
+      "mcp_servers": [
+        {
+          "name": "ocr-core",
+          "port": 8125,
+          "transport": "sse",
+          "tool_count": 5,
+          "tools": [
+            "ocr_list_images",
+            "ocr_process_image",
+            "ocr_compare_results",
+            "ocr_run_batch",
+            "ocr_list_output_artifacts"
+          ]
+        },
+        {
+          "name": "pdf-server",
+          "port": 8126,
+          "transport": "sse",
+          "tool_count": 7,
+          "tools": [
+            "pdf_scan_files",
+            "pdf_extract_text",
+            "pdf_analyze_pdf",
+            "pdf_convert_analysis_directory_to_csv",
+            "pdf_generate_renaming_plan_from_csv",
+            "pdf_apply_renaming_plan",
+            "pdf_run_pipeline"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "engine",
+          "type": "string",
+          "default": "tesseract",
+          "description": "OCR engine to use"
+        },
+        {
+          "name": "llm_enhancement",
+          "type": "boolean",
+          "default": "true",
+          "description": "Enable LLM post-processing of OCR results"
+        }
+      ],
+      "interfaces": [
+        {
+          "type": "OCR UI",
+          "url": "http://127.0.0.1:8098/"
+        }
+      ]
+    },
+    "discovery": {
+      "description": "Discovery intelligence platform (FastAPI + stdio MCP, 11 tools)",
+      "agents": [
+        {
+          "name": "discovery_agent",
+          "role": "Discovers files, endpoints, and law frameworks; runs pipelines",
+          "tools": [
+            "discovery_manifest",
+            "discovery_endpoints",
+            "discovery_files",
+            "discovery_search",
+            "discovery_tree"
+          ]
+        },
+        {
+          "name": "intelligence_analyst",
+          "role": "Runs intelligence analysis including case graphs and gap reports",
+          "tools": [
+            "discovery_intelligence_run",
+            "discovery_intelligence_case_graph",
+            "discovery_intelligence_violations",
+            "discovery_intelligence_findings",
+            "discovery_intelligence_gap_report"
+          ]
+        }
+      ],
+      "mcp_servers": [
+        {
+          "name": "discovery-mcp",
+          "port": "stdio",
+          "transport": "stdio",
+          "tool_count": 30,
+          "tools": [
+            "discovery_health",
+            "discovery_manifest",
+            "discovery_endpoints",
+            "discovery_files",
+            "discovery_categories",
+            "discovery_search",
+            "discovery_tree",
+            "discovery_rebuild",
+            "discovery_organize",
+            "discovery_init_session",
+            "discovery_reset_session",
+            "discovery_law_frameworks",
+            "discovery_law_framework_articles",
+            "discovery_file_detail",
+            "discovery_pipeline_entities",
+            "discovery_pipeline_relationships",
+            "discovery_pipeline_timeline",
+            "discovery_pipeline_stats",
+            "discovery_pipeline_search",
+            "discovery_intelligence_status",
+            "discovery_intelligence_run",
+            "discovery_intelligence_summary",
+            "discovery_intelligence_case_graph",
+            "discovery_intelligence_violations",
+            "discovery_intelligence_findings",
+            "discovery_intelligence_timeline",
+            "discovery_intelligence_narrative",
+            "discovery_intelligence_gap_report",
+            "discovery_intelligence_law_registry",
+            "discovery_intelligence_dedup_report"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "start_path",
+          "type": "string",
+          "default": ".",
+          "description": "Root directory for file discovery"
+        }
+      ],
+      "interfaces": [
+        {
+          "type": "Discovery UI",
+          "url": "http://127.0.0.1:3010"
+        },
+        {
+          "type": "REST API",
+          "url": "/api/manifest"
+        },
+        {
+          "type": "Case API",
+          "url": "http://127.0.0.1:3010/cases"
+        }
+      ]
+    },
+    "audio": {
+      "description": "Torchaudio-based audio processing (FastAPI + MCP, 34 tools dynamically generated from OpenAPI spec)",
+      "agents": [
+        {
+          "name": "audio_processor",
+          "role": "Processes, resamples, slices, and extracts features from audio files",
+          "tools": [
+            "audio_info",
+            "audio_upload",
+            "biquad_filter",
+            "effects_gain",
+            "effects_dither",
+            "effects_dcshift",
+            "effects_overdrive",
+            "effects_contrast",
+            "effects_flanger",
+            "effects_phaser",
+            "enhance_pitch_shift",
+            "enhance_speed",
+            "enhance_preemphasis",
+            "enhance_deemphasis",
+            "enhance_volume",
+            "enhance_fade",
+            "enhance_add_noise",
+            "enhance_time_stretch",
+            "analysis_spectrogram",
+            "analysis_mel_spectrogram",
+            "analysis_mfcc",
+            "analysis_loudness",
+            "analysis_spectral_centroid",
+            "analysis_pitch",
+            "separate_hdemucs",
+            "vad",
+            "resample",
+            "transcription_healthcheck",
+            "transcription_audio_info",
+            "transcription_resample_audio",
+            "transcription_slice_audio",
+            "transcription_extract_features",
+            "transcription_list_asr_bundles",
+            "transcription_transcribe_greedy",
+            "transcription_list_project_paths"
+          ]
+        }
+      ],
+      "mcp_servers": [
+        {
+          "name": "audio-mcp",
+          "port": 8765,
+          "transport": "sse",
+          "tool_count": 34,
+          "tools": [
+            "audio_info",
+            "audio_upload",
+            "biquad_filter",
+            "effects_gain",
+            "effects_dither",
+            "effects_dcshift",
+            "effects_overdrive",
+            "effects_contrast",
+            "effects_flanger",
+            "effects_phaser",
+            "enhance_pitch_shift",
+            "enhance_speed",
+            "enhance_preemphasis",
+            "enhance_deemphasis",
+            "enhance_volume",
+            "enhance_fade",
+            "enhance_add_noise",
+            "enhance_time_stretch",
+            "analysis_spectrogram",
+            "analysis_mel_spectrogram",
+            "analysis_mfcc",
+            "analysis_loudness",
+            "analysis_spectral_centroid",
+            "analysis_pitch",
+            "separate_hdemucs",
+            "vad",
+            "resample",
+            "transcription_healthcheck",
+            "transcription_audio_info",
+            "transcription_resample_audio",
+            "transcription_slice_audio",
+            "transcription_extract_features",
+            "transcription_list_asr_bundles",
+            "transcription_transcribe_greedy",
+            "transcription_list_project_paths"
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "sample_rate",
+          "type": "int",
+          "default": "16000",
+          "description": "Target sample rate for audio processing"
+        },
+        {
+          "name": "asr_bundle",
+          "type": "string",
+          "default": "default",
+          "description": "ASR model bundle to use for transcription"
+        }
+      ],
+      "interfaces": [
+        {
+          "type": "Audio Processing Unit UI",
+          "url": "http://127.0.0.1:8777/"
+        },
+        {
+          "type": "REST API",
+          "url": "/api/v1/audio/upload"
+        }
+      ]
+    }
+  },
+  "mcp_servers_flat": [
+    {
+      "name": "audio-mcp",
+      "project": "audio",
+      "port": 8765,
+      "transport": "sse",
+      "tools": [
+        "audio_info",
+        "audio_upload",
+        "biquad_filter",
+        "effects_gain",
+        "effects_dither",
+        "effects_dcshift",
+        "effects_overdrive",
+        "effects_contrast",
+        "effects_flanger",
+        "effects_phaser",
+        "enhance_pitch_shift",
+        "enhance_speed",
+        "enhance_preemphasis",
+        "enhance_deemphasis",
+        "enhance_volume",
+        "enhance_fade",
+        "enhance_add_noise",
+        "enhance_time_stretch",
+        "analysis_spectrogram",
+        "analysis_mel_spectrogram",
+        "analysis_mfcc",
+        "analysis_loudness",
+        "analysis_spectral_centroid",
+        "analysis_pitch",
+        "separate_hdemucs",
+        "vad",
+        "resample",
+        "transcription_healthcheck",
+        "transcription_audio_info",
+        "transcription_resample_audio",
+        "transcription_slice_audio",
+        "transcription_extract_features",
+        "transcription_list_asr_bundles",
+        "transcription_transcribe_greedy",
+        "transcription_list_project_paths"
+      ],
+      "tool_count": 34,
+      "description": "Torchaudio-based audio processing (FastAPI + MCP, 34 tools dynamically generated from OpenAPI spec)"
+    },
+    {
+      "name": "discovery-mcp",
+      "project": "discovery",
+      "port": "stdio",
+      "transport": "stdio",
+      "tools": [
+        "discovery_health",
+        "discovery_manifest",
+        "discovery_endpoints",
+        "discovery_files",
+        "discovery_categories",
+        "discovery_search",
+        "discovery_tree",
+        "discovery_rebuild",
+        "discovery_organize",
+        "discovery_init_session",
+        "discovery_reset_session",
+        "discovery_law_frameworks",
+        "discovery_law_framework_articles",
+        "discovery_file_detail",
+        "discovery_pipeline_entities",
+        "discovery_pipeline_relationships",
+        "discovery_pipeline_timeline",
+        "discovery_pipeline_stats",
+        "discovery_pipeline_search",
+        "discovery_intelligence_status",
+        "discovery_intelligence_run",
+        "discovery_intelligence_summary",
+        "discovery_intelligence_case_graph",
+        "discovery_intelligence_violations",
+        "discovery_intelligence_findings",
+        "discovery_intelligence_timeline",
+        "discovery_intelligence_narrative",
+        "discovery_intelligence_gap_report",
+        "discovery_intelligence_law_registry",
+        "discovery_intelligence_dedup_report"
+      ],
+      "tool_count": 30,
+      "description": "Discovery intelligence platform (FastAPI + stdio MCP, 11 tools)"
+    },
+    {
+      "name": "garage-core",
+      "project": "garge",
+      "port": 8110,
+      "transport": "sse",
+      "tools": [
+        "garage_health",
+        "garage_list_models",
+        "garage_chat_completions",
+        "garage_list_assistants",
+        "garage_list_files",
+        "garage_get_assistant",
+        "garage_update_assistant",
+        "garage_replace_assistant",
+        "garage_create_assistant",
+        "garage_delete_assistant",
+        "garage_assistant_chat",
+        "garage_attach_file_to_assistant",
+        "garage_list_assistant_files",
+        "garage_detach_file_from_assistant",
+        "garage_query_assistant_knowledge",
+        "garage_assign_tool_to_assistant",
+        "garage_assistant_deepseek",
+        "garage_deepseek_engineer_chat",
+        "garage_deepseek_stream_proxy",
+        "garage_query_knowledge",
+        "garage_query_assistant_knowledge_collections",
+        "garage_ingest_knowledge_text",
+        "garage_ingest_knowledge_file",
+        "garage_clear_knowledge_collection",
+        "garage_get_knowledge_collection_stats",
+        "garage_list_tools",
+        "garage_get_tool",
+        "garage_delete_tool",
+        "garage_execute_tool",
+        "garage_execute_tool_by_name",
+        "garage_create_tool",
+        "garage_deep_reasoning",
+        "garage_create_thread",
+        "garage_list_threads",
+        "garage_get_thread",
+        "garage_delete_thread",
+        "garage_add_thread_message",
+        "garage_list_thread_messages",
+        "garage_create_thread_run",
+        "garage_attach_file_to_thread"
+      ],
+      "tool_count": 40,
+      "description": "Main AI tools & services hub (FastAPI + 5 MCP servers, 107 tools)"
+    },
+    {
+      "name": "garage-files",
+      "project": "garge",
+      "port": 8111,
+      "transport": "sse",
+      "tools": [
+        "files_list",
+        "files_read",
+        "files_summarize",
+        "files_upload",
+        "files_upload_transcript",
+        "files_upload_law",
+        "files_get_content",
+        "files_delete",
+        "files_list_transcripts",
+        "files_list_laws"
+      ],
+      "tool_count": 10,
+      "description": "Main AI tools & services hub (FastAPI + 5 MCP servers, 107 tools)"
+    },
+    {
+      "name": "garage-ingestion",
+      "project": "garge",
+      "port": 8112,
+      "transport": "sse",
+      "tools": [
+        "ingestion_collection_info",
+        "ingestion_search",
+        "ingestion_ingest_directory",
+        "ingestion_ingest_files",
+        "ingestion_list_collections",
+        "ingestion_delete_collection",
+        "ingestion_collection_stats",
+        "ingestion_batch_ingest",
+        "ingestion_status",
+        "ingestion_legal_ingest",
+        "ingestion_transcript_ingest",
+        "ingestion_legal_v2_ingest"
+      ],
+      "tool_count": 12,
+      "description": "Main AI tools & services hub (FastAPI + 5 MCP servers, 107 tools)"
+    },
+    {
+      "name": "garage-prompt",
+      "project": "garge",
+      "port": 8113,
+      "transport": "sse",
+      "tools": [
+        "prompt_generate",
+        "prompt_analyze",
+        "prompt_variations",
+        "prompt_optimize",
+        "prompt_evaluate",
+        "prompt_improve",
+        "prompt_examples"
+      ],
+      "tool_count": 7,
+      "description": "Main AI tools & services hub (FastAPI + 5 MCP servers, 107 tools)"
+    },
+    {
+      "name": "garage-qdrant",
+      "project": "garge",
+      "port": 8114,
+      "transport": "sse",
+      "tools": [
+        "qdrant_connect",
+        "qdrant_list_collections",
+        "qdrant_create_collection",
+        "qdrant_collection_summary",
+        "qdrant_search",
+        "qdrant_structured_ingest",
+        "qdrant_ensure_legal_indexes",
+        "qdrant_ingest_file",
+        "qdrant_ingest_directory",
+        "embed_uploads_global",
+        "embed_project_uploads",
+        "embed_dev_code",
+        "qdrant_embed_case_directory",
+        "qdrant_query",
+        "qdrant_search_legacy",
+        "qdrant_index_reviewed_transcript",
+        "qdrant_query_vector",
+        "qdrant_delete_collection"
+      ],
+      "tool_count": 18,
+      "description": "Main AI tools & services hub (FastAPI + 5 MCP servers, 107 tools)"
+    },
+    {
+      "name": "juris-mcp",
+      "project": "juris-search",
+      "port": 8116,
+      "transport": "sse",
+      "tools": [
+        "juris_chat",
+        "juris_search_start",
+        "juris_search_status",
+        "juris_results",
+        "juris_search_history",
+        "juris_search_history_file",
+        "juris_storage_paths",
+        "juris_download",
+        "juris_download_status",
+        "juris_download_batch",
+        "juris_health",
+        "juris_stats",
+        "juris_docx_index",
+        "juris_json_index",
+        "juris_docx_rebuild",
+        "juris_json_rebuild",
+        "juris_storage_rebuild",
+        "juris_master_index_stats",
+        "juris_master_index_documents",
+        "juris_master_index_document",
+        "juris_master_index_rebuild",
+        "juris_master_index_markdown",
+        "juris_master_index_search",
+        "juris_flat_corpus_stats",
+        "juris_citations",
+        "juris_relator_network",
+        "juris_master_index_summary",
+        "juris_legal_framework_search",
+        "juris_legal_framework_stats",
+        "juris_upload_file",
+        "juris_set_base_url",
+        "juris_start_service",
+        "juris_stop_service"
+      ],
+      "tool_count": 33,
+      "description": "Legal document search & analysis engine (FastAPI + MCP, 44 tools)"
+    },
+    {
+      "name": "ocr-core",
+      "project": "ocr",
+      "port": 8125,
+      "transport": "sse",
+      "tools": [
+        "ocr_list_images",
+        "ocr_process_image",
+        "ocr_compare_results",
+        "ocr_run_batch",
+        "ocr_list_output_artifacts"
+      ],
+      "tool_count": 5,
+      "description": "OCR & PDF processing service (FastAPI + 2 MCP servers, 10 tools)"
+    },
+    {
+      "name": "pdf-server",
+      "project": "ocr",
+      "port": 8126,
+      "transport": "sse",
+      "tools": [
+        "pdf_scan_files",
+        "pdf_extract_text",
+        "pdf_analyze_pdf",
+        "pdf_convert_analysis_directory_to_csv",
+        "pdf_generate_renaming_plan_from_csv",
+        "pdf_apply_renaming_plan",
+        "pdf_run_pipeline"
+      ],
+      "tool_count": 7,
+      "description": "OCR & PDF processing service (FastAPI + 2 MCP servers, 10 tools)"
+    },
+    {
+      "name": "diarization",
+      "project": "transcription",
+      "port": 8122,
+      "transport": "sse",
+      "tools": [
+        "transcription_diarize",
+        "transcription_speaker_id",
+        "transcription_segment_speakers"
+      ],
+      "tool_count": 3,
+      "description": "Audio transcription & diarization service (FastAPI + 3 MCP servers, 61 tools)"
+    },
+    {
+      "name": "transcription-core",
+      "project": "transcription",
+      "port": 8121,
+      "transport": "sse",
+      "tools": [
+        "transcription_transcribe_audio",
+        "transcription_transcribe_audio_async",
+        "transcription_list_models",
+        "transcription_get_status",
+        "transcription_cancel_job"
+      ],
+      "tool_count": 5,
+      "description": "Audio transcription & diarization service (FastAPI + 3 MCP servers, 61 tools)"
+    },
+    {
+      "name": "translate",
+      "project": "transcription",
+      "port": 8123,
+      "transport": "sse",
+      "tools": [
+        "transcription_translate",
+        "transcription_sentiment",
+        "transcription_summarize"
+      ],
+      "tool_count": 3,
+      "description": "Audio transcription & diarization service (FastAPI + 3 MCP servers, 61 tools)"
+    },
+    {
+      "name": "violation-mcp",
+      "project": "violation-refiner",
+      "port": 8124,
+      "transport": "sse",
+      "tools": [
+        "init_violation",
+        "build_evidence_layer_tool",
+        "build_norms_layer_tool",
+        "add_element_grid_tool",
+        "build_nexus_layer_tool",
+        "add_authority_stub_tool",
+        "verify_statute_in_bundle_tool",
+        "verify_statute_external_fetch_tool",
+        "verify_human_attested_tool",
+        "derive_confidence_tool",
+        "attach_confidence_tool",
+        "run_pipeline_tool",
+        "write_violation_json_tool",
+        "build_manifest_tool",
+        "zip_bundle_tool",
+        "copy_source_into_bundle_tool",
+        "refine_batch_tool",
+        "qdrant_index_violation_tool",
+        "qdrant_search_segments_tool",
+        "qdrant_search_articles_tool",
+        "qdrant_search_authorities_tool",
+        "qdrant_search_jurisprudence_tool",
+        "qdrant_upsert_jurisprudence_tool",
+        "neo4j_upsert_violation_tool",
+        "neo4j_find_violations_citing_tool",
+        "neo4j_find_violations_with_contested_element_tool",
+        "neo4j_walk_implications_tool",
+        "jurisprudence_search_tool",
+        "jurisprudence_verify_tool",
+        "qdrant_reset_collections_tool",
+        "neo4j_reset_database_tool",
+        "embedder_info_tool",
+        "jurisprudence_ingest_tool",
+        "transcript_ingest_tool",
+        "framework_ingest_tool",
+        "enrich_violation_tool",
+        "enrich_stage_tool",
+        "verify_enrichment_tool",
+        "llm_provider_info_tool"
+      ],
+      "tool_count": 39,
+      "description": "Legal violation analysis & refinement pipeline (MCP only, 15 tools)"
+    },
+    {
+      "name": "filesystem",
+      "project": "core",
+      "description": "MCP filesystem server — read/write files in allowed roots",
+      "tool_count": 11,
+      "tools": [
+        "read_file",
+        "read_multiple_files",
+        "write_file",
+        "edit_file",
+        "create_directory",
+        "list_directory",
+        "directory_tree",
+        "move_file",
+        "search_files",
+        "get_file_info",
+        "list_allowed_directories"
+      ]
+    },
+    {
+      "name": "comfyui-workflow",
+      "project": "comfyui",
+      "description": "ComfyUI workflow management (queue, history, jobs)",
+      "tool_count": 12,
+      "tools": [
+        "comfyui_list_jobs",
+        "comfyui_get_job",
+        "comfyui_cancel_job",
+        "comfyui_list_history",
+        "comfyui_get_history",
+        "comfyui_get_queue",
+        "comfyui_clear_queue",
+        "comfyui_delete_queue_item",
+        "comfyui_interrupt",
+        "comfyui_free_memory",
+        "comfyui_clear_history",
+        "comfyui_delete_history_item"
+      ]
+    },
+    {
+      "name": "comfyui-model",
+      "project": "comfyui",
+      "description": "ComfyUI model & embedding management",
+      "tool_count": 4,
+      "tools": [
+        "comfyui_list_model_folders",
+        "comfyui_list_models",
+        "comfyui_list_embeddings",
+        "comfyui_view_metadata"
+      ]
+    },
+    {
+      "name": "comfyui-node",
+      "project": "comfyui",
+      "description": "ComfyUI node inspection",
+      "tool_count": 2,
+      "tools": [
+        "comfyui_list_nodes",
+        "comfyui_get_node_info"
+      ]
+    },
+    {
+      "name": "comfyui-system",
+      "project": "comfyui",
+      "description": "ComfyUI system stats, features & extensions",
+      "tool_count": 4,
+      "tools": [
+        "comfyui_system_stats",
+        "comfyui_list_features",
+        "comfyui_get_extensions",
+        "comfyui_ecosystem_report"
+      ]
+    }
+  ],
+  "name_map": {
+    "transcription-transcription": "transcription-core",
+    "transcription-transcripts": "transcription-core",
+    "transcription-meta": "transcription-core",
+    "juris-search": "juris-mcp",
+    "garage-core": "garage-core",
+    "garage-files": "garage-files",
+    "garage-ingestion": "garage-ingestion",
+    "garage-prompt": "garage-prompt",
+    "garage-qdrant": "garage-qdrant",
+    "violation-refiner": "violation-mcp",
+    "ocr-main-ocr": "ocr-core",
+    "ocr-main-pdf": "pdf-server",
+    "discovery-intelligence": "discovery-mcp",
+    "mcp-server-files": "filesystem",
+    "comfyui-workflow": "comfyui-workflow",
+    "comfyui-model": "comfyui-model",
+    "comfyui-node": "comfyui-node",
+    "comfyui-system": "comfyui-system",
+    "audio-main": "audio-mcp"
+  },
+  "summary_text": "[Available MCP Ecosystem Services]\n\n## audio\n  Torchaudio-based audio processing (FastAPI + MCP, 8 tools)\n  MCP servers: audio-mcp (8 tools)\n  Agents: audio_processor: Processes, resamples, slices, and extracts features from audio files, asr_manager: Manages ASR models and performs greedy transcription\n\n## discovery\n  Discovery intelligence platform (FastAPI + stdio MCP, 11 tools)\n  MCP servers: discovery-mcp (30 tools)\n  Agents: discovery_agent: Discovers files, endpoints, and law frameworks; runs pipelines, intelligence_analyst: Runs intelligence analysis including case graphs and gap reports\n\n## garge\n  Main AI tools & services hub (FastAPI + 5 MCP servers, 107 tools)\n  MCP servers: garage-core (40 tools), garage-files (10 tools), garage-ingestion (12 tools), garage-prompt (7 tools), garage-qdrant (18 tools)\n  Agents: garage_assistant: Orchestrates AI assistants, knowledge management, and LLM interactions, qdrant_manager: Manages Qdrant vector collections, ingestion, and semantic search, file_manager: Reads, writes, uploads, and manages files and transcripts, prompt_engineer: Generates, optimizes, and evaluates LLM prompts\n\n## juris-search\n  Legal document search & analysis engine (FastAPI + MCP, 44 tools)\n  MCP servers: juris-mcp (33 tools)\n  Agents: legal_searcher: Searches legal documents and jurisprudence across Brazilian courts, legal_indexer: Manages document indexing and corpus rebuilds, legal_analyst: Analyzes legal documents and citations\n\n## ocr\n  OCR & PDF processing service (FastAPI + 2 MCP servers, 10 tools)\n  MCP servers: ocr-core (5 tools), pdf-server (7 tools)\n  Agents: ocr_reader: Extracts text from images and scanned PDFs, pdf_processor: Processes PDF files for text extraction and analysis\n\n## transcription\n  Audio transcription & diarization service (FastAPI + 3 MCP servers, 61 tools)\n  MCP servers: transcription-core (5 tools), diarization (3 tools), translate (3 tools)\n  Agents: transcriber: Transcribes audio to text with speaker diarization, diarizer: Identifies speakers in audio transcriptions, translator: Translates and analyzes transcribed content\n\n## violation-refiner\n  Legal violation analysis & refinement pipeline (MCP only, 15 tools)\n  MCP servers: violation-mcp (39 tools)\n  Agents: violation_checker: Analyses transcripts and builds structured violation reports, authority_verifier: Verifies legal authorities and statute citations, qdrant_indexer: Indexes and searches violation data in Qdrant\n"
+}

@@ -114,11 +114,11 @@ class IndexerConfig:
     extractions_dir: Path
     interval_seconds: int = 30
     qdrant_enabled: bool = True
-    qdrant_base_url: str = "http://localhost:8114"
+    qdrant_base_url: str = "http://localhost:8066"
     qdrant_collection: str = "juris_br_v1"
     qdrant_vector_size: int = 768
     awareness_enabled: bool = False
-    awareness_base_url: str = "http://localhost:8114"
+    awareness_base_url: str = "http://localhost:8066"
     awareness_collection: str = "juris_search_memory"
     request_timeout: float = 60.0
 
@@ -136,11 +136,11 @@ class IndexerConfig:
             extractions_dir=extractions_dir,
             interval_seconds=max(5, int(os.environ.get("JURIS_SEARCH_MASTER_INDEX_INTERVAL", "30"))),
             qdrant_enabled=_env_flag("JURIS_SEARCH_QDRANT_INGEST", True),
-            qdrant_base_url=os.environ.get("JURIS_SEARCH_QDRANT_API", "http://localhost:8114").rstrip("/"),
+            qdrant_base_url=os.environ.get("JURIS_SEARCH_QDRANT_API", "http://localhost:8066").rstrip("/"),
             qdrant_collection=os.environ.get("JURIS_SEARCH_QDRANT_COLLECTION", "juris_br_v1"),
             qdrant_vector_size=int(os.environ.get("JURIS_SEARCH_QDRANT_VECTOR_SIZE", "768")),
             awareness_enabled=_env_flag("JURIS_SEARCH_AWARENESS_INGEST", False),
-            awareness_base_url=os.environ.get("JURIS_SEARCH_AWARENESS_API", "http://localhost:8114").rstrip("/"),
+            awareness_base_url=os.environ.get("JURIS_SEARCH_AWARENESS_API", "http://localhost:8066").rstrip("/"),
             awareness_collection=os.environ.get("JURIS_SEARCH_AWARENESS_COLLECTION", "juris_search_memory"),
             request_timeout=float(os.environ.get("JURIS_SEARCH_INDEX_HTTP_TIMEOUT", "60")),
         )
