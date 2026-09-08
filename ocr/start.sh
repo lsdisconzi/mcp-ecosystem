@@ -4,6 +4,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 
 # Optional .env overrides
 if [[ -f "$SCRIPT_DIR/.env" ]]; then
@@ -28,13 +29,16 @@ mkdir -p "$(dirname "$(get_log_file "ocr" "main")")"
 # ── python venv ──────────────────────────────────────────────────────────────
 if [[ ! -x "$VENV_BIN/python" ]]; then
     echo "Creating Python venv…"
-    python3 -m venv "$SCRIPT_DIR/.venv"
+    python3.12 -m venv "$SCRIPT_DIR/.venv"
+elif [[ ! -x "$VENV_BIN/pip" ]]; then
+    echo "Repairing Python venv…"
+    python3.12 -m venv "$SCRIPT_DIR/.venv"
 fi
 if [[ -f "$REQUIREMENTS_FILE" ]]; then
     if [[ ! -f "$REQUIREMENTS_STAMP" || "$REQUIREMENTS_FILE" -nt "$REQUIREMENTS_STAMP" ]]; then
         echo "Installing Python dependencies…"
-        "$VENV_BIN/pip" install -q --upgrade pip
-        "$VENV_BIN/pip" install -q --prefer-binary -r "$REQUIREMENTS_FILE"
+        "$VENV_BIN/python" -m pip install -q --upgrade pip
+        "$VENV_BIN/python" -m pip install -q --prefer-binary -r "$REQUIREMENTS_FILE"
         touch "$REQUIREMENTS_STAMP"
     fi
 fi
@@ -44,6 +48,11 @@ echo "Starting OCR service on :${PORT}…"
 start_logging "ocr" "main" env PYTHONUNBUFFERED=1 \
     "$VENV_BIN/uvicorn" ocr_server:app --host "$HOST" --port "$PORT"
 
+start_logging "ocr" "mcp-ocr" env PYTHONUNBUFFERED=1 MCP_TRANSPORT=streamable-http MCP_HOST=127.0.0.1 MCP_PORT=8125 \
+    "$VENV_BIN/python" "$SCRIPT_DIR/mcp/servers/ocr_server.py"
+start_logging "ocr" "mcp-pdf" env PYTHONUNBUFFERED=1 MCP_TRANSPORT=streamable-http MCP_HOST=127.0.0.1 MCP_PORT=8126 \
+    "$VENV_BIN/python" "$SCRIPT_DIR/mcp/servers/pdf_server.py"
+
 # ── wait until backend is ready (up to 15 s) ─────────────────────────────────
 echo "Waiting for backend…"
 for i in $(seq 1 30); do
@@ -51,6 +60,13 @@ for i in $(seq 1 30); do
         break
     fi
     sleep 0.5
+done
+
+for port in 8125 8126; do
+    if ! wait_for_port "$port"; then
+        echo "OCR MCP server failed to listen on port $port" >&2
+        exit 1
+    fi
 done
 
 echo ""

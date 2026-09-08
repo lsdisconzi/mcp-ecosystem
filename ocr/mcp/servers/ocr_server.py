@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import glob
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -27,7 +28,11 @@ import ocr_with_llm_enhancement as ocr_module  # noqa: E402
 
 apply_deepseek_base_url(ocr_module)
 
-mcp = FastMCP("ocr")
+mcp = FastMCP(
+    "ocr",
+    host=os.environ.get("MCP_HOST", "127.0.0.1"),
+    port=int(os.environ.get("MCP_PORT", "8125")),
+)
 
 
 @mcp.tool(name="ocr_list_images")
@@ -186,6 +191,6 @@ if __name__ == "__main__":
     port = int(os.environ.get("MCP_PORT", "8125"))
 
     if transport in ("sse", "streamable-http"):
-        mcp.run(transport="streamable-http", host=host, port=port)
+        mcp.run(transport="streamable-http")
     else:
         mcp.run(transport="stdio")

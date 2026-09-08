@@ -336,7 +336,7 @@ app.include_router(openclaude_router)
 # can fetch it at startup to discover available MCP tools and endpoints.
 _ECOSYSTEM_REPORT_PATH = os.getenv(
     "ECOSYSTEM_REPORT_PATH",
-    str(Path("/Users/dev/_sell/mcp-ecosystem/_ecosystem-reports/ecosystem_report_latest.md"))
+    str(Path(__file__).resolve().parent.parent / "_ecosystem-reports" / "ecosystem_report_latest.md")
 )
 
 @app.get("/v1/ecosystem/report", tags=["Ecosystem"], summary="Get latest ecosystem MCP report")
@@ -368,7 +368,7 @@ async def get_ecosystem_metadata():
     The 'host' field is resolved from ECOSYSTEM_HOST env var (or defaults
     to localhost) so consumers always get reachable URLs.
     """
-    meta_path = Path("/Users/dev/_sell/olivia/config/ecosystem_metadata.json")
+    meta_path = Path(os.path.expanduser("~/repos/olivia/config/ecosystem_metadata.json"))
     if not meta_path.is_file():
         return JSONResponse(status_code=404, content={"error": "Metadata not found"})
     try:

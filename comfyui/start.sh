@@ -36,14 +36,17 @@ fi
 # ── isolated MCP python venv ─────────────────────────────────────────────────
 if [[ ! -x "$MCP_PYTHON" ]]; then
     echo "Creating ComfyUI MCP venv…"
-    python3 -m venv "$SCRIPT_DIR/.venv-mcp"
+    python3.12 -m venv "$SCRIPT_DIR/.venv-mcp"
+elif [[ ! -x "$MCP_PIP" ]]; then
+    echo "Repairing ComfyUI MCP venv…"
+    python3.12 -m venv "$SCRIPT_DIR/.venv-mcp"
 fi
 # The ComfyUI MCP servers import `fastmcp` directly (with a fallback to
 # `mcp.server.fastmcp`). The standalone `fastmcp` package pulls in `mcp` as a
 # dependency, so installing it covers both import paths.
 if ! "$MCP_PYTHON" -c "import importlib; importlib.import_module('fastmcp')" >/dev/null 2>&1; then
     echo "Installing fastmcp (MCP SDK) in .venv-mcp…"
-    "$MCP_PIP" install -q --upgrade fastmcp
+    "$MCP_PYTHON" -m pip install -q --upgrade fastmcp
 fi
 
 # ── start the 4 domain servers ───────────────────────────────────────────────
@@ -57,6 +60,14 @@ for entry in "${servers[@]}"; do
         MCP_TRANSPORT="$MCP_TRANSPORT" MCP_HOST="$MCP_HOST" MCP_PORT="$port" \
         COMFYUI_BASE_URL="$COMFYUI_BASE_URL" \
         "$MCP_PYTHON" "$COMFYUI_ROOT/mcp/servers/${name}_server.py"
+done
+
+for entry in "${servers[@]}"; do
+    port="${entry##*:}"
+    if ! wait_for_port "$port"; then
+        echo "ComfyUI MCP server failed to listen on port $port" >&2
+        exit 1
+    fi
 done
 
 echo

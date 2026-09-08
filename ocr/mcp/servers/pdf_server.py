@@ -31,7 +31,11 @@ import pdf_pipeline as pdf_module  # noqa: E402
 
 apply_deepseek_base_url(pdf_module)
 
-mcp = FastMCP("pdf")
+mcp = FastMCP(
+    "pdf",
+    host=os.environ.get("MCP_HOST", "127.0.0.1"),
+    port=int(os.environ.get("MCP_PORT", "8126")),
+)
 
 
 def _slugify(value: str) -> str:
@@ -333,7 +337,7 @@ if __name__ == "__main__":
     if transport == "stdio":
         mcp.run(transport="stdio")
     elif transport in ("sse", "streamable-http"):
-        mcp.run(transport="streamable-http", host=host, port=port)
+        mcp.run(transport="streamable-http")
     else:
         print(f"Unknown transport: {transport}. Using stdio.", file=__import__('sys').stderr)
         mcp.run(transport="stdio")

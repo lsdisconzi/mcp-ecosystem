@@ -4870,7 +4870,7 @@ def _prepare_awareness_fresh_project_workspace(project_id: str) -> dict:
 # DEPRECATED (awareness legacy): @app.route("/api/observatory/awareness/groups")
 # DEPRECATED (awareness legacy): @ops_login_required
 def observatory_awareness_groups():
-    """List available Awareness import groups discovered from /Users/dev/agents metadata."""
+    """List available Awareness import groups discovered from ~/repos/olivia/agents metadata."""
     try:
         groups = _awareness_available_group_specs()
         available_slugs = [str(item.get("group") or "").strip().lower() for item in groups]

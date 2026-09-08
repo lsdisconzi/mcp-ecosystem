@@ -19,16 +19,32 @@ APP_URL="${APP_URL:-http://${HOST}:${PORT}/pinocchio}"
 MCP_TRANSPORT="${MCP_TRANSPORT:-streamable-http}"
 MCP_HOST="${MCP_HOST:-0.0.0.0}"
 
-PYTHON_BIN="$SCRIPT_DIR/.venv/bin/python"
-UVICORN_BIN="$SCRIPT_DIR/.venv/bin/uvicorn"
+VENV_DIR="$SCRIPT_DIR/.venv"
+if [[ -x "$VENV_DIR/bin/python" ]] && ! "$VENV_DIR/bin/python" -c 'import sys; raise SystemExit(0 if sys.version_info[:2] == (3, 12) else 1)' >/dev/null 2>&1; then
+    VENV_DIR="$SCRIPT_DIR/.venv-py312"
+fi
+PYTHON_BIN="$VENV_DIR/bin/python"
+UVICORN_BIN="$VENV_DIR/bin/uvicorn"
+REQUIREMENTS_FILE="$SCRIPT_DIR/requirements.txt"
+REQUIREMENTS_STAMP="$VENV_DIR/.requirements-stamp"
 
 # Source centralized logging
 source "$SCRIPT_DIR/../.dev-logs/common-logging.sh"
 
 mkdir -p "$(dirname "$(get_log_file "transcription" "api")")"
 
-if [[ ! -x "$PYTHON_BIN" || ! -x "$UVICORN_BIN" ]]; then
-    echo "Missing project Python environment in $SCRIPT_DIR/.venv" >&2
+if [[ ! -x "$PYTHON_BIN" ]]; then
+    echo "Creating transcription Python environment"
+    python3.12 -m venv "$VENV_DIR"
+fi
+if [[ -f "$REQUIREMENTS_FILE" && ( ! -f "$REQUIREMENTS_STAMP" || "$REQUIREMENTS_FILE" -nt "$REQUIREMENTS_STAMP" ) ]]; then
+    echo "Installing transcription Python dependencies"
+    "$PYTHON_BIN" -m pip install -q --upgrade pip
+    "$PYTHON_BIN" -m pip install -q -r "$REQUIREMENTS_FILE"
+    touch "$REQUIREMENTS_STAMP"
+fi
+if [[ ! -x "$UVICORN_BIN" ]]; then
+    echo "transcription Python environment is missing uvicorn" >&2
     exit 1
 fi
 
@@ -51,6 +67,13 @@ for _ in $(seq 1 30); do
         break
     fi
     sleep 0.5
+done
+
+for port in 8121 8122 8123; do
+    if ! wait_for_port "$port"; then
+        echo "transcription MCP server failed to listen on port $port" >&2
+        exit 1
+    fi
 done
 
 if [[ -n "${OPEN_APP:-}" ]]; then

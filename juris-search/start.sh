@@ -23,6 +23,8 @@ MCP_PORT="${MCP_PORT:-8116}"
 
 PYTHON_BIN="$SCRIPT_DIR/.venv/bin/python"
 UVICORN_BIN="$SCRIPT_DIR/.venv/bin/uvicorn"
+REQUIREMENTS_FILE="$SCRIPT_DIR/requirements.txt"
+REQUIREMENTS_STAMP="$SCRIPT_DIR/.venv/.requirements-stamp"
 FRONTEND_DIR="$SCRIPT_DIR/tjrs-frontend"
 MCP_DIR="$SCRIPT_DIR/mcp"
 
@@ -31,8 +33,18 @@ source "$SCRIPT_DIR/../.dev-logs/common-logging.sh"
 
 mkdir -p "$(dirname "$(get_log_file "juris-search" "api")")" "$(dirname "$(get_pid_file "juris-search" "api")")"
 
-if [[ ! -x "$PYTHON_BIN" || ! -x "$UVICORN_BIN" ]]; then
-    echo "Missing project Python environment in $SCRIPT_DIR/.venv" >&2
+if [[ ! -x "$PYTHON_BIN" ]]; then
+    echo "Creating juris-search Python environment"
+    python3.12 -m venv "$SCRIPT_DIR/.venv"
+fi
+if [[ -f "$REQUIREMENTS_FILE" && ( ! -f "$REQUIREMENTS_STAMP" || "$REQUIREMENTS_FILE" -nt "$REQUIREMENTS_STAMP" ) ]]; then
+    echo "Installing juris-search Python dependencies"
+    "$PYTHON_BIN" -m pip install -q --upgrade pip
+    "$PYTHON_BIN" -m pip install -q -r "$REQUIREMENTS_FILE"
+    touch "$REQUIREMENTS_STAMP"
+fi
+if [[ ! -x "$UVICORN_BIN" ]]; then
+    echo "juris-search Python environment is missing uvicorn" >&2
     exit 1
 fi
 

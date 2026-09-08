@@ -20,8 +20,12 @@ fail()  { printf "${R}✗${N} %s\n" "$*"; exit 1; }
 info "Stopping OCR services..."
 
 stop_by_pid_file "ocr" "main"
+stop_by_pid_file "ocr" "mcp-ocr"
+stop_by_pid_file "ocr" "mcp-pdf"
 
 # Belt-and-braces: clear the port too
 kill_port "ocr" "main" "$PORT"
+kill_port "ocr" "mcp-ocr" 8125
+kill_port "ocr" "mcp-pdf" 8126
 
 [[ "$QUIET" == "--quiet" ]] || ok "OCR stopped — logs preserved in .dev-logs/"

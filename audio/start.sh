@@ -22,6 +22,9 @@ MCP_PORT="${MCP_PORT:-8765}"
 
 PYTHON_API="$SCRIPT_DIR/.venv/bin/python"
 UVICORN_BIN=""
+REQUIREMENTS_FILE="$SCRIPT_DIR/requirements.txt"
+WEBAPP_REQUIREMENTS_FILE="$SCRIPT_DIR/webapp/requirements.txt"
+REQUIREMENTS_STAMP="$SCRIPT_DIR/.venv/.requirements-stamp"
 if [[ -x "$SCRIPT_DIR/.venv-mcp/bin/python" ]]; then
   PYTHON_MCP="$SCRIPT_DIR/.venv-mcp/bin/python"
 else
@@ -40,8 +43,14 @@ source "$SCRIPT_DIR/../.dev-logs/common-logging.sh"
 mkdir -p "$(dirname "$(get_log_file "audio" "api")")"
 
 if [[ ! -x "$PYTHON_API" ]]; then
-  echo "Missing project environment in $SCRIPT_DIR/.venv" >&2
-  exit 1
+  echo "Creating audio Python environment"
+  python3.12 -m venv "$SCRIPT_DIR/.venv"
+fi
+if [[ -f "$REQUIREMENTS_FILE" && ( ! -f "$REQUIREMENTS_STAMP" || "$REQUIREMENTS_FILE" -nt "$REQUIREMENTS_STAMP" || "$WEBAPP_REQUIREMENTS_FILE" -nt "$REQUIREMENTS_STAMP" || "$SCRIPT_DIR/mcp/requirements.txt" -nt "$REQUIREMENTS_STAMP" ) ]] || ! "$PYTHON_API" -c 'import mcp' >/dev/null 2>&1; then
+  echo "Installing audio Python dependencies"
+  "$PYTHON_API" -m pip install -q --upgrade pip
+  "$PYTHON_API" -m pip install -q -r "$REQUIREMENTS_FILE" -r "$WEBAPP_REQUIREMENTS_FILE" -r "$SCRIPT_DIR/mcp/requirements.txt"
+  touch "$REQUIREMENTS_STAMP"
 fi
 
 if [[ -z "$UVICORN_BIN" ]] && ! "$PYTHON_API" -c "import uvicorn" >/dev/null 2>&1; then
@@ -74,6 +83,11 @@ for _ in $(seq 1 30); do
   fi
   sleep 0.5
 done
+
+if ! wait_for_port "$MCP_PORT"; then
+  echo "audio MCP server failed to listen on port $MCP_PORT" >&2
+  exit 1
+fi
 
 echo ""
 echo "audio is running"

@@ -47,12 +47,12 @@ if [[ ! -x "$MCP_PYTHON_BIN" || ! -x "$MCP_PIP_BIN" ]]; then
     "$API_PYTHON_BIN" -m venv "$SCRIPT_DIR/.venv-mcp"
 fi
 
-if ! "$MCP_PYTHON_BIN" -c "import importlib; importlib.import_module('mcp.server.fastmcp')" >/dev/null 2>&1; then
-    echo "Installing missing MCP Python dependencies in .venv-mcp"
+if ! "$MCP_PYTHON_BIN" -c "import importlib; importlib.import_module('mcp.server.fastmcp'); import importlib.metadata as md; raise SystemExit(0 if md.version('mcp').split('.')[0] == '1' else 1)" >/dev/null 2>&1; then
+    echo "Installing compatible MCP Python dependencies in .venv-mcp"
     if [[ -f "$SCRIPT_DIR/mcp/requirements.txt" ]]; then
-        "$MCP_PIP_BIN" install -r "$SCRIPT_DIR/mcp/requirements.txt" >>"$(get_log_file "garge" "bootstrap")" 2>&1
+        "$MCP_PIP_BIN" install --upgrade --force-reinstall -r "$SCRIPT_DIR/mcp/requirements.txt" >>"$(get_log_file "garge" "bootstrap")" 2>&1
     fi
-    "$MCP_PIP_BIN" install mcp >>"$(get_log_file "garge" "bootstrap")" 2>&1
+    "$MCP_PIP_BIN" install --upgrade --force-reinstall 'mcp<2' >>"$(get_log_file "garge" "bootstrap")" 2>&1
 fi
 
 "$SCRIPT_DIR/stop.sh" --quiet || true
@@ -86,6 +86,13 @@ for _ in $(seq 1 30); do
         break
     fi
     sleep 0.5
+done
+
+for port in 8110 8111 8112 8113 8114; do
+    if ! wait_for_port "$port"; then
+        echo "garge MCP server failed to listen on port $port" >&2
+        exit 1
+    fi
 done
 
 if [[ -n "${OPEN_APP:-}" ]]; then

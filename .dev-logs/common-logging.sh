@@ -3,7 +3,7 @@
 # Source this file in start.sh/stop.sh scripts: source "$ROOT/.dev-logs/common-logging.sh"
 
 # Centralized log directory at root of mcp-ecosystem
-DEV_LOGS_ROOT="${DEV_LOGS_ROOT:-/Users/dev/_sell/mcp-ecosystem/.dev-logs}"
+DEV_LOGS_ROOT="${DEV_LOGS_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
 
 # Ensure log directory exists
 mkdir -p "$DEV_LOGS_ROOT"
@@ -125,3 +125,17 @@ rotate_logs() {
 export -f get_log_file get_pid_file log log_info log_warn log_error log_ok
 export -f start_logging stop_by_pid_file kill_port rotate_logs
 export DEV_LOGS_ROOT
+
+wait_for_port() {
+    local port="$1"
+    local attempts="${2:-30}"
+    for _ in $(seq 1 "$attempts"); do
+        if lsof -nP -iTCP:"$port" -sTCP:LISTEN >/dev/null 2>&1; then
+            return 0
+        fi
+        sleep 0.5
+    done
+    return 1
+}
+
+export -f wait_for_port

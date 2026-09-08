@@ -157,16 +157,16 @@ generate_report() {
     local c_mcp4_s=$(port_up $c_mcp4 && echo "UP" || echo "DOWN")
     local ops_s=$(port_up $ops_port && echo "UP" || echo "DOWN")
 
-    # ── Tool inventory counts (use stable values so the report is deterministic) ──
+    # ── Tool inventory counts from the declared MCP inventory ──
     local tools_j=33
-    local tools_gc=87
-    local tools_gf=18
-    local tools_gi=20
+    local tools_gc=40
+    local tools_gf=10
+    local tools_gi=12
     local tools_gp=7
-    local tools_gq=25
+    local tools_gq=18
     local tools_v=39
     local tools_d=30
-    local tools_a=$(count_mcp_tools "localhost" "8765")
+    local tools_a=8
     local tools_oc=5
     local tools_op=7
     local tools_t=11
@@ -205,7 +205,29 @@ generate_report() {
              "$a_mcp_s" "$o_api_s" "$o_core_s" "$o_pdf_s" "$t_api_s" \
              "$t_mcp1_s" "$t_mcp2_s" "$t_mcp3_s" "$c_mcp1_s" "$c_mcp2_s" \
              "$c_mcp3_s" "$c_mcp4_s" "$ops_s"; do
-        [[ "$s" == "UP" ]] && ((total_up++))
+        [[ "$s" == "UP" ]] && total_up=$((total_up + 1))
+    done
+
+    local total_services=24
+    local t_up=0 j_up=0 g_up=0 v_up=0 o_up=0 d_up=0 a_up=0 c_up=0
+    [[ "$t_api_s" == "UP" ]] && t_up=$((t_up + 1))
+    [[ "$t_mcp1_s" == "UP" ]] && t_up=$((t_up + 1))
+    [[ "$t_mcp2_s" == "UP" ]] && t_up=$((t_up + 1))
+    [[ "$t_mcp3_s" == "UP" ]] && t_up=$((t_up + 1))
+    [[ "$j_api_s" == "UP" ]] && j_up=$((j_up + 1))
+    [[ "$j_mcp_s" == "UP" ]] && j_up=$((j_up + 1))
+    for s in "$g_api_s" "$g_core_s" "$g_files_s" "$g_ingest_s" "$g_prompt_s" "$g_qdrant_s"; do
+        [[ "$s" == "UP" ]] && g_up=$((g_up + 1))
+    done
+    [[ "$v_mcp_s" == "UP" ]] && v_up=1
+    [[ "$o_api_s" == "UP" ]] && o_up=$((o_up + 1))
+    [[ "$o_core_s" == "UP" ]] && o_up=$((o_up + 1))
+    [[ "$o_pdf_s" == "UP" ]] && o_up=$((o_up + 1))
+    [[ "$d_api_s" == "UP" ]] && d_up=1
+    [[ "$a_api_s" == "UP" ]] && a_up=$((a_up + 1))
+    [[ "$a_mcp_s" == "UP" ]] && a_up=$((a_up + 1))
+    for s in "$c_mcp1_s" "$c_mcp2_s" "$c_mcp3_s" "$c_mcp4_s"; do
+        [[ "$s" == "UP" ]] && c_up=$((c_up + 1))
     done
 
     # ── Build report ──
@@ -219,16 +241,16 @@ generate_report() {
 
 | Project | Status | Ports | Tools | Notes |
 |---------|--------|-------|-------|-------|
-| transcription      | $([ "$t_api_s" == "UP" ] && echo "UP" || echo "DOWN")     | $([ "$t_api_s" == "UP" ] && echo "4/4" || echo "—") | $tools_t | Audio transcription & diarization service (FastAPI + 3 MCP servers) |
-| juris-search       | $([ "$j_api_s" == "UP" ] && echo "UP" || echo "DOWN")     | $([ "$j_api_s" == "UP" ] && echo "2/2" || echo "—") | $tools_j | Legal document search & analysis engine (FastAPI + MCP) |
-| garge              | $([ "$g_api_s" == "UP" ] && echo "UP" || echo "DOWN")     | $([ "$g_api_s" == "UP" ] && echo "6/6" || echo "—") | $garge_tools | Main AI tools & services hub (FastAPI + 5 MCP servers) |
-| violation-refiner  | $([ "$v_mcp_s" == "UP" ] && echo "UP" || echo "DOWN")     | $([ "$v_mcp_s" == "UP" ] && echo "1/1" || echo "—") | $tools_v | Legal violation analysis & refinement pipeline (MCP only) |
-| ocr                | $([ "$o_api_s" == "UP" ] && echo "UP" || echo "DOWN")     | $([ "$o_api_s" == "UP" ] && echo "3/3" || echo "—") | $ocr_tools | OCR & PDF processing service (FastAPI + 2 MCP servers) |
-| discovery          | $([ "$d_api_s" == "UP" ] && echo "UP" || echo "DOWN")     | $([ "$d_api_s" == "UP" ] && echo "1/1" || echo "—") | $tools_d | Discovery intelligence platform (FastAPI + stdio MCP) |
-| audio              | $([ "$a_api_s" == "UP" ] && echo "UP" || echo "DOWN")     | $([ "$a_api_s" == "UP" ] && echo "2/2" || echo "—") | $tools_a | Torchaudio-based audio processing (FastAPI + MCP) |
+| transcription      | $([ "$t_up" -eq 4 ] && echo "UP" || echo "DEGRADED")     | ${t_up}/4 | $tools_t | Audio transcription & diarization service (FastAPI + 3 MCP servers) |
+| juris-search       | $([ "$j_up" -eq 2 ] && echo "UP" || echo "DEGRADED")     | ${j_up}/2 | $tools_j | Legal document search & analysis engine (FastAPI + MCP) |
+| garge              | $([ "$g_up" -eq 6 ] && echo "UP" || echo "DEGRADED")     | ${g_up}/6 | $garge_tools | Main AI tools & services hub (FastAPI + 5 MCP servers) |
+| violation-refiner  | $([ "$v_up" -eq 1 ] && echo "UP" || echo "DOWN")     | ${v_up}/1 | $tools_v | Legal violation analysis & refinement pipeline (MCP only) |
+| ocr                | $([ "$o_up" -eq 3 ] && echo "UP" || echo "DEGRADED")     | ${o_up}/3 | $ocr_tools | OCR & PDF processing service (FastAPI + 2 MCP servers) |
+| discovery          | $([ "$d_up" -eq 1 ] && echo "UP" || echo "DOWN")     | ${d_up}/1 | $tools_d | Discovery intelligence platform (FastAPI + stdio MCP) |
+| audio              | $([ "$a_up" -eq 2 ] && echo "UP" || echo "DEGRADED")     | ${a_up}/2 | $tools_a | Torchaudio-based audio processing (FastAPI + MCP) |
+| comfyui            | $([ "$c_up" -eq 4 ] && echo "UP" || echo "DEGRADED")     | ${c_up}/4 | $comfyui_tools | ComfyUI workflow/model/node/system MCP servers (4) |
 | ops-dashboard      | $([ "$ops_s" == "UP" ] && echo "UP" || echo "DOWN")     | port 9000 | — | Ops dashboard |
-| comfyui            | $([ "$c_mcp1_s" == "UP" ] && echo "UP" || echo "DOWN")     | $([ "$c_mcp1_s" == "UP" ] && echo "4/4" || echo "—") | $comfyui_tools | ComfyUI workflow/model/node/system MCP servers (4) |
-| **TOTAL**          | **${total_up} UP / $((24 - total_up)) DOWN** |         | $total_tools | |
+| **TOTAL**          | **${total_up} UP / $((total_services - total_up)) DOWN** | **${total_up}/${total_services}** | $total_tools | |
 
 ## Ecosystem Summary
 
@@ -256,14 +278,14 @@ generate_report() {
 ### transcription
 | Port | Server Name | Transport | Tools |
 |------|-------------|-----------|-------|
-| 8121 | transcription-core | sse | transcription_transcribe_audio, transcription_transcribe_audio_async, transcription_list_models, transcription_get_status, transcription_cancel_job |
-| 8122 | diarization | sse | transcription_diarize, transcription_speaker_id, transcription_segment_speakers |
-| 8123 | translate | sse | transcription_translate, transcription_sentiment, transcription_summarize |
+| 8121 | transcription-core | streamable-http | transcription_transcribe_audio, transcription_transcribe_audio_async, transcription_list_models, transcription_get_status, transcription_cancel_job |
+| 8122 | diarization | streamable-http | transcription_diarize, transcription_speaker_id, transcription_segment_speakers |
+| 8123 | translate | streamable-http | transcription_translate, transcription_sentiment, transcription_summarize |
 
 ### juris-search
 | Port | Server Name | Transport | Tools |
 |------|-------------|-----------|-------|
-| 8116 | juris-mcp | sse | juris_chat, juris_search_start, juris_search_status, juris_results, juris_search_history, juris_search_history_file, juris_storage_paths, juris_download, juris_download_status, juris_download_batch, juris_health, juris_stats, juris_docx_index, juris_json_index, juris_docx_rebuild, juris_json_rebuild, juris_storage_rebuild, juris_master_index_stats, juris_master_index_documents, juris_master_index_document, juris_master_index_rebuild, juris_master_index_markdown, juris_master_index_search, juris_flat_corpus_stats, juris_citations, juris_relator_network, juris_master_index_summary, juris_legal_framework_search, juris_legal_framework_stats, juris_upload_file, juris_set_base_url, juris_start_service, juris_stop_service |
+| 8116 | juris-mcp | streamable-http | juris_chat, juris_search_start, juris_search_status, juris_results, juris_search_history, juris_search_history_file, juris_storage_paths, juris_download, juris_download_status, juris_download_batch, juris_health, juris_stats, juris_docx_index, juris_json_index, juris_docx_rebuild, juris_json_rebuild, juris_storage_rebuild, juris_master_index_stats, juris_master_index_documents, juris_master_index_document, juris_master_index_rebuild, juris_master_index_markdown, juris_master_index_search, juris_flat_corpus_stats, juris_citations, juris_relator_network, juris_master_index_summary, juris_legal_framework_search, juris_legal_framework_stats, juris_upload_file, juris_set_base_url, juris_start_service, juris_stop_service |
 
 ### garge
 | Port | Server Name | Transport | Tools |
