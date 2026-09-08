@@ -13,10 +13,10 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ===================== CONFIGURATION =====================
-BASE_URL = 'https://codeandcounsel.ai/'
-SAVE_DIR = './crawler_output/codeandcounsel'  # where to save HTML and text
-MAX_PAGES = 100                  # max pages to fetch
-MAX_DEPTH = 3                    # link depth
+BASE_URL = 'https://www.anac.gov.br/'
+SAVE_DIR = './crawler_output/anac-2'  # where to save HTML and text
+MAX_PAGES = 1000                  # max pages to fetch
+MAX_DEPTH = 6                    # link depth
 DOWNLOAD_ASSETS = False          # set True to download CSS/JS/images
 SAME_DOMAIN_ONLY = True          # stay within latamairlines.com
 TIMEOUT = 60                     # seconds per page (overall)

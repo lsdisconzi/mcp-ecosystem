@@ -173,10 +173,11 @@ class TranscribeAudioUseCase:
         vad_threshold = params.get("vad_threshold", 0.25)
         keep_cache = params.get("keep_cache", True)
         keep_audio_artifacts = params.get("keep_audio_artifacts", True)
-        diarization_timeout_s = float(params.get("diarization_timeout_s", 180.0))
+        diarization_timeout_s = float(params.get("diarization_timeout_s", 500.0))
         min_turn_duration_s = float(params.get("min_turn_duration_s", 0.0))
         merge_gap_s = float(params.get("merge_gap_s", 0.0))
         max_diarization_segments = int(params.get("max_diarization_segments", 1000))
+        skip_diarization = bool(params.get("skip_diarization", False))
         progress_callback = params.get("progress_callback")
         suppress_tokens_raw = params.get("suppress_tokens", "-1")
         parsed_suppress_tokens = _parse_suppress_tokens(suppress_tokens_raw)
@@ -226,6 +227,7 @@ class TranscribeAudioUseCase:
                     min_turn_duration_s=min_turn_duration_s,
                     merge_gap_s=merge_gap_s,
                     max_diarization_segments=max_diarization_segments,
+                    skip_diarization=skip_diarization,
                     emit_progress=emit_progress,
                 )
             )
@@ -390,9 +392,13 @@ class TranscribeAudioUseCase:
         min_turn_duration_s: float,
         merge_gap_s: float,
         max_diarization_segments: int,
+        skip_diarization: bool = False,
         emit_progress: Callable,
     ) -> tuple[list[DiarizationTurn], float, bool, str | None, int]:
         """Run speaker diarization with fallback handling.
+
+        When ``skip_diarization`` is True the whole clip is treated as a single
+        speaker turn (no pyannote call), so the pipeline returns one segment.
 
         Returns (turns, diarization_elapsed, fallback, fallback_reason, raw_turn_count).
         """
@@ -406,6 +412,28 @@ class TranscribeAudioUseCase:
             return [
                 DiarizationTurn(speaker="SPEAKER_00", start=0.0, end=duration_s)
             ]
+
+        if skip_diarization:
+            turns = _single_speaker_fallback()
+            diarization_fallback = True
+            diarization_fallback_reason = "skipped_by_request"
+            logger.info("[diarization] skipped by request; single-speaker mode")
+            raw_turn_count = len(turns)
+            diarization_elapsed = time.time() - t_step
+            await emit_progress(
+                "diarization", 65,
+                "Diarização ignorada (1 segmento)",
+                {
+                    "segments": len(turns),
+                    "raw_segments": raw_turn_count,
+                    "fallback": diarization_fallback,
+                    "fallback_reason": diarization_fallback_reason,
+                },
+            )
+            return (
+                turns, diarization_elapsed, diarization_fallback,
+                diarization_fallback_reason, raw_turn_count,
+            )
 
         try:
             turns = await asyncio.wait_for(

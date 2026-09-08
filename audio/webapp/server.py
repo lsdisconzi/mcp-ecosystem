@@ -9,7 +9,7 @@ import math
 import tempfile
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import torch
 import torch.nn.functional as F
@@ -194,6 +194,13 @@ def spectral_denoise(
     if hop_length <= 0:
         hop_length = n_fft // 4
 
+    # Promote 1-D mono [T] to 2-D [1, T] so the STFT is [C, F, T].
+    was_mono = waveform.dim() == 1
+    if was_mono:
+        waveform = waveform.unsqueeze(0)
+    if noise_waveform is not None and noise_waveform.dim() == 1:
+        noise_waveform = noise_waveform.unsqueeze(0)
+
     X, win = _stft(waveform, n_fft, hop_length)
     mag = X.abs()
     phase = X.angle()
@@ -218,7 +225,8 @@ def spectral_denoise(
         gain = _smooth_spectrogram(gain, smoothing_frames)
 
     clean = (mag * gain) * torch.exp(1j * phase)
-    return torch.istft(clean, n_fft, hop_length, window=win, length=waveform.shape[-1])
+    y = torch.istft(clean, n_fft, hop_length, window=win, length=waveform.shape[-1])
+    return y.squeeze(0) if was_mono else y
 
 
 def spectral_dereverb(
@@ -242,6 +250,11 @@ def spectral_dereverb(
     if hop_length <= 0:
         hop_length = n_fft // 4
 
+    # Promote 1-D mono [T] to 2-D [1, T] so the STFT is [C, F, T].
+    was_mono = waveform.dim() == 1
+    if was_mono:
+        waveform = waveform.unsqueeze(0)
+
     X, win = _stft(waveform, n_fft, hop_length)
     mag = X.abs()
     phase = X.angle()
@@ -249,7 +262,7 @@ def spectral_dereverb(
 
     if rt60_s is None or rt60_s <= 0.0:
         rt60_s = _estimate_rt60(waveform, sample_rate) or 0.4
-    rt60_s = float(min(max(rt60_s, 0.05), 3.0))
+    rt60_s = min(max(rt60_s, 0.05), 3.0)
 
     hop_dur = hop_length / sample_rate
     # Amplitude decay rate delta satisfies e^{-2*delta*RT60} = 1e-6 (power).
@@ -270,9 +283,10 @@ def spectral_dereverb(
     clean = (mag * gain) * torch.exp(1j * phase)
     y = torch.istft(clean, n_fft, hop_length, window=win, length=waveform.shape[-1])
     if mix >= 1.0:
-        return y
+        return y.squeeze(0) if was_mono else y
     mix = min(max(mix, 0.0), 1.0)
-    return mix * y + (1.0 - mix) * waveform
+    blended = mix * y + (1.0 - mix) * waveform
+    return blended.squeeze(0) if was_mono else blended
 
 
 # ──────────────────────────────────────────────
@@ -381,7 +395,7 @@ async def apply_filter(
         }
 
         # Build kwargs using only the params this filter expects
-        kwargs = {"waveform": waveform, "sample_rate": sample_rate}
+        kwargs: dict[str, Any] = {"waveform": waveform, "sample_rate": sample_rate}
         for pname in FILTER_PARAMS.get(filter_type, ()):
             kwargs[pname] = params.get(pname, 0.0)
 
@@ -546,7 +560,7 @@ async def apply_phaser(
 async def pitch_shift(file: UploadFile = File(...), n_steps: float = Form(0.0)):
     """Shift the pitch of the audio by n_steps semitones."""
     waveform, sample_rate = _load_upload(file)
-    result = torchaudio.functional.pitch_shift(waveform, sample_rate, n_steps)
+    result = torchaudio.functional.pitch_shift(waveform, sample_rate, int(round(n_steps)))
     return JSONResponse({
         "audio_base64": _tensor_to_b64(result, sample_rate),
         "sample_rate": sample_rate,
@@ -851,7 +865,15 @@ async def compute_loudness(file: UploadFile = File(...)):
 async def compute_spectral_centroid(file: UploadFile = File(...)):
     """Compute spectral centroid."""
     waveform, sample_rate = _load_upload(file)
-    centroid = torchaudio.functional.spectral_centroid(waveform, sample_rate)
+    n_fft = 1024
+    win_length = n_fft
+    hop_length_sc = n_fft // 2
+    window = torch.hann_window(win_length)
+    centroid = torchaudio.functional.spectral_centroid(
+        waveform, sample_rate,
+        pad=0, window=window, n_fft=n_fft,
+        hop_length=hop_length_sc, win_length=win_length,
+    )
     centroid_data = centroid[0].cpu().detach().numpy().tolist()
     return JSONResponse({
         "spectral_centroid": centroid_data,
@@ -897,7 +919,8 @@ async def separate_sources(
         else:
             # Use low by default (faster, less memory)
             from torchaudio.models import hdemucs_low
-            model = hdemucs_low()
+            # sources must be provided; use standard 4-stem set
+            model = hdemucs_low(sources=["drums", "bass", "other", "vocals"])
             # Try HDEMUCS_HIGH_MUSDB for medium; fall back to what's available
             bundle = None
 
@@ -941,7 +964,7 @@ async def separate_sources(
         sources = sources[0]  # remove batch dim
         source_names = ["drums", "bass", "other", "vocals"]
 
-        result = {}
+        result: dict[str, Any] = {}
         for i, name in enumerate(source_names):
             if i < sources.shape[0]:
                 src_waveform = sources[i]  # [channels, time]
@@ -1117,6 +1140,424 @@ async def get_info():
             {"name": "SquimSubjective", "desc": "Speech subjective quality (MOS)"},
         ],
     })
+
+
+# ──────────────────────────────────────────────
+# Neural speech models (ConvTasNet / Wav2Vec2 / HuBERT / WavLM / Squim)
+# ──────────────────────────────────────────────
+
+# Process-wide cache for pretrained model weights. Weights are downloaded to
+# the torchaudio hub cache on first use (see webapp/static notes in the UI).
+_MODEL_CACHE: dict[str, torch.nn.Module] = {}
+
+
+def _get_cached_bundle_model(bundle) -> torch.nn.Module:
+    """Load a pipeline bundle's model once and reuse it for subsequent calls."""
+    key = getattr(bundle, "_path", getattr(bundle, "_model_path", repr(bundle)))
+    if key not in _MODEL_CACHE:
+        _MODEL_CACHE[key] = bundle.get_model()
+    return _MODEL_CACHE[key]
+
+
+def _as_mono(waveform: torch.Tensor) -> torch.Tensor:
+    """Reduce a [C, T] or [T] waveform to 1D mono [T]."""
+    if waveform.dim() == 2 and waveform.shape[0] > 1:
+        waveform = waveform.mean(dim=0)
+    if waveform.dim() == 2:
+        waveform = waveform[0]
+    return waveform
+
+
+def _greedy_decode(emission: torch.Tensor, labels, blank_id: int = 0) -> str:
+    token_ids = torch.argmax(emission, dim=-1)[0]
+    transcript_tokens = []
+    prev = blank_id
+    for idx in token_ids.tolist():
+        if idx != blank_id and idx != prev:
+            transcript_tokens.append(labels[idx])
+        prev = idx
+    return "".join(transcript_tokens).replace("|", " ").strip()
+
+
+def _tensor_stats(t: torch.Tensor) -> dict:
+    return {
+        "shape": list(t.shape),
+        "mean": float(t.mean().item()),
+        "std": float(t.std().item()),
+        "min": float(t.min().item()),
+        "max": float(t.max().item()),
+        "norm": float(t.norm().item()),
+    }
+
+
+
+def _convtasnet_separate_pair(
+    model: torch.nn.Module,
+    waveform_8k: torch.Tensor,
+) -> torch.Tensor:
+    """Run ConvTasNet on a 1-D mono waveform at 8 kHz → [2, T] sources."""
+    # Ensure waveform is 1D [T] or 2D [1, T]
+    if waveform_8k.dim() == 2:
+        waveform_8k = waveform_8k.squeeze(0)
+    mixture = waveform_8k.unsqueeze(0).unsqueeze(0)  # [1, 1, T]
+    with torch.inference_mode():
+        sources = model(mixture)  # [1, 2, T]
+    return sources.squeeze(0)  # [2, T]
+
+
+def _iterative_pairwise_separate(
+    model: torch.nn.Module,
+    waveform_8k: torch.Tensor,
+    num_sources: int,
+) -> list[torch.Tensor]:
+    """Separate into *num_sources* speakers by recursively splitting the
+    highest-energy stem.  The pretrained ConvTasNet always outputs 2 sources,
+    so we iteratively re-split until we reach the target count.
+
+    Returns a list of 1-D tensors (each at 8 kHz).
+    """
+    stems: list[torch.Tensor] = []
+    pair = _convtasnet_separate_pair(model, waveform_8k)
+    stems.append(pair[0])
+    stems.append(pair[1])
+
+    while len(stems) < num_sources:
+        # Pick the stem with the highest RMS energy (likely multi-speaker)
+        energies = [s.pow(2).mean().item() for s in stems]
+        idx = int(max(range(len(energies)), key=lambda i: energies[i]))
+        target = stems.pop(idx)
+        sub = _convtasnet_separate_pair(model, target)
+        stems.append(sub[0])
+        stems.append(sub[1])
+
+    return stems[:num_sources]
+
+
+def _segment_and_separate(
+    model: torch.nn.Module,
+    waveform_8k: torch.Tensor,
+    num_sources: int,
+    segment_samples: int,
+) -> list[torch.Tensor]:
+    """Process long audio in overlapping segments with Hanning cross-fade.
+
+    Uses 50 % overlap and a Hanning window to blend boundaries.
+    """
+    return _segment_and_separate_with_overlap(
+        model, waveform_8k, num_sources, segment_samples, segment_samples // 2
+    )
+
+
+def _segment_and_separate_with_overlap(
+    model: torch.nn.Module,
+    waveform_8k: torch.Tensor,
+    num_sources: int,
+    segment_samples: int,
+    hop: int,
+) -> list[torch.Tensor]:
+    """Process long audio in overlapping segments with Hanning cross-fade.
+
+    Uses customizable overlap via hop parameter.
+    """
+    total = waveform_8k.shape[0]
+    if total <= segment_samples:
+        return _iterative_pairwise_separate(model, waveform_8k, num_sources)
+
+    window = torch.hann_window(segment_samples)
+    # Accumulate weighted sums and weight totals per source
+    accum = [torch.zeros(total) for _ in range(num_sources)]
+    weight = torch.zeros(total)
+
+    offset = 0
+    while offset < total:
+        end = min(offset + segment_samples, total)
+        chunk = waveform_8k[offset:end]
+        chunk_len = chunk.shape[0]
+
+        # Pad the last chunk if shorter than segment_samples
+        if chunk_len < segment_samples:
+            chunk = torch.nn.functional.pad(chunk, (0, segment_samples - chunk_len))
+
+        stems = _iterative_pairwise_separate(model, chunk, num_sources)
+        win = window[:chunk_len] if chunk_len < segment_samples else window
+
+        for i, s in enumerate(stems):
+            s = s[:chunk_len]
+            accum[i][offset : offset + chunk_len] += s * win[:chunk_len]
+        weight[offset : offset + chunk_len] += win[:chunk_len]
+
+        offset += hop
+
+    # Normalise by accumulated window weight
+    weight = weight.clamp(min=1e-8)
+    return [a / weight for a in accum]
+
+
+@app.post("/api/separate/speech")
+async def separate_speech(
+    file: UploadFile = File(...),
+    num_sources: int = Form(2),
+    output_sample_rate: int = Form(0),
+    normalize: bool = Form(False),
+    segment_duration: float = Form(0),
+    segment_overlap: float = Form(50),
+    pre_denoise: str = Form("none"),
+    pre_dereverb: str = Form("none"),
+    post_denoise: str = Form("none"),
+):
+    """Separate a speech mixture into individual speakers using ConvTasNet.
+
+    Parameters
+    ----------
+    num_sources : int (2–5)
+        Number of speakers to separate.  The pretrained model always
+        produces 2 stems; for >2 we iteratively re-split the highest-
+        energy stem (pairwise cascading).
+    output_sample_rate : int
+        Desired sample rate for the output stems.  0 = keep the original
+        file's rate.
+    normalize : bool
+        If True, peak-normalise each stem to –1 dBFS.
+    segment_duration : float
+        If >0, process audio in overlapping segments of this many seconds
+        (with Hanning cross-fade) to limit memory usage.  0 = process the
+        full file at once.
+    segment_overlap : float
+        Overlap percentage between segments (25-75). Default 50%.
+    pre_denoise : str
+        Pre-processing denoise level: "none", "light", "medium", "strong".
+    pre_dereverb : str
+        Pre-processing dereverb level: "none", "light", "medium", "strong".
+    post_denoise : str
+        Post-processing denoise level: "none", "light", "medium", "strong".
+    """
+    try:
+        num_sources = max(2, min(num_sources, 5))
+
+        bundle = torchaudio.pipelines.CONVTASNET_BASE_LIBRI2MIX
+        model = _get_cached_bundle_model(bundle)
+        waveform, orig_sr = _load_upload(file)
+        waveform = _as_mono(waveform)
+
+        # Resample to model rate (8 kHz)
+        if orig_sr != bundle.sample_rate:
+            waveform_8k = torchaudio.functional.resample(
+                waveform, orig_sr, bundle.sample_rate
+            )
+        else:
+            waveform_8k = waveform
+
+        # Pre-processing: Denoise
+        if pre_denoise != "none":
+            alpha_map = {"light": 1.5, "medium": 2.0, "strong": 3.0}
+            alpha = alpha_map.get(pre_denoise, 2.0)
+            waveform_8k = spectral_denoise(
+                waveform_8k, bundle.sample_rate,
+                alpha=alpha, floor_db=-40.0, smoothing_frames=5
+            )
+
+        # Pre-processing: Dereverb
+        if pre_dereverb != "none":
+            atten_map = {"light": 10.0, "medium": 20.0, "strong": 30.0}
+            attenuation_db = atten_map.get(pre_dereverb, 20.0)
+            waveform_8k = spectral_dereverb(
+                waveform_8k, bundle.sample_rate,
+                attenuation_db=attenuation_db, mix=1.0
+            )
+
+        # Determine final output sample rate
+        final_sr = output_sample_rate if output_sample_rate > 0 else int(orig_sr)
+
+        # Run separation (segmented or full)
+        if segment_duration > 0:
+            seg_samples = int(segment_duration * bundle.sample_rate)
+            seg_samples = max(seg_samples, int(bundle.sample_rate))  # min 1 s
+            # Calculate hop based on overlap percentage
+            overlap_pct = max(25, min(75, segment_overlap)) / 100.0
+            hop = int(seg_samples * (1.0 - overlap_pct))
+            stems_8k = _segment_and_separate_with_overlap(
+                model, waveform_8k, num_sources, seg_samples, hop
+            )
+        else:
+            stems_8k = _iterative_pairwise_separate(
+                model, waveform_8k, num_sources
+            )
+
+        # Post-process each stem
+        out: dict[str, Any] = {
+            "source_names": [],
+            "sample_rate": final_sr,
+            "num_sources": num_sources,
+            "iterative": num_sources > 2,
+        }
+        for i, stem in enumerate(stems_8k):
+            name = f"speaker_{i + 1}"
+
+            # Post-processing: Denoise
+            if post_denoise != "none":
+                alpha_map = {"light": 1.0, "medium": 1.5, "strong": 2.0}
+                alpha = alpha_map.get(post_denoise, 1.5)
+                stem = spectral_denoise(
+                    stem.unsqueeze(0), bundle.sample_rate,
+                    alpha=alpha, floor_db=-40.0, smoothing_frames=5
+                ).squeeze(0)
+
+            # Resample to final output rate
+            if bundle.sample_rate != final_sr:
+                stem = torchaudio.functional.resample(
+                    stem, bundle.sample_rate, final_sr
+                )
+
+            # Peak-normalise to −1 dBFS (~0.891)
+            if normalize:
+                peak = stem.abs().max()
+                if peak > 0:
+                    stem = stem * (0.891 / peak)
+
+            out["source_names"].append(name)
+            out[name] = _tensor_to_b64(stem.unsqueeze(0), final_sr)
+
+        return out
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+
+@app.post("/api/asr/transcribe")
+async def transcribe(file: UploadFile = File(...), bundle_name: str = Form("WAV2VEC2_ASR_BASE_960H")):
+    """Transcribe speech with a Wav2Vec2 ASR pipeline bundle (greedy decode).
+
+    This may download model weights on first use.
+    """
+    try:
+        if not hasattr(torchaudio.pipelines, bundle_name):
+            return JSONResponse({"error": f"Unknown bundle_name: {bundle_name}"}, status_code=400)
+        bundle = getattr(torchaudio.pipelines, bundle_name)
+        if not hasattr(bundle, "get_model") or not hasattr(bundle, "get_labels"):
+            return JSONResponse({"error": f"Bundle is not ASR-capable: {bundle_name}"}, status_code=400)
+        model = _get_cached_bundle_model(bundle)
+        waveform, sample_rate = _load_upload(file)
+        if sample_rate != bundle.sample_rate:
+            waveform = torchaudio.functional.resample(waveform, sample_rate, bundle.sample_rate)
+        with torch.inference_mode():
+            emissions, _ = model(waveform)
+        labels = list(bundle.get_labels())
+        transcript = _greedy_decode(emissions.cpu(), labels)
+        return {
+            "bundle_name": bundle_name,
+            "sample_rate": int(bundle.sample_rate),
+            "transcript": transcript,
+        }
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.post("/api/features/ssl")
+async def ssl_features(
+    file: UploadFile = File(...),
+    model_name: str = Form("wav2vec2_base"),
+):
+    """Extract self-supervised speech embeddings from Wav2Vec2 / HuBERT / WavLM.
+
+    model_name selects a pretrained bundle: wav2vec2_base | hubert_base | wavlm_base.
+    Returns summary statistics of the last transformer layer's hidden states.
+    """
+    try:
+        bundle_map = {
+            "wav2vec2_base": torchaudio.pipelines.WAV2VEC2_BASE,
+            "hubert_base": torchaudio.pipelines.HUBERT_BASE,
+            "wavlm_base": torchaudio.pipelines.WAVLM_BASE,
+        }
+        if model_name not in bundle_map:
+            return JSONResponse(
+                {"error": f"Unknown model_name: {model_name} (use one of {list(bundle_map)})"},
+                status_code=400,
+            )
+        bundle = bundle_map[model_name]
+        model = _get_cached_bundle_model(bundle)
+        waveform, sample_rate = _load_upload(file)
+        waveform = _as_mono(waveform)
+        if sample_rate != bundle.sample_rate:
+            waveform = torchaudio.functional.resample(waveform, sample_rate, bundle.sample_rate)
+        with torch.inference_mode():
+            # extract_features expects [batch, time]; use a batch of 1
+            features, lengths = model.extract_features(waveform.unsqueeze(0))
+        last_layer = features[-1]  # [batch, frames, feat_dim]
+        out = {
+            "model_name": model_name,
+            "bundle_name": type(bundle).__name__,
+            "sample_rate": int(bundle.sample_rate),
+            "num_layers": len(features),
+            "last_layer": _tensor_stats(last_layer),
+        }
+        return out
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.post("/api/quality/pesq-stoi")
+async def quality_pesq_stoi(
+    file: UploadFile = File(...),
+):
+    """Estimate objective speech quality metrics (STOI, PESQ, SI-SDR) with SQUIM.
+
+    `file` is the degraded speech. SquimObjective predicts the objective scores
+    directly from the waveform (no clean reference is needed); the waveform is
+    resampled to the model's expected 16 kHz.
+    """
+    try:
+        bundle = torchaudio.pipelines.SQUIM_OBJECTIVE
+        model = _get_cached_bundle_model(bundle)
+        waveform, sample_rate = _load_upload(file)
+        waveform = _as_mono(waveform)
+        if sample_rate != bundle.sample_rate:
+            waveform = torchaudio.functional.resample(waveform, sample_rate, bundle.sample_rate)
+        with torch.inference_mode():
+            stoi, pesq, si_sdr = model(waveform.unsqueeze(0))
+        return {
+            "stoi": float(stoi.item()),
+            "pesq": float(pesq.item()),
+            "si_sdr": float(si_sdr.item()),
+            "sample_rate": int(bundle.sample_rate),
+        }
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.post("/api/quality/mos")
+async def quality_mos(
+    file: UploadFile = File(...),
+    reference: Optional[UploadFile] = File(None),
+):
+    """Estimate subjective speech quality (MOS 1-5) with SQUIM (NORESQA-MOS).
+
+    `reference` is an optional non-matching clean speech reference. When omitted,
+    the input is used as its own reference, which biases the score toward the top
+    of the range — a clean reference is recommended for accurate MOS.
+    """
+    try:
+        bundle = torchaudio.pipelines.SQUIM_SUBJECTIVE
+        model = _get_cached_bundle_model(bundle)
+        waveform, sample_rate = _load_upload(file)
+        waveform = _as_mono(waveform)
+        if sample_rate != bundle.sample_rate:
+            waveform = torchaudio.functional.resample(waveform, sample_rate, bundle.sample_rate)
+        if reference is not None:
+            ref_waveform, ref_sample_rate = _load_upload(reference)
+            ref_waveform = _as_mono(ref_waveform)
+            if ref_sample_rate != bundle.sample_rate:
+                ref_waveform = torchaudio.functional.resample(ref_waveform, ref_sample_rate, bundle.sample_rate)
+        else:
+            ref_waveform = waveform
+        with torch.inference_mode():
+            score = model(waveform.unsqueeze(0), ref_waveform.unsqueeze(0))
+        return {
+            "mos": float(score.item()),
+            "used_reference": reference is not None,
+            "sample_rate": int(bundle.sample_rate),
+        }
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
 
 
 # ──────────────────────────────────────────────

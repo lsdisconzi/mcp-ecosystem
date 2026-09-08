@@ -271,6 +271,8 @@ class SegmentUpdate(BaseModel):
     edited_speakers: Dict[int, str] = {}
     edited_starts: Dict[int, float] = {}
     edited_ends: Dict[int, float] = {}
+    edited_correction_notes: Dict[int, str] = {}
+    edited_backchannel_events: Dict[int, str] = {}
     recording_datetime: Optional[str] = None
 
 
@@ -325,6 +327,12 @@ class RetranscribeSegmentsPayload(BaseModel):
     best_of: int = 5
     whisper_temp: float = 0.0
     condition_on_previous_text: bool = False
+    include_reviewed: bool = False
+    volume_gain_db: float = 0.0
+    vad_enabled: bool = False
+    vad_trigger_level: float = 7.0
+    no_speech_threshold: float = 0.6
+    initial_prompt: str | None = None
 
 
 class PatchPayload(BaseModel):
@@ -399,6 +407,8 @@ async def get_transcript(transcript_id: str):
                 "duration": s.duration,
                 "text": s.text,
                 "reviewed": getattr(s, "reviewed", False),
+                "correction_note": getattr(s, "correction_note", ""),
+                "backchannel_events": getattr(s, "backchannel_events", ""),
             }
             for s in transcript.segments
         ],
@@ -1067,13 +1077,27 @@ async def save_review(transcript_id: str, payload: SegmentUpdate):
     for idx, end in payload.edited_ends.items():
         emit(idx, "segment_time_edited", {"end": end})
 
+    # Persist the curation columns (correction note / backchannel events).
+    for idx, note in payload.edited_correction_notes.items():
+        if 0 <= idx < len(patched.segments):
+            seg = patched.segments[idx]
+            patched.segments[idx] = _replace(seg, correction_note=note)
+            emit(idx, "segment_correction_note_edited", {"correction_note": note})
+    for idx, events in payload.edited_backchannel_events.items():
+        if 0 <= idx < len(patched.segments):
+            seg = patched.segments[idx]
+            patched.segments[idx] = _replace(seg, backchannel_events=events)
+            emit(idx, "segment_backchannel_events_edited", {"backchannel_events": events})
+
     _store.save(patched)
 
     return {"status": "ok", "events_written": len(payload.reviewed_indices)
             + len(payload.edited_texts)
             + len(payload.edited_speakers)
             + len(payload.edited_starts)
-            + len(payload.edited_ends)}
+            + len(payload.edited_ends)
+            + len(payload.edited_correction_notes)
+            + len(payload.edited_backchannel_events)}
             
 @router.post("/{transcript_id}/review/index")
 async def index_reviewed_segments(transcript_id: str, payload: ReviewIndexPayload = ReviewIndexPayload()):
@@ -1094,6 +1118,42 @@ async def index_reviewed_segments(transcript_id: str, payload: ReviewIndexPayloa
     reviewed_transcript = _replace(transcript, segments=reviewed_segments)
     n = await _index.index(reviewed_transcript, collection_name=collection_name)
     return {"transcript_id": transcript_id, "segments_indexed": n, "collection": collection_name}
+
+
+def _apply_gain_db(path: str, gain_db: float) -> None:
+    """Apply volume gain (dB) to a WAV file in place, before ASR."""
+    if not gain_db:
+        return
+    from pydub import AudioSegment
+    seg = AudioSegment.from_wav(path)
+    seg.apply_gain(float(gain_db)).export(path, format="wav")
+
+
+def _vad_trim_segment(path: str, trigger_level: float = 7.0) -> None:
+    """Trim leading/trailing silence from a WAV using torchaudio's VAD.
+
+    Rewrites the file in place with the [first speech start, last speech end]
+    region. Leaves the file untouched when no speech is detected, the file is
+    too short, or the trim would leave less than 50 ms of audio.
+    """
+    import torchaudio
+    waveform, sr = torchaudio.load(path)
+    if waveform.shape[-1] <= sr:
+        return  # too short to benefit
+    try:
+        regions = torchaudio.functional.vad(waveform, sr, trigger_level=float(trigger_level))
+    except Exception:
+        return
+    if not regions:
+        return
+    start_frame = int(regions[0][0].item())
+    end_frame = int(regions[-1][1].item())
+    if end_frame <= start_frame:
+        return
+    trimmed = waveform[:, start_frame:end_frame]
+    if trimmed.shape[-1] < sr * 0.05:
+        return
+    torchaudio.save(path, trimmed, sr, format="wav", channels_first=True)
 
 
 @router.post("/{transcript_id}/retranscribe_segments")
@@ -1130,10 +1190,11 @@ async def retranscribe_segments(transcript_id: str, payload: RetranscribeSegment
 
     indices_set = set(payload.segment_indices)
     updated_segments = []
+    updated_texts: dict[int, str] = {}
 
     try:
         for s in transcript.segments:
-            if s.index in indices_set and not getattr(s, "reviewed", False):
+            if s.index in indices_set and (payload.include_reviewed or not getattr(s, "reviewed", False)):
                 start_ms = int(s.start * 1000)
                 end_ms = int(s.end * 1000)
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as turn_file:
@@ -1144,6 +1205,10 @@ async def retranscribe_segments(transcript_id: str, payload: RetranscribeSegment
                         shutil.copy(uploaded_path, turn_path)
                     else:
                         _audio_files.extract_segment(source_path, start_ms, end_ms, turn_path)
+                    if payload.volume_gain_db:
+                        _apply_gain_db(turn_path, payload.volume_gain_db)
+                    if payload.vad_enabled:
+                        _vad_trim_segment(turn_path, payload.vad_trigger_level)
                     asr_result = _asr.transcribe(
                         turn_path,
                         language=payload.language,
@@ -1152,11 +1217,14 @@ async def retranscribe_segments(transcript_id: str, payload: RetranscribeSegment
                         beam_size=payload.beam_size,
                         best_of=payload.best_of,
                         condition_on_previous_text=payload.condition_on_previous_text,
+                        no_speech_threshold=payload.no_speech_threshold,
+                        initial_prompt=payload.initial_prompt,
                     )
                     raw_text = asr_result.get("text", "") if isinstance(asr_result, dict) else asr_result
                     resolved_lang = asr_result.get("language") if isinstance(asr_result, dict) else None
                     is_spanish = resolved_lang in ("es", "es-CL") or (payload.language or "").startswith("es")
                     text = post_process_chilean_spanish(raw_text) if is_spanish else raw_text
+                    updated_texts[s.index] = text
                     updated_segments.append(
                         Segment(
                             index=s.index,
@@ -1178,7 +1246,12 @@ async def retranscribe_segments(transcript_id: str, payload: RetranscribeSegment
 
     transcript.segments = updated_segments
     _store.save(transcript)
-    return {"status": "updated", "transcript_id": transcript_id, "updated_indices": list(indices_set)}
+    return {
+        "status": "updated",
+        "transcript_id": transcript_id,
+        "updated_indices": list(updated_texts.keys()),
+        "updated_texts": updated_texts,
+    }
 
 
 # ------------------------------------------------------------------
@@ -1303,6 +1376,8 @@ async def get_review_transcript(transcript_id: str):
                 "end": s.end,
                 "text": s.text,
                 "reviewed": getattr(s, "reviewed", False),
+                "correction_note": getattr(s, "correction_note", ""),
+                "backchannel_events": getattr(s, "backchannel_events", ""),
             }
             for s in transcript.segments
         ],

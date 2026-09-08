@@ -34,6 +34,7 @@ def build_transcribe_params(
     suppress_tokens: str,
     word_timestamps: bool,
     keep_cache: bool,
+    skip_diarization: bool = False,
     progress_callback: Any = None,
 ) -> dict[str, Any]:
     """Build a unified transcribe parameter dict shared across routers and MCP servers."""
@@ -66,5 +67,6 @@ def build_transcribe_params(
         "suppress_tokens": suppress_tokens,
         "word_timestamps": word_timestamps,
         "keep_cache": keep_cache,
+        "skip_diarization": skip_diarization,
         "progress_callback": progress_callback,
     }

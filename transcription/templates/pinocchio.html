@@ -3246,6 +3246,8 @@ Reasoning for chain: Explanation of why this order is effective.">Lista de poss√
             var audioDir = zip.folder('audio_segments');
             var segmentsDir = zip.folder('segments_json');
             var sourceBase = sanitizeBaseName(currentAudioFile.name || currentResponse.filename || 'audio');
+            var transcriptId = (currentResponse && currentResponse.transcript_id) ? sanitizeBaseName(String(currentResponse.transcript_id)) : sourceBase;
+            var exportBase = transcriptId || sourceBase;
 
             var manifest = {
               generated_at: new Date().toISOString(),
@@ -3299,13 +3301,13 @@ Reasoning for chain: Explanation of why this order is effective.">Lista de poss√
               ].join(','));
             });
 
-            zip.file(sourceBase + '_manifest.json', JSON.stringify(manifest, null, 2));
-            zip.file(sourceBase + '_transcript.json', JSON.stringify(currentResponse, null, 2));
-            zip.file(sourceBase + '_segments.csv', csv.join('\n'));
+            zip.file(exportBase + '_manifest.json', JSON.stringify(manifest, null, 2));
+            zip.file(exportBase + '_transcript.json', JSON.stringify(currentResponse, null, 2));
+            zip.file(exportBase + '_segments.csv', csv.join('\n'));
 
             var blob = await zip.generateAsync({ type: 'blob' });
             var suffix = selectedOnly ? '_selected_segment' : '_segments_all';
-            saveAs(blob, sourceBase + suffix + '.zip');
+            saveAs(blob, exportBase + suffix + '.zip');
             showToast('ZIP exportado com sucesso');
           } catch (err) {
             showToast('Falha ao exportar ZIP: ' + (err && err.message ? err.message : err));

@@ -28,6 +28,8 @@ class JSONTranscriptStore:
                 "duration": seg.duration,
                 "text": seg.text,
                 "reviewed": getattr(seg, "reviewed", False),
+                "correction_note": getattr(seg, "correction_note", ""),
+                "backchannel_events": getattr(seg, "backchannel_events", ""),
             }
             for seg in transcript.segments
         ]
@@ -109,6 +111,8 @@ class JSONTranscriptStore:
                 end=item.get("end", 0.0),
                 text=item.get("text", ""),
                 reviewed=item.get("reviewed", False),
+                correction_note=item.get("correction_note", ""),
+                backchannel_events=item.get("backchannel_events", ""),
             )
             segments.append(segment)
 

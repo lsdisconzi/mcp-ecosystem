@@ -13,16 +13,7 @@ class TranscriptPatcher:
 
     def reindex(self, transcript: Transcript) -> Transcript:
         """Renumber segments by position. Resolves duplicate-index anomalies."""
-        reindexed = [
-            Segment(
-                index=i,
-                speaker=seg.speaker,
-                start=seg.start,
-                end=seg.end,
-                text=seg.text,
-            )
-            for i, seg in enumerate(transcript.segments)
-        ]
+        reindexed = [dc_replace(seg, index=i) for i, seg in enumerate(transcript.segments)]
         return dc_replace(transcript, segments=reindexed)
 
     def apply(
@@ -38,16 +29,7 @@ class TranscriptPatcher:
                 continue
             applied.append(patch)
         # Reindex by position.
-        reindexed = [
-            Segment(
-                index=i,
-                speaker=seg.speaker,
-                start=seg.start,
-                end=seg.end,
-                text=seg.text,
-            )
-            for i, seg in enumerate(segments)
-        ]
+        reindexed = [dc_replace(seg, index=i) for i, seg in enumerate(segments)]
         new_transcript = dc_replace(transcript, segments=reindexed)
         return new_transcript, applied
 
@@ -88,8 +70,8 @@ class TranscriptPatcher:
         targets = [segments[p] for p in positions]
         merged_text = " ".join(s.text.strip() for s in targets if s.text.strip())
         speaker_label = patch.new_speaker or targets[0].speaker.label
-        merged = Segment(
-            index=targets[0].index,
+        merged = dc_replace(
+            targets[0],
             speaker=Speaker(label=speaker_label),
             start=min(s.start for s in targets),
             end=max(s.end for s in targets),
@@ -113,13 +95,7 @@ class TranscriptPatcher:
         cut = self._word_split_index(text, frac)
         first_text = text[:cut].rstrip()
         second_text = patch.new_text if patch.new_text is not None else text[cut:].lstrip()
-        first = Segment(
-            index=target.index,
-            speaker=target.speaker,
-            start=target.start,
-            end=patch.new_start,
-            text=first_text,
-        )
+        first = dc_replace(target, end=patch.new_start, text=first_text)
         second = Segment(
             index=target.index,
             speaker=target.speaker,

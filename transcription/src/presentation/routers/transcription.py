@@ -80,6 +80,7 @@ async def diarization_transcribe(
     word_timestamps: bool = Form(False, description="Per-word timestamps."),
     # Control
     keep_cache: bool = Form(True, description="Keep loaded models cached."),
+    skip_diarization: bool = Form(False, description="Skip speaker diarization and return a single segment."),
 ):
     try:
         content = await file.read()
@@ -114,6 +115,7 @@ async def diarization_transcribe(
             suppress_tokens=suppress_tokens,
             word_timestamps=word_timestamps,
             keep_cache=keep_cache,
+            skip_diarization=skip_diarization,
         )
 
         result = await _transcribe_use_case.execute(
@@ -164,6 +166,7 @@ async def diarization_transcribe_async(
     word_timestamps: bool = Form(False, description="Per-word timestamps."),
     # Control
     keep_cache: bool = Form(True, description="Keep loaded models cached."),
+    skip_diarization: bool = Form(False, description="Skip speaker diarization and return a single segment."),
 ):
     """Create async transcription job and return job_id for status/SSE tracking."""
     content = await file.read()
@@ -201,6 +204,7 @@ async def diarization_transcribe_async(
         suppress_tokens=suppress_tokens,
         word_timestamps=word_timestamps,
         keep_cache=keep_cache,
+        skip_diarization=skip_diarization,
     )
 
     def _progress_callback(stage: str, progress: int, message: str, extra: dict | None = None):

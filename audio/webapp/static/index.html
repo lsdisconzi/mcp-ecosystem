@@ -425,6 +425,21 @@ canvas.visualize {
     <button class="nav-item tooltip" data-section="separation" data-tip="Separate music into vocals, drums, bass, and other stems using HDemucs.">
       <span class="icon">🔊</span> Source Separation
     </button>
+
+    <div class="section-title">Speech Intelligence</div>
+    <button class="nav-item tooltip" data-section="speech-sep" data-tip="Separate a two-speaker speech mixture into individual speakers using ConvTasNet.">
+      <span class="icon">👥</span> Speaker Separation
+    </button>
+    <button class="nav-item tooltip" data-section="asr" data-tip="Transcribe speech to text using a Wav2Vec2 ASR bundle.">
+      <span class="icon">📝</span> Speech-to-Text
+    </button>
+    <button class="nav-item tooltip" data-section="ssl" data-tip="Extract self-supervised speech embeddings from Wav2Vec2, HuBERT, or WavLM.">
+      <span class="icon">🧠</span> Speech Embeddings
+    </button>
+    <button class="nav-item tooltip" data-section="quality" data-tip="Assess speech quality: MOS (subjective) and PESQ / STOI (objective) via SQUIM.">
+      <span class="icon">⭐</span> Speech Quality
+    </button>
+
     <button class="nav-item tooltip" data-section="vad" data-tip="Detect regions of voice activity to quickly locate speech segments.">
       <span class="icon">🗣️</span> Voice Detection
     </button>
@@ -678,6 +693,169 @@ canvas.visualize {
       </div>
     </div>
 
+    <!-- ── Section: Speaker Separation (ConvTasNet) ── -->
+    <div class="section" id="sec-speech-sep">
+      <div class="panel">
+        <h2><span class="icon">👥</span> Speaker Separation (ConvTasNet)</h2>
+        <p style="color:var(--text2); margin-bottom:16px; font-size:13px">
+          Separates a two-speaker speech mixture into individual speakers.
+          ConvTasNet is trained on Libri2Mix at 8 kHz. First use downloads the model (~19MB).
+        </p>
+        
+        <div class="controls-grid">
+          <div class="control-group tooltip" data-tip="Number of speakers to separate (2-5). For >2 speakers, uses iterative pairwise separation.">
+            <label for="speech-sep-num-sources">Number of Speakers</label>
+            <select id="speech-sep-num-sources">
+              <option value="2" selected>2 Speakers</option>
+              <option value="3">3 Speakers</option>
+              <option value="4">4 Speakers</option>
+              <option value="5">5 Speakers</option>
+            </select>
+          </div>
+          <div class="control-group tooltip" data-tip="Pre-process audio with spectral denoising before separation. Helps with noisy recordings.">
+            <label for="speech-sep-denoise">Pre-Denoise</label>
+            <select id="speech-sep-denoise">
+              <option value="none" selected>None</option>
+              <option value="light">Light (alpha=1.5)</option>
+              <option value="medium">Medium (alpha=2.0)</option>
+              <option value="strong">Strong (alpha=3.0)</option>
+            </select>
+          </div>
+          <div class="control-group tooltip" data-tip="Pre-process audio with spectral dereverberation before separation. Helps with echoey recordings.">
+            <label for="speech-sep-dereverb">Pre-Dereverb</label>
+            <select id="speech-sep-dereverb">
+              <option value="none" selected>None</option>
+              <option value="light">Light (atten=10dB)</option>
+              <option value="medium">Medium (atten=20dB)</option>
+              <option value="strong">Strong (atten=30dB)</option>
+            </select>
+          </div>
+          <div class="control-group tooltip" data-tip="Post-process separated stems with spectral denoising to reduce artifacts.">
+            <label for="speech-sep-post-denoise">Post-Denoise</label>
+            <select id="speech-sep-post-denoise">
+              <option value="none" selected>None</option>
+              <option value="light">Light (alpha=1.0)</option>
+              <option value="medium">Medium (alpha=1.5)</option>
+              <option value="strong">Strong (alpha=2.0)</option>
+            </select>
+          </div>
+          <div class="control-group tooltip" data-tip="Process long audio in overlapping segments to limit memory usage. 0 = process full file at once.">
+            <label for="speech-sep-segment">Segment Duration (s)</label>
+            <div class="range-row">
+              <input type="range" id="speech-sep-segment" min="0" max="30" value="0" step="5">
+              <span class="range-val" id="speech-sep-segment-val">0 (full)</span>
+            </div>
+          </div>
+          <div class="control-group tooltip" data-tip="Overlap between segments for cross-fading (percentage).">
+            <label for="speech-sep-overlap">Segment Overlap (%)</label>
+            <div class="range-row">
+              <input type="range" id="speech-sep-overlap" min="25" max="75" value="50" step="5">
+              <span class="range-val" id="speech-sep-overlap-val">50</span>
+            </div>
+          </div>
+          <div class="control-group tooltip" data-tip="Peak-normalize each separated stem to -1 dBFS for consistent output levels.">
+            <label for="speech-sep-normalize">Normalize Output</label>
+            <select id="speech-sep-normalize">
+              <option value="false" selected>No</option>
+              <option value="true">Yes (-1 dBFS)</option>
+            </select>
+          </div>
+          <div class="control-group tooltip" data-tip="Target sample rate for output. 0 = keep original file's sample rate.">
+            <label for="speech-sep-output-sr">Output Sample Rate (Hz)</label>
+            <select id="speech-sep-output-sr">
+              <option value="0" selected>Original</option>
+              <option value="8000">8000 (model native)</option>
+              <option value="16000">16000 (speech)</option>
+              <option value="44100">44100 (CD)</option>
+              <option value="48000">48000 (video)</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="btn-row">
+          <button class="btn primary tooltip" id="btn-speech-sep" data-tip="Run ConvTasNet speech separation with current settings. Results appear as separate audio players below.">Separate Speakers</button>
+        </div>
+        <div class="results" id="speech-sep-results" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <!-- ── Section: Speech-to-Text (Wav2Vec2 ASR) ── -->
+    <div class="section" id="sec-asr">
+      <div class="panel">
+        <h2><span class="icon">📝</span> Speech-to-Text (Wav2Vec2 ASR)</h2>
+        <p style="color:var(--text2); margin-bottom:16px; font-size:13px">
+          Transcribes speech using a pretrained Wav2Vec2 ASR bundle with greedy decoding.
+          First use downloads the model weights (~360MB for the default bundle).
+        </p>
+        <div class="controls-grid">
+          <div class="control-group tooltip" data-tip="Pretrained ASR bundle. Larger models are more accurate but slower.">
+            <label for="asr-bundle">ASR Model</label>
+            <select id="asr-bundle">
+              <option value="WAV2VEC2_ASR_BASE_960H" selected>Wav2Vec2 ASR Base (960h)</option>
+              <option value="WAV2VEC2_ASR_BASE_10M">Wav2Vec2 ASR Base (10m)</option>
+              <option value="WAV2VEC2_ASR_LARGE_960H">Wav2Vec2 ASR Large (960h)</option>
+              <option value="HUBERT_ASR_LARGE">HuBERT ASR Large</option>
+              <option value="VOXPOPULI_ASR_BASE_10K_EN">VoxPopuli ASR Base (EN)</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary tooltip" id="btn-asr" data-tip="Transcribe the uploaded audio.">Transcribe</button>
+        </div>
+        <div class="results" id="asr-results" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <!-- ── Section: Speech Embeddings (SSL) ── -->
+    <div class="section" id="sec-ssl">
+      <div class="panel">
+        <h2><span class="icon">🧠</span> Speech Embeddings (SSL)</h2>
+        <p style="color:var(--text2); margin-bottom:16px; font-size:13px">
+          Extract self-supervised speech representations from Wav2Vec2, HuBERT, or WavLM
+          (16 kHz). Returns summary statistics of the last transformer layer's hidden states.
+          First use downloads the model weights (~360MB each).
+        </p>
+        <div class="controls-grid">
+          <div class="control-group tooltip" data-tip="Which self-supervised speech model to extract features from.">
+            <label for="ssl-model">SSL Model</label>
+            <select id="ssl-model">
+              <option value="wav2vec2_base" selected>Wav2Vec2 Base</option>
+              <option value="hubert_base">HuBERT Base</option>
+              <option value="wavlm_base">WavLM Base</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary tooltip" id="btn-ssl" data-tip="Extract hidden-state embeddings from the selected model.">Extract Embeddings</button>
+        </div>
+        <div class="metric-cards" id="ssl-cards" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <!-- ── Section: Speech Quality (SQUIM) ── -->
+    <div class="section" id="sec-quality">
+      <div class="panel">
+        <h2><span class="icon">⭐</span> Speech Quality (SQUIM)</h2>
+        <p style="color:var(--text2); margin-bottom:16px; font-size:13px">
+          Assess speech quality: MOS (subjective, 1-5) and PESQ / STOI / SI-SDR (objective).
+          First use downloads the models (28MB objective, 360MB subjective). For accurate MOS,
+          upload a clean reference speech file; without one the input is used as its own reference.
+        </p>
+        <div class="controls-grid">
+          <div class="control-group" style="min-width:100%">
+            <label for="ref-input">Clean Reference Audio (optional; recommended for MOS only)</label>
+            <input type="file" id="ref-input" accept="audio/*" aria-label="Reference audio file" style="font-size:12px">
+            <div class="file-info" id="ref-info" style="font-size:12px;color:var(--text2);margin-top:4px"></div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary tooltip" id="btn-mos" data-tip="Estimate MOS (1-5) with SQUIM subjective.">Estimate MOS</button>
+          <button class="btn primary tooltip" id="btn-pesq-stoi" data-tip="Estimate PESQ / STOI / SI-SDR directly from the degraded file.">PESQ / STOI / SI-SDR</button>
+        </div>
+        <div class="metric-cards" id="quality-cards" style="margin-top:16px"></div>
+      </div>
+    </div>
+
     <!-- ── Section: VAD ── -->
     <div class="section" id="sec-vad">
       <div class="panel">
@@ -870,6 +1048,102 @@ const infoData = {
       <hr class="info-separator">
       <div class="info-block">
         <div class="info-warning">First use downloads a model file (~330 MB for low). This may take time depending on internet speed.</div>
+      </div>
+    `
+  },
+  'speech-sep': {
+    title: 'Speaker Separation (ConvTasNet)',
+    html: `
+      <div class="info-block">
+        <div class="info-title">Expected Effects</div>
+        <div class="info-text">ConvTasNet (Libri2Mix) separates a two-speaker speech mixture into individual speakers. Unlike HDemucs, it is purpose-built for speech, not music. Supports 2-5 speakers via iterative pairwise separation.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Model Details</div>
+        <div class="info-text">Trained at 8 kHz on Libri2Mix. Uploaded audio is resampled to 8 kHz for separation, then each stem is resampled back to the original rate for playback.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Pre-Processing</div>
+        <div class="info-text">Apply spectral denoising and/or dereverberation before separation to improve quality on noisy or echoey recordings. Light/medium/strong settings control the aggressiveness.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Post-Processing</div>
+        <div class="info-text">Apply light spectral denoising to separated stems to reduce separation artifacts. Useful when pre-processing wasn't sufficient.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Segmented Processing</div>
+        <div class="info-text">For long recordings, enable segmented processing with overlap to limit memory usage. 50% overlap with Hanning window cross-fade provides smooth transitions.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Recommendations</div>
+        <div class="info-tip">For noisy recordings: Pre-Denoise (medium) + Pre-Dereverb (light). For clean recordings: no pre-processing needed. For >2 speakers: use iterative mode with segment duration 10-20s.</div>
+      </div>
+      <hr class="info-separator">
+      <div class="info-block">
+        <div class="info-warning">First use downloads the model (~19 MB).</div>
+      </div>
+    `
+  },
+  asr: {
+    title: 'Speech-to-Text (Wav2Vec2 ASR)',
+    html: `
+      <div class="info-block">
+        <div class="info-title">Expected Effects</div>
+        <div class="info-text">Wav2Vec2 ASR bundles transcribe English speech to text using greedy decoding (no external language model).</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Model Choices</div>
+        <div class="info-text">Base (960h) is a good default. Base (10m) is faster but less accurate. Large (960h) is the most accurate and slowest. HuBERT ASR Large and VoxPopuli add alternative training regimes.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Recommendations</div>
+        <div class="info-text">Clean speech at 16 kHz works best. Background noise, reverb, or music degrade accuracy — denoise/dereverb first if needed.</div>
+      </div>
+      <hr class="info-separator">
+      <div class="info-block">
+        <div class="info-warning">First use downloads the model (~360 MB for the default bundle).</div>
+      </div>
+    `
+  },
+  ssl: {
+    title: 'Speech Embeddings (SSL)',
+    html: `
+      <div class="info-block">
+        <div class="info-title">Expected Effects</div>
+        <div class="info-text">Extracts the last transformer layer's hidden states from a self-supervised speech model. Returns shape plus mean / std / norm summary statistics of the embeddings.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Model Differences</div>
+        <div class="info-text">Wav2Vec2: contrastive SSL. HuBERT: masked prediction over k-means targets. WavLM: denoising pretraining, strongest on noisy speech.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Recommendations</div>
+        <div class="info-text">All models expect 16 kHz mono audio. Embeddings can be used for speaker verification, ASR features, or emotion classification.</div>
+      </div>
+      <hr class="info-separator">
+      <div class="info-block">
+        <div class="info-warning">First use downloads the model (~360 MB each).</div>
+      </div>
+    `
+  },
+  quality: {
+    title: 'Speech Quality (SQUIM)',
+    html: `
+      <div class="info-block">
+        <div class="info-title">Expected Effects</div>
+        <div class="info-text">SQUIM estimates objective metrics (STOI, PESQ, SI-SDR) and subjective MOS (1-5) for speech without ground truth.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Reference Audio</div>
+        <div class="info-text">PESQ/STOI/SI-SDR are estimated directly from the degraded file (no reference needed). For MOS, a non-matching clean reference is recommended; without one the input is used as its own reference, biasing the score upward.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-title">Interpreting Scores</div>
+        <div class="info-text">MOS &gt; 4 is excellent, 3-4 good, &lt; 3 poor. STOI &gt; 0.9 near-perfect intelligibility. PESQ &gt; 3.5 excellent, 1-2 poor. SI-SDR &gt; 10 dB is good separation quality.</div>
+      </div>
+      <hr class="info-separator">
+      <div class="info-block">
+        <div class="info-warning">First use downloads the models (28 MB objective, 360 MB subjective).</div>
       </div>
     `
   },
@@ -1420,6 +1694,117 @@ document.getElementById('btn-resample').addEventListener('click', async () => {
 });
 
 // ──────────────────────────────────────────────
+// Speaker Separation (ConvTasNet)
+// ──────────────────────────────────────────────
+['speech-sep-segment', 'speech-sep-overlap'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('input', () => {
+      const valEl = document.getElementById(id + '-val');
+      if (valEl) {
+        if (id === 'speech-sep-segment') {
+          valEl.textContent = el.value == 0 ? '0 (full)' : el.value + 's';
+        } else {
+          valEl.textContent = el.value + '%';
+        }
+      }
+    });
+  }
+});
+
+document.getElementById('btn-speech-sep').addEventListener('click', async () => {
+  const data = await apiPost('/api/separate/speech', {
+    num_sources: document.getElementById('speech-sep-num-sources').value,
+    pre_denoise: document.getElementById('speech-sep-denoise').value,
+    pre_dereverb: document.getElementById('speech-sep-dereverb').value,
+    post_denoise: document.getElementById('speech-sep-post-denoise').value,
+    segment_duration: document.getElementById('speech-sep-segment').value,
+    segment_overlap: document.getElementById('speech-sep-overlap').value,
+    normalize: document.getElementById('speech-sep-normalize').value,
+    output_sample_rate: document.getElementById('speech-sep-output-sr').value,
+  });
+  if (!data || data.error) return;
+  const container = document.getElementById('speech-sep-results');
+  container.innerHTML = '';
+  for (const name of data.source_names || []) {
+    if (data[name]) addAudioResult('speech-sep-results', name, data[name], data.sample_rate);
+  }
+});
+
+// ──────────────────────────────────────────────
+// Speech-to-Text (Wav2Vec2 ASR)
+// ──────────────────────────────────────────────
+document.getElementById('btn-asr').addEventListener('click', async () => {
+  const data = await apiPost('/api/asr/transcribe', { bundle_name: document.getElementById('asr-bundle').value });
+  if (!data || data.error) return;
+  const container = document.getElementById('asr-results');
+  container.innerHTML = `
+    <div class="result-item" style="padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px">
+      <div class="label">Transcript (${data.bundle_name})</div>
+      <p style="color:var(--text);line-height:1.6;font-size:14px">${escapeHtml(data.transcript || '(empty transcript)')}</p>
+    </div>`;
+});
+
+// ──────────────────────────────────────────────
+// Speech Embeddings (SSL: Wav2Vec2 / HuBERT / WavLM)
+// ──────────────────────────────────────────────
+document.getElementById('btn-ssl').addEventListener('click', async () => {
+  const data = await apiPost('/api/features/ssl', { model_name: document.getElementById('ssl-model').value });
+  if (!data || data.error) return;
+  const s = data.last_layer || {};
+  document.getElementById('ssl-cards').innerHTML = `
+    <div class="metric-card"><div class="val">${s.shape ? s.shape.join('×') : '--'}</div><div class="lbl">Last Layer Shape</div></div>
+    <div class="metric-card"><div class="val">${s.mean !== undefined ? s.mean.toFixed(4) : '--'}</div><div class="lbl">Mean</div></div>
+    <div class="metric-card"><div class="val">${s.std !== undefined ? s.std.toFixed(4) : '--'}</div><div class="lbl">Std</div></div>
+    <div class="metric-card"><div class="val">${s.norm !== undefined ? s.norm.toFixed(2) : '--'}</div><div class="lbl">Norm</div></div>`;
+});
+
+// ──────────────────────────────────────────────
+// Speech Quality (SQUIM: MOS + PESQ/STOI/SI-SDR)
+// ──────────────────────────────────────────────
+let currentRefFile = null;
+document.getElementById('ref-input').addEventListener('change', (e) => {
+  currentRefFile = e.target.files[0] || null;
+  document.getElementById('ref-info').textContent = currentRefFile ? currentRefFile.name + ' (' + formatBytes(currentRefFile.size) + ')' : '';
+});
+
+async function qualityPost(endpoint) {
+  if (!currentFile) { toast('Please upload an audio file first.', 'error'); return null; }
+  setStatus('Processing...');
+  const form = new FormData();
+  form.append('file', currentFile);
+  if (currentRefFile && endpoint === '/api/quality/mos') form.append('reference', currentRefFile);
+  try {
+    const res = await fetch(API + endpoint, { method: 'POST', body: form });
+    const data = await res.json();
+    if (data.error) { toast(data.error, 'error'); setStatus('Error'); return null; }
+    setStatus('Ready');
+    return data;
+  } catch (e) {
+    toast('Server unreachable. Is it running on port 8765?', 'error');
+    setStatus('Disconnected');
+    return null;
+  }
+}
+
+document.getElementById('btn-mos').addEventListener('click', async () => {
+  const data = await qualityPost('/api/quality/mos');
+  if (!data || data.error) return;
+  document.getElementById('quality-cards').innerHTML = `
+    <div class="metric-card"><div class="val">${data.mos !== undefined ? data.mos.toFixed(3) : '--'}</div><div class="lbl">MOS (1-5)</div></div>
+    <div class="metric-card"><div class="val">${data.used_reference ? 'Yes' : 'No (self-ref)'}</div><div class="lbl">Clean Reference</div></div>`;
+});
+
+document.getElementById('btn-pesq-stoi').addEventListener('click', async () => {
+  const data = await qualityPost('/api/quality/pesq-stoi');
+  if (!data || data.error) return;
+  document.getElementById('quality-cards').innerHTML = `
+    <div class="metric-card"><div class="val">${data.stoi !== undefined ? data.stoi.toFixed(3) : '--'}</div><div class="lbl">STOI</div></div>
+    <div class="metric-card"><div class="val">${data.pesq !== undefined ? data.pesq.toFixed(3) : '--'}</div><div class="lbl">PESQ (WB)</div></div>
+    <div class="metric-card"><div class="val">${data.si_sdr !== undefined ? data.si_sdr.toFixed(2) : '--'}</div><div class="lbl">SI-SDR (dB)</div></div>`;
+});
+
+// ──────────────────────────────────────────────
 // Toast & Status
 // ──────────────────────────────────────────────
 function toast(msg, type) {
@@ -1440,6 +1825,10 @@ function formatBytes(b) {
   if (b < 1024) return b + ' B';
   if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
   return (b / 1048576).toFixed(1) + ' MB';
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 // ──────────────────────────────────────────────

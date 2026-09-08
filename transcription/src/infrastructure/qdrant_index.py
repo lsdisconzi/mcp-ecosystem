@@ -125,6 +125,8 @@ class QdrantTranscriptIndex:
                 "text": seg.text,
                 "source_file": transcript.source_file,
                 "language": transcript.language,
+                "correction_note": getattr(seg, "correction_note", ""),
+                "backchannel_events": getattr(seg, "backchannel_events", ""),
             }
             if base_dt:
                 local_dt = base_dt + timedelta(seconds=seg.start)
@@ -221,7 +223,8 @@ class QdrantTranscriptIndex:
                 "text": hit.payload["text"],
                 "source_file": hit.payload.get("source_file", ""),
                 "score": hit.score,
-                # Optionally return the new fields if needed
+                "correction_note": hit.payload.get("correction_note", ""),
+                "backchannel_events": hit.payload.get("backchannel_events", ""),
                 "case_id": hit.payload.get("case_id"),
                 "location": hit.payload.get("location"),
                 "tags": hit.payload.get("tags"),

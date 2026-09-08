@@ -158,6 +158,16 @@ SEGMENT_FIELDS: dict[str, FieldSpec] = {
     "duration": FieldSpec("duration", FLOAT, description="Computed duration (end - start)."),
     "text": FieldSpec("text", STR, description="Transcribed text.", default=""),
     "reviewed": FieldSpec("reviewed", BOOL, description="Whether the segment was reviewed.", default=False),
+    "correction_note": FieldSpec(
+        "correction_note", STR,
+        description="Curator correction note for the segment.",
+        default="",
+    ),
+    "backchannel_events": FieldSpec(
+        "backchannel_events", STR,
+        description="Curator backchannel-events note for the segment.",
+        default="",
+    ),
 }
 
 # Participant sub-schema.

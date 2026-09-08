@@ -21,16 +21,16 @@ import xml.etree.ElementTree as ET
 # ------------------------------
 # CONFIGURATION
 # ------------------------------
-BASE_URL = "https://www.deanbanks.co.uk/"
-DOWNLOAD_DIR = "crawler_output/deanbanks"          # where documents will be saved
+BASE_URL = "https://unlost.ventures/"
+DOWNLOAD_DIR = "crawler_output/unlost"          # where documents will be saved
 REQUEST_DELAY = 0.3                         # polite delay between requests
-MAX_PAGE_CRAWL = 500                        # max HTML pages to crawl (safety)
+MAX_PAGE_CRAWL = None                       # None = unlimited, or set to an integer for safety
 MAX_WORKERS = 5                             # concurrent downloads/requests
 RESTRICT_CRAWL_TO_BASE_PATH = False         # set True to stay strictly under BASE_URL path
 ALLOW_SUBDOMAINS = True                     # include subdomains like *.frigo-data.com.br
 ALLOW_EXTERNAL_DOCUMENTS = False            # keep only target domain docs by default
 PRIORITY_SEED_URLS = [
-    "https://www.deanbanks.co.uk/"]                                           # pages worth crawling even if sitemap is missing
+    "https://unlost.ventures/"]                                           # pages worth crawling even if sitemap is missing
 EXPORT_DISCOVERED_URLS_CSV = "discovered_documents.csv"
 ENABLE_CRAWL_CHECKPOINT = True
 CRAWL_CHECKPOINT_FILE = "crawl_state.json"
@@ -127,18 +127,20 @@ def is_page_in_scope(url):
 
 
 def is_document_url(url):
-    """Check if the URL points to a document by its extension."""
+    """Check if the URL points to a document by its extension or common patterns."""
     parsed = urlparse(url)
     path = parsed.path.lower()
     if any(path.endswith(ext) for ext in DOCUMENT_EXTENSIONS):
         return True
 
-    # Some portals use download routes without file extensions.
-    if re.search(r"/(download|baixar)(/|$)", path):
+    # Common download routes
+    if re.search(r"/(download|baixar|descargar|documento|wp-content/uploads)(/|$)", path):
         return True
 
+    # Query parameters that often indicate a file download
     query = parse_qs(parsed.query or "", keep_blank_values=True)
-    for key in ("download", "arquivo", "anexo", "file", "nomearquivo"):
+    download_keys = {"download", "dl", "file", "arquivo", "anexo", "nombre", "nomearquivo"}
+    for key in download_keys:
         values = query.get(key, [])
         if any(str(v).strip() for v in values):
             return True
@@ -370,15 +372,16 @@ def parse_sitemap(sitemap_url):
 
     # Namespace might be present
     ns = {'sm': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
-    # Direct URLs
-    for url_elem in root.findall('url/loc') or root.findall('.//sm:loc', ns):
-        if url_elem is not None and url_elem.text:
-            urls.add(url_elem.text.strip())
 
-    # Sitemap index
-    for sitemap_elem in root.findall('sitemap/loc') or root.findall('.//sm:sitemap/sm:loc', ns):
-        if sitemap_elem is not None and sitemap_elem.text:
-            sub_url = sitemap_elem.text.strip()
+    # Direct URLs
+    for loc in root.findall('.//sm:loc', ns):
+        if loc is not None and loc.text:
+            urls.add(loc.text.strip())
+
+    # Sitemap index entries (same tag <loc>)
+    for loc in root.findall('.//sm:sitemap/sm:loc', ns):
+        if loc is not None and loc.text:
+            sub_url = loc.text.strip()
             urls.update(parse_sitemap(sub_url))   # recursive
     return urls
 
@@ -433,20 +436,32 @@ def crawl_pages(start_urls):
         checkpoint = load_crawl_checkpoint(CRAWL_CHECKPOINT_FILE)
         if checkpoint:
             visited = set(checkpoint.get("visited", []))
-            to_visit = list(checkpoint.get("to_visit", []))
-            doc_urls = set(checkpoint.get("doc_urls", []))
+            # Filter and deduplicate queued URLs
+            to_visit = list(dict.fromkeys(
+                u for u in checkpoint.get("to_visit", [])
+                if isinstance(u, str) and u.startswith(("http://", "https://"))
+            ))
+            # Re-filter saved document URLs
+            doc_urls = {
+                u for u in checkpoint.get("doc_urls", [])
+                if is_document_url(u) and is_document_host_allowed(u)
+            }
             checkpoint_loaded = True
             print(
                 f"Resuming checkpoint: {len(visited)} visited, "
-                f"{len(to_visit)} queued, {len(doc_urls)} docs"
+                f"{len(to_visit)} queued, {len(doc_urls)} docs (filtered)"
             )
 
     if not checkpoint_loaded:
-        to_visit = list(dict.fromkeys(start_urls))[:MAX_PAGE_CRAWL]
+        to_visit = list(dict.fromkeys(start_urls))
+        if MAX_PAGE_CRAWL is not None:
+            to_visit = to_visit[:MAX_PAGE_CRAWL]
     else:
+        # Add any seed URLs that are not already queued or visited
         for seed in start_urls:
-            if seed not in visited and seed not in to_visit and len(to_visit) < MAX_PAGE_CRAWL:
-                to_visit.append(seed)
+            if seed not in visited and seed not in to_visit:
+                if MAX_PAGE_CRAWL is None or len(to_visit) < MAX_PAGE_CRAWL:
+                    to_visit.append(seed)
 
     pages_since_checkpoint = 0
 
@@ -478,7 +493,8 @@ def crawl_pages(start_urls):
                 if not is_same_domain(href):
                     continue
 
-                if href not in visited and len(to_visit) < MAX_PAGE_CRAWL:
+                # Only add page URLs if not already visited and within limits
+                if href not in visited and (MAX_PAGE_CRAWL is None or len(to_visit) < MAX_PAGE_CRAWL):
                     if href not in to_visit and is_page_in_scope(href) and not href.endswith(NON_HTML_SUFFIXES):
                         to_visit.append(href)
 
@@ -493,7 +509,7 @@ def crawl_pages(start_urls):
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = {}
-        while to_visit and len(visited) < MAX_PAGE_CRAWL:
+        while to_visit and (MAX_PAGE_CRAWL is None or len(visited) < MAX_PAGE_CRAWL):
             # Add new URLs to visit in batches
             while to_visit and len(futures) < MAX_WORKERS * 2:
                 url = to_visit.pop(0)
@@ -502,33 +518,35 @@ def crawl_pages(start_urls):
                 visited.add(url)
                 pages_since_checkpoint += 1
                 futures[executor.submit(get, url)] = url
+
             # Process completed
-            done = []
             for future in as_completed(futures):
                 url = futures.pop(future)
                 try:
                     resp = future.result()
                     if resp and resp.status_code == 200:
                         content_type = (resp.headers.get('content-type') or '').lower()
-                        if 'xml' not in content_type or 'html' in content_type:
+                        # Only parse HTML pages (not images, PDFs, etc.)
+                        if 'text/html' in content_type or 'xml' in content_type:
                             extract_links(resp.text, url)
                 except Exception as e:
                     print(f"Error crawling {url}: {e}")
                 time.sleep(REQUEST_DELAY)
-                done.append(future)
-            # Remove done futures
-            for f in done:
-                if f in futures:
-                    del futures[f]
 
             if ENABLE_CRAWL_CHECKPOINT and pages_since_checkpoint >= CRAWL_CHECKPOINT_SAVE_EVERY:
                 save_crawl_checkpoint(CRAWL_CHECKPOINT_FILE, visited, to_visit, doc_urls)
                 pages_since_checkpoint = 0
 
     if ENABLE_CRAWL_CHECKPOINT:
-        if CLEAR_CHECKPOINT_ON_COMPLETE and not to_visit:
+        if not to_visit:
+            # All URLs processed, clear checkpoint
             clear_crawl_checkpoint(CRAWL_CHECKPOINT_FILE)
+        elif MAX_PAGE_CRAWL is not None and len(visited) >= MAX_PAGE_CRAWL:
+            # Safety limit reached, clear to avoid stale resume
+            clear_crawl_checkpoint(CRAWL_CHECKPOINT_FILE)
+            print("Crawl limit reached; checkpoint cleared to start fresh next time.")
         else:
+            # Save state for later resumption
             save_crawl_checkpoint(CRAWL_CHECKPOINT_FILE, visited, to_visit, doc_urls)
 
     print(f"Page crawl: visited {len(visited)} pages, found {len(doc_urls)} document links.")
@@ -550,6 +568,7 @@ def download_document(url, directory):
             print(f"Skipping media response at {url} (content-type: {content_type})")
             return None
 
+        # Skip HTML if URL has no document extension (likely a login page or error)
         if 'text/html' in content_type and not any(urlparse(url).path.lower().endswith(ext) for ext in DOCUMENT_EXTENSIONS):
             print(f"Skipping non-document response at {url} (content-type: {content_type})")
             return None
@@ -618,8 +637,10 @@ def main():
     crawled_docs = crawl_pages(crawl_seeds)
     all_doc_urls.update(crawled_docs)
 
-    # Final dedup
-    all_doc_urls = set(u for u in all_doc_urls if is_document_url(u) and is_document_host_allowed(u))
+    # Final dedup with filter logging
+    pre_filter_count = len(all_doc_urls)
+    all_doc_urls = {u for u in all_doc_urls if is_document_url(u) and is_document_host_allowed(u)}
+    print(f"After filtering: {len(all_doc_urls)} valid documents (removed {pre_filter_count - len(all_doc_urls)}).")
     export_discovered_urls_csv(all_doc_urls, EXPORT_DISCOVERED_URLS_CSV)
     print(f"\nTotal unique document URLs found: {len(all_doc_urls)}")
     if not all_doc_urls:

@@ -13,10 +13,10 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ===================== CONFIGURATION =====================
-BASE_URL = 'https://sixthstreetlendingpartners.com/team/'
+BASE_URL = 'https://ilai.memory.com.br/#/9CJZDH/1/share?resource=public/inicio'
 SAVE_DIR = './crawler_output/sixthstreet-team'  # where to save HTML and text
-MAX_PAGES = 100
-MAX_DEPTH = 3
+MAX_PAGES = 500
+MAX_DEPTH = 5
 DOWNLOAD_ASSETS = False
 SAME_DOMAIN_ONLY = True
 TIMEOUT = 30                   # seconds for page load
