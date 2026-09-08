@@ -1,0 +1,2037 @@
+{
+  "violation_id": "CL-012",
+  "title": "PDI-LATAM Collusion — Coaching to File Personal Complaint to Shield Corporate Liability",
+  "incident": "[[I-002-Chile-Santiago]]",
+  "incident_id": "I-002",
+  "jurisdiction": "CL",
+  "category": "PDI-LATAM Collusion",
+  "severity": "CRITICAL",
+  "confidence": {
+    "value": 0.57,
+    "components": {
+      "CL.CHIPENCOD.T4.C3.Art.193": 0.7,
+      "CL.CPCL.C1.Art.17": 0.5,
+      "CL.CONST.T1.C1.Art.6": 0.671,
+      "CL.LPDC.Art.3.b": 0.714,
+      "CL.LPDC.Art.23": 0.788
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T07:03:55.824065Z",
+    "history": [
+      "2026-05-12T06:54:06.086522+00:00: value=0.0",
+      "2026-05-12T06:54:21.914214+00:00: value=0.0",
+      "2026-05-12T06:54:27.597343+00:00: value=0.0",
+      "2026-05-12T06:59:19.549026+00:00: value=0.57",
+      "2026-05-12T07:00:15.855919+00:00: value=0.57",
+      "2026-05-12T07:01:19.838396+00:00: value=0.57",
+      "2026-05-12T07:02:32.874028+00:00: value=0.57",
+      "2026-05-12T07:03:40.936937+00:00: value=0.57"
+    ],
+    "validated": true,
+    "note": "Validated by V10 pipeline check. Lowered from legacy contract value (0.95) to formula-derived value (0.48)."
+  },
+  "incident_timestamp": "2024-07-05T13:30:00-04:00",
+  "incident_timestamp_display": "2024-07-05 — Voo LA8159 — Aeroporto SCL",
+  "allegation_summary": "PDI officers, after confirming via CCTV that no aggression occurred, explicitly coached LATAM personnel to file the complaint in the passenger's personal name rather than against LATAM. This instruction ('podemos tomarte una denuncia pero es como tu persona, no como LATAM') constitutes active collusion to shield the corporate entity from liability. The conduct implicates falsedad ideológica (CP Art. 193), encubrimiento (CP Art. 17), constitutional abuse (CONST Art. 6), and consumer protection violations (LPDC Arts. 3.b, 23).",
+  "evidentiary_strength": "8 transcript segments spanning STG-19 (security interaction), STG-6 (passenger presence), and STG-7 (PDI CCTV review and coaching). The pipeline-assigned confidence of 48% is the weighted average of 5 article-level scores, heavily depressed by the contested/witness status of most elements in the criminal law grids (Art. 193 at 0.386, Art. 17 at 0.463).",
+  "legal_theory": "Colusión PDI-LATAM — Encubrimiento y Desvío de Responsabilidad Corporativa",
+  "required_elements_status": "ENRICHED",
+  "legal_basis": [
+    {
+      "article_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "article_name": "Código Penal, Art. 193 — Falsedad ideológica por empleado público",
+      "status": "established",
+      "applicability": "direct",
+      "subsections": [
+        "4"
+      ],
+      "duty_bearer": "state",
+      "norm_type": "penalty",
+      "applicability_rationale": "legacy paraphrase: Sera castigado... el empleado publico que, abusando de su oficio, cometiere falsedad: 2. Suponiendo en un acto la intervencion de personas que no la han tenido. 4. Faltando a la verdad en la narracion de hechos sustanciales.",
+      "framework_code": "CHIPENCOD",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "4.° Faltando a la verdad en la narración de hechos sustanciales."
+    },
+    {
+      "article_id": "CL.CPCL.C1.Art.17",
+      "article_name": "Código Penal, Art. 17 — Encubrimiento",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "state",
+      "norm_type": "prohibition",
+      "applicability_rationale": "legacy paraphrase: Encubrimiento: Son encubridores los que con conocimiento de la perpetracion de un crimen o de un simple delito... intervienen, con posterioridad a su ejecucion... 2.° Ocultando o inutilizando el cuerpo, los efectos o instrumentos del crimen o simple delito para impedir su descubrimiento. 4.° Acogiendo, receptando o protegiendo habitualmente a los malhechores... facilitandoles los medios de reunirse u ocultar sus armas o efectos, o suministrandoles auxilios o noticias para que se guarden, precavan o salven.",
+      "framework_code": "CPCL",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "Son encubridores los que con conocimiento de la perpetracion de un crimen o de un simple delito o de los actos ejecutados para llevarlo a cabo, sin haber tenido participacion en el como autores ni como complices, intervienen, con posterioridad a su ejecucion, de alguno de los modos siguientes:\n\n1. Aprovechandose por si mismos o facilitando a los delincuentes medios para que se aprovechen de los efectos del crimen o simple delito.  \n2. Ocultando o inutilizando el cuerpo, los efectos o instrumentos del crimen o simple delito para impedir su descubrimiento.  \n3. Albergando, ocultando o proporcionando la fuga del culpable.  \n4. Acogiendo, receptando o protegiendo habitualmente a los malhechores, sabiendo que lo son, aun sin conocimiento de los crimenes o simples delitos determinados que hayan cometido, o facilitandoles los medios de reunirse u ocultar sus armas o efectos, o suministrandoles auxilios o noticias para que se guarden, precavan o salven.\n\nEstan exentos de las penas impuestas a los encubridores los que lo sean de su conyuge, de su conviviente civil, o de sus parientes por consanguinidad o afinidad en toda la linea recta y en la colateral hasta el segundo grado, de sus padres o hijos, con la sola excepcion de los que se hallaren comprendidos en el numero 1 de este articulo."
+    },
+    {
+      "article_id": "CL.CONST.T1.C1.Art.6",
+      "article_name": "Constitución, Art. 6 — Sujeción de órganos del Estado",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "state",
+      "norm_type": "definition",
+      "applicability_rationale": "legacy paraphrase: The bodies of the State must subject their action to the Constitution and the norms enacted in conformity therewith. The breach of this norm will generate the responsibilities and penalties determined by the law.",
+      "framework_code": "CONST",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "The bodies of the State bodies must subject their action to the Constitution and the norms enacted in conformity therewith as well as guarantee the institutional order of the Republic."
+    },
+    {
+      "article_id": "CL.LPDC.Art.3.b",
+      "article_name": "Ley 19.496, Art. 3(b) — Información veraz",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "air_operator",
+      "norm_type": "right",
+      "applicability_rationale": "legacy paraphrase: Son derechos y deberes basicos del consumidor: b) El derecho a una informacion veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratacion y otras caracteristicas relevantes de los mismos.",
+      "framework_code": "LPDC",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "b) El derecho a una información veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratación y otras características relevantes de los mismos, y el deber de informarse responsablemente de ellos."
+    },
+    {
+      "article_id": "CL.LPDC.Art.23",
+      "article_name": "Ley 19.496, Art. 23 — Infracciones del proveedor",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "air_operator",
+      "norm_type": "liability",
+      "applicability_rationale": "legacy paraphrase: El proveedor de un servicio sera responsable de los danos y perjuicios que cause al consumidor por la prestacion de un servicio defectuoso, incluyendo la falta de veracidad en la informacion proporcionada y el incumplimiento de las condiciones de contratacion.",
+      "framework_code": "LPDC",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "Artículo 23.- Comete infracción a las disposiciones de la presente ley el proveedor que, en la venta de un bien o en la prestación de un servicio, **actuando con negligencia**, causa menoscabo al consumidor debido a fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio."
+    }
+  ],
+  "transcripts": [
+    "[[TRNS-aeropuerto_arturo_merino_benitez_19]]",
+    "[[I-002_04_NAR-06_STG_6_jetbridge_standoff]]",
+    "[[I-002_05_NAR-07_STG_7_post_removal_investigation]]"
+  ],
+  "evidence_links": [
+    "[[I-002_transcript_rendered_html_X-0014]]",
+    "[[I-002_transcript_rendered_html_X-0036]]",
+    "[[I-002_transcript_rendered_html_X-0041]]"
+  ],
+  "event_ids": [
+    "[[E-0196]]",
+    "[[E-0197]]",
+    "[[E-0198]]",
+    "[[E-0199]]",
+    "[[E-0200]]",
+    "[[E-0201]]",
+    "[[E-0202]]",
+    "[[E-0226]]",
+    "[[E-0227]]",
+    "[[E-0203]]",
+    "[[E-0205]]",
+    "[[E-0211]]",
+    "[[E-0212]]",
+    "[[E-0213]]",
+    "[[E-0216]]",
+    "[[E-0217]]"
+  ],
+  "evidence_ids": [
+    "[[I-002_transcript_json_X-0037]]",
+    "[[I-002_transcript_json_X-0038]]",
+    "[[I-002_email_latam_communication_X-0059]]",
+    "[[I-002_email_latam_communication_X-0063]]",
+    "[[I-002_email_latam_communication_X-0064]]",
+    "[[I-002_email_dgac_communication_X-0074]]",
+    "[[I-002_email_dgac_communication_X-0075]]",
+    "[[I-002_email_dgac_communication_X-0076]]",
+    "[[I-002_email_dgac_communication_X-0080]]",
+    "[[I-002_email_dgac_communication_X-0082]]",
+    "[[I-002_email_dgac_communication_X-0083]]",
+    "[[I-002_email_dgac_communication_X-0086]]",
+    "[[I-002_email_dgac_communication_X-0087]]"
+  ],
+  "framework_cache": "[[CHIPENCOD]]",
+  "validation_pack": "[[Validation report CL-012]]",
+  "related_violations": [
+    "CL-003",
+    "CL-007"
+  ],
+  "has_broken_refs": false,
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "classification": "Attorney Work Product — Privileged and Confidential",
+  "schema_version": "4.0",
+  "element_grids": {
+    "CL.CHIPENCOD.T4.C3.Art.193": [
+      {
+        "element_name": "Sujeto activo calificado (empleado público)",
+        "status": "strong",
+        "evidence": [
+          "STG-19.seg-12",
+          "STG-7.seg-40"
+        ],
+        "argument": "Los segmentos muestran la intervención de funcionarios policiales (PDI) y de la DGAC en el procedimiento. El oficial DGAC demuestra conocimiento procedimental y el contexto indica que la denuncia/constancia fue confeccionada por funcionarios públicos en ejercicio de sus funciones. Falta identificación nominal precisa del funcionario redactor del documento.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.sujeto_activo",
+        "doctrinal_basis": "Art. 193 exige que el autor sea 'empleado público' en el sentido del Art. 260 CP. Incluye funcionarios de PDI y otros agentes del Estado que intervienen en la confección de documentos públicos.",
+        "weaknesses": [
+          "No se identifica con nombre y cargo exacto al funcionario que redactó el documento público cuestionado."
+        ],
+        "open_questions": [
+          "¿Quién específicamente confeccionó la constancia o parte policial que contendría la falsedad?"
+        ],
+        "article_short": "Art. 193 N° 4 — Falsedad en documento público faltando a la verdad en la narración de hechos sustanciales (Código Penal)"
+      },
+      {
+        "element_name": "Abuso del oficio",
+        "status": "contested",
+        "evidence": [
+          "STG-19.seg-12",
+          "STG-7.seg-40"
+        ],
+        "argument": "El contexto sugiere que funcionarios policiales actuaron dentro de sus competencias formales (recepción de denuncias, confección de partes) pero desviaron esas facultades al consignar hechos falsos. El segmento STG-19.seg-12 muestra que la aerolínea derivó al pasajero a la policía sin dar explicaciones, y el oficial DGAC invoca procedimientos, lo que indica actuación en el marco del cargo. Sin embargo, la prueba de desviación intencional del oficio requiere mayor desarrollo.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.abuso_del_oficio",
+        "doctrinal_basis": "El tipo exige que la falsedad se cometa 'abusando de su oficio', es decir, que el funcionario utilice las facultades que su cargo le confiere para cometer la falsificación, desviándolas de su fin legítimo.",
+        "weaknesses": [
+          "La prueba directa de que el funcionario usó deliberadamente sus facultades para falsear es circunstancial."
+        ],
+        "open_questions": [
+          "¿Existió instrucción o coordinación previa entre LATAM y el funcionario para consignar hechos falsos?"
+        ],
+        "article_short": "Art. 193 N° 4 — Falsedad en documento público faltando a la verdad en la narración de hechos sustanciales (Código Penal)"
+      },
+      {
+        "element_name": "Objeto material: documento público",
+        "status": "contested",
+        "evidence": [
+          "STG-19.seg-12"
+        ],
+        "argument": "El pasajero anuncia que iniciará un proceso judicial y el contexto indica que se generó documentación policial (constancia o parte). Sin embargo, los segmentos disponibles no identifican expresamente el documento público específico que contendría la falsedad, ni se aporta copia del mismo.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.documento_publico",
+        "doctrinal_basis": "La falsedad debe recaer sobre un documento público (parte policial, constancia, acta de denuncia u otro instrumento público confeccionado por funcionario competente con las solemnidades legales).",
+        "weaknesses": [
+          "No se ha incorporado el documento público presuntamente falsificado como evidencia directa en los segmentos."
+        ],
+        "open_questions": [
+          "¿Cuál es el documento público específico (parte policial, constancia PDI, denuncia formalizada) que contiene la narración falsa?"
+        ],
+        "article_short": "Art. 193 N° 4 — Falsedad en documento público faltando a la verdad en la narración de hechos sustanciales (Código Penal)"
+      },
+      {
+        "element_name": "Modalidad típica: faltar a la verdad en la narración de hechos sustanciales",
+        "status": "strong",
+        "evidence": [
+          "STG-6.seg-12",
+          "STG-6.seg-40",
+          "STG-7.seg-12"
+        ],
+        "argument": "El pasajero desafía explícitamente la veracidad de la acusación ('pruébame eso, porque es simplemente alguien que no le gustó la pregunta que le hice'). El personal de LATAM confirma que el pasajero 'podía embarcar', contradiciendo cualquier narrativa oficial de peligrosidad o conducta disruptiva. El pasajero declara haber sido humillado y haber perdido su vuelo sin justificación. Estos elementos convergen para demostrar que la narración oficial de los hechos fue sustancialmente falsa.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.modalidad_tipica",
+        "doctrinal_basis": "El numeral 4° del Art. 193 sanciona consignar en el documento público hechos que no ocurrieron o narrarlos de modo sustancialmente distinto a como sucedieron, siempre que tales hechos sean 'sustanciales' (relevantes para los efectos jurídicos del documento).",
+        "weaknesses": [
+          "Se requiere contrastar el texto exacto del documento público con los hechos probados por los audios."
+        ],
+        "open_questions": [
+          "¿Qué hechos específicos fueron narrados falsamente en el documento y cuáles eran los hechos reales según la totalidad de la evidencia?"
+        ],
+        "article_short": "Art. 193 N° 4 — Falsedad en documento público faltando a la verdad en la narración de hechos sustanciales (Código Penal)"
+      },
+      {
+        "element_name": "Sustancialidad de los hechos falseados",
+        "status": "strong",
+        "evidence": [
+          "STG-6.seg-12",
+          "STG-6.seg-40",
+          "STG-7.seg-12",
+          "STG-19.seg-12"
+        ],
+        "argument": "La falsedad recae sobre la conducta atribuida al pasajero — presunta agresividad o peligrosidad — que fundamentó su exclusión del vuelo y eventuales consecuencias penales o administrativas. Dado que LATAM confirmó que el pasajero podía embarcar y el propio pasajero niega cualquier conducta impropia, la narración falsa fue determinante para privarle de su derecho al transporte y exponerlo a un procedimiento policial injustificado. Esto satisface el requisito de sustancialidad.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.sustancialidad_de_la_falsedad",
+        "doctrinal_basis": "No toda inexactitud configura el tipo: los hechos falseados deben ser 'sustanciales', es decir, capaces de producir efectos jurídicos o alterar el sentido del documento. La doctrina (Etcheberry, Garrido Montt) exige que la mendacidad recaiga sobre extremos que fundamenten consecuencias de derecho.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 193 N° 4 — Falsedad en documento público faltando a la verdad en la narración de hechos sustanciales (Código Penal)"
+      },
+      {
+        "element_name": "Tipicidad subjetiva: dolo de falsedad",
+        "status": "contested",
+        "evidence": [
+          "STG-19.seg-12",
+          "STG-6.seg-40"
+        ],
+        "argument": "El contexto indica una coordinación entre LATAM y la policía donde la aerolínea se niega a dar explicaciones y deriva al pasajero a la policía. El hecho de que el personal de LATAM confirme que el pasajero podía embarcar sugiere que el funcionario policial tenía o debía tener conocimiento de la ausencia de fundamento fáctico para la narración consignada. Sin embargo, la prueba directa del conocimiento subjetivo del funcionario sobre la falsedad requiere mayor desarrollo.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.dolo",
+        "doctrinal_basis": "Se requiere dolo directo: conocimiento de que los hechos narrados son falsos y voluntad de consignarlos así en el documento público. No basta negligencia ni error.",
+        "weaknesses": [
+          "No hay declaración directa del funcionario que revele su conocimiento de la falsedad.",
+          "Podría alegarse error o confianza en la información proporcionada por LATAM."
+        ],
+        "open_questions": [
+          "¿El funcionario verificó los hechos antes de consignarlos?",
+          "¿Existió comunicación previa entre LATAM y el funcionario que evidencie conocimiento de la falsedad?"
+        ],
+        "article_short": "Art. 193 N° 4 — Falsedad en documento público faltando a la verdad en la narración de hechos sustanciales (Código Penal)"
+      },
+      {
+        "element_name": "Resultado / perjuicio",
+        "status": "established",
+        "evidence": [
+          "STG-7.seg-12",
+          "STG-19.seg-12"
+        ],
+        "argument": "El pasajero declara expresamente haber perdido su vuelo y haber sido humillado. Además, enfrenta un procedimiento policial y la necesidad de iniciar acciones judiciales. El perjuicio es múltiple: patrimonial (pérdida del vuelo), moral (humillación) y procesal (exposición a actuaciones policiales y judiciales basadas en hechos falsos).",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.perjuicio",
+        "doctrinal_basis": "Si bien el Art. 193 es un delito de peligro abstracto contra la fe pública (no exige perjuicio patrimonial efectivo), la existencia de perjuicio concreto refuerza la tipicidad y es relevante para la penalidad.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 193 N° 4 — Falsedad en documento público faltando a la verdad en la narración de hechos sustanciales (Código Penal)"
+      }
+    ],
+    "CL.CPCL.C1.Art.17": [
+      {
+        "element_name": "Conocimiento de la perpetración de un crimen o simple delito",
+        "status": "contested",
+        "evidence": [
+          "STG-6.seg-40",
+          "STG-19.seg-12"
+        ],
+        "argument": "El segmento STG-6.seg-40 muestra que personal de LATAM confirmó que el pasajero 'podía embarcar', lo que sugiere conocimiento interno de que la denegación carecía de fundamento legítimo. STG-19.seg-12 evidencia que la aerolínea rehusó dar explicaciones, lo que podría inferir conciencia de irregularidad. Sin embargo, no hay segmento que establezca de forma directa y explícita el conocimiento de un delito específico previo por parte del presunto encubridor.",
+        "element_id": "CL.CPCL.C1.Art.17.2.elem.conocimiento_delito_previo",
+        "doctrinal_basis": "El encubridor debe actuar 'con conocimiento de la perpetración de un crimen o de un simple delito o de los actos ejecutados para llevarlo a cabo'. Requiere dolo directo respecto de la existencia del hecho punible previo.",
+        "weaknesses": [
+          "No se identifica explícitamente cuál es el delito previo cuya perpetración se conocía",
+          "El conocimiento se infiere circunstancialmente, no se prueba directamente"
+        ],
+        "open_questions": [
+          "¿Cuál es el delito base (coacción, discriminación, otro) cuya perpetración conocían los presuntos encubridores?"
+        ],
+        "article_short": "Art. 17 N° 2 y 4 — Encubrimiento (Código Penal)"
+      },
+      {
+        "element_name": "Ausencia de participación como autor o cómplice en el delito base",
+        "status": "contested",
+        "evidence": [
+          "STG-6.seg-40",
+          "STG-19.seg-12"
+        ],
+        "argument": "La distinción entre quienes ejecutaron el acto ilícito original (denegación de embarque) y quienes posteriormente orientaron al pasajero o protegieron a los responsables no queda clara en los segmentos. STG-6.seg-40 muestra a personal de LATAM reconociendo la elegibilidad del pasajero, lo que podría situarlo como partícipe del hecho base más que como encubridor posterior.",
+        "element_id": "CL.CPCL.C1.Art.17.2.elem.no_participacion_previa",
+        "doctrinal_basis": "El encubridor no debe haber tenido participación en el hecho 'como autores ni como cómplices'. Si participó, su responsabilidad se rige por las reglas de autoría/complicidad, no de encubrimiento.",
+        "weaknesses": [
+          "Si el personal de LATAM que 'coaching' la denuncia personal también participó en la denegación, sería coautor/cómplice y no encubridor"
+        ],
+        "open_questions": [
+          "¿Los sujetos que orientaron la denuncia personal son los mismos que ejecutaron la denegación de embarque o son terceros posteriores?"
+        ],
+        "article_short": "Art. 17 N° 2 y 4 — Encubrimiento (Código Penal)"
+      },
+      {
+        "element_name": "Intervención con posterioridad a la ejecución del delito",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-12",
+          "STG-19.seg-12"
+        ],
+        "argument": "STG-7.seg-12 muestra al pasajero declarando que ya perdió su vuelo y fue humillado, indicando que el hecho base (denegación ilícita) ya se consumó. STG-19.seg-12 refleja la etapa posterior donde se discuten procedimientos y se redirige responsabilidad, lo que temporalmente se sitúa después de la ejecución del acto ilícito.",
+        "element_id": "CL.CPCL.C1.Art.17.2.elem.posterioridad_ejecucion",
+        "doctrinal_basis": "La conducta encubridora debe ser posterior a la consumación del delito base. El encubrimiento es siempre un actuar ex post facto.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 17 N° 2 y 4 — Encubrimiento (Código Penal)"
+      },
+      {
+        "element_name": "Ocultación o inutilización del cuerpo, efectos o instrumentos del delito (N°2)",
+        "status": "weak",
+        "evidence": [
+          "STG-19.seg-12"
+        ],
+        "argument": "STG-19.seg-12 muestra que la aerolínea se negó a dar explicaciones y redirigió al pasajero a la policía, lo que podría interpretarse como una forma de ocultar la evidencia de la denegación arbitraria. Sin embargo, no hay evidencia directa de destrucción o inutilización de documentos, registros u otros instrumentos materiales del delito. La negativa a explicar no equivale doctrinariamente a 'ocultar o inutilizar' en sentido típico.",
+        "element_id": "CL.CPCL.C1.Art.17.2.elem.modalidad_ocultacion",
+        "doctrinal_basis": "Numeral 2: 'Ocultando o inutilizando el cuerpo, los efectos o instrumentos del crimen o simple delito para impedir su descubrimiento.' Requiere actos materiales de ocultación dirigidos a impedir el descubrimiento del delito.",
+        "weaknesses": [
+          "No se acredita ocultación material de evidencia física o documental",
+          "La negativa a dar explicaciones no satisface el verbo rector 'ocultar o inutilizar'",
+          "No se identifica qué 'cuerpo, efectos o instrumentos' fueron ocultados"
+        ],
+        "open_questions": [
+          "¿Existen registros internos (bitácoras, grabaciones CCTV, registros de sistema) que hayan sido suprimidos o alterados?"
+        ],
+        "article_short": "Art. 17 N° 2 y 4 — Encubrimiento (Código Penal)"
+      },
+      {
+        "element_name": "Acogimiento, receptación o protección habitual de malhechores (N°4)",
+        "status": "contested",
+        "evidence": [
+          "STG-19.seg-12",
+          "STG-6.seg-40"
+        ],
+        "argument": "La tesis de la violación sostiene que orientar al pasajero a presentar una denuncia personal (en vez de institucional) constituye 'suministrar auxilios o noticias para que se guarden o precavan' los responsables corporativos. STG-19.seg-12 muestra la deflexión de responsabilidad hacia la policía. STG-6.seg-40 confirma que internamente se sabía que el pasajero podía embarcar, sugiriendo protección consciente de quien actuó ilícitamente. Sin embargo, el elemento de habitualidad es difícil de probar con un solo incidente.",
+        "element_id": "CL.CPCL.C1.Art.17.4.elem.proteccion_habitual_malhechores",
+        "doctrinal_basis": "Numeral 4: 'Acogiendo, receptando o protegiendo habitualmente a los malhechores, sabiendo que lo son... o facilitándoles los medios de reunirse u ocultar sus armas o efectos, o suministrándoles auxilios o noticias para que se guarden, precavan o salven.' Requiere habitualidad y conocimiento de la calidad de malhechor.",
+        "weaknesses": [
+          "La habitualidad ('habitualmente') es un elemento esencial del N°4 que no se acredita con un episodio aislado",
+          "No se identifica con precisión quién es el 'malhechor' protegido",
+          "La orientación procesal no equivale necesariamente a 'suministrar auxilios para que se precavan'"
+        ],
+        "open_questions": [
+          "¿Existe evidencia de un patrón repetido de conducta similar (habitualidad)?",
+          "¿Se puede identificar al funcionario específico cuya protección se facilitó?"
+        ],
+        "article_short": "Art. 17 N° 2 y 4 — Encubrimiento (Código Penal)"
+      },
+      {
+        "element_name": "Suministro de auxilios o noticias para que se guarden, precavan o salven",
+        "status": "contested",
+        "evidence": [
+          "STG-19.seg-12",
+          "STG-7.seg-40"
+        ],
+        "argument": "STG-19.seg-12 muestra que la aerolínea redirigió toda responsabilidad a la policía, negándose a dar explicaciones, lo que podría interpretarse como una estrategia para que los responsables corporativos eviten exposición. STG-7.seg-40 muestra al oficial DGAC indicando que el pasajero 'debe saber cómo son los procedimientos', lo que podría sugerir una canalización deliberada hacia vías menos efectivas. La interpretación como 'suministro de auxilios' es extensiva y discutible.",
+        "element_id": "CL.CPCL.C1.Art.17.4.elem.suministro_auxilios_noticias",
+        "doctrinal_basis": "Variante del N°4: facilitar medios o suministrar auxilios/noticias para que los responsables se protejan de la persecución penal.",
+        "weaknesses": [
+          "La interpretación es extensiva del tipo penal",
+          "No hay evidencia directa de instrucciones explícitas para proteger a un responsable identificado"
+        ],
+        "open_questions": [
+          "¿Se instruyó explícitamente al pasajero a presentar querella personal en vez de denuncia institucional como estrategia de blindaje?"
+        ],
+        "article_short": "Art. 17 N° 2 y 4 — Encubrimiento (Código Penal)"
+      },
+      {
+        "element_name": "Finalidad de impedir el descubrimiento del delito (elemento subjetivo N°2)",
+        "status": "contested",
+        "evidence": [
+          "STG-19.seg-12"
+        ],
+        "argument": "STG-19.seg-12 muestra la negativa de la aerolínea a proporcionar explicaciones y la redirección al pasajero, lo que podría inferir una intención de evitar que se descubra la arbitrariedad de la denegación. Sin embargo, la finalidad específica de 'impedir el descubrimiento' no se establece de forma directa sino solo por inferencia circunstancial.",
+        "element_id": "CL.CPCL.C1.Art.17.2.elem.finalidad_impedir_descubrimiento",
+        "doctrinal_basis": "El N°2 exige que la ocultación sea 'para impedir su descubrimiento', lo que incorpora un elemento subjetivo de tendencia interna trascendente: el encubridor debe actuar con el propósito específico de evitar que el delito sea descubierto.",
+        "weaknesses": [
+          "El elemento subjetivo se infiere pero no se prueba directamente",
+          "La negativa a explicar podría tener motivaciones no delictivas (política corporativa, asesoría legal legítima)"
+        ],
+        "open_questions": [
+          "¿Existen comunicaciones internas que revelen la intención de ocultar el incidente?"
+        ],
+        "article_short": "Art. 17 N° 2 y 4 — Encubrimiento (Código Penal)"
+      },
+      {
+        "element_name": "Dolo del encubridor",
+        "status": "contested",
+        "evidence": [
+          "STG-6.seg-40",
+          "STG-19.seg-12"
+        ],
+        "argument": "STG-6.seg-40 establece que personal de LATAM sabía que el pasajero 'podía embarcar', lo que demuestra conocimiento de la irregularidad. STG-19.seg-12 muestra la conducta deliberada de negar explicaciones y redirigir responsabilidad. Ambos segmentos convergen para sugerir actuación consciente y voluntaria, aunque no se explicita verbalmente la intención de encubrir.",
+        "element_id": "CL.CPCL.C1.Art.17.elem.tipicidad_subjetiva_dolo",
+        "doctrinal_basis": "El encubrimiento requiere dolo directo: conocimiento de la perpetración del delito y voluntad de realizar la conducta encubridora. No admite dolo eventual según doctrina mayoritaria chilena.",
+        "weaknesses": [
+          "No hay declaración explícita de intención encubridora",
+          "El dolo directo debe probarse respecto del conocimiento del delito base específico"
+        ],
+        "open_questions": [
+          "¿El personal actuó por instrucción corporativa o por iniciativa propia?",
+          "¿Se puede distinguir entre una política de no-comentario legítima y una conducta dolosa de encubrimiento?"
+        ],
+        "article_short": "Art. 17 N° 2 y 4 — Encubrimiento (Código Penal)"
+      }
+    ],
+    "CL.CONST.T1.C1.Art.6": [
+      {
+        "element_name": "Órgano del Estado actuante",
+        "status": "strong",
+        "evidence": [
+          "STG-19.seg-12",
+          "STG-7.seg-40"
+        ],
+        "argument": "Los segmentos muestran interacción directa con funcionarios policiales (PDI) y un oficial de la DGAC, ambos órganos del Estado en ejercicio de funciones de control aeroportuario. El pasajero identifica expresamente que la policía interviene y el oficial DGAC se pronuncia sobre procedimientos.",
+        "element_id": "CL.CONST.Art.6.elem.organo_del_estado",
+        "doctrinal_basis": "Art. 6 inc. 1 CPR exige que el sujeto obligado sea un 'órgano del Estado' — incluye funcionarios de la PDI y de la DGAC en ejercicio de funciones públicas.",
+        "weaknesses": [
+          "No se identifica con nombre y grado al funcionario PDI específico en todos los segmentos."
+        ],
+        "open_questions": [
+          "¿Actuaban los funcionarios en servicio activo y dentro de su competencia territorial al momento de los hechos?"
+        ],
+        "article_short": "Art. 6 — Sujeción de los órganos del Estado a la Constitución y las normas (CPR)"
+      },
+      {
+        "element_name": "Acción u omisión estatal concreta",
+        "status": "strong",
+        "evidence": [
+          "STG-19.seg-1",
+          "STG-19.seg-12",
+          "STG-6.seg-12"
+        ],
+        "argument": "Se documenta que la PDI autorizó la salida del pasajero ('anda nomás') pero simultáneamente no intervino para garantizar su derecho a embarcar frente a la negativa de LATAM, derivándolo circularmente a la aerolínea sin resolver la situación. La omisión de actuar frente a una restricción de libertad ambulatoria constituye la conducta estatal cuestionada.",
+        "element_id": "CL.CONST.Art.6.elem.accion_estatal_concreta",
+        "doctrinal_basis": "El principio de juridicidad requiere identificar una conducta positiva u omisiva del órgano que se contrasta con el ordenamiento jurídico.",
+        "weaknesses": [
+          "La autorización 'anda nomás' podría interpretarse como cumplimiento del deber policial, no como omisión."
+        ],
+        "open_questions": [
+          "¿Tenía la PDI competencia legal para ordenar a LATAM el embarque, o su rol se limitaba a control migratorio?"
+        ],
+        "article_short": "Art. 6 — Sujeción de los órganos del Estado a la Constitución y las normas (CPR)"
+      },
+      {
+        "element_name": "Norma constitucional o legal infringida",
+        "status": "contested",
+        "evidence": [
+          "STG-6.seg-12",
+          "STG-7.seg-12"
+        ],
+        "argument": "El pasajero alega humillación y pérdida de vuelo sin justificación probada, lo que apunta a infracción del Art. 19 N°7 (libertad personal y seguridad individual) y Art. 19 N°4 (honra). Sin embargo, los segmentos no explicitan qué norma específica fue invocada formalmente ante los funcionarios.",
+        "element_id": "CL.CONST.Art.6.elem.norma_constitucional_infringida",
+        "doctrinal_basis": "Art. 6 inc. 1 CPR opera como norma de reenvío: debe identificarse la norma sustantiva (constitucional o legal) a la que el órgano debió sujetarse y no lo hizo.",
+        "weaknesses": [
+          "No hay mención expresa en los segmentos de la norma constitucional concreta vulnerada.",
+          "La conexión normativa es inferencial, no directa."
+        ],
+        "open_questions": [
+          "¿Se invocó formalmente algún derecho fundamental ante los funcionarios?",
+          "¿Existía una orden o resolución administrativa que respaldara la denegación de embarque?"
+        ],
+        "article_short": "Art. 6 — Sujeción de los órganos del Estado a la Constitución y las normas (CPR)"
+      },
+      {
+        "element_name": "Vinculación directa a la Constitución (principio de supremacía)",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-40",
+          "STG-19.seg-12"
+        ],
+        "argument": "El oficial DGAC reconoce la existencia de 'procedimientos' que deben seguirse, lo que evidencia conciencia institucional de sujeción a normas. La derivación circular entre PDI y LATAM sin resolución sugiere que ningún órgano asumió la vinculación directa a garantías constitucionales del afectado.",
+        "element_id": "CL.CONST.Art.6.elem.vinculacion_directa_constitucion",
+        "doctrinal_basis": "Art. 6 inc. 2 CPR: los preceptos de la Constitución obligan tanto a los titulares o integrantes de los órganos del Estado como a toda persona, institución o grupo. La fuerza normativa directa de la Constitución no requiere desarrollo legislativo.",
+        "weaknesses": [
+          "El segmento del oficial DGAC es genérico y no menciona la Constitución expresamente."
+        ],
+        "open_questions": [],
+        "article_short": "Art. 6 — Sujeción de los órganos del Estado a la Constitución y las normas (CPR)"
+      },
+      {
+        "element_name": "Colusión o aquiescencia estatal con actuación privada lesiva",
+        "status": "contested",
+        "evidence": [
+          "STG-19.seg-12",
+          "STG-6.seg-40",
+          "STG-6.seg-12"
+        ],
+        "argument": "LATAM confirma internamente que el pasajero 'podía embarcar' (seg-40 STG-6), pero externamente le niega el embarque. La PDI, informada de esta contradicción, no actúa para resolver la situación y remite al pasajero de vuelta a la aerolínea, generando un circuito de impunidad. Esto configura al menos aquiescencia estatal con la conducta privada lesiva.",
+        "element_id": "CL.CONST.Art.6.elem.colusion_publico_privada",
+        "doctrinal_basis": "Doctrina de la Drittwirkung y deber de garantía: cuando un órgano del Estado facilita, tolera o no impide la vulneración de derechos fundamentales por un particular, incurre en infracción al Art. 6 CPR por omisión de su deber de garantizar el orden institucional.",
+        "weaknesses": [
+          "La confirmación de Barraza ('podía embarcar') no necesariamente fue comunicada a la PDI en tiempo real.",
+          "No hay evidencia directa de acuerdo colusorio explícito entre PDI y LATAM."
+        ],
+        "open_questions": [
+          "¿Existió comunicación documentada entre LATAM y PDI sobre la elegibilidad del pasajero?",
+          "¿La PDI recibió instrucciones de LATAM para no intervenir?"
+        ],
+        "article_short": "Art. 6 — Sujeción de los órganos del Estado a la Constitución y las normas (CPR)"
+      },
+      {
+        "element_name": "Generación de responsabilidades y sanciones (Art. 6 inc. 3)",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-12",
+          "STG-19.seg-12"
+        ],
+        "argument": "El pasajero declara haber perdido su vuelo y haber sido humillado, lo que constituye un perjuicio patrimonial (costo del pasaje, conexiones perdidas) y extrapatrimonial (dignidad). Estos daños son consecuencia directa de la inacción estatal documentada en los segmentos.",
+        "element_id": "CL.CONST.Art.6.elem.responsabilidad_sancion",
+        "doctrinal_basis": "Art. 6 inc. 3 CPR: 'La infracción de esta norma generará las responsabilidades y sanciones que determine la ley.' Debe acreditarse el nexo causal entre la infracción y un perjuicio indemnizable o sancionable.",
+        "weaknesses": [
+          "La cuantificación del daño no consta en los segmentos de audio.",
+          "Falta prueba documental complementaria (boarding pass, itinerario)."
+        ],
+        "open_questions": [
+          "¿Se materializó la pérdida del vuelo o el pasajero fue reubicado posteriormente?"
+        ],
+        "article_short": "Art. 6 — Sujeción de los órganos del Estado a la Constitución y las normas (CPR)"
+      },
+      {
+        "element_name": "Deber de garantizar el orden institucional de la República",
+        "status": "contested",
+        "evidence": [
+          "STG-19.seg-12",
+          "STG-7.seg-40"
+        ],
+        "argument": "La derivación circular y la pasividad de PDI y DGAC frente a una restricción arbitraria de la libertad ambulatoria en un aeropuerto —espacio de alta regulación estatal— sugiere incumplimiento del deber de garantía institucional. Sin embargo, la calificación de 'arbitrariedad' de la conducta de LATAM requiere verificación adicional.",
+        "element_id": "CL.CONST.Art.6.elem.garantia_orden_institucional",
+        "doctrinal_basis": "Art. 6 inc. 1 in fine CPR impone a los órganos del Estado el deber positivo de 'garantizar el orden institucional de la República', lo que incluye impedir que actores privados subviertan el ejercicio de derechos fundamentales en espacios regulados.",
+        "weaknesses": [
+          "El concepto de 'orden institucional' es amplio y su aplicación a casos individuales es doctrinariamente debatida."
+        ],
+        "open_questions": [
+          "¿Existía alguna causal legal (seguridad aérea, conducta disruptiva) que justificara la denegación de embarque?",
+          "¿Se agotaron los mecanismos administrativos disponibles en el aeropuerto?"
+        ],
+        "article_short": "Art. 6 — Sujeción de los órganos del Estado a la Constitución y las normas (CPR)"
+      }
+    ],
+    "CL.LPDC.Art.3.b": [
+      {
+        "element_name": "Existencia de relación de consumo",
+        "status": "strong",
+        "evidence": [
+          "STG-19.seg-12",
+          "STG-6.seg-40"
+        ],
+        "argument": "El pasajero Leandro Disconzi adquirió un servicio de transporte aéreo con LATAM, lo que configura una relación de consumo. El segmento STG-6.seg-40 confirma que personal de seguridad de LATAM reconoce que el pasajero 'podía embarcar', evidenciando la existencia del contrato de transporte. El segmento STG-19.seg-12 muestra al pasajero reclamando ante la aerolínea por su vuelo.",
+        "element_id": "CL.LPDC.Art.3.b.elem.relacion_de_consumo",
+        "doctrinal_basis": "El Art. 3 LPDC presupone una relación proveedor-consumidor conforme Arts. 1 y 2 de la Ley 19.496; el pasajero debe calificar como consumidor y la aerolínea como proveedor de un servicio de transporte aéreo.",
+        "weaknesses": [
+          "No se aporta copia del boleto o boarding pass como prueba documental directa del contrato."
+        ],
+        "open_questions": [
+          "¿Se acompañará prueba documental del contrato de transporte (reserva, ticket electrónico)?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (Ley 19.496)"
+      },
+      {
+        "element_name": "Proveedor obligado a informar (LATAM Airlines)",
+        "status": "strong",
+        "evidence": [
+          "STG-19.seg-12",
+          "STG-6.seg-40"
+        ],
+        "argument": "LATAM Airlines es identificada como la aerolínea proveedora. En STG-19.seg-12 el pasajero relata que la aerolínea le dice 'que ellos no tienen que me dar explicación ninguna', lo que identifica a LATAM como el sujeto que rehúsa informar. En STG-6.seg-40 se identifica a Joaquín Barraza como personal de seguridad de LATAM.",
+        "element_id": "CL.LPDC.Art.3.b.elem.sujeto_obligado_proveedor",
+        "doctrinal_basis": "El deber de información recae sobre el proveedor del servicio (Art. 1 N°2 LPDC). La aerolínea, como prestadora del servicio de transporte, es sujeto pasivo de la obligación informativa.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (Ley 19.496)"
+      },
+      {
+        "element_name": "Objeto de la información debida: condiciones de contratación y características relevantes del servicio",
+        "status": "strong",
+        "evidence": [
+          "STG-19.seg-12",
+          "STG-6.seg-12"
+        ],
+        "argument": "El pasajero fue impedido de embarcar sin que se le informaran las razones específicas ni el procedimiento. En STG-19.seg-12 relata que la aerolínea se niega a dar explicación alguna. En STG-6.seg-12 el pasajero exige que le prueben la causal invocada, evidenciando que no recibió información sustantiva sobre los motivos de la denegación de embarque.",
+        "element_id": "CL.LPDC.Art.3.b.elem.objeto_informacion_debida",
+        "doctrinal_basis": "El Art. 3 letra b) exige información sobre 'condiciones de contratación y otras características relevantes' del servicio. En transporte aéreo, esto incluye las causales de denegación de embarque y el procedimiento aplicable.",
+        "weaknesses": [
+          "La información debida podría interpretarse restrictivamente como referida solo a condiciones precontractuales y no a explicaciones post-incidente."
+        ],
+        "open_questions": [
+          "¿La jurisprudencia LPDC extiende el deber informativo del Art. 3 b) a la fase de ejecución del contrato de transporte aéreo, incluyendo denegación de embarque?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (Ley 19.496)"
+      },
+      {
+        "element_name": "Infracción al carácter veraz de la información",
+        "status": "contested",
+        "evidence": [
+          "STG-19.seg-12",
+          "STG-6.seg-40"
+        ],
+        "argument": "En STG-19.seg-12 el pasajero relata que la aerolínea lo derivó a la policía indicando que debía resolver con ellos, mientras que en STG-6.seg-40 el propio personal de LATAM confirma que el pasajero 'podía embarcar'. Esta contradicción sugiere que la información dada al pasajero (que el problema era policial) no era veraz, pues la decisión de no embarcar fue corporativa.",
+        "element_id": "CL.LPDC.Art.3.b.elem.infraccion_veracidad",
+        "doctrinal_basis": "La veracidad exige que la información proporcionada sea fidedigna y no induzca a error. Derivar al consumidor a un tercero (policía) como responsable cuando la decisión es de la aerolínea constituye información no veraz.",
+        "weaknesses": [
+          "La contradicción se infiere de segmentos de distintas conversaciones; podría argumentarse que hubo un cambio de circunstancias entre ambos momentos."
+        ],
+        "open_questions": [
+          "¿Se puede acreditar la secuencia temporal exacta entre la derivación a policía y la confirmación de elegibilidad de embarque?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (Ley 19.496)"
+      },
+      {
+        "element_name": "Infracción al carácter oportuno de la información",
+        "status": "strong",
+        "evidence": [
+          "STG-19.seg-12",
+          "STG-7.seg-12"
+        ],
+        "argument": "El pasajero perdió su vuelo (STG-7.seg-12: 'perdí mi vuelo, fui humillado') sin haber recibido información oportuna sobre las razones de la denegación. En STG-19.seg-12 la aerolínea se niega rotundamente a dar explicaciones ('no tienen que me dar explicación ninguna'), lo que configura una omisión total de información en el momento relevante para el ejercicio de derechos del consumidor.",
+        "element_id": "CL.LPDC.Art.3.b.elem.infraccion_oportunidad",
+        "doctrinal_basis": "La oportunidad exige que la información se entregue en tiempo útil para que el consumidor pueda ejercer sus derechos. La negativa total a informar o la entrega tardía vulnera este requisito.",
+        "weaknesses": [],
+        "open_questions": [
+          "¿Existió alguna comunicación escrita previa (correo, SMS) que pudiera haber satisfecho parcialmente el deber de oportunidad?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (Ley 19.496)"
+      },
+      {
+        "element_name": "Perjuicio al consumidor derivado de la infracción informativa",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-12",
+          "STG-19.seg-12"
+        ],
+        "argument": "El pasajero declara haber perdido su vuelo y haber sido humillado (STG-7.seg-12). La falta de información le impidió tomar decisiones oportunas para mitigar el daño. En STG-19.seg-12 manifiesta que 'simplemente quiero resolver mi vida e ir a mi destino', evidenciando la frustración del servicio contratado.",
+        "element_id": "CL.LPDC.Art.3.b.elem.perjuicio_consumidor",
+        "doctrinal_basis": "Si bien el Art. 3 b) no exige perjuicio como elemento típico de la infracción, la acreditación de daño es relevante para la determinación de indemnizaciones (Art. 3 letra e) LPDC) y para calificar la gravedad de la infracción.",
+        "weaknesses": [
+          "El perjuicio patrimonial exacto (costo del vuelo perdido, gastos adicionales) no está cuantificado en los segmentos disponibles."
+        ],
+        "open_questions": [
+          "¿Se acompañará prueba del daño patrimonial (nuevo boleto, alojamiento, etc.)?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (Ley 19.496)"
+      },
+      {
+        "element_name": "Modalidad específica: deflexión coordinada de responsabilidad informativa hacia autoridad policial",
+        "status": "contested",
+        "evidence": [
+          "STG-19.seg-12",
+          "STG-6.seg-40",
+          "STG-19.seg-1"
+        ],
+        "argument": "En STG-19.seg-12 el pasajero describe un circuito donde la aerolínea lo envía a la policía y la policía lo devuelve a la aerolínea. El segmento STG-19.seg-1 muestra a un funcionario policial autorizando la salida del pasajero ('anda nomás'), sugiriendo que la policía no tenía impedimento. En STG-6.seg-40 LATAM confirma que podía embarcar. Este patrón sugiere coordinación para evadir la obligación informativa, aunque la prueba de colusión deliberada requiere mayor desarrollo.",
+        "element_id": "CL.LPDC.Art.3.b.elem.colusion_deflexion_responsabilidad",
+        "doctrinal_basis": "La derivación del consumidor a un tercero (PDI) para evadir el deber propio de información constituye una modalidad agravada de infracción al Art. 3 b), pues no solo omite informar sino que activamente confunde al consumidor sobre quién es responsable.",
+        "weaknesses": [
+          "La colusión como tal requiere prueba de acuerdo previo o coordinación deliberada entre LATAM y PDI, lo cual no se acredita directamente en los segmentos.",
+          "Podría tratarse de descoordinación institucional más que de colusión intencional."
+        ],
+        "open_questions": [
+          "¿Existen protocolos escritos entre LATAM y PDI que regulen la derivación de pasajeros?",
+          "¿Se puede acreditar comunicación previa entre personal de LATAM y funcionarios PDI respecto de este pasajero específico?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (Ley 19.496)"
+      }
+    ],
+    "CL.LPDC.Art.23": [
+      {
+        "element_name": "Sujeto activo: proveedor de bienes o servicios",
+        "status": "strong",
+        "evidence": [
+          "STG-6.seg-40",
+          "STG-19.seg-12"
+        ],
+        "argument": "LATAM Airlines actúa como proveedor de servicios de transporte aéreo. El segmento STG-6.seg-40 identifica a Joaquín Barraza como personal de seguridad de LATAM, confirmando la presencia institucional del proveedor. El segmento STG-19.seg-12 documenta que el pasajero fue remitido entre la aerolínea y la policía, evidenciando que LATAM era la entidad prestadora del servicio cuestionado.",
+        "element_id": "CL.LPDC.Art.23.elem.sujeto_activo_proveedor",
+        "doctrinal_basis": "Art. 23 LPDC exige que el infractor sea un 'proveedor' en los términos del Art. 1 N°2 LPDC, es decir, quien habitualmente desarrolla actividades de producción, fabricación, importación, distribución o comercialización de bienes o prestación de servicios a consumidores.",
+        "weaknesses": [
+          "No se aporta contrato de transporte, boleto o documento que formalice la relación de consumo."
+        ],
+        "open_questions": [
+          "¿Se acompañará prueba documental del contrato de transporte (boarding pass, reserva) para acreditar formalmente la calidad de proveedor?"
+        ],
+        "article_short": "Art. 23 — Infracción del proveedor por menoscabo al consumidor con negligencia (LPDC)"
+      },
+      {
+        "element_name": "Sujeto pasivo: consumidor final",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-12",
+          "STG-6.seg-12",
+          "STG-19.seg-12"
+        ],
+        "argument": "Leandro Disconzi se identifica como pasajero que adquirió un servicio de transporte aéreo para uso personal. En STG-7.seg-12 declara haber perdido su vuelo y haber sido humillado, lo que lo sitúa como destinatario final del servicio. En STG-19.seg-12 manifiesta su intención de llegar a su destino, confirmando su calidad de consumidor.",
+        "element_id": "CL.LPDC.Art.23.elem.sujeto_pasivo_consumidor",
+        "doctrinal_basis": "El afectado debe ser un 'consumidor' conforme al Art. 1 N°1 LPDC: persona natural o jurídica que adquiere, utiliza o disfruta bienes o servicios como destinatario final.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 23 — Infracción del proveedor por menoscabo al consumidor con negligencia (LPDC)"
+      },
+      {
+        "element_name": "Contexto: venta de bien o prestación de servicio",
+        "status": "strong",
+        "evidence": [
+          "STG-6.seg-40",
+          "STG-19.seg-12",
+          "STG-7.seg-12"
+        ],
+        "argument": "El segmento STG-6.seg-40 muestra que personal de LATAM confirmó que el pasajero 'podía embarcar', lo que presupone la existencia de un contrato de transporte vigente. STG-7.seg-12 refiere la pérdida del vuelo, y STG-19.seg-12 documenta la interacción entre pasajero, aerolínea y policía en el contexto de la prestación del servicio de transporte aéreo.",
+        "element_id": "CL.LPDC.Art.23.elem.prestacion_servicio",
+        "doctrinal_basis": "La infracción debe producirse 'en la venta de un bien o en la prestación de un servicio'. Se requiere acreditar la existencia de una relación de consumo vigente al momento de los hechos.",
+        "weaknesses": [
+          "Falta documentación formal del contrato de transporte (boleto, reserva, tarjeta de embarque)."
+        ],
+        "open_questions": [],
+        "article_short": "Art. 23 — Infracción del proveedor por menoscabo al consumidor con negligencia (LPDC)"
+      },
+      {
+        "element_name": "Elemento subjetivo: actuación con negligencia",
+        "status": "contested",
+        "evidence": [
+          "STG-6.seg-40",
+          "STG-19.seg-12",
+          "STG-6.seg-12"
+        ],
+        "argument": "La negligencia se infiere de la contradicción entre la confirmación de elegibilidad para embarque (STG-6.seg-40: 'podía embarcar') y la efectiva denegación del servicio que resultó en la pérdida del vuelo. Además, STG-19.seg-12 evidencia que LATAM derivó al pasajero a la policía sin dar explicaciones ('ellos me dicen que tengo que solucionar con ustedes, que ellos no tienen que me dar explicación ninguna'), lo que sugiere una falta de diligencia en la gestión del incidente. Sin embargo, la calificación de negligencia versus actuación deliberada permanece abierta.",
+        "element_id": "CL.LPDC.Art.23.elem.negligencia",
+        "doctrinal_basis": "Art. 23 LPDC requiere que el proveedor haya actuado 'con negligencia'. La doctrina (Corral Talciani, Barrientos Camus) interpreta este estándar como culpa infraccional: falta de diligencia debida en la prestación del servicio, incluyendo omisiones de información, procedimientos internos deficientes o falta de coordinación.",
+        "weaknesses": [
+          "La línea entre negligencia y conducta deliberada no está claramente delimitada en los segmentos disponibles.",
+          "No se cuenta con protocolos internos de LATAM que permitan contrastar el estándar de diligencia exigible."
+        ],
+        "open_questions": [
+          "¿La denegación de embarque fue resultado de un error procedimental (negligencia) o de una decisión deliberada del personal?",
+          "¿Existen protocolos internos de LATAM sobre manejo de incidentes con pasajeros que permitan evaluar el estándar de cuidado?"
+        ],
+        "article_short": "Art. 23 — Infracción del proveedor por menoscabo al consumidor con negligencia (LPDC)"
+      },
+      {
+        "element_name": "Modalidad típica: fallas o deficiencias en calidad, identidad, sustancia, seguridad o procedencia del servicio",
+        "status": "strong",
+        "evidence": [
+          "STG-6.seg-40",
+          "STG-19.seg-12",
+          "STG-6.seg-12"
+        ],
+        "argument": "Se configura una deficiencia en la calidad del servicio: pese a que el personal de LATAM confirmó que el pasajero 'podía embarcar' (STG-6.seg-40), el servicio de transporte no fue efectivamente prestado. La derivación del pasajero a la policía sin explicación (STG-19.seg-12) y la acusación no sustanciada denunciada por el pasajero (STG-6.seg-12: 'pruebame eso, porque es simplemente alguien que no le gustó de la pregunta que le hice') evidencian deficiencias graves en la calidad y procedimiento del servicio.",
+        "element_id": "CL.LPDC.Art.23.elem.falla_deficiencia_servicio",
+        "doctrinal_basis": "El menoscabo debe originarse en 'fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio'. En servicios de transporte aéreo, esto incluye deficiencias en la calidad de la prestación, falta de información veraz y procedimientos arbitrarios de denegación de embarque.",
+        "weaknesses": [
+          "No se precisa cuál de las categorías legales específicas (calidad, identidad, seguridad, etc.) es la más aplicable; la argumentación debe afinarse."
+        ],
+        "open_questions": [
+          "¿La falla se encuadra mejor como deficiencia de 'calidad' del servicio o como deficiencia de 'seguridad' en los procedimientos de embarque?"
+        ],
+        "article_short": "Art. 23 — Infracción del proveedor por menoscabo al consumidor con negligencia (LPDC)"
+      },
+      {
+        "element_name": "Resultado: menoscabo al consumidor",
+        "status": "established",
+        "evidence": [
+          "STG-7.seg-12",
+          "STG-19.seg-12"
+        ],
+        "argument": "El menoscabo está acreditado de forma directa. En STG-7.seg-12, el pasajero declara: 'perdí mi vuelo, fui humillado', lo que configura tanto un perjuicio patrimonial (pérdida del servicio contratado) como un daño moral (humillación). En STG-19.seg-12, el pasajero expresa su necesidad urgente de llegar a destino ('simplemente quiero resolver mi vida e ir a mi destino'), evidenciando la afectación concreta en su esfera personal y patrimonial.",
+        "element_id": "CL.LPDC.Art.23.elem.menoscabo_consumidor",
+        "doctrinal_basis": "Art. 23 LPDC exige que la conducta negligente 'cause menoscabo al consumidor'. El menoscabo puede ser patrimonial (pérdida del pasaje, gastos adicionales) o extrapatrimonial (humillación, angustia). La jurisprudencia del SERNAC y Juzgados de Policía Local ha reconocido ambas dimensiones.",
+        "weaknesses": [
+          "La cuantificación del menoscabo patrimonial (valor del pasaje, gastos conexos) no consta en los segmentos."
+        ],
+        "open_questions": [
+          "¿Se acompañará prueba documental para cuantificar el menoscabo patrimonial (valor del pasaje perdido, gastos de alojamiento, pasaje de reemplazo)?"
+        ],
+        "article_short": "Art. 23 — Infracción del proveedor por menoscabo al consumidor con negligencia (LPDC)"
+      },
+      {
+        "element_name": "Nexo causal entre la conducta negligente del proveedor y el menoscabo",
+        "status": "strong",
+        "evidence": [
+          "STG-6.seg-40",
+          "STG-6.seg-12",
+          "STG-7.seg-12",
+          "STG-19.seg-12"
+        ],
+        "argument": "La cadena causal se reconstruye así: (1) LATAM confirma elegibilidad de embarque (STG-6.seg-40); (2) pese a ello, el pasajero es impedido de abordar basándose en una acusación no sustanciada (STG-6.seg-12); (3) LATAM rehúsa dar explicaciones y deriva al pasajero a la policía (STG-19.seg-12); (4) el resultado es la pérdida del vuelo y la humillación del pasajero (STG-7.seg-12). La secuencia establece un vínculo directo entre la conducta deficiente del proveedor y el menoscabo.",
+        "element_id": "CL.LPDC.Art.23.elem.nexo_causal",
+        "doctrinal_basis": "Se requiere relación de causalidad adecuada entre la falla o deficiencia del proveedor y el menoscabo sufrido por el consumidor. La carga probatoria recae en el consumidor demandante, aunque la jurisprudencia ha admitido presunciones cuando el proveedor no justifica la denegación del servicio.",
+        "weaknesses": [
+          "Podría alegarse intervención de un tercero (policía, DGAC) como causa concurrente que rompe o atenúa el nexo causal.",
+          "La participación de la PDI en el incidente podría ser invocada por LATAM como eximente."
+        ],
+        "open_questions": [
+          "¿LATAM solicitó formalmente la intervención policial o fue la policía quien actuó de oficio?",
+          "¿Existe documentación de la PDI o DGAC que atribuya la denegación de embarque a una decisión autónoma de la autoridad y no del proveedor?"
+        ],
+        "article_short": "Art. 23 — Infracción del proveedor por menoscabo al consumidor con negligencia (LPDC)"
+      },
+      {
+        "element_name": "Objeto material: servicio de transporte aéreo contratado",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-12",
+          "STG-19.seg-12",
+          "STG-6.seg-40"
+        ],
+        "argument": "El objeto material es el servicio de transporte aéreo. STG-7.seg-12 confirma la existencia de un vuelo que fue perdido. STG-19.seg-12 muestra al pasajero intentando llegar a su destino. STG-6.seg-40 confirma que existía habilitación para embarcar, lo que presupone un servicio contratado y vigente sobre el cual recayó la infracción.",
+        "element_id": "CL.LPDC.Art.23.elem.objeto_material",
+        "doctrinal_basis": "El objeto sobre el cual recae la infracción es el 'respectivo bien o servicio'. En este caso, el servicio de transporte aéreo de pasajeros, cuya prestación fue impedida o deficientemente ejecutada.",
+        "weaknesses": [
+          "No se identifica el número de vuelo, ruta ni fecha específica en los segmentos disponibles."
+        ],
+        "open_questions": [],
+        "article_short": "Art. 23 — Infracción del proveedor por menoscabo al consumidor con negligencia (LPDC)"
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CPCL.C1.Art.269_ter",
+      "candidate_name": "Obstrucción a la investigación (Art. 269 ter Código Penal)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 269 ter from bcn.cl/leychile to confirm exact wording and agent scope",
+        "Verify whether the article applies only to fiscales/policías or extends to any person who obstructs"
+      ],
+      "preliminary_view": "AGENT-FIT CONCERN: Art. 269 ter in its known formulation targets 'el funcionario policial, fiscal o abogado asistente del fiscal' — if PDI officers coached LATAM to file a personal complaint to deflect corporate liability, the PDI officers could be duty-bearers, but LATAM staff likely would not be direct subjects of this norm. Applicability to PDI personnel plausible if their coaching constitutes concealment of antecedents relevant to an investigation.",
+      "history_note": "Carried forward from legacy candidate list; requires verbatim verification and agent-scope confirmation."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.207",
+      "candidate_name": "Presentación de denuncia o querella falsa (Art. 207 Código Penal)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CP.Art.207 from bcn.cl/leychile",
+        "Confirm whether the norm covers inducing another to file a false or misleading complaint, or only the direct filer"
+      ],
+      "preliminary_view": "If PDI coached LATAM to file a personal complaint against the passenger based on unsubstantiated accusations (passenger was cleared to board per LATAM's own staff), this could constitute inducement to present a denuncia calumniosa. Requires verification of exact text and whether inducement is covered or only direct filing.",
+      "history_note": "New candidate proposed based on the factual pattern of coaching to file a complaint to shield corporate liability."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.256",
+      "candidate_name": "Abuso de autoridad / actos arbitrarios contra particulares (Art. 256 Código Penal)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CP.Art.256 from bcn.cl/leychile",
+        "Confirm whether coaching a private entity to file a complaint to deflect liability constitutes an 'acto arbitrario' by a public official"
+      ],
+      "preliminary_view": "PDI officers are empleados públicos. If they used their authority to coach LATAM into filing a personal complaint against the passenger — thereby shielding the airline from corporate accountability — this could constitute an arbitrary act prejudicial to a private individual's rights.",
+      "history_note": "New candidate. Art. 256 CP targets public officials who commit arbitrary acts against individuals."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.269_bis",
+      "candidate_name": "Obstrucción a la justicia (Art. 269 bis Código Penal)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CP.Art.269_bis from bcn.cl/leychile",
+        "Determine whether the norm covers any person (not just officials) who obstructs justice by diverting accountability"
+      ],
+      "preliminary_view": "If the coaching to file a personal complaint was designed to prevent or obstruct a legitimate investigation into LATAM's denial of boarding, Art. 269 bis may apply to the actors involved. Must verify agent scope.",
+      "history_note": "New candidate; complements Art. 269 ter but may have broader agent scope."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.15",
+      "candidate_name": "Autoría e instigación (Art. 15 Código Penal)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CP.Art.15 from bcn.cl/leychile",
+        "Confirm whether numeral 2 (inducir directamente a otro a ejecutarlo) applies to PDI coaching LATAM to file complaint"
+      ],
+      "preliminary_view": "Art. 15 N°2 defines as authors those who 'inducen directamente a otro a ejecutarlo.' If PDI directly induced LATAM staff to file a personal complaint as a mechanism to shield corporate liability, PDI officers could be considered instigators/co-authors of any resulting offense (e.g., denuncia calumniosa).",
+      "history_note": "New candidate addressing the instigator theory for the coaching conduct."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.131",
+      "candidate_name": "Obligaciones del transportador ante denegación de embarque (Art. 131 Código Aeronáutico)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.131 from bcn.cl/leychile",
+        "Confirm whether it establishes airline obligations when boarding is denied and whether deflection to police violates these duties"
+      ],
+      "preliminary_view": "If LATAM denied boarding and then deflected all responsibility to PDI rather than fulfilling its own statutory obligations to the passenger (information, rebooking, compensation), Art. 131 CACH may be directly violated. The coaching to file a personal complaint could be part of a strategy to avoid these obligations.",
+      "history_note": "New candidate addressing airline's statutory duties under aeronautical code."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.133",
+      "candidate_name": "Responsabilidad del transportador por incumplimiento (Art. 133 Código Aeronáutico)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.133 from bcn.cl/leychile",
+        "Verify scope of carrier liability for failure to transport"
+      ],
+      "preliminary_view": "Establishes carrier liability for failure to perform the transport contract. LATAM's own staff confirmed the passenger 'podía embarcar' yet boarding was denied. Deflecting to police via coached complaint filing does not extinguish contractual liability.",
+      "history_note": "New candidate; complements Art. 131 CACH."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.3.e",
+      "candidate_name": "Derecho a la reparación e indemnización (Art. 3 letra e LPC)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.3.e from bcn.cl/leychile",
+        "Confirm that letra e covers the right to adequate and timely reparation"
+      ],
+      "preliminary_view": "The passenger's right to reparation was actively frustrated by the collusive scheme to redirect accountability from LATAM to a personal criminal complaint. Art. 3 letra e guarantees the consumer's right to reparation which was obstructed.",
+      "history_note": "New candidate; extends beyond Art. 3.b already established."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.12",
+      "candidate_name": "Incumplimiento de condiciones ofrecidas o convenidas (Art. 12 LPC)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.12 from bcn.cl/leychile",
+        "Confirm whether it covers refusal to provide contracted service (transport) and whether deflection to police constitutes a violation"
+      ],
+      "preliminary_view": "LATAM sold a ticket (contract), its own staff confirmed boarding eligibility, yet service was denied. Coaching police to file a complaint against the passenger rather than honoring the contract may constitute infraction under Art. 12.",
+      "history_note": "New candidate addressing contractual non-performance under consumer law."
+    },
+    {
+      "candidate_article_id": "CL.CONST.Art.19.3",
+      "candidate_name": "Garantía del debido proceso (Art. 19 N°3 Constitución)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CONST.Art.19.3 from bcn.cl/leychile",
+        "Verify applicability to police-airline collusion that deprives passenger of due process protections"
+      ],
+      "preliminary_view": "The coaching to file a personal complaint — rather than following proper administrative/police procedures — may have deprived the passenger of due process guarantees. The passenger was not informed of specific charges, not given opportunity to defend, and was subjected to arbitrary action by state agents acting in concert with a private party.",
+      "history_note": "New candidate; constitutional due process guarantee."
+    },
+    {
+      "candidate_article_id": "CL.CONST.Art.19.7",
+      "candidate_name": "Derecho a la libertad personal y seguridad individual (Art. 19 N°7 Constitución)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CONST.Art.19.7 from bcn.cl/leychile",
+        "Determine whether the passenger's detention or restriction of movement at the airport constitutes a violation"
+      ],
+      "preliminary_view": "If the collusive coaching resulted in the passenger being detained or restricted in movement without lawful basis (given that LATAM's own staff confirmed boarding eligibility), this constitutional guarantee of personal liberty may have been violated.",
+      "history_note": "New candidate; constitutional liberty guarantee relevant to airport detention scenario."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Responsabilidad extracontractual por daño (Art. 2314 Código Civil)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2314 from bcn.cl/leychile",
+        "Confirm applicability to joint tortfeasors (PDI + LATAM) acting in concert to cause harm"
+      ],
+      "preliminary_view": "General extracontractual liability norm. The collusive conduct between PDI and LATAM — coaching to file a personal complaint to shield corporate liability — caused demonstrable harm (missed flight, humiliation, potential criminal exposure). Both actors may be jointly liable under Art. 2314 read with Art. 2317 CC.",
+      "history_note": "New candidate; civil liability foundation for damages claim."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2317",
+      "candidate_name": "Responsabilidad solidaria por delito o cuasidelito civil (Art. 2317 Código Civil)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2317 from bcn.cl/leychile",
+        "Confirm joint and several liability applies when multiple actors collude to cause harm"
+      ],
+      "preliminary_view": "If PDI and LATAM acted in concert (collusion to coach filing of personal complaint), Art. 2317 establishes joint and several liability for the resulting damage. Complements Art. 2314.",
+      "history_note": "New candidate; solidary liability for concerted tortious conduct."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.246",
+      "candidate_name": "Revelación de secretos / prevaricación administrativa (Art. 246 Código Penal)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CP.Art.246 from bcn.cl/leychile",
+        "Verify whether PDI officers providing tactical legal advice to LATAM (coaching complaint filing) constitutes a form of prevaricación or abuse of office"
+      ],
+      "preliminary_view": "AGENT-FIT NOTE: This targets public officials. If PDI officers used their official position to provide strategic legal coaching to LATAM — advising them to file a personal complaint to deflect corporate liability — this may constitute a form of administrative prevaricación. Requires careful verification of exact text and elements.",
+      "history_note": "New candidate; explores whether coaching constitutes prevaricación by public official."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.241",
+      "candidate_name": "Exacciones ilegales / cohecho impropio (Art. 241 Código Penal)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CP.Art.241 from bcn.cl/leychile",
+        "Determine whether PDI officers acting to benefit LATAM (a private corporation) at the expense of a citizen constitutes conduct under this article"
+      ],
+      "preliminary_view": "AGENT-FIT NOTE: Targets public officials. If PDI officers acted to benefit LATAM by coaching complaint filing — potentially in exchange for institutional cooperation or other benefit — this could implicate Art. 241. However, evidence of quid pro quo is not established in the current record; this is speculative and requires further factual development.",
+      "history_note": "New candidate; speculative but included for completeness given collusion allegation."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.16.g",
+      "candidate_name": "Cláusulas abusivas - limitación de responsabilidad (Art. 16 letra g LPC)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.16.g from bcn.cl/leychile",
+        "Determine whether LATAM's deflection strategy constitutes an abusive limitation of liability under consumer law"
+      ],
+      "preliminary_view": "If LATAM's internal protocol involves deflecting passenger complaints to police (rather than addressing them as consumer claims), this systematic practice could constitute an abusive contractual mechanism that limits the provider's liability in violation of Art. 16 letra g.",
+      "history_note": "New candidate; addresses systemic deflection as abusive practice."
+    }
+  ],
+  "authorities": [],
+  "pipeline_validation": {
+    "pack": "Validation report CL-001",
+    "results": [
+      {
+        "check": "V01-V05, V09-V11",
+        "name": "All structural checks",
+        "result": "✅ pass",
+        "detail": "8 checks passed"
+      },
+      {
+        "check": "V06",
+        "name": "element_coverage",
+        "result": "⚠️ warn",
+        "detail": "Elements uncovered in nexus"
+      },
+      {
+        "check": "V07",
+        "name": "authorities_verification",
+        "result": "⚠️ warn",
+        "detail": "17/17 unverified"
+      },
+      {
+        "check": "V08",
+        "name": "contract_consistency",
+        "result": "⚠️ warn",
+        "detail": "derived=0.48 vs. contract=0.95"
+      }
+    ],
+    "summary": {
+      "pass": 1,
+      "warn": 3,
+      "fail": 0
+    },
+    "note": "Validation results pre-Recommendation 9.3"
+  },
+  "cross_references": [
+    {
+      "ref": "CL-003",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-007",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001",
+      "relation": "personal_complaint_coaching_shields_corporate_liability_for_false_accusation"
+    },
+    {
+      "ref": "CL-001__opus46",
+      "relation": "personal_complaint_coaching_shields_corporate_liability_for_false_accusation"
+    },
+    {
+      "ref": "CL-001__opus46v1",
+      "relation": "personal_complaint_coaching_shields_corporate_liability_for_false_accusation"
+    },
+    {
+      "ref": "CL-002",
+      "relation": "pdi_collusion_enabled_forcible_removal_without_basis"
+    },
+    {
+      "ref": "CL-002__opus46",
+      "relation": "pdi_collusion_enabled_forcible_removal_without_basis"
+    },
+    {
+      "ref": "CL-003__opus46",
+      "relation": "coaching_personal_complaint_is_direct_evidence_of_institutional_collusion"
+    },
+    {
+      "ref": "CL-004",
+      "relation": "deflection_to_personal_complaint_facilitated_concealment_of_exoneration"
+    },
+    {
+      "ref": "CL-004__opus46",
+      "relation": "deflection_to_personal_complaint_facilitated_concealment_of_exoneration"
+    },
+    {
+      "ref": "CL-005",
+      "relation": "pdi_coached_complaint_despite_knowing_cctv_showed_no_aggression"
+    },
+    {
+      "ref": "CL-005__deepseek",
+      "relation": "pdi_coached_complaint_despite_knowing_cctv_showed_no_aggression"
+    },
+    {
+      "ref": "CL-006",
+      "relation": "airline_deflection_to_police_continued_as_next_day_boarding_denial"
+    },
+    {
+      "ref": "CL-006__opus46",
+      "relation": "airline_deflection_to_police_continued_as_next_day_boarding_denial"
+    },
+    {
+      "ref": "CL-007__opus46",
+      "relation": "coaching_personal_complaint_prevented_corrective_action_by_airline"
+    },
+    {
+      "ref": "CL-008",
+      "relation": "dgac_officer_aware_of_procedures_yet_abdicated_oversight_during_collusion"
+    },
+    {
+      "ref": "CL-008__opus46",
+      "relation": "dgac_officer_aware_of_procedures_yet_abdicated_oversight_during_collusion"
+    },
+    {
+      "ref": "CL-009",
+      "relation": "collusion_coaching_breached_icao_facilitation_standards"
+    },
+    {
+      "ref": "CL-009__opus46",
+      "relation": "collusion_coaching_breached_icao_facilitation_standards"
+    },
+    {
+      "ref": "CL-010",
+      "relation": "deflection_loop_between_airline_and_pdi_denied_fundamental_passenger_rights"
+    },
+    {
+      "ref": "CL-010__opus46",
+      "relation": "deflection_loop_between_airline_and_pdi_denied_fundamental_passenger_rights"
+    },
+    {
+      "ref": "CL-011",
+      "relation": "coaching_personal_complaint_substituted_for_due_process"
+    },
+    {
+      "ref": "CL-011__opus46",
+      "relation": "coaching_personal_complaint_substituted_for_due_process"
+    },
+    {
+      "ref": "CL-012__opus46",
+      "relation": "alternate_draft_of_same_violation"
+    },
+    {
+      "ref": "CL-016",
+      "relation": "personal_complaint_coaching_parallels_unsigned_carta_de_desembarque_with_disproven_allegations"
+    },
+    {
+      "ref": "CL-016__gemini3flash",
+      "relation": "personal_complaint_coaching_parallels_invalid_disembarkation_document"
+    },
+    {
+      "ref": "CL-016__grok41fast",
+      "relation": "personal_complaint_coaching_parallels_invalid_disembarkation_document"
+    },
+    {
+      "ref": "CL-016__haikulatest",
+      "relation": "personal_complaint_coaching_parallels_invalid_disembarkation_document"
+    },
+    {
+      "ref": "CL-016__hy3",
+      "relation": "personal_complaint_coaching_parallels_invalid_disembarkation_document"
+    },
+    {
+      "ref": "CL-016__opus46",
+      "relation": "personal_complaint_coaching_parallels_invalid_disembarkation_document"
+    },
+    {
+      "ref": "CL-016__opus47",
+      "relation": "personal_complaint_coaching_parallels_invalid_disembarkation_document"
+    },
+    {
+      "ref": "CL-016__opus47version2",
+      "relation": "personal_complaint_coaching_parallels_invalid_disembarkation_document"
+    },
+    {
+      "ref": "CL-016__sonnet4",
+      "relation": "personal_complaint_coaching_parallels_invalid_disembarkation_document"
+    },
+    {
+      "ref": "CL-016__sonnet4.6",
+      "relation": "personal_complaint_coaching_parallels_invalid_disembarkation_document"
+    },
+    {
+      "ref": "CL-016__sonnetlatest",
+      "relation": "personal_complaint_coaching_parallels_invalid_disembarkation_document"
+    },
+    {
+      "ref": "CL-017",
+      "relation": "collusion_coaching_forms_part_of_broader_evidentiary_chain"
+    }
+  ],
+  "note": "Full JSON reconstruction from markdown – includes all key admissions, legal reasoning, candidate articles, and cross-references.",
+  "full_segments": [
+    {
+      "segment_id": "STG-19.seg-1",
+      "role_in_argument": "passenger_departure_authorization",
+      "audio_offset_start": 2.68,
+      "audio_offset_end": 3.57,
+      "speaker": "SPEAKER_00",
+      "verbatim_es": "Si, anda nomás.",
+      "verbatim_sha256": "f0828e40386a0d6b5f589c8e6a8ff502b39a1250ca312bf707b31661efe6236d",
+      "translation_en": "Yes, just go ahead.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_19.html#seg-1",
+      "source_sha256": "8129549a63229c2f604260e96e9aacf3923d818963f4dbbbb97f5f34797ad946",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-19.seg-12",
+      "role_in_argument": "airline_deflection_to_police_documented",
+      "audio_offset_start": 65.64,
+      "audio_offset_end": 86.58,
+      "speaker": "SPEAKER_00",
+      "verbatim_es": "Pero eso lo tienes que solucionar por la aerolínea. Pero yo digo eso y ellos me dicen que tengo que solucionar con ustedes, que ellos no tienen que me dar explicación ninguna, no, no, no, no, no. Todo eso. Mira, yo voy a entrar con un proceso judicial y todo, pero claramente que ahora yo simplemente quiero resolver mi vida e ir a mi destino, ¿entiendes? Pero está duro. Ya, ¿y le preguntaste acá qué pasó?",
+      "verbatim_sha256": "cea69fad6e16323e862e5883b1c6ee5f08cc5100cb101750bcb5ff75c18a5922",
+      "translation_en": "But you have to resolve that through the airline. But I say that and they tell me I have to resolve it with you [police], that they don't have to give me any explanation at all — no, no, no, no, no. All of that. Look, I'm going to initiate legal proceedings and everything, but clearly right now I simply want to sort out my life and go to my destination, you understand? But it's tough. So, did you ask here what happened?",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_19.html#seg-12",
+      "source_sha256": "8129549a63229c2f604260e96e9aacf3923d818963f4dbbbb97f5f34797ad946",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-6.seg-1",
+      "role_in_argument": "call_initiation_context",
+      "audio_offset_start": 13,
+      "audio_offset_end": 13.5,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "¿Sí?",
+      "verbatim_sha256": "9754246b4c9e01eb103c4eeada1d6e56323a2f802c3b593ab1f9c8963720bf8e",
+      "translation_en": "Yes?",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_6.html#seg-1",
+      "source_sha256": "eb5c0de30326eac272186164fd04796e665a8152b85f857408a977774a6c140a",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-6.seg-12",
+      "role_in_argument": "passenger_challenges_unsubstantiated_accusation",
+      "audio_offset_start": 46.6,
+      "audio_offset_end": 54.4,
+      "speaker": "Leandro",
+      "verbatim_es": "Yo salgo solo. Pero pruebame eso, por que es simplesmente alguien que no le gusto de la pregunta que lo hice y esta intentando hacer eso. Simplesmente, entiendes?",
+      "verbatim_sha256": "af95061994ba0702af2010510a56e755f27f3bb981365a317b0cde4c200e3f03",
+      "translation_en": "I leave on my own. But prove that to me, because it's simply someone who didn't like the question I asked him and is trying to do this. Simply, you understand?",
+      "transcription_notes": "Speaker is a Brazilian Portuguese native; 'pruebame' and 'simplesmente' reflect L1 interference. 'lo hice' likely intended as 'le hice'.",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_6.html#seg-12",
+      "source_sha256": "eb5c0de30326eac272186164fd04796e665a8152b85f857408a977774a6c140a",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-6.seg-40",
+      "role_in_argument": "latam_staff_confirms_boarding_eligibility",
+      "audio_offset_start": 679.01,
+      "audio_offset_end": 679.58,
+      "speaker": "Joaquin Barraza (Latam security staff)",
+      "verbatim_es": "podía embarcar.",
+      "verbatim_sha256": "0eacbecad9479ba928ff637d4a2e82e4bc3d68c7e289cca79b96be33f8149363",
+      "translation_en": "He could board.",
+      "transcription_notes": "Joaquín Barraza (LATAM security) confirms the passenger was eligible to board, contradicting the denial-of-boarding action and evidencing that the removal lacked operational justification.",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_6.html#seg-40",
+      "source_sha256": "eb5c0de30326eac272186164fd04796e665a8152b85f857408a977774a6c140a",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-7.seg-1",
+      "role_in_argument": "clarification_query_on_complaint_target",
+      "audio_offset_start": 95.2,
+      "audio_offset_end": 95.84,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "¿A él?",
+      "verbatim_sha256": "9ddfe645de780cea07e59a43d69ee290e78309025673af740107ee7c89ee9b83",
+      "translation_en": "Him?",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_7.html#seg-1",
+      "source_sha256": "e972cadc58604bb1a88ce3044ae52d3a314108389904a19e48bd1c69a23da180",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-7.seg-12",
+      "role_in_argument": "passenger_state_of_mind_post_denial",
+      "audio_offset_start": 136.98,
+      "audio_offset_end": 142.53,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "Yo estoy tranquilísimo porque estoy muy enojado porque perdí mi vuelo, fui humillado.",
+      "verbatim_sha256": "b46dccc4cf0984ac0fee1143e9b8c5f7e226614e59820d2e472a6f0b220bbfcc",
+      "translation_en": "I am extremely calm because I am very angry because I lost my flight, I was humiliated.",
+      "transcription_notes": "Passenger's self-description of composure despite anger is relevant to rebutting any claim of disruptive behavior used to justify the denial of boarding.",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_7.html#seg-12",
+      "source_sha256": "e972cadc58604bb1a88ce3044ae52d3a314108389904a19e48bd1c69a23da180",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-7.seg-40",
+      "role_in_argument": "dgac_officer_procedural_awareness_statement",
+      "audio_offset_start": 393.23,
+      "audio_offset_end": 395.77,
+      "speaker": "DGAC - Of",
+      "verbatim_es": "En ese caso deve saber como son los procedimentos",
+      "verbatim_sha256": "522e6311e121960970cad020ccaf5c5b9fe04ed531da9f55a3dc732ed1450129",
+      "translation_en": "In that case, [you] should know how the procedures work.",
+      "transcription_notes": "Speaker identified as DGAC officer. 'deve' is non-standard spelling of 'debe'; 'procedimentos' reflects Portuguese/Spanish interference or transcription artifact.",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_7.html#seg-40",
+      "source_sha256": "e972cadc58604bb1a88ce3044ae52d3a314108389904a19e48bd1c69a23da180",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-19.seg-40",
+      "role_in_argument": "empty_segment_no_probative_value",
+      "audio_offset_start": 0,
+      "audio_offset_end": 0,
+      "speaker": "unknown",
+      "verbatim_es": "",
+      "verbatim_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "translation_en": "",
+      "transcription_notes": "Segment contains no verbatim text; speaker unknown. No evidentiary value in current form — may reflect a transcription gap or silence.",
+      "source_uri": "legacy://CL-012/STG-19.seg-40",
+      "source_sha256": "d2aa61495cb2e7d8037f5552b432b97f897abc81023a835898569d4d5e677f7e",
+      "audio_uri": null
+    }
+  ],
+  "incident_meta": {
+    "date": "2024-07-05",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T13:30:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "framework_caches": [
+    {
+      "framework_code": "CHIPENCOD",
+      "framework_name": "Codigo Penal de Chile",
+      "cache_file": "Legal framework/CHIPENCOD.md",
+      "cache_file_sha256": "5e189a4a8d31010c3c09610bd439368e1b5d120d4b8a6cae7f13fa19d18cfb9f",
+      "cache_self_reported_sha256": "509efbf4814f18b681903a7e6c1cd828443c47cb4930c67991d7a32c69fe0baf",
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "1",
+        "141",
+        "148",
+        "193",
+        "194",
+        "195",
+        "196",
+        "197",
+        "211",
+        "212",
+        "255",
+        "296"
+      ]
+    },
+    {
+      "framework_code": "CPCL",
+      "framework_name": "Codigo Penal de Chile (Definitions)",
+      "cache_file": "Legal framework/CPCL.md",
+      "cache_file_sha256": "0b2d5b975f2e95a699c22550dd660fe12fd724b9a0206361553c31927773b7fe",
+      "cache_self_reported_sha256": null,
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "17",
+        "94",
+        "255",
+        "269 ter",
+        "412",
+        "416",
+        "494 N 16"
+      ]
+    },
+    {
+      "framework_code": "CONST",
+      "framework_name": "Constitucion Politica de la Republica de Chile",
+      "cache_file": "Legal framework/CONST.md",
+      "cache_file_sha256": "a42140a74935d28b0fef0a348c03c37153a98f774b70ebc4a13b3fdf1e0bfca8",
+      "cache_self_reported_sha256": "26b530c199a5505c31d320758d810f9d28b4e8bdf6c92e8eda78d06c1583e302",
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "1",
+        "5",
+        "6",
+        "19.1",
+        "19.3",
+        "19.7"
+      ]
+    },
+    {
+      "framework_code": "LPDC",
+      "framework_name": "Ley 19.496 — Ley de Proteccion de los Derechos del Consumidor",
+      "cache_file": "Legal framework/LPDC.md",
+      "cache_file_sha256": "222cb7cef77794c04cb903a3a4d519641255fa339cf32487f9496a1e0ba4c530",
+      "cache_self_reported_sha256": null,
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "3 letra b)",
+        "3 letra e)",
+        "12",
+        "23",
+        "23 bis",
+        "50",
+        "50 A",
+        "58"
+      ]
+    }
+  ],
+  "nexus_matrix": [
+    {
+      "fact_id": "STG-19.seg-1",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.modalidad_tipica",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Authorization to depart contradicts any official narrative that passenger was disruptive or unfit to travel."
+    },
+    {
+      "fact_id": "STG-19.seg-1",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.sustancialidad_de_la_falsedad",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Departure clearance proves any documented claim of threat or disorder is substantively false."
+    },
+    {
+      "fact_id": "STG-6.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.modalidad_tipica",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "LATAM staff confirms passenger could board, contradicting any official report stating otherwise."
+    },
+    {
+      "fact_id": "STG-6.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.sustancialidad_de_la_falsedad",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Boarding eligibility confirmation shows falsified facts were outcome-determinative for denial of service."
+    },
+    {
+      "fact_id": "STG-7.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.sujeto_activo",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "DGAC officer's procedural statement identifies a public employee with document-issuing authority."
+    },
+    {
+      "fact_id": "STG-7.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.abuso_del_oficio",
+      "nexus_type": "functional_context",
+      "strength": "medium",
+      "rationale_oneline": "Officer's invocation of 'procedures' shows exercise of official functions in the context of the incident."
+    },
+    {
+      "fact_id": "STG-7.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.perjuicio",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger states he lost his flight and was humiliated — concrete harm flowing from the falsified record."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.dolo",
+      "nexus_type": "circumstantial_omission",
+      "strength": "medium",
+      "rationale_oneline": "Passenger identifies accusation as retaliatory for asking a question, suggesting deliberate fabrication motive."
+    },
+    {
+      "fact_id": "STG-7.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.documento_publico",
+      "nexus_type": "functional_context",
+      "strength": "medium",
+      "rationale_oneline": "Reference to official procedures implies generation of formal records within DGAC's documentary framework."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.C1.Art.17.2.elem.modalidad_ocultacion",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Police deflects to airline and airline deflects back, creating circular concealment of accountability."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.C1.Art.17.2.elem.finalidad_impedir_descubrimiento",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Mutual deflection pattern functionally prevents passenger from discovering who authored the wrongful denial."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.C1.Art.17.2.elem.posterioridad_ejecucion",
+      "nexus_type": "functional_context",
+      "strength": "high",
+      "rationale_oneline": "Deflection occurs after boarding denial is already executed, placing conduct squarely post-delictum."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.C1.Art.17.2.elem.conocimiento_delito_previo",
+      "nexus_type": "corroborating_admission",
+      "strength": "medium",
+      "rationale_oneline": "Police's awareness of the situation and refusal to explain implies knowledge of the underlying wrongful act."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.C1.Art.17.elem.tipicidad_subjetiva_dolo",
+      "nexus_type": "circumstantial_omission",
+      "strength": "medium",
+      "rationale_oneline": "Deliberate refusal to provide any explanation evidences intentional shielding rather than mere negligence."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.C1.Art.17.4.elem.suministro_auxilios_noticias",
+      "nexus_type": "active_concealment_directive",
+      "strength": "medium",
+      "rationale_oneline": "Police directs passenger back to airline, effectively providing cover for airline's refusal to explain."
+    },
+    {
+      "fact_id": "STG-19.seg-1",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.C1.Art.17.2.elem.no_participacion_previa",
+      "nexus_type": "system_state_corroboration",
+      "strength": "medium",
+      "rationale_oneline": "Authorization to leave suggests police did not originate the boarding denial but acted after the fact."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.C1.Art.17.4.elem.proteccion_habitual_malhechores",
+      "nexus_type": "functional_context",
+      "strength": "low",
+      "rationale_oneline": "Pattern of shielding airline from accountability suggests institutional protection of the wrongdoer."
+    },
+    {
+      "fact_id": "STG-7.seg-40",
+      "norm_id": "CL.CONST.T1.C1.Art.6",
+      "element_id": "CL.CONST.Art.6.elem.organo_del_estado",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "DGAC officer is identifiable as organ of the State exercising aeronautical authority functions."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.CONST.T1.C1.Art.6",
+      "element_id": "CL.CONST.Art.6.elem.accion_estatal_concreta",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Police's refusal to provide explanation and deflection constitutes a concrete omission of state duty."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.CONST.T1.C1.Art.6",
+      "element_id": "CL.CONST.Art.6.elem.colusion_publico_privada",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Circular deflection between police and airline demonstrates coordinated public-private collusion against passenger."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.CONST.T1.C1.Art.6",
+      "element_id": "CL.CONST.Art.6.elem.norma_constitucional_infringida",
+      "nexus_type": "functional_context",
+      "strength": "medium",
+      "rationale_oneline": "State organs' failure to act lawfully infringes Art. 6 duty of constitutional and legal subjection."
+    },
+    {
+      "fact_id": "STG-7.seg-40",
+      "norm_id": "CL.CONST.T1.C1.Art.6",
+      "element_id": "CL.CONST.Art.6.elem.vinculacion_directa_constitucion",
+      "nexus_type": "functional_context",
+      "strength": "medium",
+      "rationale_oneline": "Officer's reference to 'procedures' invokes institutional framework directly bound by constitutional supremacy."
+    },
+    {
+      "fact_id": "STG-7.seg-12",
+      "norm_id": "CL.CONST.T1.C1.Art.6",
+      "element_id": "CL.CONST.Art.6.elem.responsabilidad_sancion",
+      "nexus_type": "harm_crystallization",
+      "strength": "medium",
+      "rationale_oneline": "Flight loss and humiliation constitute concrete harm triggering Art. 6 inc. 3 state responsibility."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.CONST.T1.C1.Art.6",
+      "element_id": "CL.CONST.Art.6.elem.garantia_orden_institucional",
+      "nexus_type": "circumstantial_omission",
+      "strength": "medium",
+      "rationale_oneline": "State's failure to intervene against airline's arbitrary denial breaches duty to guarantee institutional order."
+    },
+    {
+      "fact_id": "STG-6.seg-1",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.relacion_de_consumo",
+      "nexus_type": "functional_context",
+      "strength": "medium",
+      "rationale_oneline": "Call initiation establishes ongoing consumer-provider interaction regarding contracted air transport service."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.infraccion_veracidad",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Airline refuses any explanation, making it impossible for consumer to receive truthful information about denial."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.infraccion_oportunidad",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Information is withheld at the critical moment when passenger needs it to exercise rights or rebook."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.colusion_deflexion_responsabilidad",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Airline explicitly deflects informational responsibility to police, documented in passenger's own account."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.sujeto_obligado_proveedor",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Passenger identifies airline as the entity refusing explanation, confirming LATAM as the obligated provider."
+    },
+    {
+      "fact_id": "STG-7.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.perjuicio_consumidor",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Lost flight and humiliation are direct consumer harms resulting from informational deprivation."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.objeto_informacion_debida",
+      "nexus_type": "circumstantial_omission",
+      "strength": "medium",
+      "rationale_oneline": "Passenger seeks reason for service denial — the very information the provider is obligated to disclose."
+    },
+    {
+      "fact_id": "STG-6.seg-40",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.falla_deficiencia_servicio",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Staff confirms boarding eligibility yet service was denied — a clear deficiency in service delivery."
+    },
+    {
+      "fact_id": "STG-6.seg-40",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.negligencia",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Denying boarding to an eligible passenger demonstrates at minimum negligent failure in service protocols."
+    },
+    {
+      "fact_id": "STG-7.seg-12",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.menoscabo_consumidor",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger explicitly states loss of flight and humiliation — direct menoscabo from provider's conduct."
+    },
+    {
+      "fact_id": "STG-6.seg-40",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.nexo_causal",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Confirmation of eligibility proves the denial was provider-caused, not passenger-caused."
+    },
+    {
+      "fact_id": "STG-19.seg-12",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.sujeto_activo_proveedor",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "Passenger identifies airline as the entity refusing service and explanation, confirming provider identity."
+    },
+    {
+      "fact_id": "STG-7.seg-12",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.sujeto_pasivo_consumidor",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "Passenger's first-person account of harm identifies him as the affected consumer of the service."
+    },
+    {
+      "fact_id": "STG-6.seg-40",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.prestacion_servicio",
+      "nexus_type": "functional_context",
+      "strength": "high",
+      "rationale_oneline": "Reference to boarding confirms the context is provision of contracted air transport service."
+    },
+    {
+      "fact_id": "STG-6.seg-40",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.objeto_material",
+      "nexus_type": "functional_context",
+      "strength": "high",
+      "rationale_oneline": "Boarding eligibility confirmation identifies the object as the contracted air transport service."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.negligencia",
+      "nexus_type": "corroborating_admission",
+      "strength": "medium",
+      "rationale_oneline": "Passenger identifies accusation as retaliatory, suggesting provider acted on improper grounds rather than protocol."
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-012-DOCPUB",
+      "question": "¿Cuál es el documento público específico (parte policial, constancia PDI, acta de denuncia formalizada) que contiene la narración presuntamente falsa, y puede obtenerse copia íntegra del mismo?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.4.elem.documento_publico",
+      "priority": "critical",
+      "obtaining_method": "Solicitud de acceso a la información pública (Ley 20.285) dirigida a la PDI — Prefectura Aeropolicial de Santiago, requiriendo copia del parte, constancia o acta generada con ocasión del incidente en la fecha y vuelo correspondientes. Subsidiariamente, solicitud al Ministerio Público si existe carpeta investigativa."
+    },
+    {
+      "id": "OQ-012-REDACTOR",
+      "question": "¿Quién específicamente (nombre, grado, unidad) confeccionó el documento público que contendría la falsedad?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.4.elem.sujeto_activo",
+      "priority": "high",
+      "obtaining_method": "Solicitud Ley 20.285 a PDI requiriendo identificación del funcionario a cargo del turno y redacción de partes en la fecha del incidente; alternativamente, revisión de la firma y timbre del documento público una vez obtenido."
+    },
+    {
+      "id": "OQ-012-INSTRUCCION",
+      "question": "¿Existió instrucción o coordinación previa entre personal de LATAM y el funcionario PDI para consignar hechos falsos en el documento público?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.4.elem.abuso_del_oficio",
+      "priority": "critical",
+      "obtaining_method": "Solicitud de registros de comunicaciones (radio, teléfono, correo electrónico) entre personal de LATAM y PDI en el aeropuerto durante el período del incidente; revisión de protocolos escritos LATAM-PDI; eventual declaración testimonial de funcionarios presentes."
+    },
+    {
+      "id": "OQ-012-VERIFICACION",
+      "question": "¿El funcionario PDI verificó independientemente los hechos antes de consignarlos en el documento, o se limitó a transcribir la versión proporcionada por LATAM?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.4.elem.dolo",
+      "priority": "high",
+      "obtaining_method": "Análisis del contenido del documento público una vez obtenido (si contiene fórmulas como 'según refiere el denunciante' vs. afirmaciones directas del funcionario); declaración testimonial del funcionario redactor."
+    },
+    {
+      "id": "OQ-012-CONTRASTE",
+      "question": "¿Qué hechos específicos fueron narrados en el documento público y cuáles eran los hechos reales según la totalidad de la evidencia de audio?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.4.elem.modalidad_tipica",
+      "priority": "high",
+      "obtaining_method": "Cotejo textual del documento público (una vez obtenido) con la transcripción pericial de los audios STG-6 y STG-7; elaboración de cuadro comparativo por perito documentólogo o lingüista forense."
+    },
+    {
+      "id": "OQ-012-DELITOBASE",
+      "question": "¿Cuál es el delito base (coacción, discriminación arbitraria, otro) cuya perpetración conocían los presuntos encubridores?",
+      "blocks_element": "CL.CPCL.C1.Art.17.2.elem.conocimiento_delito_previo",
+      "priority": "critical",
+      "obtaining_method": "Análisis jurídico-penal de la conducta de denegación de embarque a la luz de los tipos penales aplicables (Art. 494 N°16 CP, Ley 20.609 Zamudio, Art. 296 CP); determinación de si existe querella o denuncia previa que tipifique el hecho base."
+    },
+    {
+      "id": "OQ-012-IDENTIDAD-ENCUBRIDOR",
+      "question": "¿Los sujetos que orientaron al pasajero a presentar denuncia personal son los mismos que ejecutaron la denegación de embarque, o son terceros que intervinieron con posterioridad?",
+      "blocks_element": "CL.CPCL.C1.Art.17.2.elem.no_participacion_previa",
+      "priority": "high",
+      "obtaining_method": "Identificación nominal de todos los funcionarios y empleados de LATAM que interactuaron con el pasajero, cruzando con los que participaron en la decisión de denegación; declaraciones testimoniales y revisión de turnos de personal."
+    },
+    {
+      "id": "OQ-012-HABITUALIDAD",
+      "question": "¿Existe evidencia de un patrón repetido de conducta similar (derivación de pasajeros a denuncia personal para blindar responsabilidad corporativa) que acredite la habitualidad exigida por el Art. 17 N°4 CP?",
+      "blocks_element": "CL.CPCL.C1.Art.17.4.elem.proteccion_habitual_malhechores",
+      "priority": "high",
+      "obtaining_method": "Solicitud SERNAC de reclamos similares contra LATAM; búsqueda de causas en el Poder Judicial (SITCI) con patrones fácticos análogos; solicitud Ley 20.285 a DGAC sobre incidentes de denegación de embarque en el mismo aeropuerto."
+    },
+    {
+      "id": "OQ-012-REGISTROS-INTERNOS",
+      "question": "¿Existen registros internos de LATAM o del aeropuerto (bitácoras, grabaciones CCTV, registros de sistema de reservas, correos) que hayan sido suprimidos, alterados o no entregados?",
+      "blocks_element": "CL.CPCL.C1.Art.17.2.elem.modalidad_ocultacion",
+      "priority": "critical",
+      "obtaining_method": "Medida prejudicial probatoria (Art. 273 N°5 CPC) o diligencia de investigación (Art. 180 CPP) solicitando preservación y exhibición de registros CCTV del aeropuerto, logs del sistema Amadeus/Sabre de LATAM, y bitácora de la oficina de seguridad aeroportuaria para la fecha del incidente."
+    },
+    {
+      "id": "OQ-012-COMUNICACIONES-INTERNAS",
+      "question": "¿Existen comunicaciones internas de LATAM (correos, mensajes, minutas) que revelen la intención de ocultar el incidente o instruir la derivación del pasajero a vía personal?",
+      "blocks_element": "CL.CPCL.C1.Art.17.2.elem.finalidad_impedir_descubrimiento",
+      "priority": "high",
+      "obtaining_method": "Solicitud de exhibición de documentos (Art. 349 CPC) en sede civil o medida intrusiva en sede penal (Art. 217 CPP — incautación de correspondencia); alternativamente, declaración de testigos internos de LATAM."
+    },
+    {
+      "id": "OQ-012-COMPETENCIA-PDI",
+      "question": "¿Tenía la PDI competencia legal para ordenar a LATAM el embarque del pasajero, o su rol se limitaba a control migratorio y orden público?",
+      "blocks_element": "CL.CONST.Art.6.elem.accion_estatal_concreta",
+      "priority": "medium",
+      "obtaining_method": "Revisión del DFL 2/1967 (Ley Orgánica de la PDI), Código Aeronáutico (DL 2.564), Reglamento DAR-11 de la DGAC, y protocolos operativos PDI-aeropuerto; consulta a la Contraloría General de la República sobre alcance de competencias policiales en zona de embarque."
+    },
+    {
+      "id": "OQ-012-CAUSAL-DENEGACION",
+      "question": "¿Existía alguna causal legal de seguridad aérea, resolución administrativa o protocolo que justificara la denegación de embarque?",
+      "blocks_element": "CL.CONST.Art.6.elem.garantia_orden_institucional",
+      "priority": "high",
+      "obtaining_method": "Solicitud Ley 20.285 a DGAC requiriendo cualquier resolución, oficio o instrucción emitida respecto del pasajero o del vuelo; revisión del Reglamento DAR-91 sobre conducta de pasajeros; solicitud a LATAM de la causal formal invocada para la denegación."
+    },
+    {
+      "id": "OQ-012-COMUNICACION-PDI-LATAM",
+      "question": "¿Existió comunicación documentada entre LATAM y PDI sobre la elegibilidad del pasajero para embarcar, y en qué momento se produjo?",
+      "blocks_element": "CL.CONST.Art.6.elem.colusion_publico_privada",
+      "priority": "high",
+      "obtaining_method": "Solicitud Ley 20.285 a PDI requiriendo registros de comunicaciones con LATAM durante el incidente; revisión de libro de novedades de la unidad policial aeroportuaria; declaración testimonial de funcionarios PDI presentes."
+    },
+    {
+      "id": "OQ-012-SECUENCIA-TEMPORAL",
+      "question": "¿Se puede acreditar la secuencia temporal exacta entre la derivación del pasajero a la policía y la confirmación interna de LATAM de que el pasajero podía embarcar?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.infraccion_veracidad",
+      "priority": "medium",
+      "obtaining_method": "Análisis de metadatos de los archivos de audio (timestamps); cotejo con registros horarios del sistema de embarque de LATAM y libro de novedades PDI; peritaje de autenticidad y cronología de los audios."
+    },
+    {
+      "id": "OQ-012-CONTRATO",
+      "question": "¿Se acompañará prueba documental del contrato de transporte (ticket electrónico, reserva, boarding pass) para acreditar formalmente la relación de consumo?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.relacion_de_consumo",
+      "priority": "medium",
+      "obtaining_method": "Solicitud al pasajero de copia de su confirmación de reserva, correo electrónico de compra, o extracto bancario que acredite el pago; subsidiariamente, solicitud a LATAM de registro PNR del pasajero."
+    },
+    {
+      "id": "OQ-012-PROTOCOLOS-LATAM",
+      "question": "¿Existen protocolos internos de LATAM sobre manejo de incidentes con pasajeros y denegación de embarque que permitan evaluar el estándar de diligencia exigible?",
+      "blocks_element": "CL.LPDC.Art.23.elem.negligencia",
+      "priority": "high",
+      "obtaining_method": "Solicitud de exhibición de documentos (Art. 349 CPC) en procedimiento infraccional ante JPL o SERNAC; alternativamente, solicitud Ley 20.285 a DGAC de los manuales de operaciones de LATAM depositados como requisito de certificación."
+    },
+    {
+      "id": "OQ-012-INTERVENCION-POLICIAL",
+      "question": "¿LATAM solicitó formalmente la intervención policial o fue la PDI quien actuó de oficio en el incidente?",
+      "blocks_element": "CL.LPDC.Art.23.elem.nexo_causal",
+      "priority": "medium",
+      "obtaining_method": "Revisión del parte policial o constancia PDI (una vez obtenido) para determinar si registra requerimiento de LATAM; libro de novedades de la unidad policial; declaración testimonial de funcionarios."
+    },
+    {
+      "id": "OQ-012-VUELO-PERDIDO",
+      "question": "¿Se materializó definitivamente la pérdida del vuelo o el pasajero fue reubicado posteriormente en otro vuelo?",
+      "blocks_element": "CL.CONST.Art.6.elem.responsabilidad_sancion",
+      "priority": "medium",
+      "obtaining_method": "Declaración del pasajero con documentación de respaldo (nuevo boarding pass, compra de pasaje adicional, o confirmación de no-show en sistema LATAM); solicitud de registro PNR completo."
+    },
+    {
+      "id": "OQ-012-COACHING-EXPLICITO",
+      "question": "¿Se instruyó explícitamente al pasajero a presentar querella personal en vez de denuncia institucional como estrategia de blindaje corporativo?",
+      "blocks_element": "CL.CPCL.C1.Art.17.4.elem.suministro_auxilios_noticias",
+      "priority": "high",
+      "obtaining_method": "Revisión exhaustiva de la totalidad de los audios disponibles buscando instrucciones explícitas; declaración testimonial del pasajero sobre lo que le fue indicado verbalmente; eventual declaración de testigos presentes (otros pasajeros, acompañantes)."
+    },
+    {
+      "id": "OQ-012-JURISPRUDENCIA-ART3B",
+      "question": "¿La jurisprudencia LPDC extiende el deber informativo del Art. 3 b) a la fase de ejecución del contrato de transporte aéreo, incluyendo la obligación de explicar causales de denegación de embarque?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.objeto_informacion_debida",
+      "priority": "medium",
+      "obtaining_method": "Investigación jurisprudencial en base de datos del Poder Judicial (SITCI) y SERNAC; búsqueda de sentencias de JPL y Cortes de Apelaciones sobre deber informativo en transporte aéreo; revisión de dictámenes SERNAC sobre denegación de embarque."
+    },
+    {
+      "id": "OQ-012-PROTOCOLO-DERIVACION",
+      "question": "¿Existen protocolos escritos entre LATAM y PDI que regulen la derivación de pasajeros a la autoridad policial en caso de incidentes de embarque?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.colusion_deflexion_responsabilidad",
+      "priority": "medium",
+      "obtaining_method": "Solicitud Ley 20.285 a DGAC y a PDI requiriendo convenios, protocolos o instrucciones conjuntas vigentes entre aerolíneas y policía para manejo de incidentes en zona de embarque; solicitud a LATAM vía SERNAC de sus protocolos de seguridad aeroportuaria."
+    }
+  ],
+  "provenance": [
+    {
+      "timestamp": "2026-05-12T06:55:11.917859Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CHIPENCOD.T4.C3.Art.193: 7 elements; weighted score 0.70."
+    },
+    {
+      "timestamp": "2026-05-12T06:56:59.726895Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CPCL.C1.Art.17: 8 elements; weighted score 0.50."
+    },
+    {
+      "timestamp": "2026-05-12T06:57:43.710103Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CONST.T1.C1.Art.6: 7 elements; weighted score 0.67."
+    },
+    {
+      "timestamp": "2026-05-12T06:58:27.101331Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.LPDC.Art.3.b: 7 elements; weighted score 0.71."
+    },
+    {
+      "timestamp": "2026-05-12T06:59:19.548919Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.LPDC.Art.23: 8 elements; weighted score 0.79."
+    },
+    {
+      "timestamp": "2026-05-12T07:00:15.855679Z",
+      "actor": "layers.build_nexus_layer",
+      "operation": "add_or_replace_nexus_entries",
+      "layer": 4,
+      "note": "Upserted 40 nexus entries."
+    },
+    {
+      "timestamp": "2026-05-12T07:02:32.873683Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-FALSEDAD-IDEOLOGICA-ABUSO-OFICIO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:02:32.873815Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-PARTE-POLICIAL-DOC-PUBLICO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:02:32.873832Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-DOLO-FALSEDAD-COORDINACION (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:02:32.873844Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-ENCUBRIMIENTO-CONOCIMIENTO-DELITO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:02:32.873851Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-ENCUBRIMIENTO-NO-PARTICIPACION (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:02:32.873857Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-ENCUBRIMIENTO-OCULTACION-INSTRUMENTOS (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:02:32.873863Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-COLUSION-ESTADO-PRIVADO-ART6 (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:02:32.873869Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-NORMA-CONSTITUCIONAL-INFRINGIDA-DEBIDO-PROCESO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:02:32.873875Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-LPDC-DEFLEXION-RESPONSABILIDAD (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:02:32.873881Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-LPDC-ART23-NEGLIGENCIA-COORDINADA (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:02:32.873888Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-DOCTRINA-ENCUBRIMIENTO-INSTITUCIONAL (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:02:32.873894Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-COMPARADO-STATE-CORPORATE-COLLUSION (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:02:32.873900Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-FALSEDAD-SUSTANCIALIDAD-COACHING (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:02:32.873909Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-DENUNCIA-PERSONAL-ESCUDO-CORPORATIVO (verified=False)."
+    }
+  ]
+}

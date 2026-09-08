@@ -1,0 +1,2682 @@
+{
+  "violation_id": "CL-004",
+  "title": "Cover-Up — Systematic Concealment of CCTV Exoneration Evidence",
+  "incident": "[[I-002-Chile-Santiago]]",
+  "incident_id": "I-002",
+  "jurisdiction": "CL",
+  "category": "Cover-Up / Concealment of Exculpatory Evidence",
+  "severity": "CRITICAL",
+  "confidence": {
+    "value": 0.72,
+    "components": {
+      "CL.CHIPENCOD.T4.C3.Art.193": 0.8,
+      "CL.CHIPENCOD.T4.C3.Art.194": 0.788,
+      "CL.CHIPENCOD.T5.C2.Art.255": 0.9,
+      "CL.CPCL.C1.Art.17": 0.73,
+      "CL.L20285.T1.C2.Art.5": 0.886,
+      "CL.LPDC.Art.3.b": 0.9,
+      "CL.LPDC.Art.23": 0.9
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T06:54:20.048104Z",
+    "history": [
+      "2026-05-12T06:41:51.046531+00:00: value=0.0",
+      "2026-05-12T06:42:10.222761+00:00: value=0.0",
+      "2026-05-12T06:42:18.158079+00:00: value=0.0",
+      "2026-05-12T06:48:35.292036+00:00: value=0.72",
+      "2026-05-12T06:49:59.124092+00:00: value=0.72",
+      "2026-05-12T06:51:36.219442+00:00: value=0.72",
+      "2026-05-12T06:52:59.155795+00:00: value=0.72",
+      "2026-05-12T06:54:09.951946+00:00: value=0.72"
+    ],
+    "validated": true,
+    "note": "Validated by V10 pipeline check. Lowered from legacy contract value (0.97) to formula-derived value (0.68)."
+  },
+  "incident_timestamp": "2024-07-05T11:00:00-04:00",
+  "incident_timestamp_display": "2024-07-05 — Voo LA8159 — Aeroporto SCL",
+  "allegation_summary": "PDI officers, after reviewing CCTV footage and concluding that no aggression occurred (STG-7.seg-55: 'una agresión a una persona... no hay'), systematically concealed this exculpatory finding. Instead of recording the exoneration in the official police report (parte), PDI officers: (a) coached LATAM staff to file complaints in the passenger's personal name rather than against LATAM, shielding the airline from liability (STG-7.seg-45, seg-62); (b) allowed a DGAC report to be issued attributing the removal to process non-compliance while omitting the CCTV exoneration (STG-7.seg-75); and (c) failed to preserve or disclose the CCTV recording as evidence. This multi-layered cover-up implicates falsedad ideológica (Arts. 193-194 CP), encubrimiento (Art. 17 CP), vejación injusta (Art. 255 CP), transparency violations (Ley 20.285 Art. 5), and consumer protection violations (LPDC Arts. 3.b, 23).",
+  "evidentiary_strength": "10 transcript segments spanning STG-7 (PDI CCTV review, coaching LATAM, DGAC report issuance) and STG-29 (passenger confrontation). The pipeline-assigned confidence of 68% is the weighted average of 7 article-level scores (0.688–0.863) discounted by the 0.85 authorities factor. The highest-scoring articles are LPDC (0.863) and Art. 255 (0.814); the lowest is Art. 193 (0.688) due to contested elements around the acto del oficio and objeto material.",
+  "legal_theory": "Encubrimiento Sistemático de Evidencia Exculpatoria — Falsedad Ideológica y Encubrimiento",
+  "required_elements_status": "ENRICHED",
+  "legal_basis": [
+    {
+      "article_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "article_name": "Código Penal, Art. 193 — Falsedad cometida por empleado público",
+      "status": "established",
+      "applicability": "supporting",
+      "subsections": [
+        "4",
+        "8"
+      ],
+      "duty_bearer": "state",
+      "norm_type": "definition",
+      "applicability_rationale": "PDI officers, as public employees, falsely narrated that the passenger was aggressive after the CCTV showed no aggression (subsection 4) and concealed the official DVD of the footage and any record of the exoneration (subsection 8). | legacy paraphrase: Será castigado... el empleado público que, abusando de su oficio, cometiere falsedad: 4. Faltando a la verdad en la narración de hechos sustanciales. 8. Ocultando en perjuicio del Estado o de un particular cualquier documento oficial.",
+      "framework_code": "CHIPENCOD",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "4.° Faltando a la verdad en la narración de hechos sustanciales. 5.° Alterando las fechas verdaderas. 6.° Haciendo en documento verdadero cualquiera alteración o intercalación que varíe su sentido. 7.° Dando copia en forma fehaciente de un documento supuesto, o manifestando en ella cosa contraria o diferente de la que contenga el verdadero original. 8.° Ocultando en perjuicio del Estado o de un particular cualquier documento oficial."
+    },
+    {
+      "article_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "article_name": "Código Penal, Art. 194 — Falsedad cometida por particulares en documento público",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "state",
+      "norm_type": "definition",
+      "applicability_rationale": "LATAM staff, acting on PDI coaching, filed a personal complaint that misrepresented the facts in an official document, thereby committing the same falsehoods as a public document.",
+      "framework_code": "CHIPENCOD",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "Art. 194. El particular que cometiere en documento público o auténtico alguna de las falsedades designadas en el artículo anterior, sufrirá la pena de presidio menor en sus grados medio a máximo."
+    },
+    {
+      "article_id": "CL.CHIPENCOD.T5.C2.Art.255",
+      "article_name": "Código Penal, Art. 255 — Vejación injusta por empleado público",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "state",
+      "norm_type": "definition",
+      "applicability_rationale": "Continuing the removal process after confirming no aggression constituted an unjust vexation against the passenger by PDI officers in the course of their duties. | legacy paraphrase: El empleado público que, desempeñando un acto del servicio, cometiere cualquier vejación injusta contra las personas será castigado.",
+      "framework_code": "CHIPENCOD",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "Art. 255. El empleado público que, desempeñando un acto del servicio, cometiere cualquier vejación injusta contra las personas será castigado con la pena de suspensión del empleo en su grado mínimo a medio."
+    },
+    {
+      "article_id": "CL.CPCL.C1.Art.17",
+      "article_name": "Código Penal, Art. 17 — Encubrimiento",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "state",
+      "norm_type": "definition",
+      "applicability_rationale": "By concealing the CCTV evidence and aiding the false narrative, the officials acted as encubridores to the initial false accusation, preventing discovery of the truth. | legacy paraphrase: Son encubridores los que con conocimiento de la perpetración de un crimen o de un simple delito... intervienen... 2.° Ocultando o inutilizando el cuerpo, los efectos o instrumentos del crimen o simple delito para impedir su descubrimiento. 3.° Albergando, ocultando o proporcionando la fuga del culpable.",
+      "framework_code": "CPCL",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "Son encubridores los que con conocimiento de la perpetracion de un crimen o de un simple delito o de los actos ejecutados para llevarlo a cabo, sin haber tenido participacion en el como autores ni como complices, intervienen, con posterioridad a su ejecucion, de alguno de los modos siguientes:\n\n1. Aprovechandose por si mismos o facilitando a los delincuentes medios para que se aprovechen de los efectos del crimen o simple delito.  \n2. Ocultando o inutilizando el cuerpo, los efectos o instrumentos del crimen o simple delito para impedir su descubrimiento.  \n3. Albergando, ocultando o proporcionando la fuga del culpable.  \n4. Acogiendo, receptando o protegiendo habitualmente a los malhechores, sabiendo que lo son, aun sin conocimiento de los crimenes o simples delitos determinados que hayan cometido, o facilitandoles los medios de reunirse u ocultar sus armas o efectos, o suministrandoles auxilios o noticias para que se guarden, precavan o salven.\n\nEstan exentos de las penas impuestas a los encubridores los que lo sean de su conyuge, de su conviviente civil, o de sus parientes por consanguinidad o afinidad en toda la linea recta y en la colateral hasta el segundo grado, de sus padres o hijos, con la sola excepcion de los que se hallaren comprendidos en el numero 1 de este articulo."
+    },
+    {
+      "article_id": "CL.L20285.T1.C2.Art.5",
+      "article_name": "Ley 20.285, Art. 5 — Publicidad de documentos administrativos",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "state",
+      "norm_type": "definition",
+      "applicability_rationale": "The CCTV review finding was a public act of the PDI; its deliberate concealment violated the principle of transparency and the public’s right of access. | legacy paraphrase: Son públicos los actos y resoluciones de los órganos de la Administración del Estado, sus fundamentos, los documentos que les sirvan de sustento o complemento directo y esencial, y los procedimientos que se utilicen para su dictación.",
+      "framework_code": "L20285",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "Artículo 5° - Carácter Público de la Información. En virtud del principio de transparencia de la función pública: - Los actos y resoluciones de los órganos de la Administración del Estado - Sus fundamentos - Los documentos que les sirvan de sustento o complemento directo y esencial - Los procedimientos que se utilicen para su dictación. Son públicos, salvo las excepciones que establece esta ley y las previstas en otras leyes de quórum calificado."
+    },
+    {
+      "article_id": "CL.LPDC.Art.3.b",
+      "article_name": "Ley 19.496, Art. 3(b) — Derecho a información veraz del consumidor",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "state",
+      "norm_type": "definition",
+      "applicability_rationale": "LATAM, as an air operator, breached the passenger’s right to truthful information by enforcing removal after knowing the accusation was false. | legacy paraphrase: Son derechos y deberes básicos del consumidor: b) El derecho a una información veraz y oportuna sobre los bienes y servicios ofrecidos...",
+      "framework_code": "LPDC",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "b) El derecho a una información veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratación y otras características relevantes de los mismos, y el deber de informarse responsablemente de ellos."
+    },
+    {
+      "article_id": "CL.LPDC.Art.23",
+      "article_name": "Ley 19.496, Art. 23 — Responsabilidad del proveedor por servicio defectuoso",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "state",
+      "norm_type": "definition",
+      "applicability_rationale": "LATAM’s service was defective because it relied on false information and continued enforcement despite exoneration, directly causing harm to the passenger. | legacy paraphrase: El proveedor de un servicio será responsable de los daños y perjuicios que cause al consumidor por la prestación de un servicio defectuoso, incluyendo la falta de veracidad en la información proporcionada...",
+      "framework_code": "LPDC",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "Artículo 23.- Comete infracción a las disposiciones de la presente ley el proveedor que, en la venta de un bien o en la prestación de un servicio, **actuando con negligencia**, causa menoscabo al consumidor debido a fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio."
+    }
+  ],
+  "transcripts": [
+    "[[I-002_05_NAR-07_STG_7_post_removal_investigation]]",
+    "[[I-002_17_NAR-21_STG_29]]"
+  ],
+  "evidence_links": [
+    "[[I-002_transcript_rendered_html_X-0041]]",
+    "[[I-002_transcript_rendered_html_X-0030]]"
+  ],
+  "event_ids": [
+    "[[E-0196]]",
+    "[[E-0197]]",
+    "[[E-0198]]",
+    "[[E-0199]]",
+    "[[E-0200]]",
+    "[[E-0201]]",
+    "[[E-0203]]",
+    "[[E-0205]]",
+    "[[E-0211]]",
+    "[[E-0212]]",
+    "[[E-0213]]",
+    "[[E-0216]]",
+    "[[E-0217]]"
+  ],
+  "evidence_ids": [
+    "[[I-002_transcript_json_X-0037]]",
+    "[[I-002_transcript_json_X-0038]]",
+    "[[I-002_email_latam_communication_X-0059]]",
+    "[[I-002_email_latam_communication_X-0063]]",
+    "[[I-002_email_latam_communication_X-0064]]",
+    "[[I-002_email_dgac_communication_X-0074]]",
+    "[[I-002_email_dgac_communication_X-0075]]",
+    "[[I-002_email_dgac_communication_X-0076]]",
+    "[[I-002_email_dgac_communication_X-0080]]",
+    "[[I-002_email_dgac_communication_X-0082]]",
+    "[[I-002_email_dgac_communication_X-0083]]",
+    "[[I-002_email_dgac_communication_X-0086]]",
+    "[[I-002_email_dgac_communication_X-0087]]"
+  ],
+  "framework_cache": "[[CHIPENCOD]]",
+  "validation_pack": "[[Validation report CL-004]]",
+  "related_violations": [
+    "CL-003",
+    "CL-005",
+    "CL-012"
+  ],
+  "has_broken_refs": false,
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "classification": "Attorney Work Product — Privileged and Confidential",
+  "schema_version": "4.0",
+  "element_grids": {
+    "CL.CHIPENCOD.T4.C3.Art.193": [
+      {
+        "element_name": "Sujeto activo calificado (empleado público)",
+        "status": "established",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "STG-7.seg-75"
+        ],
+        "argument": "Los segmentos identifican a oficiales de la PDI como los actores que revisaron las cámaras y emitieron el parte. La PDI es un órgano del Estado y sus funcionarios son empleados públicos conforme al Art. 260 CP, cumpliendo el requisito de sujeto activo calificado.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.sujeto_activo",
+        "doctrinal_basis": "Art. 193 exige que el autor sea empleado público en el sentido del Art. 260 CP. Los funcionarios de la PDI son empleados públicos por definición legal.",
+        "weaknesses": [],
+        "open_questions": [
+          "Identificación nominal precisa de los funcionarios PDI involucrados."
+        ],
+        "article_short": "Art. 193 N° 4 y N° 8 — Falsedad cometida por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Abuso del oficio",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-62",
+          "STG-7.seg-75"
+        ],
+        "argument": "Los funcionarios PDI actuaron en ejercicio de sus funciones policiales aeroportuarias (revisión de CCTV, toma de denuncias, emisión de partes a la DGAC). La desviación consiste en que, tras constatar la inexistencia de agresión, procedieron igualmente a emitir documentación oficial contraria a lo observado y a orientar la denuncia de modo engañoso.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.abuso_del_oficio",
+        "doctrinal_basis": "El tipo exige que la falsedad se cometa 'abusando de su oficio', es decir, que el funcionario actúe dentro de la esfera de competencia funcional pero desviando su ejercicio.",
+        "weaknesses": [
+          "No se dispone del parte oficial emitido para contrastar directamente el contenido falso con la función ejercida."
+        ],
+        "open_questions": [
+          "¿El parte DGAC fue redactado por el mismo funcionario que revisó el CCTV?"
+        ],
+        "article_short": "Art. 193 N° 4 y N° 8 — Falsedad cometida por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Acto del oficio (documento público en que recae la falsedad)",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-75",
+          "LATAM-2.seg-4"
+        ],
+        "argument": "El segmento STG-7.seg-75 refiere expresamente la emisión del 'parte de la Dirección General de Aeronáutica Civil', documento oficial que fundamentó la remoción del pasajero. LATAM-2.seg-4 confirma la existencia de documentación escrita con la narrativa de los hechos que fue entregada al pasajero como versión oficial.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.acto_del_oficio",
+        "doctrinal_basis": "La falsedad debe recaer sobre un documento público otorgado en el ejercicio de las funciones del empleado. El parte policial y el informe a la DGAC constituyen documentos públicos.",
+        "weaknesses": [
+          "No se ha incorporado copia física del parte DGAC ni del informe PDI al expediente de segmentos."
+        ],
+        "open_questions": [
+          "Obtención del parte DGAC original para verificar su contenido textual."
+        ],
+        "article_short": "Art. 193 N° 4 y N° 8 — Falsedad cometida por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Modalidad típica: faltar a la verdad en la narración de hechos sustanciales (N° 4)",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "LATAM-4.seg-84"
+        ],
+        "argument": "El funcionario PDI reconoce explícitamente que 'no hay ninguna agresión' según el CCTV (seg-44, seg-55). Sin embargo, la documentación oficial mantuvo la narrativa de agresión como fundamento de la remoción. El segmento LATAM-4.seg-84 evidencia que la 'realidad' sería 'ajustada' posteriormente, confirmando que la narración documental no correspondía a los hechos observados.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.modalidad_tipica_faltar_verdad",
+        "doctrinal_basis": "Consiste en consignar en el documento público hechos que no ocurrieron o negar hechos que sí ocurrieron, siempre que sean sustanciales al sentido del instrumento.",
+        "weaknesses": [
+          "La prueba directa del contenido falso del parte requiere el documento mismo; los segmentos prueban el conocimiento de la falsedad pero no exhiben el texto del parte."
+        ],
+        "open_questions": [
+          "¿Qué hechos sustanciales constan en el parte DGAC que contradicen lo observado en el CCTV?"
+        ],
+        "article_short": "Art. 193 N° 4 y N° 8 — Falsedad cometida por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Modalidad típica: ocultar documento oficial (N° 8)",
+        "status": "contested",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "LATAM-4.seg-21"
+        ],
+        "argument": "El DVD del CCTV que exoneraba al pasajero constituye un documento oficial (registro de seguridad aeroportuaria). Los segmentos demuestran que los funcionarios vieron su contenido exculpatorio pero no lo incorporaron al expediente ni lo pusieron a disposición del afectado. LATAM-4.seg-21 sugiere una práctica de documentación sin firma que dificulta la trazabilidad. No obstante, no existe un segmento que declare expresamente la destrucción o sustracción física del DVD.",
+        "element_id": "CL.CHIPENCOD.Art.193.8.elem.modalidad_ocultacion",
+        "doctrinal_basis": "Consiste en sustraer del conocimiento de quien tiene derecho a acceder a él un documento oficial, impidiendo que produzca sus efectos legítimos.",
+        "weaknesses": [
+          "No hay segmento que documente directamente la orden o acto de ocultamiento del DVD.",
+          "La calificación del registro CCTV como 'documento oficial' podría ser discutida."
+        ],
+        "open_questions": [
+          "¿Se solicitó formalmente el DVD y fue denegado?",
+          "¿Quién tenía la custodia legal del registro CCTV: PDI, DGAC o el operador aeroportuario?"
+        ],
+        "article_short": "Art. 193 N° 4 y N° 8 — Falsedad cometida por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Objeto material (documento oficial ocultado)",
+        "status": "contested",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55"
+        ],
+        "argument": "El registro CCTV del aeropuerto es un instrumento de seguridad aeroportuaria bajo custodia de organismos estatales (DGAC/PDI). Los segmentos confirman su existencia y contenido exculpatorio. Sin embargo, la calificación jurídica precisa como 'documento oficial' en el sentido del Art. 193 N° 8 requiere verificación doctrinal, pues podría argumentarse que es un registro técnico y no un documento en sentido estricto.",
+        "element_id": "CL.CHIPENCOD.Art.193.8.elem.objeto_material",
+        "doctrinal_basis": "El objeto material del N° 8 debe ser un 'documento oficial', es decir, un instrumento emanado de o custodiado por un órgano del Estado en ejercicio de funciones públicas.",
+        "weaknesses": [
+          "Debate doctrinal sobre si un registro audiovisual digital constituye 'documento oficial' para efectos del Art. 193 N° 8."
+        ],
+        "open_questions": [
+          "¿Existe jurisprudencia chilena que califique registros CCTV aeroportuarios como documentos oficiales?"
+        ],
+        "article_short": "Art. 193 N° 4 y N° 8 — Falsedad cometida por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Resultado: perjuicio del Estado o de un particular",
+        "status": "established",
+        "evidence": [
+          "LATAM-2.seg-13",
+          "STG-7.seg-75",
+          "STG-29.seg-43"
+        ],
+        "argument": "El pasajero fue removido de su vuelo, perdió su pasaje y fue prohibido de volar con LATAM (seg-13), todo ello como consecuencia directa de la ocultación de la evidencia exculpatoria. El perjuicio patrimonial y moral al particular está plenamente acreditado por los segmentos. Adicionalmente, el Estado sufre perjuicio institucional al emitirse un parte oficial basado en hechos falsos.",
+        "element_id": "CL.CHIPENCOD.Art.193.8.elem.perjuicio",
+        "doctrinal_basis": "El N° 8 exige que la ocultación sea 'en perjuicio del Estado o de un particular'. Es un elemento de resultado que requiere acreditar daño efectivo o potencial.",
+        "weaknesses": [],
+        "open_questions": [
+          "Cuantificación precisa del perjuicio patrimonial (valor del pasaje, costos derivados)."
+        ],
+        "article_short": "Art. 193 N° 4 y N° 8 — Falsedad cometida por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Tipicidad subjetiva / dolo (conocimiento y voluntad de falsear)",
+        "status": "established",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "STG-7.seg-62",
+          "LATAM-4.seg-84"
+        ],
+        "argument": "El dolo está plenamente acreditado: el funcionario PDI declara expresamente haber visto en la cámara que no hubo agresión (seg-44, seg-55), y pese a ello procede a orientar la denuncia de modo que sostenga la narrativa falsa (seg-62). El segmento LATAM-4.seg-84 confirma la conciencia de que la narrativa oficial no correspondía a la realidad y que sería 'ajustada' posteriormente, evidenciando voluntad deliberada de mantener la falsedad.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.tipicidad_subjetiva_dolo",
+        "doctrinal_basis": "El delito de falsedad documental del Art. 193 es doloso. Requiere que el funcionario actúe con conocimiento de la falsedad y voluntad de incorporarla al documento.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 193 N° 4 y N° 8 — Falsedad cometida por empleado público (Código Penal)"
+      }
+    ],
+    "CL.CHIPENCOD.T4.C3.Art.194": [
+      {
+        "element_name": "Sujeto activo: particular (no funcionario público)",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-62",
+          "LATAM-2.seg-4",
+          "LATAM-4.seg-21"
+        ],
+        "argument": "El personal de LATAM (Antonela, Diego y otros supervisores) actúa en calidad de particular, no como funcionario público. El segmento STG-7.seg-62 confirma que la denuncia se canaliza como persona natural, no institucional, y los segmentos LATAM-2.seg-4 y LATAM-4.seg-21 muestran que es personal de la aerolínea quien genera y entrega la documentación cuestionada.",
+        "element_id": "CL.CHIPENCOD.Art.194.elem.sujeto_activo_particular",
+        "doctrinal_basis": "Art. 194 exige que el autor sea un particular, a diferencia del Art. 193 que requiere empleado público. La calidad de particular es elemento constitutivo del tipo.",
+        "weaknesses": [
+          "Podría discutirse si el personal de LATAM actuó como mero instrumento de la PDI, lo que desplazaría la autoría al funcionario bajo Art. 193."
+        ],
+        "open_questions": [
+          "¿Quién firmó o presentó formalmente la denuncia personal ante la PDI? Identificar al autor material específico."
+        ],
+        "article_short": "Art. 194 — Falsedad cometida por particulares en documento público (Código Penal)"
+      },
+      {
+        "element_name": "Sujeto pasivo: fe pública y perjudicado directo",
+        "status": "strong",
+        "evidence": [
+          "LATAM-2.seg-13",
+          "STG-29.seg-43"
+        ],
+        "argument": "El pasajero Leandro Disconzi es el perjudicado directo: fue impedido de volar y quedó 'botado sin pasaje, prohibido de volar' (LATAM-2.seg-13). La fe pública se ve afectada al incorporarse hechos falsos en documentación que ingresa al circuito oficial (denuncia, parte DGAC). El segmento STG-29.seg-43 muestra que las acusaciones falsas fueron 'confirmadas' oficialmente, amplificando el daño.",
+        "element_id": "CL.CHIPENCOD.Art.194.elem.sujeto_pasivo",
+        "doctrinal_basis": "El bien jurídico protegido es la fe pública. El perjudicado directo es quien sufre las consecuencias de la falsedad documental.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 194 — Falsedad cometida por particulares en documento público (Código Penal)"
+      },
+      {
+        "element_name": "Objeto material: documento público o auténtico",
+        "status": "contested",
+        "evidence": [
+          "STG-7.seg-62",
+          "STG-7.seg-75",
+          "LATAM-2.seg-4",
+          "LATAM-4.seg-21"
+        ],
+        "argument": "La denuncia personal tomada por la PDI (STG-7.seg-62) constituye un documento público al ser recibida por funcionario competente y producir efectos en el proceso penal/administrativo. El parte de la DGAC (STG-7.seg-75) es igualmente documento público. Sin embargo, la carta interna de LATAM (LATAM-2.seg-4) podría no calificar como documento público, y la propia supervisora admite que 'ninguno de nuestros documentos tiene firma' (LATAM-4.seg-21), lo que debilita su carácter de instrumento auténtico.",
+        "element_id": "CL.CHIPENCOD.Art.194.elem.objeto_material_documento_publico",
+        "doctrinal_basis": "Art. 194 requiere que la falsedad recaiga sobre un 'documento público o auténtico'. La doctrina chilena (Garrido Montt, Etcheberry) exige que el documento tenga aptitud para producir efectos jurídicos en el tráfico oficial.",
+        "weaknesses": [
+          "La carta de LATAM podría calificarse como documento privado, no público, lo que excluiría la aplicación del Art. 194.",
+          "La ausencia de firma (LATAM-4.seg-21) podría cuestionar la existencia misma de un documento en sentido jurídico-penal."
+        ],
+        "open_questions": [
+          "¿La denuncia personal ante la PDI fue reducida a acta formal? De ser así, el acta policial sí constituye documento público.",
+          "¿El parte DGAC incorporó textualmente las declaraciones falsas del particular, convirtiendo al particular en autor mediato de la falsedad?"
+        ],
+        "article_short": "Art. 194 — Falsedad cometida por particulares en documento público (Código Penal)"
+      },
+      {
+        "element_name": "Modalidad típica: comisión de alguna de las falsedades del Art. 193",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "STG-7.seg-62",
+          "LATAM-4.seg-84"
+        ],
+        "argument": "La PDI reconoce explícitamente que no hubo agresión ('una agresión a una persona… no hay', STG-7.seg-55) tras revisar las cámaras CCTV (STG-7.seg-44). Pese a ello, se instruye al personal de LATAM a presentar una denuncia personal (STG-7.seg-62) que necesariamente narra hechos falsos —una agresión inexistente— constituyendo la modalidad de 'faltar a la verdad en la narración de hechos sustanciales' (Art. 193 N°4). Además, la supervisora admite que la narrativa será 'ajustada' (LATAM-4.seg-84), lo que evidencia manipulación consciente del contenido fáctico del documento.",
+        "element_id": "CL.CHIPENCOD.Art.194.elem.modalidad_tipica_falsedad_art193",
+        "doctrinal_basis": "Art. 194 es un tipo de reenvío: el particular debe cometer alguna de las ocho modalidades del Art. 193 (alterar sentido, simular documento, faltar a la verdad en la narración de hechos sustanciales, etc.). Las modalidades más relevantes aquí serían el N°4 (faltar a la verdad en la narración de hechos sustanciales) y posiblemente el N°8 (ocultar en perjuicio del Estado o de un particular).",
+        "weaknesses": [
+          "No se dispone del texto literal de la denuncia personal para contrastar con los hechos reales y demostrar la falsedad específica."
+        ],
+        "open_questions": [
+          "¿Cuál fue el contenido exacto de la denuncia personal presentada? Se requiere copia del documento para acreditar la falsedad material o ideológica.",
+          "¿Se configura Art. 193 N°4 (falta a la verdad) o N°8 (ocultación)? Ambas modalidades podrían concurrir."
+        ],
+        "article_short": "Art. 194 — Falsedad cometida por particulares en documento público (Código Penal)"
+      },
+      {
+        "element_name": "Modalidad típica complementaria: ocultación de evidencia exculpatoria (Art. 193 N°8 por reenvío)",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "LATAM-4.seg-84",
+          "LATAM-4.seg-21"
+        ],
+        "argument": "La evidencia CCTV revisada por la PDI demostró la inexistencia de agresión (STG-7.seg-44, STG-7.seg-55). Sin embargo, esta prueba exculpatoria no fue incorporada al expediente ni comunicada al pasajero; en su lugar, se generó documentación con narrativa contraria. La admisión de que se irá 'ajustando la realidad' (LATAM-4.seg-84) y la práctica de emitir documentos sin firma (LATAM-4.seg-21) sugieren un método sistemático de ocultación que impide la trazabilidad y la contradicción.",
+        "element_id": "CL.CHIPENCOD.Art.194.elem.ocultacion_prueba_exculpatoria",
+        "doctrinal_basis": "Art. 193 N°8 sanciona 'ocultar en perjuicio del Estado o de un particular cualquier documento'. La supresión u ocultación de la evidencia CCTV exculpatoria, combinada con la presentación de una narrativa falsa, podría configurar esta modalidad.",
+        "weaknesses": [
+          "Art. 193 N°8 se refiere a ocultar 'documentos', no evidencia en general. Habría que demostrar que el registro CCTV constituye un documento en sentido penal o que la denuncia omitió deliberadamente su existencia."
+        ],
+        "open_questions": [
+          "¿Se preservó el registro CCTV? ¿Fue solicitado judicialmente y no entregado?",
+          "¿La denuncia personal omitió mencionar la revisión de cámaras que descartó la agresión?"
+        ],
+        "article_short": "Art. 194 — Falsedad cometida por particulares en documento público (Código Penal)"
+      },
+      {
+        "element_name": "Resultado / perjuicio efectivo",
+        "status": "established",
+        "evidence": [
+          "LATAM-2.seg-13",
+          "STG-7.seg-75",
+          "STG-29.seg-43"
+        ],
+        "argument": "El perjuicio es concreto y múltiple: el pasajero perdió su vuelo (STG-7.seg-75), fue prohibido de volar con LATAM y quedó 'botado sin pasaje' (LATAM-2.seg-13). Las acusaciones falsas fueron 'confirmadas' oficialmente (STG-29.seg-43), generando un registro adverso basado en hechos inexistentes. El daño patrimonial (pérdida del pasaje y vuelo) y extrapatrimonial (estigmatización, restricción de libertad de desplazamiento) están acreditados por los propios segmentos.",
+        "element_id": "CL.CHIPENCOD.Art.194.elem.resultado_perjuicio",
+        "doctrinal_basis": "Si bien el delito de falsedad documental es de peligro abstracto contra la fe pública, la existencia de perjuicio concreto agrava la antijuridicidad y es relevante para la determinación de la pena y la acción civil.",
+        "weaknesses": [],
+        "open_questions": [
+          "¿Existe un registro formal de prohibición de vuelo (no-fly) basado en la denuncia falsa? Esto ampliaría el perjuicio demostrable."
+        ],
+        "article_short": "Art. 194 — Falsedad cometida por particulares en documento público (Código Penal)"
+      },
+      {
+        "element_name": "Tipicidad subjetiva: dolo directo",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "STG-7.seg-62",
+          "LATAM-4.seg-84"
+        ],
+        "argument": "El dolo se infiere de la secuencia probatoria: primero se revisan las cámaras y se constata que 'no hay agresión' (STG-7.seg-55); luego, con pleno conocimiento de esa realidad, se instruye la presentación de una denuncia personal (STG-7.seg-62) que necesariamente contiene hechos contrarios a lo observado. La admisión de que se irá 'ajustando la realidad' (LATAM-4.seg-84) demuestra conciencia y voluntad de alterar la narrativa fáctica. No cabe error de tipo: los intervinientes sabían que los hechos denunciados eran falsos.",
+        "element_id": "CL.CHIPENCOD.Art.194.elem.tipicidad_subjetiva_dolo",
+        "doctrinal_basis": "La falsedad documental requiere dolo directo: conocimiento de la falsedad del contenido y voluntad de incorporarlo al documento. No se admite comisión culposa.",
+        "weaknesses": [
+          "Podría argumentarse que el personal de LATAM actuó bajo instrucciones de la PDI sin comprender plenamente las implicancias penales, lo que no elimina el dolo pero podría atenuar la responsabilidad."
+        ],
+        "open_questions": [
+          "¿Existe evidencia de que el personal de LATAM fue advertido por la PDI de que la denuncia contendría hechos no corroborados por el CCTV?"
+        ],
+        "article_short": "Art. 194 — Falsedad cometida por particulares en documento público (Código Penal)"
+      },
+      {
+        "element_name": "Nexo causal: inducción/coaching por funcionario público",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "STG-7.seg-62",
+          "STG-7.seg-75"
+        ],
+        "argument": "La secuencia de segmentos muestra que el funcionario PDI: (1) revisó las cámaras y constató la inexistencia de agresión (STG-7.seg-44, STG-7.seg-55); (2) pese a ello, instruyó al personal de LATAM a presentar una denuncia personal (STG-7.seg-62); y (3) paralelamente se emitió un parte DGAC (STG-7.seg-75). Este coaching constituye el nexo causal entre el conocimiento de la falsedad y la materialización del documento falso por el particular.",
+        "element_id": "CL.CHIPENCOD.Art.194.elem.nexo_causal_coaching_falsedad",
+        "doctrinal_basis": "Si bien Art. 194 sanciona al particular, la participación de un funcionario público como inductor o cómplice puede configurar coautoría o autoría mediata bajo Art. 193, y es relevante para establecer el iter criminis completo.",
+        "weaknesses": [
+          "La responsabilidad del funcionario PDI se encuadraría en Art. 193 (no Art. 194), pero su participación es esencial para probar el dolo del particular."
+        ],
+        "open_questions": [
+          "¿Debe perseguirse al funcionario PDI como autor (Art. 193) o inductor (Art. 15 N°2) respecto del particular que ejecuta la falsedad bajo Art. 194?",
+          "¿Existen registros institucionales de la instrucción dada por la PDI al personal de LATAM?"
+        ],
+        "article_short": "Art. 194 — Falsedad cometida por particulares en documento público (Código Penal)"
+      }
+    ],
+    "CL.CHIPENCOD.T5.C2.Art.255": [
+      {
+        "element_name": "Sujeto activo: empleado público",
+        "status": "established",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-75"
+        ],
+        "argument": "Los segmentos muestran que quienes ejecutan la acción son oficiales de la PDI y un funcionario de la DGAC, ambos empleados públicos conforme al art. 260 CP. El seg-44 identifica al oficial PDI revisando las cámaras y el seg-75 al funcionario que emite el parte de la DGAC.",
+        "element_id": "CL.CHIPENCOD.Art.255.elem.sujeto_activo",
+        "doctrinal_basis": "El tipo exige que el autor sea un empleado público en el sentido de los arts. 260 y ss. del Código Penal chileno. Los funcionarios de la PDI y de la DGAC revisten tal calidad.",
+        "weaknesses": [],
+        "open_questions": [
+          "Identificación nominal precisa de cada funcionario interviniente para efectos de individualización penal."
+        ],
+        "article_short": "Art. 255 — Vejación injusta por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Sujeto pasivo: persona natural afectada",
+        "status": "established",
+        "evidence": [
+          "LATAM-2.seg-13",
+          "STG-7.seg-75"
+        ],
+        "argument": "El pasajero Leandro Disconzi es la persona sobre quien recae la vejación: se le impide volar, se le retira del vuelo y queda 'botado sin pasaje' (seg-13). El seg-75 lo identifica por nombre.",
+        "element_id": "CL.CHIPENCOD.Art.255.elem.sujeto_pasivo",
+        "doctrinal_basis": "La vejación debe recaer sobre 'las personas'; basta cualquier persona natural.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 255 — Vejación injusta por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Desempeñando un acto del servicio",
+        "status": "established",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-75",
+          "STG-7.seg-62"
+        ],
+        "argument": "Los oficiales PDI actuaban en funciones policiales aeroportuarias: revisaron cámaras CCTV (seg-44), ofrecieron tomar denuncia (seg-62) y emitieron un parte oficial de la DGAC (seg-75). Todo ello constituye actos del servicio policial y de control aeronáutico.",
+        "element_id": "CL.CHIPENCOD.Art.255.elem.acto_del_servicio",
+        "doctrinal_basis": "El tipo requiere nexo funcional: la conducta debe ejecutarse mientras el empleado público desempeña un acto propio de su función. No basta la mera calidad de funcionario; debe actuar en ejercicio efectivo del cargo.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 255 — Vejación injusta por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Modalidad típica: cometer vejación injusta",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-55",
+          "STG-7.seg-75",
+          "LATAM-2.seg-13"
+        ],
+        "argument": "Tras confirmar que 'una agresión a una persona… no hay' (seg-55), los funcionarios igualmente prosiguieron con la remoción del pasajero y la emisión del parte (seg-75), dejándolo sin vuelo y prohibido de volar (seg-13). Continuar un procedimiento coercitivo cuando se ha verificado la inexistencia del hecho que lo motivaba constituye un trato arbitrario y vejatorio.",
+        "element_id": "CL.CHIPENCOD.Art.255.elem.modalidad_tipica_vejacion",
+        "doctrinal_basis": "La 'vejación injusta' comprende todo trato degradante, humillante o arbitrario que exceda las facultades legales del funcionario. La doctrina (Etcheberry, Garrido Montt) incluye actos de hostigamiento procesal o administrativo sin fundamento legal.",
+        "weaknesses": [
+          "La defensa podría argumentar que la decisión de remoción fue adoptada por LATAM y no por los funcionarios públicos, según la frase 'esta decisión no la decidimos nosotros' (seg-75)."
+        ],
+        "open_questions": [
+          "Determinar si la PDI/DGAC tenía facultad legal autónoma para revertir la remoción una vez constatada la inexistencia de agresión."
+        ],
+        "article_short": "Art. 255 — Vejación injusta por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Carácter injusto de la vejación (antijuridicidad material)",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-55",
+          "STG-7.seg-44",
+          "STG-7.seg-75"
+        ],
+        "argument": "La revisión de las cámaras CCTV descartó toda agresión (seg-44, seg-55). A partir de ese momento, cualquier medida coercitiva contra el pasajero carecía de base fáctica y, por tanto, de justificación legal. La continuación del procedimiento de remoción (seg-75) deviene injusta por ausencia del presupuesto habilitante.",
+        "element_id": "CL.CHIPENCOD.Art.255.elem.injusticia_de_la_vejacion",
+        "doctrinal_basis": "La vejación debe ser 'injusta', es decir, carente de justificación legal. Si el funcionario actúa dentro de sus atribuciones legítimas, la conducta es atípica. La injusticia se configura cuando el acto excede o contradice el fundamento fáctico que lo habilitaba.",
+        "weaknesses": [
+          "Podría alegarse que el protocolo aeroportuario obligaba a completar el procedimiento independientemente del resultado de la revisión de cámaras."
+        ],
+        "open_questions": [
+          "Verificar normativa DGAC/PDI sobre obligatoriedad de completar procedimiento de remoción una vez iniciado."
+        ],
+        "article_short": "Art. 255 — Vejación injusta por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Resultado: perjuicio efectivo al sujeto pasivo",
+        "status": "established",
+        "evidence": [
+          "LATAM-2.seg-13",
+          "STG-7.seg-75"
+        ],
+        "argument": "El pasajero perdió su vuelo, quedó 'botado sin pasaje' y fue prohibido de volar con LATAM (seg-13). El propio funcionario reconoce 'lamentamos que tenga perdido tu vuelo' (seg-75). El perjuicio patrimonial y de libertad de desplazamiento es concreto y acreditado.",
+        "element_id": "CL.CHIPENCOD.Art.255.elem.resultado_perjuicio",
+        "doctrinal_basis": "Si bien el art. 255 es un delito de mera actividad, la existencia de perjuicio concreto refuerza la tipicidad y es relevante para la determinación de la pena.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 255 — Vejación injusta por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Tipicidad subjetiva: dolo (al menos eventual)",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-55",
+          "STG-7.seg-44",
+          "STG-7.seg-62"
+        ],
+        "argument": "El oficial PDI expresamente reconoció la inexistencia de agresión tras revisar las cámaras (seg-44, seg-55), lo que demuestra conocimiento pleno de que el fundamento fáctico de la medida había desaparecido. Pese a ello, continuó el procedimiento y ofreció reconducir la denuncia como 'personal' (seg-62), evidenciando conciencia de la arbitrariedad y voluntad de proseguir.",
+        "element_id": "CL.CHIPENCOD.Art.255.elem.tipicidad_subjetiva_dolo",
+        "doctrinal_basis": "El tipo requiere dolo: conocimiento de que se está ejecutando un acto vejatorio injusto. Basta dolo eventual: representarse la posibilidad de que la conducta constituya vejación y aceptar ese resultado.",
+        "weaknesses": [
+          "La defensa podría sostener que el funcionario creía estar obligado a ejecutar una orden superior o un protocolo, lo que podría excluir el dolo o configurar un error de prohibición."
+        ],
+        "open_questions": [
+          "Determinar si existió orden superior expresa que obligara a continuar la remoción pese a la exoneración por CCTV."
+        ],
+        "article_short": "Art. 255 — Vejación injusta por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Circunstancia contextual: ocultamiento sistemático de evidencia exculpatoria",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-62",
+          "LATAM-4.seg-84",
+          "LATAM-4.seg-21",
+          "LATAM-2.seg-4"
+        ],
+        "argument": "Tras la exoneración, se recondujo la denuncia como 'personal' para evitar que constara la ausencia de agresión (seg-62). Posteriormente se emitieron documentos sin firma (seg-21) con una narrativa falsa que sería 'ajustada' (seg-84), perpetuando la versión de agresión inexistente (seg-4). Este patrón de ocultamiento refuerza el carácter doloso de la vejación y puede constituir agravante o delito autónomo.",
+        "element_id": "CL.CHIPENCOD.Art.255.elem.ocultamiento_como_agravante_contextual",
+        "doctrinal_basis": "Si bien no es elemento típico del art. 255, el ocultamiento posterior de la evidencia CCTV que exoneraba al pasajero puede configurar una circunstancia agravante genérica (art. 12 N° 12 CP: emplear medios para asegurar la impunidad) o un concurso con encubrimiento/obstrucción.",
+        "weaknesses": [
+          "Varios de estos segmentos involucran a personal de LATAM (privados), no directamente a empleados públicos, lo que requiere distinguir responsabilidades."
+        ],
+        "open_questions": [
+          "Determinar grado de coordinación entre PDI/DGAC y personal LATAM en la perpetuación de la narrativa falsa.",
+          "Evaluar si procede concurso con art. 193 u otro tipo penal por la falsificación documental."
+        ],
+        "article_short": "Art. 255 — Vejación injusta por empleado público (Código Penal)"
+      }
+    ],
+    "CL.CPCL.C1.Art.17": [
+      {
+        "element_name": "Conocimiento de la perpetración de un crimen o simple delito previo",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55"
+        ],
+        "argument": "El funcionario PDI reconoce expresamente haber revisado las cámaras CCTV y concluido que 'una agresión a una persona… no hay' (seg-55), lo que demuestra que sabía que la acusación de agresión era falsa. Este conocimiento de la falsedad de la denuncia implica conocimiento de que se estaba perpetrando un delito (acusación falsa/calumnia) contra el pasajero.",
+        "element_id": "CL.CPCL.Art.17.2.elem.conocimiento_delito_previo",
+        "doctrinal_basis": "El encubridor debe actuar 'con conocimiento de la perpetración de un crimen o de un simple delito o de los actos ejecutados para llevarlo a cabo'. Se exige conocimiento efectivo —no meramente potencial— del hecho punible antecedente.",
+        "weaknesses": [
+          "No se identifica formalmente cuál es el delito previo específico (calumnia, denuncia calumniosa, etc.) cuya perpetración conocían los encubridores.",
+          "El conocimiento se infiere de las grabaciones pero no consta declaración formal que lo reconozca en sede judicial."
+        ],
+        "open_questions": [
+          "¿Se ha formalizado o al menos identificado el delito antecedente (denuncia calumniosa, acusación falsa) que constituye el presupuesto del encubrimiento?"
+        ],
+        "article_short": "Art. 17 N° 2 y 3 — Encubrimiento (Código Penal de Chile)"
+      },
+      {
+        "element_name": "Ausencia de participación como autor o cómplice en el delito previo",
+        "status": "contested",
+        "evidence": [
+          "STG-7.seg-62",
+          "STG-7.seg-75"
+        ],
+        "argument": "Los segmentos sugieren que los funcionarios PDI y DGAC intervinieron con posterioridad a la acusación falsa original formulada por personal de LATAM, actuando en funciones de control policial/aeronáutico y no como instigadores de la denuncia inicial. Sin embargo, la línea entre complicidad y encubrimiento es difusa: el coaching sobre cómo reformular la denuncia (seg-62) podría interpretarse como participación activa en el delito y no mero encubrimiento posterior.",
+        "element_id": "CL.CPCL.Art.17.2.elem.no_participacion_previa",
+        "doctrinal_basis": "El encubridor debe no haber tenido participación en el delito antecedente 'como autores ni como cómplices'. Si participó como autor o cómplice, su conducta posterior queda absorbida por esa participación principal.",
+        "weaknesses": [
+          "Si se acredita que los funcionarios co-crearon la narrativa falsa desde el inicio, podrían ser coautores o cómplices y no encubridores.",
+          "La cronología exacta de cuándo cada funcionario tomó conocimiento y cuándo intervino no está plenamente establecida."
+        ],
+        "open_questions": [
+          "¿Los funcionarios PDI participaron en la formulación original de la acusación falsa o solo intervinieron después de que LATAM la articuló?",
+          "¿Puede el coaching posterior (seg-62) reconducirse a complicidad en vez de encubrimiento?"
+        ],
+        "article_short": "Art. 17 N° 2 y 3 — Encubrimiento (Código Penal de Chile)"
+      },
+      {
+        "element_name": "Intervención con posterioridad a la ejecución del delito",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "LATAM-2.seg-4",
+          "LATAM-4.seg-84"
+        ],
+        "argument": "La secuencia temporal muestra que primero se formuló la acusación de agresión (delito antecedente), luego se revisaron las cámaras CCTV que la desmentían (seg-44, seg-55), y con posterioridad a ello se mantuvo y perpetuó la narrativa falsa mediante documentos oficiales (seg LATAM-2.seg-4) y se instruyó 'ajustar la realidad' (seg LATAM-4.seg-84). La intervención encubridora es claramente posterior.",
+        "element_id": "CL.CPCL.Art.17.2.elem.intervencion_posterior",
+        "doctrinal_basis": "La conducta encubridora debe ser posterior a la ejecución del delito antecedente. El encubrimiento es por definición un actus post delictum.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 17 N° 2 y 3 — Encubrimiento (Código Penal de Chile)"
+      },
+      {
+        "element_name": "Modalidad típica N°2: Ocultar o inutilizar el cuerpo, efectos o instrumentos del delito para impedir su descubrimiento",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "LATAM-4.seg-21",
+          "LATAM-4.seg-84"
+        ],
+        "argument": "La evidencia CCTV que demostraba la inexistencia de agresión constituye un 'instrumento' o 'efecto' probatorio del delito de acusación falsa. Al no incorporar ni revelar dicha evidencia exculpatoria —pese a haberla revisado y confirmado que no existía agresión (seg-44, seg-55)— los funcionarios ocultaron activamente un instrumento clave para el descubrimiento del delito. La emisión de documentos sin firma (seg LATAM-4.seg-21) y la instrucción de 'ajustar la realidad' (seg LATAM-4.seg-84) refuerzan la conducta de ocultación sistemática.",
+        "element_id": "CL.CPCL.Art.17.2.elem.modalidad_ocultacion_efectos",
+        "doctrinal_basis": "Art. 17 N°2: 'Ocultando o inutilizando el cuerpo, los efectos o instrumentos del crimen o simple delito para impedir su descubrimiento.' Se requiere una conducta activa de ocultación o inutilización dirigida a impedir el descubrimiento del delito.",
+        "weaknesses": [
+          "La doctrina tradicional entiende 'cuerpo, efectos o instrumentos' en sentido material (arma, objeto robado, etc.); la extensión a evidencia digital/CCTV exculpatoria podría ser debatida.",
+          "No consta que las grabaciones CCTV hayan sido destruidas o inutilizadas físicamente; la ocultación fue por omisión de revelarlas."
+        ],
+        "open_questions": [
+          "¿La jurisprudencia chilena ha extendido el concepto de 'instrumentos del delito' a evidencia digital exculpatoria cuya ocultación impide descubrir la falsedad de una acusación?",
+          "¿La omisión de revelar equivale a 'ocultar' en el sentido del N°2, o se requiere un acto comisivo de destrucción/inutilización?"
+        ],
+        "article_short": "Art. 17 N° 2 y 3 — Encubrimiento (Código Penal de Chile)"
+      },
+      {
+        "element_name": "Modalidad típica N°3: Albergar, ocultar o proporcionar la fuga del culpable",
+        "status": "contested",
+        "evidence": [
+          "STG-7.seg-62",
+          "LATAM-2.seg-4",
+          "LATAM-4.seg-84"
+        ],
+        "argument": "Al redirigir la denuncia hacia el pasajero como persona natural (seg-62) y mantener la narrativa falsa institucional (seg LATAM-2.seg-4), los funcionarios efectivamente 'ocultaron' al verdadero culpable de la acusación falsa (el personal de LATAM que la formuló), desviando la atención investigativa y protegiendo su identidad e impunidad. La instrucción de 'ajustar la realidad' (seg LATAM-4.seg-84) sugiere una estrategia coordinada para proteger a los responsables.",
+        "element_id": "CL.CPCL.Art.17.3.elem.modalidad_ocultacion_culpable",
+        "doctrinal_basis": "Art. 17 N°3: 'Albergando, ocultando o proporcionando la fuga del culpable.' Se protege al autor del delito antecedente sustrayéndolo de la acción de la justicia.",
+        "weaknesses": [
+          "La modalidad N°3 se aplica tradicionalmente a la ocultación física del culpable o facilitación de su fuga; la extensión a 'ocultación institucional' de la identidad del responsable es una interpretación extensiva que podría ser resistida.",
+          "No se identifica con precisión quién es 'el culpable' del delito antecedente que habría sido ocultado."
+        ],
+        "open_questions": [
+          "¿La protección institucional de la identidad del denunciante falso puede subsumirse en 'ocultar al culpable' del N°3?",
+          "¿Se ha identificado formalmente al autor del delito antecedente cuya ocultación se imputa?"
+        ],
+        "article_short": "Art. 17 N° 2 y 3 — Encubrimiento (Código Penal de Chile)"
+      },
+      {
+        "element_name": "Objeto material: cuerpo, efectos o instrumentos del delito (N°2) / el culpable (N°3)",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "LATAM-2.seg-4",
+          "LATAM-4.seg-21"
+        ],
+        "argument": "El objeto material principal es la grabación CCTV que constituye evidencia exculpatoria y, simultáneamente, prueba de la falsedad de la acusación (instrumento para descubrir el delito). Los segmentos acreditan que los funcionarios revisaron dicha grabación (seg-44, seg-55), confirmaron que no existía agresión, y sin embargo emitieron documentos oficiales que perpetuaban la narrativa falsa (seg LATAM-2.seg-4) sin firma ni trazabilidad (seg LATAM-4.seg-21).",
+        "element_id": "CL.CPCL.Art.17.2.elem.objeto_material",
+        "doctrinal_basis": "En el N°2, el objeto material es el cuerpo del delito, sus efectos o instrumentos. En el N°3, es la persona del culpable. Ambos deben estar vinculados causalmente al delito antecedente.",
+        "weaknesses": [
+          "No se ha acreditado la cadena de custodia de las grabaciones CCTV ni su estado actual (si fueron preservadas, borradas o sobrescritas)."
+        ],
+        "open_questions": [
+          "¿Las grabaciones CCTV del aeropuerto han sido preservadas y están disponibles como evidencia?",
+          "¿Quién tenía custodia y control sobre las grabaciones al momento de los hechos?"
+        ],
+        "article_short": "Art. 17 N° 2 y 3 — Encubrimiento (Código Penal de Chile)"
+      },
+      {
+        "element_name": "Elemento finalístico: para impedir el descubrimiento del delito (N°2)",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-62",
+          "LATAM-4.seg-84",
+          "LATAM-2.seg-4"
+        ],
+        "argument": "La finalidad de impedir el descubrimiento se infiere de la conducta coordinada: tras confirmar la inexistencia de agresión, los funcionarios no solo omitieron revelar la verdad sino que activamente redirigieron la denuncia (seg-62), mantuvieron la narrativa falsa en documentos oficiales (seg LATAM-2.seg-4) y expresamente instruyeron 'ajustar la realidad' (seg LATAM-4.seg-84). Esta secuencia de actos no tiene otra explicación razonable que la voluntad deliberada de impedir que se descubriera la falsedad de la acusación.",
+        "element_id": "CL.CPCL.Art.17.2.elem.finalidad_impedir_descubrimiento",
+        "doctrinal_basis": "El N°2 exige que la ocultación o inutilización se realice 'para impedir su descubrimiento'. Se trata de un elemento subjetivo del tipo que va más allá del dolo genérico: requiere la finalidad específica de evitar que el delito sea descubierto.",
+        "weaknesses": [
+          "La finalidad específica podría ser discutida: los funcionarios podrían alegar que actuaron por inercia burocrática o por seguir instrucciones superiores, sin intención específica de encubrir."
+        ],
+        "open_questions": [
+          "¿Existe evidencia de instrucciones superiores que ordenaran mantener la narrativa, lo que podría desplazar la responsabilidad individual?"
+        ],
+        "article_short": "Art. 17 N° 2 y 3 — Encubrimiento (Código Penal de Chile)"
+      },
+      {
+        "element_name": "Tipicidad subjetiva: dolo de encubrimiento",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "STG-7.seg-62",
+          "LATAM-4.seg-84"
+        ],
+        "argument": "El dolo se acredita por la convergencia de: (1) conocimiento positivo de que no existía agresión tras revisar las cámaras (seg-44, seg-55); (2) decisión consciente de no revelar esta información y en cambio redirigir la denuncia (seg-62); y (3) instrucción deliberada de 'ajustar la realidad' (seg LATAM-4.seg-84). El conjunto evidencia una voluntad clara y reflexiva de ocultar la verdad, incompatible con error o negligencia.",
+        "element_id": "CL.CPCL.Art.17.elem.tipicidad_subjetiva_dolo",
+        "doctrinal_basis": "El encubrimiento requiere dolo directo: conocimiento de la perpetración del delito antecedente y voluntad de realizar la conducta encubridora. No se admite encubrimiento culposo.",
+        "weaknesses": [
+          "El dolo debe probarse respecto de cada sujeto activo individualmente; los segmentos involucran a distintos funcionarios (PDI, DGAC, LATAM) cuyo grado de conocimiento individual podría variar."
+        ],
+        "open_questions": [
+          "¿Se puede individualizar el dolo de cada funcionario interviniente o solo se acredita respecto de algunos?"
+        ],
+        "article_short": "Art. 17 N° 2 y 3 — Encubrimiento (Código Penal de Chile)"
+      },
+      {
+        "element_name": "Resultado / perjuicio derivado del encubrimiento",
+        "status": "established",
+        "evidence": [
+          "LATAM-2.seg-13",
+          "STG-7.seg-75",
+          "STG-29.seg-43"
+        ],
+        "argument": "El perjuicio concreto está acreditado por las propias declaraciones: el pasajero quedó 'botado sin mi pasaje, prohibido de volar' (seg LATAM-2.seg-13), perdió su vuelo por una decisión basada en la narrativa falsa encubierta (seg STG-7.seg-75), y las acusaciones falsas fueron 'confirmadas' institucionalmente (seg STG-29.seg-43), perpetuando el daño. El encubrimiento no solo impidió el descubrimiento del delito sino que causó consecuencias patrimoniales y de libertad de movimiento al afectado.",
+        "element_id": "CL.CPCL.Art.17.elem.resultado_perjuicio",
+        "doctrinal_basis": "Si bien el encubrimiento es un delito de mera actividad (no requiere resultado), la existencia de perjuicio efectivo es relevante para la determinación de la pena y para acreditar la gravedad de la conducta.",
+        "weaknesses": [],
+        "open_questions": [
+          "¿Se ha cuantificado el perjuicio patrimonial total (pasajes perdidos, costos adicionales, daño moral) para efectos de la acción civil?"
+        ],
+        "article_short": "Art. 17 N° 2 y 3 — Encubrimiento (Código Penal de Chile)"
+      },
+      {
+        "element_name": "Sujeto activo: tercero no participante en el delito previo",
+        "status": "contested",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-62",
+          "STG-7.seg-75",
+          "LATAM-4.seg-84"
+        ],
+        "argument": "Se identifican al menos tres categorías de sujetos activos potenciales: funcionarios PDI (seg-44, seg-55, seg-62), funcionarios DGAC (seg-75) y supervisores LATAM (seg LATAM-4.seg-84, LATAM-2.seg-4). La calidad de funcionario público de los primeros dos grupos podría generar agravantes. Sin embargo, respecto de los supervisores LATAM, su calificación como encubridores depende de que no hayan sido autores o cómplices del delito antecedente (la acusación falsa original), lo cual es precisamente el punto más debatido.",
+        "element_id": "CL.CPCL.Art.17.elem.sujeto_activo",
+        "doctrinal_basis": "El encubridor es un sujeto activo común (cualquier persona), pero debe ser distinto del autor o cómplice del delito antecedente. Si es funcionario público, puede concurrir con agravantes especiales.",
+        "weaknesses": [
+          "La individualización precisa de cada sujeto activo (nombre, cargo, función específica) no surge completamente de los segmentos disponibles.",
+          "Los supervisores LATAM podrían ser autores del delito antecedente y no encubridores."
+        ],
+        "open_questions": [
+          "¿Se ha individualizado a cada funcionario PDI, DGAC y supervisor LATAM que intervino en la cadena de encubrimiento?",
+          "¿Los supervisores LATAM deben ser imputados como autores de la acusación falsa o como encubridores?"
+        ],
+        "article_short": "Art. 17 N° 2 y 3 — Encubrimiento (Código Penal de Chile)"
+      }
+    ],
+    "CL.L20285.T1.C2.Art.5": [
+      {
+        "element_name": "Órgano de la Administración del Estado como sujeto obligado",
+        "status": "established",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-75"
+        ],
+        "argument": "La PDI es un órgano de la Administración del Estado conforme al Art. 1 de la Ley 18.575. Los segmentos muestran que fue la PDI quien realizó la revisión de CCTV y emitió conclusiones oficiales, actuando en ejercicio de funciones públicas.",
+        "element_id": "CL.L20285.Art.5.elem.organo_administracion_estado",
+        "doctrinal_basis": "El artículo 5° exige que el sujeto obligado sea un órgano de la Administración del Estado. La PDI (Policía de Investigaciones) es un servicio público dependiente del Ministerio del Interior, por lo que califica como órgano obligado.",
+        "weaknesses": [],
+        "open_questions": [
+          "Determinar si la DGAC también es co-obligada en cuanto al parte emitido (seg-75)."
+        ],
+        "article_short": "Art. 5 — Carácter público de la información administrativa (Ley 20.285)"
+      },
+      {
+        "element_name": "Existencia de un acto o resolución administrativa",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "STG-7.seg-75"
+        ],
+        "argument": "El oficial PDI declara explícitamente el resultado de la revisión CCTV: 'no hay ninguna agresión' (seg-44, seg-55). Además, se emite un 'parte de la Dirección General de Aeronáutica' (seg-75), lo que evidencia la existencia de actos administrativos formales derivados de la diligencia.",
+        "element_id": "CL.L20285.Art.5.elem.acto_resolucion_publica",
+        "doctrinal_basis": "La norma declara públicos 'los actos y resoluciones' de los órganos. La conclusión oficial de la PDI tras revisar las cámaras CCTV —determinando que no hubo agresión— constituye un acto administrativo de constatación.",
+        "weaknesses": [
+          "No se dispone del documento escrito del acto de constatación PDI; la prueba es oral."
+        ],
+        "open_questions": [
+          "¿Se formalizó la conclusión exoneratoria en un informe policial escrito o solo quedó como comunicación verbal?"
+        ],
+        "article_short": "Art. 5 — Carácter público de la información administrativa (Ley 20.285)"
+      },
+      {
+        "element_name": "Documentos de sustento o complemento directo y esencial",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "LATAM-2.seg-4"
+        ],
+        "argument": "La revisión de cámaras CCTV fue el fundamento directo de la conclusión de inexistencia de agresión. Estos registros audiovisuales son documentos de sustento esencial del acto administrativo. El seg LATAM-2.seg-4 muestra que se emitió una carta con 'información que tenemos de lo sucedido', evidenciando documentación formal que debería reflejar la conclusión exoneratoria.",
+        "element_id": "CL.L20285.Art.5.elem.documentos_sustento_complemento",
+        "doctrinal_basis": "Son públicos los documentos que sirvan de sustento o complemento directo y esencial al acto. Las grabaciones CCTV revisadas por la PDI y cualquier informe derivado constituyen documentos de sustento de la conclusión exoneratoria.",
+        "weaknesses": [
+          "No se acredita directamente la existencia física del archivo CCTV ni su cadena de custodia."
+        ],
+        "open_questions": [
+          "¿Se conservaron las grabaciones CCTV o fueron eliminadas/sobrescritas?"
+        ],
+        "article_short": "Art. 5 — Carácter público de la información administrativa (Ley 20.285)"
+      },
+      {
+        "element_name": "Vulneración del principio de transparencia de la función pública",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-62",
+          "LATAM-2.seg-4",
+          "LATAM-4.seg-84"
+        ],
+        "argument": "En lugar de comunicar la conclusión exoneratoria, el oficial PDI redirige la situación hacia una denuncia personal (seg-62), ocultando el resultado favorable al pasajero. LATAM perpetúa una narrativa falsa mediante documentos sin firma (seg LATAM-4.seg-21) y admite que 'irá ajustando la realidad' (seg-84). La información pública exoneratoria nunca fue comunicada al afectado ni puesta a disposición pública.",
+        "element_id": "CL.L20285.Art.5.elem.principio_transparencia_vulnerado",
+        "doctrinal_basis": "El Art. 5° consagra el principio de transparencia como regla general. La ocultación deliberada de información pública constituye una infracción directa a este principio cuando no media causal legal de reserva.",
+        "weaknesses": [
+          "La obligación de transparencia activa recae sobre el órgano estatal; la conducta de LATAM podría no estar directamente cubierta por la Ley 20.285."
+        ],
+        "open_questions": [
+          "¿Se invocó alguna causal de reserva o secreto del Art. 21 de la Ley 20.285 para justificar la no divulgación?"
+        ],
+        "article_short": "Art. 5 — Carácter público de la información administrativa (Ley 20.285)"
+      },
+      {
+        "element_name": "Ausencia de causal legal de reserva o secreto",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-62",
+          "STG-7.seg-75"
+        ],
+        "argument": "No consta en los segmentos que la PDI ni la DGAC hayan invocado causal alguna de reserva para negar acceso a la conclusión exoneratoria. La redirección hacia una denuncia personal (seg-62) y la emisión de un parte sin mencionar la exoneración (seg-75) evidencian ocultamiento sin fundamento legal.",
+        "element_id": "CL.L20285.Art.5.elem.inexistencia_causal_reserva",
+        "doctrinal_basis": "La publicidad es la regla; las excepciones deben estar establecidas en la propia Ley 20.285 o en leyes de quórum calificado. La carga de invocar y acreditar la excepción recae en el órgano que deniega el acceso.",
+        "weaknesses": [
+          "No se puede descartar absolutamente que exista una causal invocada en documentación no disponible."
+        ],
+        "open_questions": [
+          "¿Existe algún acto formal de denegación de acceso que invoque una causal del Art. 21?"
+        ],
+        "article_short": "Art. 5 — Carácter público de la información administrativa (Ley 20.285)"
+      },
+      {
+        "element_name": "Conducta activa de ocultamiento o supresión de la información",
+        "status": "established",
+        "evidence": [
+          "STG-7.seg-62",
+          "LATAM-2.seg-4",
+          "LATAM-4.seg-21",
+          "LATAM-4.seg-84"
+        ],
+        "argument": "El oficial PDI, conociendo la exoneración por CCTV, no la comunica al pasajero y en cambio ofrece una denuncia 'como persona' (seg-62), desviando la atención del resultado oficial. LATAM emite documentos sin firma (seg LATAM-4.seg-21) con narrativa contraria a la conclusión PDI, y admite que 'irá ajustando la realidad' (seg-84). Esto configura un ocultamiento sistemático y deliberado.",
+        "element_id": "CL.L20285.Art.5.elem.ocultamiento_deliberado",
+        "doctrinal_basis": "La infracción al Art. 5° se configura no solo por denegación formal de acceso, sino también por la supresión activa de información que debería ser pública, impidiendo su conocimiento por el interesado o el público.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 5 — Carácter público de la información administrativa (Ley 20.285)"
+      },
+      {
+        "element_name": "Perjuicio concreto derivado de la falta de acceso a la información pública",
+        "status": "established",
+        "evidence": [
+          "LATAM-2.seg-13",
+          "STG-29.seg-43"
+        ],
+        "argument": "El pasajero quedó 'botado sin pasaje, prohibido de volar' (seg LATAM-2.seg-13) como consecuencia directa de que la conclusión exoneratoria nunca le fue comunicada ni incorporada al expediente. El pasajero incluso cree que 'las dos acusaciones fueron confirmadas' (seg STG-29.seg-43), demostrando que la información pública exoneratoria fue efectivamente suprimida de su conocimiento.",
+        "element_id": "CL.L20285.Art.5.elem.perjuicio_al_afectado",
+        "doctrinal_basis": "Si bien la infracción al Art. 5° no requiere perjuicio como elemento típico (es una norma de publicidad), la existencia de daño concreto refuerza la gravedad de la infracción y habilita acciones reparatorias.",
+        "weaknesses": [
+          "El perjuicio no es elemento constitutivo de la infracción al Art. 5°, sino agravante."
+        ],
+        "open_questions": [],
+        "article_short": "Art. 5 — Carácter público de la información administrativa (Ley 20.285)"
+      }
+    ],
+    "CL.LPDC.Art.3.b": [
+      {
+        "element_name": "Existencia de relación de consumo (proveedor–consumidor)",
+        "status": "established",
+        "evidence": [
+          "LATAM-2.seg-13",
+          "STG-29.seg-43"
+        ],
+        "argument": "El pasajero se identifica expresamente como 'pasajero' y 'cliente' de LATAM (LATAM-2.seg-13), y LATAM actúa como operador aéreo que presta el servicio de transporte. La relación proveedor-consumidor queda plenamente acreditada por la existencia del contrato de transporte aéreo y la interacción documentada entre ambas partes.",
+        "element_id": "CL.LPDC.Art.3.b.elem.relacion_de_consumo",
+        "doctrinal_basis": "Para invocar Art. 3 b) LPDC debe acreditarse que el reclamante es consumidor final y el reclamado es proveedor en los términos de los Arts. 1 Nos 1 y 2 de la Ley 19.496.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna del consumidor (Ley 19.496)"
+      },
+      {
+        "element_name": "Deber del proveedor de entregar información veraz",
+        "status": "established",
+        "evidence": [
+          "LATAM-2.seg-4",
+          "LATAM-4.seg-84",
+          "STG-7.seg-55"
+        ],
+        "argument": "LATAM entregó al consumidor una carta con una versión de los hechos que no correspondía a la realidad verificada por CCTV. La supervisora Antonela reconoce que la información contenida en el documento 'no se puede cambiar' (LATAM-2.seg-4), pese a que la propia PDI había constatado la inexistencia de agresión (STG-7.seg-55). Más aún, la misma supervisora admite que la narrativa se irá 'ajustando a la realidad' (LATAM-4.seg-84), lo que evidencia que la información inicialmente entregada no era veraz.",
+        "element_id": "CL.LPDC.Art.3.b.elem.deber_informacion_veraz",
+        "doctrinal_basis": "El Art. 3 b) impone al proveedor el deber de suministrar información veraz sobre los servicios ofrecidos y sus condiciones. La veracidad exige correspondencia entre lo informado y la realidad objetiva de los hechos.",
+        "weaknesses": [
+          "No se cuenta con copia textual del documento/carta entregado al pasajero para contrastar su contenido con los hechos verificados por CCTV."
+        ],
+        "open_questions": [
+          "¿Cuál es el contenido exacto de la carta entregada al pasajero y qué hechos falsos específicos consigna?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna del consumidor (Ley 19.496)"
+      },
+      {
+        "element_name": "Deber del proveedor de entregar información oportuna",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "STG-7.seg-75",
+          "LATAM-2.seg-13"
+        ],
+        "argument": "La exoneración por CCTV fue conocida antes de la ejecución del desembarco (STG-7.seg-44, STG-7.seg-55), pero LATAM no comunicó oportunamente al pasajero que la acusación carecía de sustento. En lugar de informar, se procedió a la remoción del vuelo (STG-7.seg-75), privando al consumidor de toda posibilidad de ejercer sus derechos a tiempo. El pasajero quedó 'botado sin pasaje' y prohibido de volar (LATAM-2.seg-13).",
+        "element_id": "CL.LPDC.Art.3.b.elem.deber_informacion_oportuna",
+        "doctrinal_basis": "La oportunidad de la información exige que el proveedor la entregue en tiempo útil para que el consumidor pueda ejercer sus derechos, especialmente antes de que se materialice un perjuicio irreversible.",
+        "weaknesses": [
+          "No hay segmento que acredite el momento exacto en que LATAM tomó conocimiento formal del resultado de la revisión CCTV."
+        ],
+        "open_questions": [
+          "¿En qué momento preciso la PDI comunicó a LATAM el resultado exoneratorio de la revisión de cámaras?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna del consumidor (Ley 19.496)"
+      },
+      {
+        "element_name": "Conducta infractora: entrega de información falsa u ocultación de información relevante",
+        "status": "established",
+        "evidence": [
+          "STG-7.seg-55",
+          "STG-7.seg-62",
+          "LATAM-2.seg-4",
+          "LATAM-4.seg-21",
+          "LATAM-4.seg-84"
+        ],
+        "argument": "La PDI constató que no existió agresión (STG-7.seg-55), pero se orientó a la tripulante a denunciar a título personal y no como LATAM (STG-7.seg-62), lo que evidencia una estrategia de ocultación del resultado exoneratorio. LATAM emitió un documento sin firma (LATAM-4.seg-21) con una narrativa que no reflejaba la realidad, y la propia supervisora reconoció que dicha narrativa se iría 'ajustando a la realidad' (LATAM-4.seg-84), confirmando que la información entregada al consumidor era conscientemente inexacta.",
+        "element_id": "CL.LPDC.Art.3.b.elem.falsedad_u_ocultacion_de_informacion",
+        "doctrinal_basis": "La infracción al Art. 3 b) se configura tanto por la entrega de información positivamente falsa como por la omisión deliberada de información relevante que el consumidor necesita para tomar decisiones informadas.",
+        "weaknesses": [
+          "La participación directa de LATAM (como empresa) en la estrategia de ocultación versus la actuación de la PDI requiere mayor delimitación."
+        ],
+        "open_questions": [
+          "¿Existió instrucción formal de LATAM a la PDI o fue una decisión autónoma del oficial?",
+          "¿Se emitió algún documento posterior corrigiendo la narrativa falsa?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna del consumidor (Ley 19.496)"
+      },
+      {
+        "element_name": "Objeto material: información sobre condiciones del servicio y características relevantes",
+        "status": "strong",
+        "evidence": [
+          "LATAM-2.seg-4",
+          "LATAM-2.seg-13",
+          "STG-29.seg-43"
+        ],
+        "argument": "La información falsa recayó sobre las razones de la remoción del vuelo y la prohibición de volar, es decir, sobre condiciones esenciales de la prestación del servicio de transporte aéreo. La carta entregada (LATAM-2.seg-4) contenía la versión oficial de LATAM sobre 'lo sucedido', y el pasajero fue dejado sin pasaje y prohibido de volar (LATAM-2.seg-13), todo fundado en acusaciones que el propio pasajero señala fueron 'confirmadas' como falsas (STG-29.seg-43).",
+        "element_id": "CL.LPDC.Art.3.b.elem.objeto_material_informacion",
+        "doctrinal_basis": "El Art. 3 b) protege el derecho a información veraz sobre 'bienes y servicios ofrecidos, su precio, condiciones de contratación y otras características relevantes'. En transporte aéreo, las causales de denegación de embarque y las razones de remoción constituyen 'características relevantes' del servicio.",
+        "weaknesses": [],
+        "open_questions": [
+          "¿La carta entregada constituye formalmente la notificación de denegación de embarque exigida por la normativa aeronáutica?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna del consumidor (Ley 19.496)"
+      },
+      {
+        "element_name": "Perjuicio concreto al consumidor derivado de la información falsa",
+        "status": "established",
+        "evidence": [
+          "LATAM-2.seg-13",
+          "STG-7.seg-75"
+        ],
+        "argument": "El consumidor sufrió perjuicios concretos y graves: pérdida del vuelo (STG-7.seg-75), pérdida del pasaje y prohibición de volar con LATAM (LATAM-2.seg-13). Estos daños son consecuencia directa de la información falsa mantenida por el proveedor, quien ejecutó la remoción pese a conocer la inexistencia de la agresión imputada.",
+        "element_id": "CL.LPDC.Art.3.b.elem.perjuicio_al_consumidor",
+        "doctrinal_basis": "Si bien el Art. 3 b) no exige perjuicio como elemento típico de la infracción, la existencia de daño efectivo es relevante para la determinación de indemnizaciones conforme al Art. 3 e) LPDC y para calificar la gravedad de la infracción.",
+        "weaknesses": [],
+        "open_questions": [
+          "¿Se mantiene vigente la prohibición de volar con LATAM?",
+          "¿Existen gastos adicionales documentados (alojamiento, vuelos alternativos) derivados de la remoción?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna del consumidor (Ley 19.496)"
+      },
+      {
+        "element_name": "Elemento subjetivo: dolo o culpa del proveedor en la entrega de información falsa",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "LATAM-4.seg-84",
+          "LATAM-2.seg-4"
+        ],
+        "argument": "La revisión de CCTV demostró la inexistencia de agresión (STG-7.seg-44, STG-7.seg-55) antes de que se ejecutara la remoción. LATAM, no obstante, mantuvo la narrativa falsa en el documento entregado al pasajero (LATAM-2.seg-4). La admisión de la supervisora de que la realidad se iría 'ajustando' (LATAM-4.seg-84) evidencia conocimiento de la discrepancia entre lo informado y la verdad, configurando al menos dolo eventual respecto de la entrega de información no veraz.",
+        "element_id": "CL.LPDC.Art.3.b.elem.elemento_subjetivo_dolo_o_culpa",
+        "doctrinal_basis": "La responsabilidad infraccional bajo la LPDC admite culpa o dolo. El conocimiento previo de la falsedad de la información eleva la conducta a dolo directo, agravando la responsabilidad del proveedor.",
+        "weaknesses": [
+          "No existe segmento que acredite una instrucción corporativa expresa de mantener la narrativa falsa; la evidencia proviene de actuaciones de supervisores en terreno.",
+          "La defensa podría argumentar que los supervisores actuaron con información parcial o bajo protocolo estándar."
+        ],
+        "open_questions": [
+          "¿Existió comunicación interna de LATAM instruyendo mantener la versión original pese al resultado de CCTV?",
+          "¿Los supervisores en terreno tenían autonomía para modificar la narrativa o dependían de instrucciones centrales?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna del consumidor (Ley 19.496)"
+      },
+      {
+        "element_name": "Circunstancia agravante: carácter sistemático de la ocultación",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-62",
+          "LATAM-2.seg-4",
+          "LATAM-4.seg-21",
+          "LATAM-4.seg-84",
+          "STG-29.seg-63"
+        ],
+        "argument": "La ocultación no fue un acto aislado sino una secuencia coordinada: (1) se reorientó la denuncia para desvincular a LATAM del resultado exoneratorio (STG-7.seg-62); (2) se emitió un documento sin firma para dificultar la trazabilidad (LATAM-4.seg-21); (3) se entregó al pasajero una carta con información que LATAM sabía no correspondía a la realidad (LATAM-2.seg-4); (4) se admitió que la narrativa se ajustaría posteriormente (LATAM-4.seg-84); y (5) se negó cualquier motivación personal en la decisión (STG-29.seg-63), cerrando el circuito de ocultación.",
+        "element_id": "CL.LPDC.Art.3.b.elem.sistematicidad_de_la_ocultacion",
+        "doctrinal_basis": "La reiteración o sistematicidad de la conducta infractora es relevante para la determinación de multas conforme al Art. 24 LPDC y para calificar la gravedad de la infracción.",
+        "weaknesses": [
+          "La calificación de 'sistemática' requiere demostrar coordinación entre los distintos actores (PDI, DGAC, LATAM), lo cual no está plenamente acreditado en los segmentos disponibles."
+        ],
+        "open_questions": [
+          "¿Existe evidencia de un protocolo corporativo de LATAM para manejar situaciones de exoneración post-acusación?",
+          "¿Se han identificado casos similares que demuestren un patrón de conducta?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna del consumidor (Ley 19.496)"
+      }
+    ],
+    "CL.LPDC.Art.23": [
+      {
+        "element_name": "Calidad de proveedor",
+        "status": "established",
+        "evidence": [
+          "STG-7.seg-62",
+          "LATAM-2.seg-4",
+          "LATAM-2.seg-13"
+        ],
+        "argument": "LATAM Airlines es una aerolínea comercial que presta servicios de transporte aéreo de pasajeros de forma habitual y profesional, calificando inequívocamente como proveedor. Los segmentos muestran a supervisores de LATAM actuando en representación de la empresa frente al consumidor, emitiendo documentos oficiales y ejecutando decisiones operacionales.",
+        "element_id": "CL.LPDC.Art.23.elem.calidad_proveedor",
+        "doctrinal_basis": "El sujeto infractor debe ser un 'proveedor' en los términos del Art. 1 N°2 de la Ley 19.496: persona natural o jurídica que habitualmente desarrolla actividades de producción, fabricación, importación, construcción, distribución o comercialización de bienes o prestación de servicios a consumidores.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 23 — Infracción por servicio defectuoso con negligencia (Ley 19.496)"
+      },
+      {
+        "element_name": "Calidad de consumidor del afectado",
+        "status": "established",
+        "evidence": [
+          "LATAM-2.seg-13"
+        ],
+        "argument": "El pasajero Leandro Disconzi se autoidentifica expresamente como 'pasajero' y 'cliente' de LATAM, habiendo adquirido un pasaje aéreo como destinatario final del servicio de transporte. Su calidad de consumidor es indiscutible.",
+        "element_id": "CL.LPDC.Art.23.elem.calidad_consumidor",
+        "doctrinal_basis": "El afectado debe ser un 'consumidor' conforme al Art. 1 N°1 de la Ley 19.496: persona natural o jurídica que adquiere, utiliza o disfruta bienes o servicios como destinatario final.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 23 — Infracción por servicio defectuoso con negligencia (Ley 19.496)"
+      },
+      {
+        "element_name": "Prestación de un servicio (relación de consumo)",
+        "status": "established",
+        "evidence": [
+          "LATAM-2.seg-13",
+          "STG-7.seg-75"
+        ],
+        "argument": "Existía un contrato de transporte aéreo vigente (pasaje adquirido). El pasajero fue removido de su vuelo y posteriormente se le prohibió volar con LATAM, todo dentro de la ejecución del servicio de transporte aéreo contratado.",
+        "element_id": "CL.LPDC.Art.23.elem.prestacion_servicio",
+        "doctrinal_basis": "Debe existir una relación de consumo vigente: la venta de un bien o la prestación de un servicio en cuyo contexto se produce la infracción.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 23 — Infracción por servicio defectuoso con negligencia (Ley 19.496)"
+      },
+      {
+        "element_name": "Actuación con negligencia (culpa del proveedor)",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "LATAM-2.seg-4",
+          "LATAM-4.seg-84"
+        ],
+        "argument": "La negligencia se configura porque LATAM mantuvo una narrativa de 'agresión' pese a que la revisión de CCTV por la PDI descartó toda agresión (seg-44, seg-55). La supervisora admitió que no podían 'cambiar la información' (seg-4) y luego reconoció que la realidad se iría 'ajustando' (seg-84), evidenciando que el proveedor conocía o debía conocer la falsedad de la información y no actuó con la diligencia mínima para corregirla.",
+        "element_id": "CL.LPDC.Art.23.elem.negligencia",
+        "doctrinal_basis": "El Art. 23 exige que el proveedor haya actuado 'con negligencia'. La doctrina y jurisprudencia del SERNAC interpretan esto como falta de diligencia debida en la prestación del servicio, incluyendo omisiones culpables en la verificación de información y en la corrección de errores conocidos.",
+        "weaknesses": [
+          "Podría argumentarse que LATAM actuó con dolo más que con negligencia, lo que no excluye la infracción pero podría requerir recalificación.",
+          "No hay prueba documental directa de un protocolo interno que LATAM haya omitido seguir."
+        ],
+        "open_questions": [
+          "¿Existía un protocolo interno de LATAM para verificar acusaciones con evidencia de CCTV antes de ejecutar sanciones al pasajero?"
+        ],
+        "article_short": "Art. 23 — Infracción por servicio defectuoso con negligencia (Ley 19.496)"
+      },
+      {
+        "element_name": "Falla o deficiencia en la calidad del servicio",
+        "status": "strong",
+        "evidence": [
+          "LATAM-2.seg-4",
+          "LATAM-4.seg-21",
+          "LATAM-4.seg-84",
+          "STG-7.seg-55"
+        ],
+        "argument": "La deficiencia del servicio se manifiesta en múltiples dimensiones: (1) emisión de documentos sin firma que contienen información falsa sobre una supuesta agresión (seg-4, seg-21); (2) mantenimiento de una narrativa desmentida por evidencia objetiva de CCTV (seg-55); (3) reconocimiento implícito de que la información será 'ajustada' a la realidad posteriormente (seg-84), confirmando que al momento de la prestación del servicio la información era deficiente.",
+        "element_id": "CL.LPDC.Art.23.elem.falla_deficiencia_servicio",
+        "doctrinal_basis": "El servicio debe presentar 'fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida'. En servicios, la falta de veracidad en la información proporcionada y la ejecución de sanciones basadas en hechos falsos constituyen deficiencia en la calidad del servicio.",
+        "weaknesses": [
+          "La carta emitida por LATAM no está incorporada textualmente en los segmentos disponibles, solo se refiere a ella indirectamente."
+        ],
+        "open_questions": [
+          "¿Cuál es el contenido exacto del documento/carta entregado al pasajero y qué afirmaciones fácticas contiene?"
+        ],
+        "article_short": "Art. 23 — Infracción por servicio defectuoso con negligencia (Ley 19.496)"
+      },
+      {
+        "element_name": "Menoscabo causado al consumidor (daño)",
+        "status": "established",
+        "evidence": [
+          "LATAM-2.seg-13",
+          "STG-7.seg-75"
+        ],
+        "argument": "El menoscabo está acreditado directamente por las propias palabras del consumidor y las circunstancias: perdió su vuelo (seg-75), quedó 'botado sin su pasaje' y fue 'prohibido de volar' con LATAM (seg-13). Esto constituye un perjuicio patrimonial concreto (pérdida del servicio contratado y pagado) y un menoscabo adicional por la prohibición de vuelo impuesta.",
+        "element_id": "CL.LPDC.Art.23.elem.menoscabo_consumidor",
+        "doctrinal_basis": "El Art. 23 requiere que la falla o deficiencia 'cause menoscabo al consumidor'. El menoscabo puede ser patrimonial (pérdida del pasaje, gastos adicionales) o extrapatrimonial (daño moral por la situación vejatoria).",
+        "weaknesses": [],
+        "open_questions": [
+          "¿Cuál es la cuantificación exacta del daño patrimonial (valor del pasaje, gastos de alojamiento, pasaje alternativo)?"
+        ],
+        "article_short": "Art. 23 — Infracción por servicio defectuoso con negligencia (Ley 19.496)"
+      },
+      {
+        "element_name": "Nexo causal entre la deficiencia y el menoscabo",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-55",
+          "STG-7.seg-75",
+          "LATAM-2.seg-13",
+          "STG-7.seg-62"
+        ],
+        "argument": "La cadena causal es clara: LATAM formuló acusaciones de agresión → la PDI verificó por CCTV que no hubo agresión (seg-55) → pese a ello, se mantuvo la decisión de remoción y se emitió el parte de la DGAC (seg-75) → el pasajero perdió su vuelo y fue prohibido de volar (seg-13). La deficiencia informativa (mantener acusación falsa) es causa directa y necesaria del menoscabo, pues sin la acusación infundada no se habría ejecutado la remoción ni la prohibición.",
+        "element_id": "CL.LPDC.Art.23.elem.nexo_causal",
+        "doctrinal_basis": "Debe existir relación de causalidad directa entre la falla o deficiencia del servicio y el menoscabo sufrido por el consumidor.",
+        "weaknesses": [
+          "Podría argumentarse que la decisión final fue de la DGAC/PDI y no de LATAM, según seg-75 ('esta decisión no la decidimos nosotros')."
+        ],
+        "open_questions": [
+          "¿Quién tomó formalmente la decisión de remoción: LATAM, la PDI o la DGAC? ¿Fue LATAM quien solicitó la intervención policial basándose en información falsa?"
+        ],
+        "article_short": "Art. 23 — Infracción por servicio defectuoso con negligencia (Ley 19.496)"
+      },
+      {
+        "element_name": "Ocultamiento sistemático de evidencia exoneratoria (agravante de la deficiencia)",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-44",
+          "STG-7.seg-55",
+          "STG-7.seg-62",
+          "LATAM-4.seg-84",
+          "LATAM-4.seg-21"
+        ],
+        "argument": "El ocultamiento se evidencia en que: (1) la PDI reconoció ante el pasajero que las cámaras no mostraban agresión (seg-44, seg-55); (2) se sugirió reconducir la denuncia como personal y no como LATAM (seg-62), separando a la aerolínea de la responsabilidad; (3) LATAM emitió documentos sin firma (seg-21) conteniendo la narrativa falsa; (4) la supervisora reconoció que la 'realidad' se ajustaría después (seg-84), evidenciando conocimiento de la discrepancia entre los hechos y la versión oficial mantenida.",
+        "element_id": "CL.LPDC.Art.23.elem.ocultamiento_sistematico",
+        "doctrinal_basis": "Si bien no es un elemento típico autónomo del Art. 23, el ocultamiento deliberado de evidencia que exonera al consumidor agrava la calificación de negligencia y puede elevarla a dolo eventual, además de configurar infracción al deber de información veraz (Arts. 3 letra b y 12 LPC).",
+        "weaknesses": [
+          "El segmento seg-62 proviene de la PDI, no directamente de LATAM, lo que podría debilitar la atribución del ocultamiento al proveedor.",
+          "No hay evidencia directa de una instrucción interna de LATAM ordenando ocultar la evidencia de CCTV."
+        ],
+        "open_questions": [
+          "¿Existió coordinación entre LATAM y la PDI para suprimir o no reportar los resultados exoneratorios del CCTV?",
+          "¿LATAM tuvo acceso directo a las grabaciones de CCTV o dependía del reporte de la PDI?"
+        ],
+        "article_short": "Art. 23 — Infracción por servicio defectuoso con negligencia (Ley 19.496)"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "id": "EVID-CL-004-01",
+      "source": "timeline_aeropuerto_arturo_merino_benitez_7.html",
+      "type": "",
+      "relevance": "PDI CCTV review, coaching LATAM, DGAC report"
+    },
+    {
+      "id": "EVID-CL-004-02",
+      "source": "timeline_aeropuerto_arturo_merino_benitez_29.html",
+      "type": "",
+      "relevance": "Passenger confronts LATAM with PDI findings"
+    }
+  ],
+  "authorities": [],
+  "pipeline_validation": {
+    "pack": "Validation report CL-001",
+    "results": [
+      {
+        "check": "V01-V05, V09-V11",
+        "name": "Structural checks",
+        "result": "✅ pass",
+        "detail": "7 passed"
+      },
+      {
+        "check": "V03",
+        "name": "article_text_hash",
+        "result": "⚠️ warn",
+        "detail": "CHIPENCOD SHA mismatch (cosmetic)"
+      },
+      {
+        "check": "V06",
+        "name": "element_coverage",
+        "result": "⚠️ warn",
+        "detail": "**53 elements uncovered in nexus**"
+      },
+      {
+        "check": "V07",
+        "name": "authorities_verification",
+        "result": "⚠️ warn",
+        "detail": "No authorities listed"
+      },
+      {
+        "check": "V08",
+        "name": "contract_consistency",
+        "result": "⚠️ warn",
+        "detail": "derived=0.68 vs. contract=0.97"
+      }
+    ],
+    "summary": {
+      "pass": 1,
+      "warn": 4,
+      "fail": 0
+    },
+    "note": "Validation results pre-Recommendation 9.3"
+  },
+  "cross_references": [
+    {
+      "ref": "CL-005",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-003",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-012",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001",
+      "relation": "cctv_exoneration_disproves_original_false_accusation"
+    },
+    {
+      "ref": "CL-001__opus46",
+      "relation": "concealed_evidence_contradicts_calumnia_accusation"
+    },
+    {
+      "ref": "CL-001__opus46v1",
+      "relation": "concealed_evidence_contradicts_calumnia_accusation"
+    },
+    {
+      "ref": "CL-002",
+      "relation": "removal_enforced_despite_exoneration_evidence"
+    },
+    {
+      "ref": "CL-002__opus46",
+      "relation": "removal_enforced_despite_exoneration_evidence"
+    },
+    {
+      "ref": "CL-003__opus46",
+      "relation": "concealment_demonstrates_institutional_collusion"
+    },
+    {
+      "ref": "CL-004__opus46",
+      "relation": "same_violation_alternate_draft"
+    },
+    {
+      "ref": "CL-005__deepseek",
+      "relation": "same_cctv_exoneration_finding_concealed"
+    },
+    {
+      "ref": "CL-016",
+      "relation": "unsigned_document_used_as_concealment_method"
+    },
+    {
+      "ref": "CL-016__gemini3flash",
+      "relation": "false_narrative_perpetuated_via_disembarkation_letter"
+    },
+    {
+      "ref": "CL-016__grok41fast",
+      "relation": "false_narrative_perpetuated_via_disembarkation_letter"
+    },
+    {
+      "ref": "CL-016__haikulatest",
+      "relation": "false_narrative_perpetuated_via_disembarkation_letter"
+    },
+    {
+      "ref": "CL-016__hy3",
+      "relation": "false_narrative_perpetuated_via_disembarkation_letter"
+    },
+    {
+      "ref": "CL-016__opus46",
+      "relation": "false_narrative_perpetuated_via_disembarkation_letter"
+    },
+    {
+      "ref": "CL-016__opus47",
+      "relation": "false_narrative_perpetuated_via_disembarkation_letter"
+    },
+    {
+      "ref": "CL-016__opus47version2",
+      "relation": "false_narrative_perpetuated_via_disembarkation_letter"
+    },
+    {
+      "ref": "CL-016__sonnet4",
+      "relation": "false_narrative_perpetuated_via_disembarkation_letter"
+    },
+    {
+      "ref": "CL-016__sonnet4.6",
+      "relation": "false_narrative_perpetuated_via_disembarkation_letter"
+    },
+    {
+      "ref": "CL-016__sonnetlatest",
+      "relation": "false_narrative_perpetuated_via_disembarkation_letter"
+    },
+    {
+      "ref": "CL-007",
+      "relation": "concealment_downstream_consequence"
+    },
+    {
+      "ref": "CL-011",
+      "relation": "concealment_downstream_consequence"
+    },
+    {
+      "ref": "CL-017",
+      "relation": "concealment_downstream_consequence"
+    }
+  ],
+  "note": "Full JSON reconstruction from markdown – includes all key admissions, legal reasoning, candidate articles, and cross-references.",
+  "full_segments": [
+    {
+      "segment_id": "STG-7.seg-44",
+      "role_in_argument": "cctv_review_exoneration_admission",
+      "audio_offset_start": 403.07,
+      "audio_offset_end": 406.41,
+      "speaker": "PDI-OF",
+      "verbatim_es": "quando tu le diga que no hay ninguna agression como hai visto en la camara y todo eso..",
+      "verbatim_sha256": "717cb02e2e593a04e477689421146e9cdc6f85f5e53a98d767684306d98d2fa6",
+      "translation_en": "When you tell her that there is no aggression, as you have seen on the camera and all that…",
+      "transcription_notes": "Speaker uses informal 'tu' and Chilean/Portuguese-influenced phrasing ('quando', 'hai')",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_7.html#seg-44",
+      "source_sha256": "e972cadc58604bb1a88ce3044ae52d3a314108389904a19e48bd1c69a23da180",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-7.seg-55",
+      "role_in_argument": "core_exoneration_admission_no_aggression",
+      "audio_offset_start": 445,
+      "audio_offset_end": 450.1,
+      "speaker": "PDI-OF",
+      "verbatim_es": "**Pero en si una agresion a una persona....no hay",
+      "verbatim_sha256": "d70e1866257182fa570b2ef324155131c50e07dc6f721cc0df6e31753b5c3596",
+      "translation_en": "But in itself, an aggression against a person… there is none.",
+      "transcription_notes": "Emphatic statement confirming CCTV finding of no assault",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_7.html#seg-55",
+      "source_sha256": "e972cadc58604bb1a88ce3044ae52d3a314108389904a19e48bd1c69a23da180",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-7.seg-62",
+      "role_in_argument": "concealment_coaching_personal_complaint",
+      "audio_offset_start": 482,
+      "audio_offset_end": 489.25,
+      "speaker": "PDI-OF",
+      "verbatim_es": "**** Por ese motivo podemos tomarte una denuncia pero es como tu persona, no como LATAM..",
+      "verbatim_sha256": "7a78dfe560e4a1c7ff0937326a78de2fe8fa0a1e8541cde81b36c9f024c62d12",
+      "translation_en": "For that reason we can take a complaint from you, but it would be as your person, not as LATAM.",
+      "transcription_notes": "PDI officer coaching LATAM staff to file a personal (not corporate) complaint despite knowing no aggression occurred",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_7.html#seg-62",
+      "source_sha256": "e972cadc58604bb1a88ce3044ae52d3a314108389904a19e48bd1c69a23da180",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-7.seg-75",
+      "role_in_argument": "removal_enforcement_despite_exoneration",
+      "audio_offset_start": 565,
+      "audio_offset_end": 573.69,
+      "speaker": "PDI/DGAC?",
+      "verbatim_es": "Ya Leandro, ja voy dar el parte de la direcion general de aeronautica, lamentamos que tenga perdido tu vuelo, que esta decicion no la decidimos nosotros",
+      "verbatim_sha256": "f5dc716aa00e245eff0dcd19d4064fe9eebec3c6319de7d2c50c05c48774b713",
+      "translation_en": "Alright Leandro, I am going to issue the report from the Civil Aviation Authority; we regret that you have lost your flight, this decision was not made by us.",
+      "transcription_notes": "Speaker attribution uncertain (PDI/DGAC); deflects responsibility while enforcing removal after exoneration",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_7.html#seg-75",
+      "source_sha256": "e972cadc58604bb1a88ce3044ae52d3a314108389904a19e48bd1c69a23da180",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-29.seg-43",
+      "role_in_argument": "passenger_assertion_accusations_confirmed",
+      "audio_offset_start": 300.91,
+      "audio_offset_end": 305.87,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "las dos acusaciones fueron confirmadas. Confirme eso con la PDI por favor.",
+      "verbatim_sha256": "a9563e26bf5a1727c7e517128ddc655dae964c32f67bb861a9ee56cad8cfcb5e",
+      "translation_en": "Both accusations were confirmed. Please confirm that with the PDI.",
+      "transcription_notes": "Passenger states that the false accusations were upheld despite CCTV exoneration",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_29.html#seg-43",
+      "source_sha256": "02af37830e37e1b77fc4cf59481520f10fc29797d8e8dedb6d23fb98edba273e",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-29.seg-63",
+      "role_in_argument": "latam_denial_personal_motive",
+      "audio_offset_start": 401.98,
+      "audio_offset_end": 403.23,
+      "speaker": "Latam supervisor (Diego)",
+      "verbatim_es": "no, no creo que sea personal",
+      "verbatim_sha256": "a0ebd5d529767e206e1039b79b0f2f1d007936ec8301bfcf35cd325dc8f7d0df",
+      "translation_en": "No, I don't think it's personal.",
+      "transcription_notes": "LATAM supervisor deflects suggestion of personal targeting",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_29.html#seg-63",
+      "source_sha256": "02af37830e37e1b77fc4cf59481520f10fc29797d8e8dedb6d23fb98edba273e",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "LATAM-2.seg-4",
+      "role_in_argument": "false_narrative_perpetuation_via_document",
+      "audio_offset_start": 43.22,
+      "audio_offset_end": 68.41,
+      "speaker": "Latam Supervisora (Antonela)",
+      "verbatim_es": "esta es la carta que usted pidió. Señor, esa es la información que nosotros tenemos de lo sucedido. No podemos cambiar la información que tenemos. Señor, esa es la información que...",
+      "verbatim_sha256": "bd3edf393728a1fe418e69b979b63f71041dd7897bc2b667068e79f40a7f4ea0",
+      "translation_en": "This is the letter you requested. Sir, that is the information we have about what happened. We cannot change the information we have. Sir, that is the information that…",
+      "transcription_notes": "Supervisor refuses to correct the record despite known exoneration, perpetuating false narrative in official documentation",
+      "source_uri": "Transcripts/timeline_latam_STG_2.html#seg-4",
+      "source_sha256": "781f3f1267a4474986366f4f81bb3ce37ccd5d26e335b485023b5bd3e5f6d178",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "LATAM-2.seg-13",
+      "role_in_argument": "passenger_harm_from_concealment",
+      "audio_offset_start": 96.24,
+      "audio_offset_end": 106.54,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "yo como pasajero, como cliente, me quedo botado sin mi pasaje, prohibido de volar a la latam.",
+      "verbatim_sha256": "06a1442a9340ac2cd2fc95c907724b281dcc7a0596d56aea843331a8cd9f76f3",
+      "translation_en": "I, as a passenger, as a customer, am left stranded without my ticket, banned from flying LATAM.",
+      "transcription_notes": "Documents concrete harm resulting from the concealment of exoneration evidence",
+      "source_uri": "Transcripts/timeline_latam_STG_2.html#seg-13",
+      "source_sha256": "781f3f1267a4474986366f4f81bb3ce37ccd5d26e335b485023b5bd3e5f6d178",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "LATAM-4.seg-21",
+      "role_in_argument": "unsigned_document_concealment_method",
+      "audio_offset_start": 75.85,
+      "audio_offset_end": 77.77,
+      "speaker": "Latam Supervisor (Antonela)",
+      "verbatim_es": "ninguno de nuestros documentos tiene firma.",
+      "verbatim_sha256": "6bbcbcec7a7e42d4fca8ddfb62aaeee8d55092c4c7e8897e855f781c6e843b0e",
+      "translation_en": "None of our documents have a signature.",
+      "transcription_notes": "Reveals systematic practice of issuing unsigned documents, facilitating deniability and concealment",
+      "source_uri": "Transcripts/timeline_latam_STG_4.html#seg-21",
+      "source_sha256": "54fae59f4a84d401834a65768561ff423447f599d8fef5244b594dbf27895907",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "LATAM-4.seg-84",
+      "role_in_argument": "admission_narrative_will_be_adjusted",
+      "audio_offset_start": 251.21,
+      "audio_offset_end": 254.97,
+      "speaker": "Latam Supervisor (Antonela)",
+      "verbatim_es": "cuando vea ahí, obviamente, vaya ajustando la realidad..",
+      "verbatim_sha256": "c1c15a9d0c7fdb2cf15d72b4a75135a527a6a6dbb75f5fab0ab38db899fc4e15",
+      "translation_en": "When you see it there, obviously, you will be adjusting the reality…",
+      "transcription_notes": "Supervisor acknowledges that the documented 'reality' is subject to adjustment — implies awareness that current narrative is false",
+      "source_uri": "Transcripts/timeline_latam_STG_4.html#seg-84",
+      "source_sha256": "54fae59f4a84d401834a65768561ff423447f599d8fef5244b594dbf27895907",
+      "audio_uri": null
+    }
+  ],
+  "incident_meta": {
+    "date": "5 July 2024, 15:16 CLT (Santiago, Chile)",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T15:16:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "framework_caches": [
+    {
+      "framework_code": "CHIPENCOD",
+      "framework_name": "CHIPENCOD",
+      "cache_file": "Legal framework/CHIPENCOD.md",
+      "cache_file_sha256": "5e189a4a8d31010c3c09610bd439368e1b5d120d4b8a6cae7f13fa19d18cfb9f",
+      "cache_self_reported_sha256": "509efbf4814f18b681903a7e6c1cd828443c47cb4930c67991d7a32c69fe0baf",
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "1",
+        "141",
+        "148",
+        "193",
+        "194",
+        "195",
+        "196",
+        "197",
+        "211",
+        "212",
+        "255",
+        "296"
+      ]
+    },
+    {
+      "framework_code": "CPCL",
+      "framework_name": "CPCL",
+      "cache_file": "Legal framework/CPCL.md",
+      "cache_file_sha256": "0b2d5b975f2e95a699c22550dd660fe12fd724b9a0206361553c31927773b7fe",
+      "cache_self_reported_sha256": null,
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "17",
+        "94",
+        "255",
+        "269 ter",
+        "412",
+        "416",
+        "494 N 16"
+      ]
+    },
+    {
+      "framework_code": "L20285",
+      "framework_name": "L20285",
+      "cache_file": "Legal framework/L20285.md",
+      "cache_file_sha256": "4e6f01dfa2c767c6cece0780bac8ca2be4f16984ce054b69643f19bb4f1236e8",
+      "cache_self_reported_sha256": "b96e4db1d3b2cde5e323d97c6d77566897168d2af25dfaeaee6348d69852418a",
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20"
+      ]
+    },
+    {
+      "framework_code": "LPDC",
+      "framework_name": "LPDC",
+      "cache_file": "Legal framework/LPDC.md",
+      "cache_file_sha256": "222cb7cef77794c04cb903a3a4d519641255fa339cf32487f9496a1e0ba4c530",
+      "cache_self_reported_sha256": null,
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "3 letra b)",
+        "3 letra e)",
+        "12",
+        "23",
+        "23 bis",
+        "50",
+        "50 A",
+        "58"
+      ]
+    }
+  ],
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CPCL.C1.Art.269_ter",
+      "candidate_name": "Obstrucción a la investigación por funcionario policial",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPCL.C1.Art.269_ter and confirm excerpt"
+      ],
+      "preliminary_view": "El funcionario policial... que a sabiendas oculte, altere o destruya antecedentes, objetos o documentos que permitan establecer la existencia de un delito o la participación punible, será castigado...",
+      "history_note": "PDI officers, knowing the exoneration would establish no crime was committed, concealed that evidence from later investigation, obstructing justice."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T4.C3.Art.269_ter",
+      "candidate_name": "Obstrucción a la investigación por funcionario policial",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 269 ter del Código Penal from bcn.cl/leychile and confirm its exact wording and placement",
+        "Verify whether the article requires a formal investigation to be open at the time of concealment or whether pre-investigative concealment suffices"
+      ],
+      "preliminary_view": "Highly applicable: PDI officers who reviewed CCTV and confirmed no aggression then concealed that exonerating evidence, fitting the conduct of a police officer who knowingly hides antecedents that would establish the non-existence of a crime or negate punishable participation.",
+      "history_note": "Carried forward from prior candidate list. Originally proposed because PDI officers admitted on audio that CCTV showed no aggression yet no record of that finding was preserved or communicated to the passenger or subsequent proceedings."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T3.C4.Art.161_A",
+      "candidate_name": "Delito de grabación/difusión indebida — exclusión inversa: retención indebida de grabación exculpatoria",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 161-A Código Penal from bcn.cl/leychile",
+        "Assess whether the article's scope covers institutional retention/suppression of CCTV footage or only unauthorized capture/diffusion"
+      ],
+      "preliminary_view": "Likely inapplicable on its face (article targets unauthorized recording/diffusion, not suppression), but verification needed to confirm no subsection addresses deliberate withholding of recorded material that affects a person's rights. If inapplicable, discard.",
+      "history_note": "Proposed for completeness given the CCTV evidence suppression pattern; likely to be discarded after verification."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T6.C3.Art.292",
+      "candidate_name": "Asociación ilícita",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 292 Código Penal from bcn.cl/leychile",
+        "Assess threshold: whether coordinated conduct between PDI and LATAM staff on a single occasion meets the 'organization' requirement or whether repeated pattern is needed"
+      ],
+      "preliminary_view": "Unlikely to meet the threshold for a single incident unless a pattern of coordinated cover-ups can be established across multiple passengers. The coaching by PDI to LATAM staff to file a personal complaint suggests coordination, but the article typically requires a more structured criminal organization. Retain as low-probability candidate pending pattern evidence.",
+      "history_note": "Proposed because the audio shows PDI coaching LATAM staff on how to reframe the complaint, suggesting a coordinated scheme rather than independent action."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T4.C3.Art.196",
+      "candidate_name": "Uso malicioso de documento falso",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 196 Código Penal from bcn.cl/leychile",
+        "Confirm whether the article covers use of a falsified document by the same person who created it or only by third parties"
+      ],
+      "preliminary_view": "Applicable to LATAM's continued reliance on the false narrative letter (the unsigned document referenced by Antonela) to justify the flight ban and deny the passenger's rights, even after the underlying facts were known to be false.",
+      "history_note": "Distinct from Art. 193/194 (creation of falsity): this article targets the subsequent malicious USE of the false document to cause harm."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T5.C2.Art.256",
+      "candidate_name": "Negación de servicio por empleado público sin causa legal",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 256 Código Penal from bcn.cl/leychile",
+        "Verify whether PDI's refusal to provide the exoneration finding in writing or to correct the record constitutes 'negación de servicio'"
+      ],
+      "preliminary_view": "Potentially applicable: PDI officers refused to document or communicate the exoneration finding to the passenger, effectively denying him the administrative service of a truthful report despite having the duty to produce one.",
+      "history_note": "Complements Art. 255 (vejación injusta) already established; targets the specific omission of providing the exculpatory finding."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T3.C8.Art.211",
+      "candidate_name": "Denuncia calumniosa",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 211 Código Penal from bcn.cl/leychile",
+        "Verify whether the article requires the denuncia to have been formally filed with a tribunal or whether filing with police suffices"
+      ],
+      "preliminary_view": "Applicable to the LATAM crew member who was coached by PDI to file a personal complaint alleging aggression despite the CCTV having shown no aggression. The PDI officer's coaching (seg-62) makes both the filer and the coach potentially liable as author and instigator respectively.",
+      "history_note": "Proposed because the audio explicitly shows PDI coaching a personal complaint after confirming no aggression existed on camera."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.12",
+      "candidate_name": "Cláusulas abusivas en contratos de adhesión",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 16 Ley 19.496 (Ley del Consumidor) from bcn.cl/leychile regarding abusive clauses",
+        "Determine whether LATAM's unilateral flight ban without due process or signed documentation constitutes an abusive contractual clause"
+      ],
+      "preliminary_view": "Potentially applicable: LATAM's imposition of a flight ban based on unsigned, unverifiable documents with no appeal mechanism may constitute an abusive unilateral termination clause in the adhesion contract of carriage.",
+      "history_note": "Proposed because Antonela admitted 'ninguno de nuestros documentos tiene firma' yet these unsigned documents were used to impose a flight ban — a unilateral sanction without procedural safeguards."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.16.g",
+      "candidate_name": "Nulidad de cláusula que faculta terminación unilateral sin causa",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 16 letra g) Ley 19.496 from bcn.cl/leychile",
+        "Assess whether a flight ban constitutes 'terminación unilateral' of the service contract"
+      ],
+      "preliminary_view": "Applicable: LATAM terminated the passenger's right to fly based on a false narrative, without legitimate cause, which may render the termination clause (if any) abusive under Art. 16 g) of the consumer protection law.",
+      "history_note": "Complements Art. 23 already established; focuses on the contractual invalidity of the unilateral ban mechanism."
+    },
+    {
+      "candidate_article_id": "CL.CONST.Art.19.3",
+      "candidate_name": "Garantía constitucional del debido proceso",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 19 N°3 Constitución Política de la República from bcn.cl/leychile",
+        "Assess horizontal application (Drittwirkung) to LATAM as private actor imposing sanctions, and direct application to PDI as state actor"
+      ],
+      "preliminary_view": "Directly applicable to PDI: the passenger was effectively sanctioned (removed from flight, banned) without any hearing or opportunity to present the exculpatory CCTV evidence. The concealment of exoneration evidence is a textbook due-process violation by state actors.",
+      "history_note": "Constitutional foundation for the procedural violations; the passenger received no notice, no hearing, and no opportunity to challenge the false accusation despite exonerating evidence being in the state's possession."
+    },
+    {
+      "candidate_article_id": "CL.CONST.Art.19.4",
+      "candidate_name": "Derecho a la honra y protección de la vida privada",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 19 N°4 Constitución Política de la República from bcn.cl/leychile",
+        "Assess whether the false accusation of aggression and its perpetuation in documents constitutes an attack on the passenger's honor"
+      ],
+      "preliminary_view": "Applicable: the systematic perpetuation of a false narrative accusing the passenger of aggression — after CCTV confirmed no aggression — constitutes an ongoing attack on his honor and reputation, particularly given the flight ban that implies he is dangerous.",
+      "history_note": "Proposed because the cover-up perpetuates a false characterization of the passenger as an aggressor, damaging his reputation with the airline and potentially with authorities."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Responsabilidad extracontractual por delito o cuasidelito civil",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 2314 Código Civil from bcn.cl/leychile",
+        "Confirm applicability to both LATAM (corporate) and PDI officers (personal liability) for damages caused by the cover-up"
+      ],
+      "preliminary_view": "Applicable as the civil liability foundation: the concealment of exonerating evidence and perpetuation of a false narrative caused quantifiable harm (lost flight, flight ban, emotional distress), giving rise to an obligation to indemnify under general tort law.",
+      "history_note": "Standard civil liability article for wrongful conduct causing damage; provides the damages framework complementing the criminal and consumer-law violations."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2329",
+      "candidate_name": "Responsabilidad por daño imputable a malicia o negligencia",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 2329 Código Civil from bcn.cl/leychile",
+        "Confirm that the presumption of culpability applies when the damage is attributable to the defendant's deliberate concealment"
+      ],
+      "preliminary_view": "Applicable: the deliberate nature of the concealment (knowing the CCTV showed no aggression yet hiding this) triggers the stronger presumption under Art. 2329 that the damage is imputable to the actors' malice.",
+      "history_note": "Complements Art. 2314; the deliberate concealment strengthens the case for presumed fault."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T6.C5.Art.297",
+      "candidate_name": "Prevaricación — funcionario que a sabiendas dicta resolución injusta",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 228 Código Penal (prevaricación administrativa) from bcn.cl/leychile",
+        "Determine whether PDI's issuance of the DGAC parte despite knowing no aggression occurred constitutes an 'injust resolution' by a public employee"
+      ],
+      "preliminary_view": "Agent-fit concern: classic prevaricación (Art. 223-227) targets judges. However, Art. 228 targets administrative officials who knowingly issue unjust resolutions. PDI issuing the DGAC parte despite confirmed exoneration may qualify. Verification needed on exact article number and scope.",
+      "history_note": "Article ID tentative — may actually be Art. 228 CP rather than Art. 297. Requires verification of correct article for administrative prevaricación by non-judicial public employees."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T5.C2.Art.228",
+      "candidate_name": "Prevaricación administrativa — resolución manifiestamente injusta",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 228 Código Penal from bcn.cl/leychile",
+        "Verify whether PDI officers issuing the DGAC parte (administrative resolution) despite knowing no aggression occurred meets the threshold of 'resolución manifiestamente injusta'"
+      ],
+      "preliminary_view": "Potentially applicable: the PDI officer stated 'esta decisión no la decidimos nosotros' while issuing the DGAC parte, but the decision to proceed despite confirmed exoneration may constitute a manifestly unjust administrative resolution if the officer had discretion to halt the process.",
+      "history_note": "Corrected article reference from tentative Art. 297 above. Targets the specific administrative act of issuing the parte despite knowing the factual basis was false."
+    },
+    {
+      "candidate_article_id": "CL.L19628.Art.9",
+      "candidate_name": "Derecho a rectificación de datos personales inexactos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 9 Ley 19.628 from bcn.cl/leychile",
+        "Determine whether LATAM's internal records characterizing the passenger as an aggressor constitute 'datos personales' subject to rectification"
+      ],
+      "preliminary_view": "Applicable: LATAM maintains records (the 'carta' and internal notes) containing false information about the passenger (that he committed aggression). Under data protection law, the passenger has the right to demand rectification of these inaccurate personal data, and LATAM's refusal ('no podemos cambiar la información') may violate this right.",
+      "history_note": "Proposed because Antonela explicitly stated 'no podemos cambiar la información que tenemos' — a potential violation of the data subject's right to rectification of inaccurate personal data."
+    },
+    {
+      "candidate_article_id": "CL.L19628.Art.12",
+      "candidate_name": "Derecho de acceso a datos personales",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 12 Ley 19.628 from bcn.cl/leychile",
+        "Verify whether the passenger's inability to access the full content of LATAM's internal records about him constitutes a violation"
+      ],
+      "preliminary_view": "Potentially applicable: the passenger was given an unsigned letter but may not have received full access to all personal data LATAM holds about him, including the internal characterization used to justify the flight ban.",
+      "history_note": "Complements Art. 9; the unsigned, unverifiable nature of the documents suggests the passenger was denied meaningful access to his own data."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.100",
+      "candidate_name": "Obligaciones del explotador aéreo respecto del pasajero",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 100 (or relevant articles in Título VII) Código Aeronáutico from bcn.cl/leychile regarding carrier obligations to passengers",
+        "Identify the specific article governing denial of boarding and passenger rights upon removal"
+      ],
+      "preliminary_view": "Applicable: the Código Aeronáutico establishes carrier obligations when denying boarding or removing passengers. LATAM's failure to provide legitimate grounds (given the exoneration) and proper documentation may violate specific aeronautical regulations.",
+      "history_note": "Proposed because the incident involves removal from a flight and a subsequent flight ban — matters specifically regulated by aeronautical law. Exact article number requires verification."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.145",
+      "candidate_name": "Responsabilidad del transportador por incumplimiento del contrato de transporte aéreo",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 145 Código Aeronáutico (DL 2.564) from bcn.cl/leychile",
+        "Verify whether denial of boarding based on false grounds constitutes 'incumplimiento' triggering carrier liability"
+      ],
+      "preliminary_view": "Applicable: LATAM's refusal to transport the passenger despite having confirmed no aggression constitutes a breach of the air transport contract, triggering the carrier's liability regime under the Código Aeronáutico.",
+      "history_note": "Proposed as the sector-specific liability provision complementing the general consumer-law violations already established."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T4.C4.Art.207",
+      "candidate_name": "Presentación de testigos o pruebas falsas",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 207 Código Penal from bcn.cl/leychile",
+        "Determine whether the false narrative in the LATAM letter, if presented in any subsequent proceeding, would trigger this article"
+      ],
+      "preliminary_view": "Conditionally applicable: if the false narrative document was or will be presented in any administrative or judicial proceeding (e.g., SERNAC complaint, civil suit), its presentation knowing it to be false could constitute this offense. Requires verification of whether any such presentation has occurred.",
+      "history_note": "Proposed as a forward-looking risk: LATAM's statement 'no podemos cambiar la información' suggests they intend to maintain the false narrative in any future proceedings."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T9.C1.Art.467",
+      "candidate_name": "Estafa — defraudación por engaño",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 467-468 Código Penal from bcn.cl/leychile",
+        "Assess whether the concealment of exoneration to justify retaining the passenger's ticket value constitutes estafa"
+      ],
+      "preliminary_view": "Potentially applicable: LATAM retained the economic value of the passenger's ticket and imposed a ban based on a knowingly false narrative. The deception (concealing exoneration) caused patrimonial harm (lost ticket, inability to fly). However, the fit depends on whether the primary purpose was economic gain or merely institutional cover — verification needed.",
+      "history_note": "Proposed because the passenger explicitly states he was 'left stranded without my ticket' — a patrimonial loss caused by deception."
+    }
+  ],
+  "nexus_matrix": [
+    {
+      "fact_id": "STG-7.seg-75",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.sujeto_activo",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "Officer issuing DGAC report identifies himself as public authority acting in official capacity."
+    },
+    {
+      "fact_id": "STG-7.seg-44",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.abuso_del_oficio",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Officer acknowledges CCTV shows no aggression yet proceeds to file official report contrary to that finding."
+    },
+    {
+      "fact_id": "STG-7.seg-75",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.acto_del_oficio",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Officer explicitly states he will issue the DGAC official report — the public document bearing the falsehood."
+    },
+    {
+      "fact_id": "STG-7.seg-55",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.modalidad_tipica_faltar_verdad",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Officer admits 'there is no aggression' yet the official narrative states otherwise — direct falsehood in narration."
+    },
+    {
+      "fact_id": "LATAM-4.seg-21",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.8.elem.modalidad_ocultacion",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Admission that no documents bear signatures reveals systematic method of concealing traceable official records."
+    },
+    {
+      "fact_id": "LATAM-4.seg-21",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.8.elem.objeto_material",
+      "nexus_type": "system_state_corroboration",
+      "strength": "medium",
+      "rationale_oneline": "Unsigned documents are the official records being concealed from accountability and verification."
+    },
+    {
+      "fact_id": "LATAM-2.seg-13",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.8.elem.perjuicio",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger left stranded and banned from airline — concrete harm resulting from the falsified official document."
+    },
+    {
+      "fact_id": "LATAM-4.seg-84",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.tipicidad_subjetiva_dolo",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Statement 'adjusting the reality' demonstrates conscious and deliberate intent to falsify the narrative."
+    },
+    {
+      "fact_id": "STG-7.seg-44",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.tipicidad_subjetiva_dolo",
+      "nexus_type": "corroborating_admission",
+      "strength": "high",
+      "rationale_oneline": "Officer's awareness of exculpatory CCTV before filing proves knowledge that the narrative is false."
+    },
+    {
+      "fact_id": "LATAM-2.seg-4",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "element_id": "CL.CHIPENCOD.Art.194.elem.sujeto_activo_particular",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "LATAM employee (private party) delivers and maintains the false narrative document to the passenger."
+    },
+    {
+      "fact_id": "LATAM-2.seg-13",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "element_id": "CL.CHIPENCOD.Art.194.elem.sujeto_pasivo",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger is the direct victim whose rights and public faith are injured by the false document."
+    },
+    {
+      "fact_id": "STG-7.seg-75",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "element_id": "CL.CHIPENCOD.Art.194.elem.objeto_material_documento_publico",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "The DGAC report referenced is a public/authentic document upon which the falsification is committed."
+    },
+    {
+      "fact_id": "LATAM-2.seg-4",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "element_id": "CL.CHIPENCOD.Art.194.elem.modalidad_tipica_falsedad_art193",
+      "nexus_type": "false_narrative_perpetuation_via_document",
+      "strength": "high",
+      "rationale_oneline": "LATAM perpetuates the Art. 193 falsehood by refusing to correct information known to be false."
+    },
+    {
+      "fact_id": "STG-7.seg-44",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "element_id": "CL.CHIPENCOD.Art.194.elem.ocultacion_prueba_exculpatoria",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "CCTV evidence proving no aggression is acknowledged but suppressed from the official record."
+    },
+    {
+      "fact_id": "LATAM-2.seg-13",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "element_id": "CL.CHIPENCOD.Art.194.elem.resultado_perjuicio",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger stranded and banned — direct prejudice flowing from the perpetuated false document."
+    },
+    {
+      "fact_id": "LATAM-4.seg-84",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "element_id": "CL.CHIPENCOD.Art.194.elem.tipicidad_subjetiva_dolo",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Explicit statement about 'adjusting the reality' proves direct intent to maintain falsehood."
+    },
+    {
+      "fact_id": "STG-7.seg-62",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "element_id": "CL.CHIPENCOD.Art.194.elem.nexo_causal_coaching_falsedad",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Officer coaches complaint to be filed personally not as LATAM — directing the private party's false narrative."
+    },
+    {
+      "fact_id": "STG-7.seg-55",
+      "norm_id": "CL.CHIPENCOD.T5.C2.Art.255",
+      "element_id": "CL.CHIPENCOD.Art.255.elem.sujeto_activo",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "The officer making the exoneration admission is the same public employee who enforces the removal."
+    },
+    {
+      "fact_id": "LATAM-2.seg-13",
+      "norm_id": "CL.CHIPENCOD.T5.C2.Art.255",
+      "element_id": "CL.CHIPENCOD.Art.255.elem.sujeto_pasivo",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger identifies himself as the natural person left stranded — the direct victim of the vexation."
+    },
+    {
+      "fact_id": "STG-7.seg-75",
+      "norm_id": "CL.CHIPENCOD.T5.C2.Art.255",
+      "element_id": "CL.CHIPENCOD.Art.255.elem.acto_del_servicio",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Officer states he is issuing the DGAC report — performing an official act of service when the vexation occurs."
+    },
+    {
+      "fact_id": "STG-7.seg-75",
+      "norm_id": "CL.CHIPENCOD.T5.C2.Art.255",
+      "element_id": "CL.CHIPENCOD.Art.255.elem.modalidad_tipica_vejacion",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Enforcing flight loss and DGAC report despite known innocence constitutes an unjust vexation against the person."
+    },
+    {
+      "fact_id": "STG-7.seg-55",
+      "norm_id": "CL.CHIPENCOD.T5.C2.Art.255",
+      "element_id": "CL.CHIPENCOD.Art.255.elem.injusticia_de_la_vejacion",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Admission that no aggression exists proves the removal and report are materially unjustified."
+    },
+    {
+      "fact_id": "LATAM-2.seg-13",
+      "norm_id": "CL.CHIPENCOD.T5.C2.Art.255",
+      "element_id": "CL.CHIPENCOD.Art.255.elem.resultado_perjuicio",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger stranded without ticket and banned — concrete prejudice resulting from the unjust vexation."
+    },
+    {
+      "fact_id": "STG-7.seg-44",
+      "norm_id": "CL.CHIPENCOD.T5.C2.Art.255",
+      "element_id": "CL.CHIPENCOD.Art.255.elem.tipicidad_subjetiva_dolo",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Officer's awareness of exculpatory CCTV before acting proves at minimum eventual intent to vex unjustly."
+    },
+    {
+      "fact_id": "LATAM-4.seg-21",
+      "norm_id": "CL.CHIPENCOD.T5.C2.Art.255",
+      "element_id": "CL.CHIPENCOD.Art.255.elem.ocultamiento_como_agravante_contextual",
+      "nexus_type": "system_state_corroboration",
+      "strength": "medium",
+      "rationale_oneline": "Unsigned documents reveal systematic concealment method aggravating the vexation's unjust character."
+    },
+    {
+      "fact_id": "STG-7.seg-44",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.Art.17.2.elem.conocimiento_delito_previo",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Officer's CCTV review shows knowledge that the underlying false accusation constitutes a prior crime."
+    },
+    {
+      "fact_id": "STG-7.seg-62",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.Art.17.2.elem.no_participacion_previa",
+      "nexus_type": "functional_context",
+      "strength": "medium",
+      "rationale_oneline": "Officer coaching the complaint was not the original accuser — intervenes after the initial false accusation."
+    },
+    {
+      "fact_id": "LATAM-2.seg-4",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.Art.17.2.elem.intervencion_posterior",
+      "nexus_type": "functional_context",
+      "strength": "high",
+      "rationale_oneline": "LATAM's post-incident delivery of false narrative letter constitutes intervention after the original crime."
+    },
+    {
+      "fact_id": "LATAM-4.seg-21",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.Art.17.2.elem.modalidad_ocultacion_efectos",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Unsigned documents conceal instruments of the crime, preventing discovery of the falsification."
+    },
+    {
+      "fact_id": "STG-7.seg-62",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.Art.17.3.elem.modalidad_ocultacion_culpable",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Coaching complaint as personal rather than LATAM shields the corporate culpable from identification."
+    },
+    {
+      "fact_id": "STG-7.seg-44",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.Art.17.2.elem.objeto_material",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "CCTV footage is the exculpatory instrument of the crime being concealed from the record."
+    },
+    {
+      "fact_id": "LATAM-4.seg-21",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.Art.17.2.elem.finalidad_impedir_descubrimiento",
+      "nexus_type": "circumstantial_omission",
+      "strength": "high",
+      "rationale_oneline": "Unsigned documents serve the specific purpose of preventing traceability and discovery of the crime."
+    },
+    {
+      "fact_id": "LATAM-4.seg-84",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.Art.17.elem.tipicidad_subjetiva_dolo",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Statement about 'adjusting the reality' proves deliberate intent to conceal the underlying crime."
+    },
+    {
+      "fact_id": "LATAM-2.seg-13",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.Art.17.elem.resultado_perjuicio",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger banned and stranded — concrete harm resulting from the successful concealment of the crime."
+    },
+    {
+      "fact_id": "STG-29.seg-63",
+      "norm_id": "CL.CPCL.C1.Art.17",
+      "element_id": "CL.CPCL.Art.17.elem.sujeto_activo",
+      "nexus_type": "speaker_identification",
+      "strength": "medium",
+      "rationale_oneline": "LATAM representative denying personal motive identifies as third party distinct from original perpetrator."
+    },
+    {
+      "fact_id": "STG-7.seg-44",
+      "norm_id": "CL.L20285.T1.C2.Art.5",
+      "element_id": "CL.L20285.Art.5.elem.organo_administracion_estado",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "Officer referencing CCTV review acts as agent of DGAC — a state administration organ."
+    },
+    {
+      "fact_id": "STG-7.seg-75",
+      "norm_id": "CL.L20285.T1.C2.Art.5",
+      "element_id": "CL.L20285.Art.5.elem.acto_resolucion_publica",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "The DGAC report is an administrative resolution that should be transparent and accessible."
+    },
+    {
+      "fact_id": "LATAM-4.seg-21",
+      "norm_id": "CL.L20285.T1.C2.Art.5",
+      "element_id": "CL.L20285.Art.5.elem.documentos_sustento_complemento",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Unsigned supporting documents are essential complements to the administrative act being concealed."
+    },
+    {
+      "fact_id": "STG-7.seg-55",
+      "norm_id": "CL.L20285.T1.C2.Art.5",
+      "element_id": "CL.L20285.Art.5.elem.principio_transparencia_vulnerado",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Admitting no aggression while filing contrary report violates the transparency principle of public function."
+    },
+    {
+      "fact_id": "STG-7.seg-62",
+      "norm_id": "CL.L20285.T1.C2.Art.5",
+      "element_id": "CL.L20285.Art.5.elem.inexistencia_causal_reserva",
+      "nexus_type": "circumstantial_omission",
+      "strength": "medium",
+      "rationale_oneline": "No legal basis for secrecy is invoked; coaching to file personally implies awareness no reserve applies."
+    },
+    {
+      "fact_id": "LATAM-4.seg-84",
+      "norm_id": "CL.L20285.T1.C2.Art.5",
+      "element_id": "CL.L20285.Art.5.elem.ocultamiento_deliberado",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "'Adjusting the reality' is an explicit admission of deliberate suppression of truthful public information."
+    },
+    {
+      "fact_id": "LATAM-2.seg-13",
+      "norm_id": "CL.L20285.T1.C2.Art.5",
+      "element_id": "CL.L20285.Art.5.elem.perjuicio_al_afectado",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger banned and stranded due to inability to access truthful public information about his case."
+    },
+    {
+      "fact_id": "LATAM-2.seg-13",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.relacion_de_consumo",
+      "nexus_type": "functional_context",
+      "strength": "high",
+      "rationale_oneline": "Passenger self-identifies as customer/consumer of LATAM's air transport service."
+    },
+    {
+      "fact_id": "LATAM-2.seg-4",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.deber_informacion_veraz",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "LATAM delivers information it knows is false and refuses to correct it — breaching duty of truthfulness."
+    },
+    {
+      "fact_id": "STG-29.seg-43",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.deber_informacion_oportuna",
+      "nexus_type": "circumstantial_omission",
+      "strength": "medium",
+      "rationale_oneline": "Passenger must independently verify accusations with PDI — LATAM failed to provide timely accurate info."
+    },
+    {
+      "fact_id": "LATAM-2.seg-4",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.falsedad_u_ocultacion_de_informacion",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "LATAM states 'we cannot change the information' — actively maintaining false information to consumer."
+    },
+    {
+      "fact_id": "LATAM-4.seg-84",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.objeto_material_informacion",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "The 'reality' being adjusted is the service condition information provided to the consumer."
+    },
+    {
+      "fact_id": "LATAM-2.seg-13",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.perjuicio_al_consumidor",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Consumer left stranded without ticket and banned — direct harm from false information."
+    },
+    {
+      "fact_id": "LATAM-4.seg-84",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.elemento_subjetivo_dolo_o_culpa",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Deliberate 'adjusting the reality' proves dolo directo in delivering false information to consumer."
+    },
+    {
+      "fact_id": "LATAM-4.seg-21",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.sistematicidad_de_la_ocultacion",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Policy of unsigned documents reveals systematic corporate method of concealing information from consumers."
+    },
+    {
+      "fact_id": "LATAM-2.seg-4",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.calidad_proveedor",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "LATAM employee delivering the letter acts in capacity as service provider to the consumer."
+    },
+    {
+      "fact_id": "LATAM-2.seg-13",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.calidad_consumidor",
+      "nexus_type": "functional_context",
+      "strength": "high",
+      "rationale_oneline": "Passenger explicitly identifies as 'cliente' (customer) — establishing consumer status."
+    },
+    {
+      "fact_id": "LATAM-2.seg-13",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.prestacion_servicio",
+      "nexus_type": "functional_context",
+      "strength": "high",
+      "rationale_oneline": "Air transport ticket constitutes the service relationship within which the deficiency occurs."
+    },
+    {
+      "fact_id": "LATAM-4.seg-84",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.negligencia",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Deliberate 'adjusting reality' exceeds negligence — constitutes intentional deficiency in service quality."
+    },
+    {
+      "fact_id": "LATAM-2.seg-4",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.falla_deficiencia_servicio",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Refusing to correct known false information constitutes a deficiency in the quality of service provided."
+    },
+    {
+      "fact_id": "LATAM-2.seg-13",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.menoscabo_consumidor",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger stranded without ticket and banned from airline — concrete menoscabo from service deficiency."
+    },
+    {
+      "fact_id": "STG-7.seg-75",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.nexo_causal",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Officer confirms passenger lost flight due to the decision — establishing causal link to harm."
+    },
+    {
+      "fact_id": "LATAM-4.seg-21",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.ocultamiento_sistematico",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Corporate policy of unsigned documents constitutes systematic concealment aggravating the service deficiency."
+    },
+    {
+      "fact_id": "STG-7.seg-44",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.ocultamiento_sistematico",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Exculpatory CCTV evidence acknowledged but suppressed from consumer — systematic concealment of exonerating proof."
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-CL004-PARTE-DGAC",
+      "question": "¿Cuál es el contenido textual del parte oficial emitido por la DGAC y qué hechos sustanciales consigna respecto de la supuesta agresión?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.4.elem.modalidad_tipica_faltar_verdad",
+      "priority": "critical",
+      "obtaining_method": "Solicitud de acceso a información pública bajo Ley 20.285 dirigida a la DGAC, requiriendo copia íntegra del parte emitido en la fecha y aeropuerto correspondientes al incidente. Subsidiariamente, solicitud al Consejo para la Transparencia en caso de denegación."
+    },
+    {
+      "id": "OQ-CL004-CCTV-CUSTODIA",
+      "question": "¿Quién tenía la custodia legal del registro CCTV del aeropuerto al momento de los hechos (PDI, DGAC o el operador aeroportuario) y se ha preservado dicho registro?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.8.elem.objeto_material",
+      "priority": "critical",
+      "obtaining_method": "Solicitud de acceso a información pública bajo Ley 20.285 dirigida a la PDI y a la DGAC consultando la política de retención de registros CCTV aeroportuarios. Complementar con solicitud al operador del aeropuerto (SCL, si corresponde) sobre protocolos de almacenamiento y plazos de sobreescritura."
+    },
+    {
+      "id": "OQ-CL004-CCTV-DOCOFICIAL",
+      "question": "¿Existe jurisprudencia chilena que califique registros CCTV aeroportuarios como 'documentos oficiales' para efectos del Art. 193 N° 8 del Código Penal?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.8.elem.objeto_material",
+      "priority": "high",
+      "obtaining_method": "Investigación jurisprudencial en bases de datos del Poder Judicial (SIEJ), Microjuris y VLex, buscando sentencias que apliquen Art. 193 N°8 a registros audiovisuales digitales de organismos públicos."
+    },
+    {
+      "id": "OQ-CL004-DVD-SOLICITUD",
+      "question": "¿Se solicitó formalmente el DVD/registro CCTV por parte del pasajero o su representante y fue denegado expresamente?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.8.elem.modalidad_ocultacion",
+      "priority": "critical",
+      "obtaining_method": "Revisión del expediente del afectado para verificar si existe solicitud formal de acceso (administrativa o judicial) al registro CCTV. Si no existe, presentar solicitud bajo Ley 20.285 a la PDI y DGAC para generar el acto de denegación o entrega."
+    },
+    {
+      "id": "OQ-CL004-DENUNCIA-TEXTO",
+      "question": "¿Cuál fue el contenido exacto de la denuncia personal presentada ante la PDI y qué hechos falsos específicos consigna?",
+      "blocks_element": "CL.CHIPENCOD.Art.194.elem.modalidad_tipica_falsedad_art193",
+      "priority": "critical",
+      "obtaining_method": "Solicitud de copia de la denuncia al Ministerio Público si existe causa penal asociada, o solicitud directa a la PDI bajo Ley 20.285. Alternativamente, solicitar al tribunal competente la exhibición del documento mediante medida prejudicial preparatoria (Art. 273 N°3 CPC)."
+    },
+    {
+      "id": "OQ-CL004-FIRMANTE-DENUNCIA",
+      "question": "¿Quién firmó o presentó formalmente la denuncia personal ante la PDI: un tripulante específico, un supervisor de LATAM, o un tercero?",
+      "blocks_element": "CL.CHIPENCOD.Art.194.elem.sujeto_activo_particular",
+      "priority": "high",
+      "obtaining_method": "Solicitud de copia de la denuncia a la PDI o al Ministerio Público, verificando la identidad del denunciante y su calidad (empleado LATAM, tripulante, supervisor)."
+    },
+    {
+      "id": "OQ-CL004-PARTE-REDACTOR",
+      "question": "¿El parte DGAC fue redactado por el mismo funcionario PDI que revisó el CCTV o por un funcionario distinto?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.4.elem.abuso_del_oficio",
+      "priority": "high",
+      "obtaining_method": "Solicitud de acceso a información pública bajo Ley 20.285 a la DGAC requiriendo identificación del funcionario que suscribió el parte. Cruzar con la identidad del oficial PDI que realizó la revisión de cámaras."
+    },
+    {
+      "id": "OQ-CL004-PROTOCOLO-REMOCION",
+      "question": "¿Existe normativa DGAC o PDI que obligue a completar el procedimiento de remoción de un pasajero una vez iniciado, independientemente del resultado de la verificación de cámaras?",
+      "blocks_element": "CL.CHIPENCOD.Art.255.elem.injusticia_de_la_vejacion",
+      "priority": "high",
+      "obtaining_method": "Solicitud de acceso a información pública bajo Ley 20.285 dirigida a la DGAC requiriendo los protocolos y circulares vigentes sobre procedimiento de remoción de pasajeros (DAN, DAR o normativa interna aplicable). Complementar con consulta a la JAC."
+    },
+    {
+      "id": "OQ-CL004-ORDEN-SUPERIOR",
+      "question": "¿Existió orden superior expresa (de un mando PDI o DGAC) que instruyera continuar la remoción pese a la exoneración por CCTV?",
+      "blocks_element": "CL.CHIPENCOD.Art.255.elem.tipicidad_subjetiva_dolo",
+      "priority": "high",
+      "obtaining_method": "Solicitud de acceso a registros de comunicaciones internas de la PDI (bitácora de turno, libro de novedades) del día del incidente bajo Ley 20.285. Subsidiariamente, diligencia de exhibición de documentos en sede judicial."
+    },
+    {
+      "id": "OQ-CL004-DELITO-ANTECEDENTE",
+      "question": "¿Se ha formalizado o al menos identificado el delito antecedente (denuncia calumniosa, acusación falsa u otro) cuya perpetración constituye el presupuesto del encubrimiento bajo Art. 17?",
+      "blocks_element": "CL.CPCL.Art.17.2.elem.conocimiento_delito_previo",
+      "priority": "critical",
+      "obtaining_method": "Verificar en el sistema del Ministerio Público (SIAU) si existe causa penal iniciada por denuncia calumniosa o delito conexo. Si no existe, evaluar la presentación de querella que formalice el delito antecedente como presupuesto del encubrimiento."
+    },
+    {
+      "id": "OQ-CL004-CRONOLOGIA-PDI",
+      "question": "¿Los funcionarios PDI participaron en la formulación original de la acusación falsa o solo intervinieron después de que LATAM la articuló? ¿Cuál es la cronología exacta?",
+      "blocks_element": "CL.CPCL.Art.17.2.elem.no_participacion_previa",
+      "priority": "high",
+      "obtaining_method": "Obtención de la bitácora de turno de la PDI en el aeropuerto para el día del incidente (hora de llegada, hora de revisión de cámaras, hora de toma de denuncia). Solicitud bajo Ley 20.285 a la PDI."
+    },
+    {
+      "id": "OQ-CL004-OMISION-COMISION",
+      "question": "¿La jurisprudencia chilena ha interpretado que la omisión de revelar evidencia digital exculpatoria equivale a 'ocultar' instrumentos del delito en el sentido del Art. 17 N° 2, o se requiere un acto comisivo de destrucción/inutilización?",
+      "blocks_element": "CL.CPCL.Art.17.2.elem.modalidad_ocultacion_efectos",
+      "priority": "high",
+      "obtaining_method": "Investigación jurisprudencial en bases de datos del Poder Judicial (SIEJ), Microjuris y VLex, buscando sentencias sobre Art. 17 N°2 CP en relación con omisión de revelar evidencia versus destrucción activa."
+    },
+    {
+      "id": "OQ-CL004-CAUSAL-RESERVA",
+      "question": "¿Se invocó alguna causal de reserva o secreto del Art. 21 de la Ley 20.285 para justificar la no divulgación de la conclusión exoneratoria o del registro CCTV?",
+      "blocks_element": "CL.L20285.Art.5.elem.inexistencia_causal_reserva",
+      "priority": "medium",
+      "obtaining_method": "Presentar solicitud formal de acceso a información pública bajo Ley 20.285 a la PDI y DGAC requiriendo la conclusión de la revisión de CCTV. Si se deniega, la resolución denegatoria deberá invocar la causal específica, generando la prueba necesaria."
+    },
+    {
+      "id": "OQ-CL004-INFORME-ESCRITO-PDI",
+      "question": "¿Se formalizó la conclusión exoneratoria de la revisión de CCTV en un informe policial escrito o solo quedó como comunicación verbal?",
+      "blocks_element": "CL.L20285.Art.5.elem.acto_resolucion_publica",
+      "priority": "high",
+      "obtaining_method": "Solicitud de acceso a información pública bajo Ley 20.285 a la PDI requiriendo copia de todo informe, acta o constancia escrita relativa a la revisión de cámaras CCTV del incidente."
+    },
+    {
+      "id": "OQ-CL004-CARTA-LATAM-TEXTO",
+      "question": "¿Cuál es el contenido textual exacto de la carta/documento entregado por LATAM al pasajero y qué afirmaciones fácticas falsas contiene?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.deber_informacion_veraz",
+      "priority": "critical",
+      "obtaining_method": "Solicitar al pasajero afectado copia del documento recibido. Si no lo conserva, requerir a LATAM mediante carta certificada la entrega de copia conforme al Art. 12 LPDC (derecho de acceso a información personal). Subsidiariamente, medida prejudicial de exhibición de documentos."
+    },
+    {
+      "id": "OQ-CL004-MOMENTO-COMUNICACION",
+      "question": "¿En qué momento preciso la PDI comunicó a LATAM el resultado exoneratorio de la revisión de cámaras CCTV?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.deber_informacion_oportuna",
+      "priority": "high",
+      "obtaining_method": "Obtención de la bitácora de turno PDI y registros de comunicación con personal LATAM en el aeropuerto. Solicitud bajo Ley 20.285 a la PDI. Complementar con declaración testimonial del pasajero sobre la secuencia temporal."
+    },
+    {
+      "id": "OQ-CL004-DECISION-REMOCION",
+      "question": "¿Quién tomó formalmente la decisión de remoción del pasajero: LATAM (como operador), la PDI (como policía) o la DGAC (como autoridad aeronáutica)? ¿Fue LATAM quien solicitó la intervención policial basándose en información falsa?",
+      "blocks_element": "CL.LPDC.Art.23.elem.nexo_causal",
+      "priority": "high",
+      "obtaining_method": "Obtención del parte DGAC y de la bitácora PDI para determinar quién requirió la intervención y quién ejecutó la remoción. Solicitud bajo Ley 20.285 a ambos organismos."
+    },
+    {
+      "id": "OQ-CL004-PROTOCOLO-LATAM",
+      "question": "¿Existía un protocolo interno de LATAM para verificar acusaciones con evidencia de CCTV antes de ejecutar sanciones al pasajero, y fue omitido?",
+      "blocks_element": "CL.LPDC.Art.23.elem.negligencia",
+      "priority": "medium",
+      "obtaining_method": "Solicitar a LATAM mediante requerimiento del SERNAC o en sede judicial la exhibición de sus protocolos internos de seguridad a bordo y en tierra relativos a incidentes con pasajeros y verificación de evidencia."
+    },
+    {
+      "id": "OQ-CL004-NOFLY-REGISTRO",
+      "question": "¿Existe un registro formal de prohibición de vuelo (no-fly list) de LATAM basado en la denuncia falsa, y se mantiene vigente?",
+      "blocks_element": "CL.LPDC.Art.23.elem.menoscabo_consumidor",
+      "priority": "medium",
+      "obtaining_method": "Solicitar a LATAM mediante carta certificada bajo Art. 12 LPDC (acceso a datos personales) si el pasajero figura en alguna lista de restricción de vuelo y el fundamento documental de dicha inclusión."
+    },
+    {
+      "id": "OQ-CL004-INDIVIDUALIZACION-FUNCIONARIOS",
+      "question": "¿Cuáles son los nombres, grados y cargos específicos de los funcionarios PDI y DGAC que intervinieron en la revisión de CCTV, emisión del parte y toma de denuncia?",
+      "blocks_element": "CL.CHIPENCOD.Art.255.elem.sujeto_activo",
+      "priority": "high",
+      "obtaining_method": "Solicitud de acceso a información pública bajo Ley 20.285 a la PDI requiriendo identificación del personal de turno en el aeropuerto en la fecha del incidente. Complementar con solicitud a la DGAC respecto del funcionario que suscribió el parte."
+    },
+    {
+      "id": "OQ-CL004-COORDINACION-PDI-LATAM",
+      "question": "¿Existió coordinación formal o instrucción entre LATAM y la PDI para suprimir o no reportar al pasajero los resultados exoneratorios del CCTV?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.sistematicidad_de_la_ocultacion",
+      "priority": "medium",
+      "obtaining_method": "Solicitar registros de comunicaciones entre LATAM y la PDI en el aeropuerto (correos electrónicos, actas de reunión, protocolos de coordinación) bajo Ley 20.285 a la PDI. Complementar con solicitud de exhibición de documentos a LATAM en sede judicial."
+    },
+    {
+      "id": "OQ-CL004-PERJUICIO-CUANTIFICACION",
+      "question": "¿Cuál es la cuantificación precisa del perjuicio patrimonial sufrido por el pasajero (valor del pasaje perdido, gastos de alojamiento, pasaje alternativo, otros costos derivados)?",
+      "blocks_element": null,
+      "priority": "medium",
+      "obtaining_method": "Solicitar al pasajero afectado documentación de respaldo: boleta/factura del pasaje original, comprobantes de gastos adicionales (alojamiento, alimentación, transporte alternativo), y cualquier otro desembolso derivado del incidente."
+    }
+  ],
+  "provenance": [
+    {
+      "timestamp": "2026-05-12T06:43:04.803566Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CHIPENCOD.T4.C3.Art.193: 8 elements; weighted score 0.80."
+    },
+    {
+      "timestamp": "2026-05-12T06:44:05.777758Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CHIPENCOD.T4.C3.Art.194: 8 elements; weighted score 0.79."
+    },
+    {
+      "timestamp": "2026-05-12T06:44:53.417627Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CHIPENCOD.T5.C2.Art.255: 8 elements; weighted score 0.90."
+    },
+    {
+      "timestamp": "2026-05-12T06:46:08.829100Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CPCL.C1.Art.17: 10 elements; weighted score 0.73."
+    },
+    {
+      "timestamp": "2026-05-12T06:46:49.782951Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.L20285.T1.C2.Art.5: 7 elements; weighted score 0.89."
+    },
+    {
+      "timestamp": "2026-05-12T06:47:45.512316Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.LPDC.Art.3.b: 8 elements; weighted score 0.90."
+    },
+    {
+      "timestamp": "2026-05-12T06:48:35.291402Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.LPDC.Art.23: 8 elements; weighted score 0.90."
+    },
+    {
+      "timestamp": "2026-05-12T06:49:59.123708Z",
+      "actor": "layers.build_nexus_layer",
+      "operation": "add_or_replace_nexus_entries",
+      "layer": 4,
+      "note": "Upserted 59 nexus entries."
+    },
+    {
+      "timestamp": "2026-05-12T06:52:59.155185Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-FALSEDAD-OCULTACION-N8 (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:52:59.155336Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-DOC-PUBLICO-PARTICULAR (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:52:59.155368Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-ENCUBRIMIENTO-PARTICIPACION (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:52:59.155391Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-ENCUBRIMIENTO-MODALIDAD3 (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:52:59.155419Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-VEJACION-OCULTAMIENTO-PRUEBA (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:52:59.155440Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-VEJACION-DOLO-EVENTUAL (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:52:59.155463Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-TRANSPARENCIA-CCTV-CPLT (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:52:59.155489Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-LPDC-OCULTACION-SISTEMATICA (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:52:59.155508Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-LPDC-ART23-NEXO-CAUSAL (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:52:59.155527Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-FALSEDAD-COACHING-INDUCCION (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:52:59.155547Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-FALSEDAD-IDEOLOGICA-NARRACION (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:52:59.155568Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-COMPARATIVE-BRADY-DOCTRINE (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:52:59.155589Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-TRANSPARENCIA-SANCION-OCULTAMIENTO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:52:59.155609Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-CONCURSO-FALSEDAD-ENCUBRIMIENTO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:52:59.155630Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-LPDC-SERVICIO-SEGURIDAD-VIGILANCIA (verified=False)."
+    }
+  ]
+}

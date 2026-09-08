@@ -1,0 +1,908 @@
+{
+  "violation_id": "CL-014",
+  "title": "Retaliation Trigger — Passenger Inquiry About Flight Status Mischaracterized as Disruption",
+  "incident": "[[I-002-Chile-Santiago]]",
+  "incident_id": "I-002",
+  "jurisdiction": "CL",
+  "category": "Retaliation Trigger / Mischaracterization",
+  "severity": "HIGH",
+  "confidence": {
+    "value": 0.42,
+    "components": {
+      "CL.CACH.Art.133": 0.5
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T07:00:20.145660Z",
+    "history": [
+      "2026-05-12T06:55:57.472181+00:00: value=0.0",
+      "2026-05-12T06:56:04.154903+00:00: value=0.0",
+      "2026-05-12T06:56:07.323009+00:00: value=0.0",
+      "2026-05-12T06:57:14.187286+00:00: value=0.42",
+      "2026-05-12T06:57:28.119085+00:00: value=0.42",
+      "2026-05-12T06:58:47.610242+00:00: value=0.42",
+      "2026-05-12T06:59:37.017318+00:00: value=0.42",
+      "2026-05-12T07:00:03.355062+00:00: value=0.42"
+    ],
+    "validated": true,
+    "note": "Validated by V10 pipeline check. Lowered from legacy contract value (0.94) to formula-derived value (0.42). ⚠️ This pack has 1 VALIDATION FAILURE."
+  },
+  "incident_timestamp": "2024-07-05T11:00:00-04:00",
+  "incident_timestamp_display": "2024-07-05 — Voo LA8159 — Aeroporto SCL",
+  "allegation_summary": "The triggering event for the entire LA8159 incident was a routine passenger inquiry about flight status. Rather than treating this as normal customer interaction, LATAM staff (or the [[SPK-stewardess-accuser]]) mischaracterized it as 'disruption' — a corporate classification that automatically forecloses procedural remedies and justifies removal. This mischaracterization converted a benign interaction into grounds for the false accusation, forcible removal, and lifetime ban that followed. The conduct implicates CACH Art. 133 (denegación sin causa), consumer protection (LPDC), and the broader pattern of pretextual classification.",
+  "evidentiary_strength": "Only 1 transcript segment (STG-1.seg-3) with no speaker identified and no verbatim text extracted. This is the thinnest evidentiary pack in the violation set. The pipeline-assigned confidence of 42% reflects the article-level score of 50% discounted by 0.85. ⚠️ This pack has 1 VALIDATION FAILURE. The element grid shows 0 established, 0 strong, 1 contested — 6 of 7 elements are missing.",
+  "legal_theory": "Desnaturalización de Interacción del Pasajero como 'Disrupción' — Pretexto para Denegación",
+  "required_elements_status": "ENRICHED — but critically under-evidenced",
+  "legal_basis": [
+    {
+      "article_id": "CL.CACH.Art.133",
+      "article_name": "Codigo Aeronautico de Chile, Art. 133 — Denegacion de Embarque",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "state",
+      "norm_type": "definition",
+      "applicability_rationale": "CACH Art. 133 establishes the lawful framework for denied boarding. A removal triggered by a passenger's protected inquiry about flight status — rather than any conduct that could reasonably justify removal — falls outside the scope of lawful denied boarding. The 'disruptive' classification serves as a mechanism to evade Art. 133 obligations. | legacy paraphrase: El transportador podra denegar el embarque... para lo cual debera: 1.- A eleccion del pasajero... 2.- El transportador debera ofrecer una compensacion...",
+      "framework_code": "CACH",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "el transportador podra denegar el embarque a uno o mas pasajeros contra su voluntad, para lo cual debera:\n\n1. A eleccion del pasajero:\n\na) Embarcar en el siguiente vuelo que tenga disponible el transportador, o en un transporte alternativo, si es que decidiera persistir en el contrato de transporte aereo.  \nb) El reembolso del monto total pagado por el billete, si el pasajero se desiste del contrato de transporte aereo y este no hubiera comenzado su ejecucion."
+    }
+  ],
+  "transcripts": [
+    "[[TRNS-aeropuerto_arturo_merino_benitez_1]]"
+  ],
+  "evidence_links": [
+    "[[aeropuerto_arturo_merino_benitez_1]]"
+  ],
+  "event_ids": [
+    "[[E-0015]]",
+    "[[E-0016]]",
+    "[[E-0017]]",
+    "[[E-0222]]",
+    "[[E-0224]]"
+  ],
+  "evidence_ids": [
+    "[[I-002_transcript_rendered_html_X-0007]]",
+    "[[I-002_transcript_json_X-0009]]",
+    "[[I-002_transcript_rendered_html_X-0010]]",
+    "[[I-002_transcript_rendered_html_X-0011]]"
+  ],
+  "framework_cache": "[[CACH]]",
+  "validation_pack": "[[Validation report CL-014]]",
+  "related_violations": [
+    "CL-001",
+    "CL-013"
+  ],
+  "has_broken_refs": false,
+  "tags": [
+    "violation",
+    "severity/high",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open",
+    "status/under_evidenced"
+  ],
+  "classification": "Attorney Work Product — Privileged and Confidential",
+  "schema_version": "4.0",
+  "element_grids": {
+    "CL.CACH.Art.133": [
+      {
+        "element_name": "Existencia de contrato de transporte aéreo vigente",
+        "status": "strong",
+        "evidence": [
+          "STG-1.seg-3"
+        ],
+        "argument": "El piloto Ruiz reconoce que el pasajero tenía como destino Brasilia en el vuelo operado por Latam, lo que presupone la existencia de un billete válido y un contrato de transporte aéreo en ejecución.",
+        "element_id": "CL.CACH.Art.133.1.elem.existencia_contrato_transporte",
+        "doctrinal_basis": "El pasajero debe ser titular de un billete válido y haber cumplido los requisitos de embarque, configurando la relación contractual protegida por Art. 133.",
+        "weaknesses": [
+          "No se presenta el billete o boarding pass como prueba documental directa en los segmentos disponibles."
+        ],
+        "open_questions": [
+          "¿Se conserva copia del billete electrónico o PNR que acredite la reserva confirmada?"
+        ],
+        "article_short": "Art. 133 N° 1-2 — Denegación de embarque (Código Aeronáutico)"
+      },
+      {
+        "element_name": "Denegación de embarque contra la voluntad del pasajero",
+        "status": "contested",
+        "evidence": [
+          "STG-1.seg-3"
+        ],
+        "argument": "El contexto indica que el pasajero fue removido o impedido de embarcar sin su consentimiento. El piloto desconoce el origen del pasajero pero confirma el vuelo a Brasilia, sugiriendo que el pasajero estaba en proceso de embarque cuando fue denegado. Sin embargo, los segmentos disponibles no contienen una declaración explícita del pasajero rechazando la denegación.",
+        "element_id": "CL.CACH.Art.133.1.elem.denegacion_contra_voluntad",
+        "doctrinal_basis": "Art. 133 exige que la denegación sea 'contra su voluntad', es decir, que el pasajero no haya consentido voluntariamente en no embarcar.",
+        "weaknesses": [
+          "Falta declaración directa del pasajero manifestando su oposición al desembarque en los segmentos proporcionados."
+        ],
+        "open_questions": [
+          "¿Existe registro audiovisual o testimonial del momento en que se comunica la denegación y la reacción del pasajero?"
+        ],
+        "article_short": "Art. 133 N° 1-2 — Denegación de embarque (Código Aeronáutico)"
+      },
+      {
+        "element_name": "Ausencia de causa legal que justifique la denegación fuera del marco Art. 133",
+        "status": "contested",
+        "evidence": [
+          "STG-1.seg-3"
+        ],
+        "argument": "La calificación de 'disruptivo' aplicada al pasajero carece de sustento en los segmentos disponibles. El piloto Ruiz no identifica conducta disruptiva alguna, limitándose a señalar desconocimiento sobre el origen del pasajero. La hipótesis de que la consulta sobre el estado del vuelo fue reclasificada como disrupción requiere verificación adicional.",
+        "element_id": "CL.CACH.Art.133.1.elem.ausencia_causa_legal_justificante",
+        "doctrinal_basis": "La denegación de embarque solo es lícita dentro de los supuestos del Art. 133 (overbooking) o por razones de seguridad debidamente acreditadas. Una conducta protegida (consulta sobre estado de vuelo) no constituye causa justificante.",
+        "weaknesses": [
+          "Los segmentos no contienen la declaración formal del transportador sobre la causa invocada para la denegación.",
+          "No se dispone del informe de seguridad o acta de incidente que documente la supuesta disrupción."
+        ],
+        "open_questions": [
+          "¿Qué causa formal invocó Latam en su documentación interna para justificar la remoción?",
+          "¿Existe grabación de la interacción donde el pasajero formula su consulta sobre el estado del vuelo?"
+        ],
+        "article_short": "Art. 133 N° 1-2 — Denegación de embarque (Código Aeronáutico)"
+      },
+      {
+        "element_name": "Incumplimiento del deber de ofrecer opciones al pasajero (Art. 133 N°1)",
+        "status": "not_developed",
+        "evidence": [
+          "STG-1.seg-3"
+        ],
+        "argument": "Ninguno de los segmentos disponibles documenta que Latam haya ofrecido al pasajero las opciones previstas en el numeral 1 del Art. 133. La ausencia de evidencia sobre el ofrecimiento sugiere incumplimiento, pero requiere prueba adicional para ser calificado como establecido.",
+        "element_id": "CL.CACH.Art.133.1.elem.incumplimiento_opcion_pasajero",
+        "doctrinal_basis": "Art. 133 N°1 obliga al transportador a ofrecer, a elección del pasajero: (a) embarque en siguiente vuelo disponible o transporte alternativo, o (b) reembolso total si el pasajero desiste.",
+        "weaknesses": [
+          "La ausencia de evidencia no equivale necesariamente a prueba de incumplimiento; el transportador podría alegar que las opciones fueron ofrecidas fuera de los segmentos registrados."
+        ],
+        "open_questions": [
+          "¿Se ofreció formalmente al pasajero embarque alternativo o reembolso?",
+          "¿Existe comunicación escrita (correo, SMS, documento en counter) con las opciones del Art. 133 N°1?"
+        ],
+        "article_short": "Art. 133 N° 1-2 — Denegación de embarque (Código Aeronáutico)"
+      },
+      {
+        "element_name": "Incumplimiento del deber de compensación (Art. 133 N°2)",
+        "status": "not_developed",
+        "evidence": [
+          "STG-1.seg-3"
+        ],
+        "argument": "No existe en los segmentos disponibles evidencia de que se haya ofrecido compensación alguna al pasajero. La evasión del marco Art. 133 mediante la calificación de 'disruptivo' habría permitido al transportador eludir esta obligación.",
+        "element_id": "CL.CACH.Art.133.2.elem.incumplimiento_compensacion",
+        "doctrinal_basis": "Art. 133 N°2 obliga al transportador a ofrecer una compensación al pasajero afectado por denegación involuntaria de embarque.",
+        "weaknesses": [
+          "No se cuenta con prueba directa de la negativa a compensar; solo se infiere del contexto de reclasificación como disrupción."
+        ],
+        "open_questions": [
+          "¿Latam emitió algún voucher, pago o comunicación de compensación?",
+          "¿El pasajero reclamó formalmente la compensación y fue denegada?"
+        ],
+        "article_short": "Art. 133 N° 1-2 — Denegación de embarque (Código Aeronáutico)"
+      },
+      {
+        "element_name": "Nexo causal entre conducta protegida del pasajero y la denegación (represalia)",
+        "status": "weak",
+        "evidence": [
+          "STG-1.seg-3"
+        ],
+        "argument": "El segmento STG-1.seg-3 muestra que el piloto desconoce antecedentes relevantes del pasajero, lo que sugiere que la decisión de remoción no se basó en una evaluación informada de conducta disruptiva. Sin embargo, los segmentos disponibles no documentan directamente la consulta del pasajero ni la secuencia temporal que vincule dicha consulta con la decisión de denegación.",
+        "element_id": "CL.CACH.Art.133.elem.nexo_causal_represalia",
+        "doctrinal_basis": "Para configurar la infracción como represalia, debe acreditarse que la causa real de la denegación fue la consulta legítima del pasajero sobre el estado del vuelo, y no una conducta genuinamente disruptiva.",
+        "weaknesses": [
+          "No se dispone de segmentos que registren la consulta del pasajero sobre el estado del vuelo.",
+          "La inferencia de represalia requiere prueba de la secuencia temporal y ausencia de otra causa."
+        ],
+        "open_questions": [
+          "¿Existe registro de la interacción previa del pasajero con personal de Latam donde formula la consulta?",
+          "¿Qué tiempo transcurrió entre la consulta y la orden de remoción?",
+          "¿Hay testigos que confirmen que no existió conducta disruptiva?"
+        ],
+        "article_short": "Art. 133 N° 1-2 — Denegación de embarque (Código Aeronáutico)"
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CACH.Art.131",
+      "candidate_name": "Código Aeronáutico de Chile, Art. 131 — Obligación de transporte del pasajero con billete",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.131 from bcn.cl/leychile (DFL 221 de 1931 / Ley 18.916)",
+        "Confirm that Art. 131 establishes the carrier's obligation to transport a passenger holding a valid ticket and whether refusal outside Art. 133 grounds constitutes breach"
+      ],
+      "preliminary_view": "Art. 131 likely establishes the general duty to transport. If the passenger held a valid ticket and was removed for a pretextual reason (inquiry mischaracterized as disruption), the carrier may have breached this foundational obligation. Needs verbatim confirmation.",
+      "history_note": "Not previously cited. Proposed because Art. 133 (already established) is the exception to the general rule of Art. 131; both should be read together."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.134",
+      "candidate_name": "Código Aeronáutico de Chile, Art. 134 — Compensaciones por denegación de embarque",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.134 from bcn.cl/leychile",
+        "Determine whether Art. 134 specifies additional compensation duties or procedural requirements when boarding is denied, complementing Art. 133"
+      ],
+      "preliminary_view": "If Art. 134 extends or details the compensation regime for denied boarding, it would be relevant to assess whether LATAM complied with all mandatory steps. Needs verbatim verification.",
+      "history_note": "Not previously cited. Adjacent to established Art. 133."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.135",
+      "candidate_name": "Código Aeronáutico de Chile, Art. 135 — Retraso y cancelación de vuelos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.135 from bcn.cl/leychile",
+        "Confirm whether Art. 135 addresses passenger rights when a flight is delayed or cancelled, which may be relevant if the passenger's inquiry about flight status was prompted by a delay"
+      ],
+      "preliminary_view": "If the passenger's inquiry was triggered by a delay or status change, Art. 135 duties may have been independently breached. Relevance depends on factual confirmation of delay circumstances.",
+      "history_note": "Not previously cited. Proposed because the violation title references 'Passenger Inquiry About Flight Status,' suggesting possible delay context."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.145",
+      "candidate_name": "Código Aeronáutico de Chile, Art. 145 — Responsabilidad del transportador por incumplimiento",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.145 from bcn.cl/leychile",
+        "Confirm whether Art. 145 establishes carrier liability for breach of the contract of carriage and the scope of damages recoverable"
+      ],
+      "preliminary_view": "Art. 145 likely governs carrier liability for non-performance of the transport contract. If the removal was pretextual, this article would ground the damages claim under the Código Aeronáutico framework.",
+      "history_note": "Not previously cited. Standard liability provision in CACH for contractual breach by the carrier."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.147",
+      "candidate_name": "Código Aeronáutico de Chile, Art. 147 — Límites de responsabilidad del transportador",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.147 from bcn.cl/leychile",
+        "Determine whether liability limits apply or are lifted when the carrier acts with dolo (intent) or culpa grave, as would be the case in retaliatory removal"
+      ],
+      "preliminary_view": "If the removal was intentional retaliation, liability caps under Art. 147 may be inapplicable (dolo exception). This could significantly affect quantum. Needs verbatim verification of the dolo/culpa grave exception.",
+      "history_note": "Not previously cited. Relevant to damages calculation and whether caps are pierced."
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.3",
+      "candidate_name": "Ley de Protección al Consumidor (Ley 19.496), Art. 3 — Derechos básicos del consumidor",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPC.Art.3 from bcn.cl/leychile (Ley 19.496)",
+        "Confirm which letras (a, b, c, d, e) are applicable — particularly the right to information (letra b), right to non-discrimination (letra c), and right to retraction/complaint without retaliation"
+      ],
+      "preliminary_view": "Art. 3 letra b (derecho a información veraz y oportuna) and letra c (no discriminación arbitraria) are plausibly engaged. A passenger inquiry about flight status is an exercise of the right to information; punishing it could violate both provisions.",
+      "history_note": "Not previously cited. Foundational consumer-rights article for any LPC-based claim."
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.12",
+      "candidate_name": "Ley de Protección al Consumidor (Ley 19.496), Art. 12 — Obligación de respetar los términos ofrecidos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPC.Art.12 from bcn.cl/leychile (Ley 19.496)",
+        "Confirm that Art. 12 requires the provider to honor the conditions under which the service was offered/contracted"
+      ],
+      "preliminary_view": "If LATAM sold a ticket for LA8159 and then removed the passenger without lawful cause, Art. 12 is breached because the carrier failed to honor the contracted service terms.",
+      "history_note": "Not previously cited. Standard LPC provision for service-contract enforcement."
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.23",
+      "candidate_name": "Ley de Protección al Consumidor (Ley 19.496), Art. 23 — Infracción por negativa injustificada de venta o prestación de servicio",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPC.Art.23 from bcn.cl/leychile (Ley 19.496)",
+        "Confirm whether Art. 23 covers unjustified refusal to provide a contracted service and whether it applies to air transport"
+      ],
+      "preliminary_view": "Art. 23 prohibits unjustified refusal to provide a service. Removing a passenger whose only conduct was asking about flight status could constitute an unjustified refusal to provide the contracted air transport service.",
+      "history_note": "Not previously cited. Directly relevant to retaliatory denial of service."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1545",
+      "candidate_name": "Código Civil, Art. 1545 — Fuerza obligatoria del contrato (pacta sunt servanda)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.1545 from bcn.cl/leychile",
+        "Confirm that Art. 1545 establishes that a validly formed contract is law for the parties and cannot be unilaterally invalidated"
+      ],
+      "preliminary_view": "The air transport contract (ticket) is binding on LATAM. Unilateral removal without lawful cause violates the pacta sunt servanda principle codified in Art. 1545. Provides the civil-law backbone for the contractual breach claim.",
+      "history_note": "Not previously cited. General civil-law principle applicable to all contracts including air transport."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1546",
+      "candidate_name": "Código Civil, Art. 1546 — Buena fe contractual",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.1546 from bcn.cl/leychile",
+        "Confirm that Art. 1546 requires contracts to be performed in good faith and that retaliatory conduct breaches this duty"
+      ],
+      "preliminary_view": "Mischaracterizing a passenger's legitimate inquiry as 'disruption' to justify removal is a paradigmatic bad-faith exercise of contractual power, violating Art. 1546.",
+      "history_note": "Not previously cited. Complements Art. 1545 and supports the retaliation theory."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1556",
+      "candidate_name": "Código Civil, Art. 1556 — Indemnización de perjuicios por incumplimiento contractual",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.1556 from bcn.cl/leychile",
+        "Confirm that Art. 1556 covers daño emergente and lucro cesante arising from contractual breach"
+      ],
+      "preliminary_view": "Grounds the damages claim (additional costs, missed connections, consequential losses) flowing from the pretextual removal. Standard provision for contractual indemnification.",
+      "history_note": "Not previously cited. Necessary for quantifying civil damages."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Código Civil, Art. 2314 — Responsabilidad extracontractual (delito o cuasidelito civil)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2314 from bcn.cl/leychile",
+        "Assess whether the retaliatory removal, if it constitutes an intentional tort (dolo), triggers extracontractual liability in addition to or instead of contractual liability"
+      ],
+      "preliminary_view": "If the removal is characterized as an intentional wrongful act (dolo) rather than mere contractual breach, Art. 2314 provides an independent basis for tort liability, potentially allowing recovery of moral damages more readily.",
+      "history_note": "Not previously cited. Alternative or cumulative liability theory."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2329",
+      "candidate_name": "Código Civil, Art. 2329 — Daño moral por hecho ilícito",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2329 from bcn.cl/leychile",
+        "Confirm that Art. 2329 establishes the general duty to repair all damage caused by a wrongful act and that Chilean jurisprudence applies it to moral damages"
+      ],
+      "preliminary_view": "Supports recovery of moral damages (humiliation, distress) caused by the public removal from the aircraft under a false pretext. Complements Art. 2314.",
+      "history_note": "Not previously cited. Standard moral-damages provision in Chilean tort law."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.2",
+      "candidate_name": "Constitución Política de la República, Art. 19 Nº 2 — Igualdad ante la ley / No discriminación arbitraria",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19 Nº 2 from bcn.cl/leychile",
+        "Assess whether constitutional non-discrimination applies horizontally (between private parties) in Chilean doctrine, particularly in the context of air transport"
+      ],
+      "preliminary_view": "If the passenger was singled out for removal based on the exercise of a legitimate right (asking about flight status), this may constitute arbitrary discrimination. Chilean doctrine recognizes horizontal application of Art. 19 Nº 2 via recurso de protección. Needs doctrinal verification.",
+      "history_note": "Not previously cited. Constitutional anchor for the discrimination dimension of the retaliation claim."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.22",
+      "candidate_name": "Constitución Política de la República, Art. 19 Nº 22 — No discriminación arbitraria en el trato económico del Estado y sus organismos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19 Nº 22 from bcn.cl/leychile",
+        "Determine whether Art. 19 Nº 22 applies only to state economic actors or extends to private concessionaires/regulated industries like airlines"
+      ],
+      "preliminary_view": "AGENT-FIT MISMATCH: Art. 19 Nº 22 is primarily directed at the State and its agencies regarding economic treatment. Its applicability to a private airline is doubtful unless LATAM is treated as exercising a delegated public function. Included for completeness but likely inapplicable.",
+      "history_note": "Not previously cited. Flagged for completeness with explicit agent-fit concern."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.100",
+      "candidate_name": "Código Aeronáutico de Chile, Art. 100 — Autoridad del comandante de la aeronave",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.100 from bcn.cl/leychile",
+        "Confirm the scope and limits of the pilot's authority to remove passengers, and whether that authority is subject to proportionality or reasonableness constraints"
+      ],
+      "preliminary_view": "Art. 100 likely grants the pilot authority over persons aboard. However, this authority is not unlimited — it must be exercised for safety reasons, not as retaliation. If the pilot removed the passenger for asking a question, the exercise of authority was ultra vires. Critical to the retaliation theory.",
+      "history_note": "Not previously cited. The pilot (Ruiz) is identified in the transcript segments; his authority and its limits are central to the violation."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.99",
+      "candidate_name": "Código Aeronáutico de Chile, Art. 99 — Responsabilidades del comandante de la aeronave",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.99 from bcn.cl/leychile",
+        "Confirm whether Art. 99 defines the commander's duties and whether misuse of authority (e.g., retaliatory removal) constitutes a breach of those duties"
+      ],
+      "preliminary_view": "If Art. 99 defines the commander's duties as safety-related, then exercising removal authority for retaliatory purposes would be a deviation from those duties, supporting the claim that the removal was unlawful.",
+      "history_note": "Not previously cited. Companion to Art. 100; defines the duty framework within which the pilot's authority must be exercised."
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.16",
+      "candidate_name": "Ley de Protección al Consumidor (Ley 19.496), Art. 16 — Cláusulas abusivas",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPC.Art.16 from bcn.cl/leychile (Ley 19.496)",
+        "Determine whether any contractual clause in LATAM's conditions of carriage purporting to authorize removal for 'disruption' (broadly defined) could be deemed abusive under Art. 16"
+      ],
+      "preliminary_view": "If LATAM relies on a contractual clause defining 'disruption' so broadly as to encompass a passenger's inquiry, that clause may be abusive under Art. 16 (particularly letra g — clauses contrary to good faith that cause significant imbalance).",
+      "history_note": "Not previously cited. Relevant if LATAM defends the removal by citing its conditions of carriage."
+    },
+    {
+      "candidate_article_id": "CL.DS113.Art.54",
+      "candidate_name": "DS 113 (Reglamento de Transporte Aéreo), Art. 54 — Procedimiento de denegación de embarque",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for DS 113 Art. 54 from bcn.cl/leychile or JAC website",
+        "Confirm whether DS 113 Art. 54 specifies procedural requirements for denied boarding (e.g., written notice, priority rules, documentation) that LATAM may have failed to follow"
+      ],
+      "preliminary_view": "DS 113 implements the CACH provisions on denied boarding. If LATAM failed to follow the regulatory procedure (e.g., no written justification, no priority-based selection), this strengthens the claim that the removal was pretextual.",
+      "history_note": "Not previously cited. Regulatory detail underlying CACH Art. 133."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.172",
+      "candidate_name": "Código Aeronáutico de Chile, Art. 172 — Jurisdicción y competencia para reclamos aeronáuticos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.172 from bcn.cl/leychile",
+        "Confirm whether Art. 172 establishes the competent forum for passenger claims against carriers and any procedural prerequisites"
+      ],
+      "preliminary_view": "Procedural article relevant to determining the correct forum for the claim. May also establish whether administrative complaint to the JAC is a prerequisite to judicial action.",
+      "history_note": "Not previously cited. Procedural relevance for claim strategy."
+    }
+  ],
+  "authorities": [],
+  "open_questions": [
+    {
+      "id": "`OQ-014-TRIGGER-INTERACTION`",
+      "question": "",
+      "blocks_element": "",
+      "priority": "critical"
+    },
+    {
+      "id": "`OQ-014-[[SPK-stewardess-accuser]]-MOTIVE`",
+      "question": "",
+      "blocks_element": "",
+      "priority": "critical"
+    },
+    {
+      "id": "`OQ-014-CORPORATE-CLASSIFICATION`",
+      "question": "",
+      "blocks_element": "",
+      "priority": "critical"
+    },
+    {
+      "id": "+ 7 additional",
+      "question": "",
+      "blocks_element": "",
+      "priority": ""
+    },
+    {
+      "id": "OQ-CL-014-PNR",
+      "question": "¿Se conserva copia del billete electrónico, boarding pass o PNR que acredite la reserva confirmada del pasajero en el vuelo Latam con destino Brasilia?",
+      "blocks_element": "CL.CACH.Art.133.1.elem.existencia_contrato_transporte",
+      "priority": "medium",
+      "obtaining_method": "Solicitar al pasajero copia del correo de confirmación de reserva o e-ticket; subsidiariamente, requerir a Latam mediante oficio judicial o solicitud de Transparencia (Ley 20.285) el registro PNR asociado al vuelo y fecha en cuestión."
+    },
+    {
+      "id": "OQ-CL-014-CONSENT",
+      "question": "¿Existe registro audiovisual, testimonial o documental del momento en que se comunica la denegación de embarque y la reacción del pasajero manifestando su oposición?",
+      "blocks_element": "CL.CACH.Art.133.1.elem.denegacion_contra_voluntad",
+      "priority": "high",
+      "obtaining_method": "Solicitar a Latam y al aeropuerto las grabaciones de CCTV del gate y counter correspondientes; identificar y citar como testigos a personal de tierra presente; obtener declaración jurada del pasajero describiendo su oposición."
+    },
+    {
+      "id": "OQ-CL-014-CAUSA-FORMAL",
+      "question": "¿Qué causa formal invocó Latam en su documentación interna (informe de seguridad, acta de incidente, registro en sistema DCS/Altéa) para justificar la remoción del pasajero?",
+      "blocks_element": "CL.CACH.Art.133.1.elem.ausencia_causa_legal_justificante",
+      "priority": "critical",
+      "obtaining_method": "Requerir a Latam mediante oficio judicial la exhibición del acta de incidente, informe de seguridad a bordo, registro en sistema de reservas (código de denegación) y cualquier comunicación interna relativa al pasajero; alternativamente, solicitar a la DGAC el expediente administrativo si se presentó denuncia."
+    },
+    {
+      "id": "OQ-CL-014-GRABACION-CONSULTA",
+      "question": "¿Existe grabación de audio o video de la interacción en la que el pasajero formula su consulta sobre el estado del vuelo, previa a la decisión de remoción?",
+      "blocks_element": "CL.CACH.Art.133.elem.nexo_causal_represalia",
+      "priority": "critical",
+      "obtaining_method": "Solicitar al aeropuerto y a Latam las grabaciones de CCTV con audio del counter/gate en el período previo al embarque; verificar si el pasajero grabó la interacción con su teléfono; identificar testigos presenciales."
+    },
+    {
+      "id": "OQ-CL-014-SECUENCIA-TEMPORAL",
+      "question": "¿Qué tiempo transcurrió entre la consulta del pasajero sobre el estado del vuelo y la orden de remoción, y quién emitió dicha orden?",
+      "blocks_element": "CL.CACH.Art.133.elem.nexo_causal_represalia",
+      "priority": "high",
+      "obtaining_method": "Cruzar timestamps de registros del sistema de embarque (hora de check-in, hora de cierre de puerta, hora de registro de incidente) con testimonios del personal de tierra; solicitar bitácora del comandante con hora de la decisión."
+    },
+    {
+      "id": "OQ-CL-014-TESTIGOS-DISRUPCION",
+      "question": "¿Hay testigos (pasajeros, tripulación, personal de tierra) que confirmen o desmientan la existencia de conducta disruptiva por parte del pasajero?",
+      "blocks_element": "CL.CACH.Art.133.elem.nexo_causal_represalia",
+      "priority": "high",
+      "obtaining_method": "Obtener manifiesto de pasajeros del vuelo para identificar testigos potenciales; citar a declarar al personal de tierra y tripulación de cabina presentes; solicitar declaraciones juradas."
+    },
+    {
+      "id": "OQ-CL-014-OPCIONES-133N1",
+      "question": "¿Se ofreció formalmente al pasajero embarque en siguiente vuelo disponible, transporte alternativo o reembolso total conforme Art. 133 N°1, y existe constancia escrita de dicho ofrecimiento?",
+      "blocks_element": "CL.CACH.Art.133.1.elem.incumplimiento_opcion_pasajero",
+      "priority": "medium",
+      "obtaining_method": "Requerir a Latam exhibición de correos electrónicos, SMS, documentos de counter o registros en sistema de atención al cliente dirigidos al pasajero ofreciendo las opciones legales; solicitar al pasajero que exhiba toda comunicación recibida de Latam posterior al incidente."
+    },
+    {
+      "id": "OQ-CL-014-COMPENSACION",
+      "question": "¿Latam emitió algún voucher, pago o comunicación de compensación al pasajero, o el pasajero reclamó formalmente la compensación y fue denegada?",
+      "blocks_element": "CL.CACH.Art.133.2.elem.incumplimiento_compensacion",
+      "priority": "medium",
+      "obtaining_method": "Solicitar al pasajero copia de cualquier reclamo formal presentado ante Latam o SERNAC y la respuesta recibida; requerir a Latam registros de compensaciones emitidas o denegadas respecto del pasajero y vuelo en cuestión."
+    },
+    {
+      "id": "OQ-CL-014-DGAC-EXPEDIENTE",
+      "question": "¿Existe expediente administrativo ante la DGAC relativo al incidente, y qué calificación otorgó la autoridad aeronáutica a la conducta del pasajero?",
+      "blocks_element": null,
+      "priority": "medium",
+      "obtaining_method": "Solicitud de acceso a información pública (Ley 20.285) dirigida a la DGAC requiriendo copia del expediente sancionatorio o de fiscalización asociado al vuelo, fecha y ruta en cuestión."
+    }
+  ],
+  "cross_references": [
+    {
+      "ref": "CL-013",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001__opus46",
+      "relation": "mischaracterized_inquiry_became_basis_for_false_aggression_accusation"
+    },
+    {
+      "ref": "CL-001__opus46v1",
+      "relation": "mischaracterized_inquiry_became_basis_for_false_aggression_accusation"
+    },
+    {
+      "ref": "CL-002",
+      "relation": "mischaracterized_inquiry_triggered_forcible_removal"
+    },
+    {
+      "ref": "CL-002__opus46",
+      "relation": "mischaracterized_inquiry_triggered_forcible_removal"
+    },
+    {
+      "ref": "CL-003",
+      "relation": "retaliation_pretext_enabled_institutional_collusion_chain"
+    },
+    {
+      "ref": "CL-003__opus46",
+      "relation": "retaliation_pretext_enabled_institutional_collusion_chain"
+    },
+    {
+      "ref": "CL-004",
+      "relation": "cctv_would_show_inquiry_not_disruption"
+    },
+    {
+      "ref": "CL-004__opus46",
+      "relation": "cctv_would_show_inquiry_not_disruption"
+    },
+    {
+      "ref": "CL-005",
+      "relation": "cctv_exoneration_confirms_inquiry_was_not_disruption"
+    },
+    {
+      "ref": "CL-005__deepseek",
+      "relation": "cctv_exoneration_confirms_inquiry_was_not_disruption"
+    },
+    {
+      "ref": "CL-006",
+      "relation": "mischaracterized_inquiry_used_to_justify_lifetime_ban"
+    },
+    {
+      "ref": "CL-006__opus46",
+      "relation": "mischaracterized_inquiry_used_to_justify_lifetime_ban"
+    },
+    {
+      "ref": "CL-007",
+      "relation": "no_correction_after_retaliation_trigger_disproven"
+    },
+    {
+      "ref": "CL-007__opus46",
+      "relation": "no_correction_after_retaliation_trigger_disproven"
+    },
+    {
+      "ref": "CL-008",
+      "relation": "dgac_failed_to_investigate_retaliation_trigger"
+    },
+    {
+      "ref": "CL-008__opus46",
+      "relation": "dgac_failed_to_investigate_retaliation_trigger"
+    },
+    {
+      "ref": "CL-009",
+      "relation": "retaliation_for_inquiry_violates_icao_facilitation_standards"
+    },
+    {
+      "ref": "CL-009__opus46",
+      "relation": "retaliation_for_inquiry_violates_icao_facilitation_standards"
+    },
+    {
+      "ref": "CL-010",
+      "relation": "passenger_right_to_information_exercised_then_punished"
+    },
+    {
+      "ref": "CL-010__opus46",
+      "relation": "passenger_right_to_information_exercised_then_punished"
+    },
+    {
+      "ref": "CL-011",
+      "relation": "no_evidence_of_disruption_because_trigger_was_legitimate_inquiry"
+    },
+    {
+      "ref": "CL-011__opus46",
+      "relation": "no_evidence_of_disruption_because_trigger_was_legitimate_inquiry"
+    },
+    {
+      "ref": "CL-012",
+      "relation": "personal_complaint_coaching_obscured_retaliation_origin"
+    },
+    {
+      "ref": "CL-012__opus46",
+      "relation": "personal_complaint_coaching_obscured_retaliation_origin"
+    },
+    {
+      "ref": "CL-013__opus46",
+      "relation": "escalating_accusations_originated_from_mischaracterized_inquiry"
+    },
+    {
+      "ref": "CL-014__opus46",
+      "relation": "duplicate_analysis_of_same_retaliation_trigger"
+    },
+    {
+      "ref": "CL-016",
+      "relation": "disembarkation_letter_repeated_mischaracterized_inquiry_as_disruption"
+    },
+    {
+      "ref": "CL-016__gemini3flash",
+      "relation": "disembarkation_letter_repeated_mischaracterized_inquiry_as_disruption"
+    },
+    {
+      "ref": "CL-016__grok41fast",
+      "relation": "disembarkation_letter_repeated_mischaracterized_inquiry_as_disruption"
+    },
+    {
+      "ref": "CL-016__haikulatest",
+      "relation": "disembarkation_letter_repeated_mischaracterized_inquiry_as_disruption"
+    },
+    {
+      "ref": "CL-016__hy3",
+      "relation": "disembarkation_letter_repeated_mischaracterized_inquiry_as_disruption"
+    },
+    {
+      "ref": "CL-016__opus46",
+      "relation": "disembarkation_letter_repeated_mischaracterized_inquiry_as_disruption"
+    },
+    {
+      "ref": "CL-016__opus47",
+      "relation": "disembarkation_letter_repeated_mischaracterized_inquiry_as_disruption"
+    },
+    {
+      "ref": "CL-016__opus47version2",
+      "relation": "disembarkation_letter_repeated_mischaracterized_inquiry_as_disruption"
+    },
+    {
+      "ref": "CL-016__sonnet4",
+      "relation": "disembarkation_letter_repeated_mischaracterized_inquiry_as_disruption"
+    },
+    {
+      "ref": "CL-016__sonnet4.6",
+      "relation": "disembarkation_letter_repeated_mischaracterized_inquiry_as_disruption"
+    },
+    {
+      "ref": "CL-016__sonnetlatest",
+      "relation": "disembarkation_letter_repeated_mischaracterized_inquiry_as_disruption"
+    },
+    {
+      "ref": "CL-017",
+      "relation": "retaliation_trigger_relevant_to_downstream_violation"
+    }
+  ],
+  "note": "Full JSON reconstruction from markdown – includes all key admissions, legal reasoning, candidate articles, and cross-references.",
+  "full_segments": [
+    {
+      "segment_id": "STG-1.seg-3",
+      "role_in_argument": "pilot_ignorance_of_passenger_origin",
+      "audio_offset_start": 22.7,
+      "audio_offset_end": 27.3,
+      "speaker": "Latam Pilot Ruiz",
+      "verbatim_es": "Da onde que ele chegou eu nao sei, mas e o que vamos a Brasilia.",
+      "verbatim_sha256": "b5e321d9e5d1d21eaa7dff8b29970e1d0b92b9bfa2aa141b3bbb802fa40c326b",
+      "translation_en": "Where he came from I don't know, but it's the one [flight] going to Brasília.",
+      "transcription_notes": "Spoken in Portuguese; 'Da onde que ele chegou eu não sei' indicates pilot had no direct knowledge of the passenger's prior conduct.",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_1.html#seg-3",
+      "source_sha256": "bb9d1c8a964e1c491dbc12804ef7ac8afb90898d0d17e9b10d9b01eb55282f4a",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-1.seg-12",
+      "role_in_argument": "context_unidentified",
+      "audio_offset_start": 0,
+      "audio_offset_end": 0,
+      "speaker": "unknown",
+      "verbatim_es": "",
+      "verbatim_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "translation_en": "[Segment contains no transcribed speech.]",
+      "transcription_notes": "Verbatim field is empty; no content available for refinement.",
+      "source_uri": "legacy://CL-014/STG-1.seg-12",
+      "source_sha256": "a4610b435b40d9dca7653b4de03c40e203f2d1adc7bac8ac194a6a68a5c7f3a6",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-1.seg-25",
+      "role_in_argument": "context_unidentified",
+      "audio_offset_start": 0,
+      "audio_offset_end": 0,
+      "speaker": "unknown",
+      "verbatim_es": "",
+      "verbatim_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "translation_en": "[Segment contains no transcribed speech.]",
+      "transcription_notes": "Verbatim field is empty; no content available for refinement.",
+      "source_uri": "legacy://CL-014/STG-1.seg-25",
+      "source_sha256": "b0b9521f0ff822133f41094ab4b5bda032b11fb5ae75661d12c3d28c9a0974b6",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-5.seg-30",
+      "role_in_argument": "context_unidentified",
+      "audio_offset_start": 0,
+      "audio_offset_end": 0,
+      "speaker": "unknown",
+      "verbatim_es": "",
+      "verbatim_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "translation_en": "[Segment contains no transcribed speech.]",
+      "transcription_notes": "Verbatim field is empty; no content available for refinement.",
+      "source_uri": "legacy://CL-014/STG-5.seg-30",
+      "source_sha256": "137088fec8560ccee930cdd730c16c1592d19546c84ba24b0da11e9f15483753",
+      "audio_uri": null
+    }
+  ],
+  "incident_meta": {
+    "date": "5 de julho de 2024 — Voo LA8159 — Aeroporto SCL (ver Fatos Fixos do Incidente)",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T11:00:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "framework_caches": [
+    {
+      "framework_code": "CACH",
+      "framework_name": "CACH",
+      "cache_file": "Legal framework/CACH.md",
+      "cache_file_sha256": "d7d751759641cdb8ec0084684195fa4360055f495db5af791120dd34cadd9cd0",
+      "cache_self_reported_sha256": null,
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "4",
+        "131",
+        "133",
+        "133 A",
+        "133 B",
+        "134",
+        "135",
+        "171",
+        "175"
+      ]
+    }
+  ],
+  "nexus_matrix": [
+    {
+      "fact_id": "STG-1.seg-3",
+      "norm_id": "CL.CACH.Art.133",
+      "element_id": "CL.CACH.Art.133.1.elem.existencia_contrato_transporte",
+      "nexus_type": "functional_context",
+      "strength": "medium",
+      "rationale_oneline": "Pilot's reference to 'the one going to Brasília' presupposes an existing air transport contract for that route."
+    },
+    {
+      "fact_id": "STG-1.seg-3",
+      "norm_id": "CL.CACH.Art.133",
+      "element_id": "CL.CACH.Art.133.1.elem.denegacion_contra_voluntad",
+      "nexus_type": "circumstantial_omission",
+      "strength": "medium",
+      "rationale_oneline": "Pilot's claimed ignorance of passenger origin suggests passenger was singled out without informed justification."
+    },
+    {
+      "fact_id": "STG-1.seg-3",
+      "norm_id": "CL.CACH.Art.133",
+      "element_id": "CL.CACH.Art.133.1.elem.ausencia_causa_legal_justificante",
+      "nexus_type": "circumstantial_omission",
+      "strength": "high",
+      "rationale_oneline": "Pilot admits not knowing passenger's origin, evidencing no legal ground was identified to justify denial of boarding."
+    },
+    {
+      "fact_id": "STG-1.seg-3",
+      "norm_id": "CL.CACH.Art.133",
+      "element_id": "CL.CACH.Art.133.elem.nexo_causal_represalia",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "medium",
+      "rationale_oneline": "Pilot's indifference to passenger identity while confirming the flight suggests arbitrary targeting consistent with retaliation."
+    },
+    {
+      "fact_id": "STG-1.seg-12",
+      "norm_id": "CL.CACH.Art.133",
+      "element_id": "CL.CACH.Art.133.1.elem.incumplimiento_opcion_pasajero",
+      "nexus_type": "circumstantial_omission",
+      "strength": "low",
+      "rationale_oneline": "Absence of any recorded offer of alternatives in this segment corroborates failure to present options to the passenger."
+    },
+    {
+      "fact_id": "STG-1.seg-25",
+      "norm_id": "CL.CACH.Art.133",
+      "element_id": "CL.CACH.Art.133.2.elem.incumplimiento_compensacion",
+      "nexus_type": "circumstantial_omission",
+      "strength": "low",
+      "rationale_oneline": "No speech in this segment indicates no compensation was discussed or offered at this stage of the interaction."
+    },
+    {
+      "fact_id": "STG-5.seg-30",
+      "norm_id": "CL.CACH.Art.133",
+      "element_id": "CL.CACH.Art.133.1.elem.denegacion_contra_voluntad",
+      "nexus_type": "system_state_corroboration",
+      "strength": "low",
+      "rationale_oneline": "Silent segment from a separate recording stage corroborates that no passenger consent to denial was obtained."
+    },
+    {
+      "fact_id": "STG-5.seg-30",
+      "norm_id": "CL.CACH.Art.133",
+      "element_id": "CL.CACH.Art.133.2.elem.incumplimiento_compensacion",
+      "nexus_type": "circumstantial_omission",
+      "strength": "low",
+      "rationale_oneline": "Continued absence of any compensation discussion in later recording stage reinforces non-compliance with Art. 133 N°2."
+    },
+    {
+      "fact_id": "STG-1.seg-12",
+      "norm_id": "CL.CACH.Art.133",
+      "element_id": "CL.CACH.Art.133.elem.nexo_causal_represalia",
+      "nexus_type": "circumstantial_omission",
+      "strength": "low",
+      "rationale_oneline": "Silence where justification should appear supports inference that denial was retaliatory rather than procedurally grounded."
+    }
+  ],
+  "provenance": [
+    {
+      "timestamp": "2026-05-12T06:57:14.186941Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CACH.Art.133: 6 elements; weighted score 0.50."
+    },
+    {
+      "timestamp": "2026-05-12T06:57:28.118995Z",
+      "actor": "layers.build_nexus_layer",
+      "operation": "add_or_replace_nexus_entries",
+      "layer": 4,
+      "note": "Upserted 9 nexus entries."
+    },
+    {
+      "timestamp": "2026-05-12T06:59:37.016665Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-DENEGACION-EMBARQUE-JUZGADO-CIVIL (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:59:37.016867Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-REPRESALIA-CONSUMIDOR (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:59:37.016917Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-CARGA-PRUEBA-SEGURIDAD (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:59:37.016984Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-EU-REG261-DENIED-BOARDING (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:59:37.017079Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-DOCTRINA-SANDOVAL-TRANSPORTE (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:59:37.017124Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-ABUSO-DERECHO-PROVEEDOR (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:59:37.017151Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-CONSULTA-PASAJERO-DERECHO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:59:37.017173Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-SERNAC-AEROLINEAS (verified=False)."
+    }
+  ]
+}

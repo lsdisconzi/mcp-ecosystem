@@ -1,0 +1,1769 @@
+{
+  "violation_id": "CL-019",
+  "title": "Intimidation — Threats of 'More Problems' if Authorities Are Called",
+  "incident": "[[I-002-Chile-Santiago]]",
+  "incident_id": "I-002",
+  "jurisdiction": "CL",
+  "category": "Intimidation and Coercion",
+  "severity": "HIGH",
+  "confidence": {
+    "value": 0.56,
+    "components": {
+      "CL.CHIPENCOD.T4.C6.Art.211": 0.657,
+      "CL.CHIPENCOD.T4.C6.Art.212": 0.543,
+      "CL.CONST.T1.C3.P3.Art.19.4": 0.743,
+      "CL.LPDC.Art.3.b": 0.65,
+      "CL.LPDC.Art.23": 0.714
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T13:00:42.374300Z",
+    "history": [
+      "2026-05-12T12:51:28.444375+00:00: value=0.0",
+      "2026-05-12T12:51:41.879792+00:00: value=0.0",
+      "2026-05-12T12:51:48.545219+00:00: value=0.0",
+      "2026-05-12T12:56:11.071563+00:00: value=0.56",
+      "2026-05-12T12:57:06.181664+00:00: value=0.56",
+      "2026-05-12T12:58:19.013255+00:00: value=0.56",
+      "2026-05-12T12:59:39.123003+00:00: value=0.56",
+      "2026-05-12T13:00:39.458606+00:00: value=0.56"
+    ],
+    "validated": true,
+    "note": "V10 validated. V01: 1 segment unresolved (STG-13.seg-40). V07: no authorities listed. Confidence 0.33 is pipeline-derived; MD frontmatter previously carried legacy 0.92 from seed."
+  },
+  "incident_timestamp": "2024-07-05T13:30:00-04:00",
+  "incident_timestamp_display": "2024-07-05 (SCL, flight LA8159)",
+  "allegation_summary": "STG-6 documents intimidation tactics by LATAM security personnel, including: (1) Explicit threats of 'more problems' if passenger involves authorities; (2) Coercive language designed to discourage legal resistance; (3) Use of security personnel to create atmosphere of threat; (4) Systematic effort to isolate passenger from external protections. These intimidation tactics violate: (a) Chilean Penal Code Art. 296 prohibitions on threats and coercion; (b) ICAO Annex 9 §8.15 requirements for non-coercive complaint resolution; (c) Chilean consumer protection law prohibitions on abusive practices; (d) International standards on passenger treatment in aviation.",
+  "evidentiary_strength": "6 segments across 2 transcripts (STG-13, STG-6). 5 established articles with element grids. 39 nexus entries. 1 segment unresolved by V01 (STG-13.seg-40). 0 authorities, 0 open questions, 0 cross-references — pipeline produced grids and nexus but did not generate authorities or questions.",
+  "legal_theory": "Intimidation — Amenazas y Coaccion Ilegitima + Violacion a Derechos del Consumidor",
+  "required_elements_status": "PENDING_COUNSEL_MAPPING",
+  "legal_basis": [
+    {
+      "article_id": "CL.CHIPENCOD.T4.C6.Art.211",
+      "article_name": "Codigo Penal (CHIPENCOD), Art. 211 — Imputacion falsa de crimen o simple delito",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "state",
+      "norm_type": "penalty",
+      "applicability_rationale": "legacy paraphrase: El que imputare falsamente a alguna persona haber cometido un crimen o simple delito, siendo sabedor de la falsedad de la imputacion, incurrira en las penas de reclusion menor.",
+      "framework_code": "CHIPENCOD",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "El que imputare falsamente a alguna persona haber cometido un crimen o simple delito, siendo sabedor de la falsedad de la imputación, o el que la hiciere de malicia, incurrirá en las penas de reclusión menor en sus grados mínimo a medio y multa de once a quince unidades tributarias mensuales."
+    },
+    {
+      "article_id": "CL.CHIPENCOD.T4.C6.Art.212",
+      "article_name": "Codigo Penal (CHIPENCOD), Art. 212 — Denuncia calumniosa / simulacion de victima",
+      "status": "established",
+      "applicability": "direct",
+      "note": "Adecuacion tipica contested — Art. 212 penalises false complaint, not threats/intimidation. Candidate CL.CP.Art.296 recommended.",
+      "duty_bearer": "state",
+      "norm_type": "penalty",
+      "applicability_rationale": "legacy paraphrase: Penalties for defamation and calumnia when made before authorities.",
+      "framework_code": "CHIPENCOD",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "El que simulare ser víctima de algún crimen o simple delito, o que en el parte o denuncia que diere a la autoridad supusiere haber intervenido personas que no han tenido participación en el hecho o que hubieren dejado rastros que puedan inducir a error sobre la perpetración de una acción delictiva, o que con igual propósito hiciere o facilitare que otro presente dichas circunstancias, sufrirá la pena de reclusión menor en su grado mínimo a medio o multa de seis a diez unidades tributarias mensuales."
+    },
+    {
+      "article_id": "CL.CONST.T1.C3.P3.Art.19.4",
+      "article_name": "Constitucion, Art. 19 N°4 — Prohibicion de constriccion ilegitima",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "state",
+      "norm_type": "right",
+      "applicability_rationale": "legacy paraphrase: Respect and protection of private life and honor.",
+      "framework_code": "CONST",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "The application of any illegitimate constrain is forbidden;"
+    },
+    {
+      "article_id": "CL.LPDC.Art.3.b",
+      "article_name": "Ley 19.496, Art. 3(b) — Derecho a informacion veraz y oportuna",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "air_operator",
+      "norm_type": "right",
+      "applicability_rationale": "legacy paraphrase: Son derechos y deberes basicos del consumidor: b) El derecho a una informacion veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratacion y otras caracteristicas relevantes de los mismos.",
+      "framework_code": "LPDC",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "b) El derecho a una información veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratación y otras características relevantes de los mismos, y el deber de informarse responsablemente de ellos."
+    },
+    {
+      "article_id": "CL.LPDC.Art.23",
+      "article_name": "Ley 19.496, Art. 23 — Infraccion por negligencia del proveedor que causa menoscabo",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "air_operator",
+      "norm_type": "liability",
+      "applicability_rationale": "legacy paraphrase: El proveedor de un servicio sera responsable de los danos y perjuicios que cause al consumidor por la prestacion de un servicio defectuoso, incluyendo la falta de veracidad en la informacion proporcionada y el incumplimiento de las condiciones de contratacion.",
+      "framework_code": "LPDC",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "Comete infracción a las disposiciones de la presente ley el proveedor que, en la venta de un bien o en la prestación de un servicio, **actuando con negligencia**, causa menoscabo al consumidor debido a fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio."
+    }
+  ],
+  "transcripts": [
+    "[[I-002_06_NAR-06_STG_13_post_PDI_corridor]]",
+    "[[I-002_04_NAR-06_STG_6_jetbridge_standoff]]"
+  ],
+  "evidence_links": [
+    "[[I-002_transcript_rendered_html_X-0010]]",
+    "[[I-002_transcript_rendered_html_X-0036]]"
+  ],
+  "related_violations": [],
+  "framework_cache": "[[CHIPENCOD]] [[CONST]] [[LPDC]]",
+  "validation_pack": "[[Validation report CL-019]]",
+  "has_broken_refs": false,
+  "tags": [
+    "violation",
+    "severity/high",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "classification": "Attorney Work Product — Privileged and Confidential",
+  "schema_version": "4.0",
+  "element_grids": {
+    "CL.CHIPENCOD.T4.C6.Art.211": [
+      {
+        "element_name": "Sujeto activo (cualquier persona)",
+        "status": "strong",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-6.seg-40"
+        ],
+        "argument": "El sujeto activo sería Joaquín Barraza, funcionario de seguridad de Latam, quien formuló la imputación contra el pasajero. Su identidad y rol están acreditados en los segmentos donde interviene directamente, incluyendo la admisión de que el pasajero 'podía embarcar', lo que contextualiza su participación activa en los hechos.",
+        "element_id": "CL.CHIPENCOD.Art.211.elem.sujeto_activo",
+        "doctrinal_basis": "Art. 211 CP: 'El que imputare falsamente…' — delito común, no requiere calidad especial del autor.",
+        "weaknesses": [
+          "No se identifica con certeza si Barraza fue quien formalizó la imputación ante terceros o autoridades, o si solo la verbalizó informalmente."
+        ],
+        "open_questions": [
+          "¿Existió una denuncia formal o comunicación escrita de Barraza imputando un delito al pasajero?"
+        ],
+        "article_short": "Art. 211 — Calumnia (Código Penal chileno)"
+      },
+      {
+        "element_name": "Sujeto pasivo (persona a quien se imputa falsamente)",
+        "status": "established",
+        "evidence": [
+          "STG-6.seg-12",
+          "STG-13.seg-12"
+        ],
+        "argument": "El sujeto pasivo es Leandro Disconzi, pasajero claramente identificado en los segmentos, quien desafía directamente la imputación falsa ('pruébame eso') y exige constancia escrita de lo que se le atribuye.",
+        "element_id": "CL.CHIPENCOD.Art.211.elem.sujeto_pasivo",
+        "doctrinal_basis": "La calumnia requiere que la imputación recaiga sobre una persona determinada.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 211 — Calumnia (Código Penal chileno)"
+      },
+      {
+        "element_name": "Modalidad típica: imputar falsamente la comisión de un crimen o simple delito",
+        "status": "contested",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-6.seg-12"
+        ],
+        "argument": "El segmento STG-13.seg-1 muestra a Barraza culpando al pasajero ('¡Porque tú no colaboraste!'), y STG-6.seg-12 revela que el pasajero entiende que se le está imputando algo ('alguien que no le gustó de la pregunta que le hice y está intentando hacer eso'). Sin embargo, los segmentos disponibles no explicitan qué delito concreto se le habría imputado al pasajero. La calumnia requiere la atribución de un crimen o simple delito específico, y este extremo no está claramente acreditado en la evidencia segmentaria.",
+        "element_id": "CL.CHIPENCOD.Art.211.elem.modalidad_tipica_imputacion_falsa",
+        "doctrinal_basis": "Art. 211 CP exige que se atribuya a la víctima la comisión de un crimen o simple delito específico, no una mera falta o conducta reprochable genérica. La doctrina (Etcheberry, Garrido Montt) requiere que la imputación sea de un hecho típico concreto.",
+        "weaknesses": [
+          "No se identifica en los segmentos la imputación de un tipo penal concreto (hurto, agresión, etc.); solo se observa culpabilización genérica.",
+          "La frase '¡Porque tú no colaboraste!' es un reproche conductual, no necesariamente la imputación de un delito."
+        ],
+        "open_questions": [
+          "¿Se formuló ante la PDI, Carabineros u otra autoridad una denuncia atribuyendo al pasajero un delito específico?",
+          "¿Existen registros escritos (actas, informes de seguridad) que contengan la imputación delictiva concreta?"
+        ],
+        "article_short": "Art. 211 — Calumnia (Código Penal chileno)"
+      },
+      {
+        "element_name": "Objeto material: contenido de la imputación (crimen o simple delito determinado)",
+        "status": "weak",
+        "evidence": [
+          "STG-6.seg-12"
+        ],
+        "argument": "El pasajero alude a que 'alguien está intentando hacer eso' en su contra, sugiriendo que percibe una imputación fabricada. No obstante, ningún segmento identifica con precisión el delito que se le habría atribuido. Este elemento es crítico y su debilidad probatoria compromete la subsunción típica completa.",
+        "element_id": "CL.CHIPENCOD.Art.211.elem.objeto_material_imputacion",
+        "doctrinal_basis": "La calumnia se distingue de la injuria precisamente porque el objeto de la imputación debe ser un hecho constitutivo de crimen o simple delito, no una falta ni un hecho deshonroso genérico.",
+        "weaknesses": [
+          "Ausencia total de mención a un tipo penal específico imputado al pasajero en los segmentos disponibles."
+        ],
+        "open_questions": [
+          "¿Se le imputó al pasajero, por ejemplo, desorden en aeronave, amenazas, o algún otro delito tipificado?",
+          "¿Hay grabaciones o documentos adicionales que precisen el contenido de la imputación?"
+        ],
+        "article_short": "Art. 211 — Calumnia (Código Penal chileno)"
+      },
+      {
+        "element_name": "Falsedad objetiva de la imputación",
+        "status": "strong",
+        "evidence": [
+          "STG-6.seg-40",
+          "STG-6.seg-12"
+        ],
+        "argument": "El propio Barraza admite que el pasajero 'podía embarcar' (STG-6.seg-40), lo que contradice cualquier imputación de conducta delictiva que justificara su denegación de embarque o intervención policial. El pasajero además desafía la veracidad de lo imputado señalando que se trata de una represalia por una pregunta incómoda (STG-6.seg-12). La convergencia de ambos segmentos apoya fuertemente la falsedad de la imputación.",
+        "element_id": "CL.CHIPENCOD.Art.211.elem.falsedad_de_la_imputacion",
+        "doctrinal_basis": "Art. 211 CP: la imputación debe ser objetivamente falsa. El hecho atribuido no debe haberse cometido o no debe haber sido cometido por la persona señalada.",
+        "weaknesses": [
+          "La admisión de Barraza se refiere a la autorización de embarque, no directamente a la falsedad de una imputación delictiva específica."
+        ],
+        "open_questions": [
+          "¿Se puede obtener la versión oficial de los hechos según el informe de seguridad de Latam para contrastar con la realidad?"
+        ],
+        "article_short": "Art. 211 — Calumnia (Código Penal chileno)"
+      },
+      {
+        "element_name": "Tipicidad subjetiva: dolo directo — conocimiento de la falsedad ('siendo sabedor de la falsedad')",
+        "status": "contested",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-6.seg-40",
+          "STG-6.seg-12"
+        ],
+        "argument": "La combinación de la admisión de que el pasajero podía embarcar (STG-6.seg-40) con el reproche culpabilizador posterior ('¡Porque tú no colaboraste!', STG-13.seg-1) sugiere que Barraza sabía que no existía fundamento delictivo real y que la imputación obedecía a una represalia. El pasajero lo interpreta así expresamente (STG-6.seg-12). Sin embargo, probar el conocimiento interno de la falsedad requiere evidencia adicional o inferencias más robustas.",
+        "element_id": "CL.CHIPENCOD.Art.211.elem.tipicidad_subjetiva_dolo",
+        "doctrinal_basis": "Art. 211 CP exige dolo directo: el autor debe ser 'sabedor de la falsedad de la imputación' o actuar 'de malicia'. No basta el dolo eventual ni la negligencia.",
+        "weaknesses": [
+          "El dolo directo es difícil de acreditar sin confesión o evidencia documental que demuestre que el autor sabía que la imputación era falsa al momento de formularla.",
+          "La frase 'porque tú no colaboraste' podría interpretarse como frustración genuina, no necesariamente como evidencia de conocimiento de falsedad."
+        ],
+        "open_questions": [
+          "¿Existen comunicaciones internas de Latam que revelen la motivación real detrás de la imputación?",
+          "¿Se puede acreditar que Barraza recibió instrucciones de formular la imputación como mecanismo de presión?"
+        ],
+        "article_short": "Art. 211 — Calumnia (Código Penal chileno)"
+      },
+      {
+        "element_name": "Resultado / perjuicio al honor del sujeto pasivo",
+        "status": "strong",
+        "evidence": [
+          "STG-6.seg-12",
+          "STG-13.seg-12"
+        ],
+        "argument": "El pasajero fue sometido a un procedimiento de seguridad y confrontación pública en el aeropuerto, debiendo defenderse de la imputación ('pruébame eso') y exigir constancia escrita. Esto evidencia una afectación concreta a su honor y dignidad, así como restricción de su libertad ambulatoria en el contexto aeroportuario.",
+        "element_id": "CL.CHIPENCOD.Art.211.elem.resultado_perjuicio",
+        "doctrinal_basis": "La calumnia es un delito de mera actividad contra el honor; se consuma con la imputación falsa sin necesidad de un resultado material separado. No obstante, la existencia de perjuicio concreto (intervención policial, denegación de embarque, exposición pública) agrava la lesividad.",
+        "weaknesses": [
+          "No se acredita en los segmentos si hubo intervención policial formal derivada de la imputación."
+        ],
+        "open_questions": [
+          "¿Se generó un registro policial o antecedente formal contra el pasajero como consecuencia de la imputación?"
+        ],
+        "article_short": "Art. 211 — Calumnia (Código Penal chileno)"
+      }
+    ],
+    "CL.CHIPENCOD.T4.C6.Art.212": [
+      {
+        "element_name": "Sujeto activo (cualquier persona que denuncia o da parte)",
+        "status": "contested",
+        "evidence": [
+          "STG-6.seg-12",
+          "STG-6.seg-40"
+        ],
+        "argument": "El segmento STG-6.seg-12 muestra al pasajero desafiando una imputación que considera falsa ('pruébame eso, porque es simplemente alguien que no le gustó la pregunta que le hice'). El segmento STG-6.seg-40 registra la admisión de Joaquín Barraza de que el pasajero 'podía embarcar', lo que sugiere que no existía fundamento real para una denuncia. Sin embargo, no se identifica con certeza quién formuló formalmente un parte o denuncia ante la autoridad.",
+        "element_id": "CL.CHIPENCOD.Art.212.elem.sujeto_activo",
+        "doctrinal_basis": "Art. 212 CP no exige calidad especial; el sujeto activo es quien simula ser víctima o formula el parte/denuncia ante la autoridad. En el contexto alegado, sería el personal de LATAM que habría formulado o facilitado una imputación falsa contra el pasajero ante la autoridad policial o aeroportuaria.",
+        "weaknesses": [
+          "No se acredita directamente que el personal de LATAM haya formulado un parte o denuncia formal ante autoridad competente."
+        ],
+        "open_questions": [
+          "¿Se presentó efectivamente una denuncia o parte policial contra el pasajero? ¿Quién fue el denunciante formal?"
+        ],
+        "article_short": "Art. 212 — Simulación de ser víctima / denuncia con circunstancias falsas (Código Penal)"
+      },
+      {
+        "element_name": "Sujeto pasivo (persona falsamente imputada / administración de justicia)",
+        "status": "strong",
+        "evidence": [
+          "STG-6.seg-12",
+          "STG-13.seg-1"
+        ],
+        "argument": "El pasajero Leandro Disconzi aparece como la persona contra quien se dirigen las imputaciones. En STG-6.seg-12 él mismo denuncia que alguien 'está intentando hacer eso' (imputarle algo falso). En STG-13.seg-1 se le culpa por 'no colaborar', sugiriendo que se le atribuye una conducta reprochable sin base.",
+        "element_id": "CL.CHIPENCOD.Art.212.elem.sujeto_pasivo",
+        "doctrinal_basis": "El bien jurídico protegido es la correcta administración de justicia; el sujeto pasivo mediato es la persona a quien se le atribuye falsamente participación en un hecho delictivo. Aquí sería el pasajero Leandro Disconzi.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 212 — Simulación de ser víctima / denuncia con circunstancias falsas (Código Penal)"
+      },
+      {
+        "element_name": "Modalidad típica — simular ser víctima o suponer participación de personas inocentes",
+        "status": "contested",
+        "evidence": [
+          "STG-6.seg-12",
+          "STG-6.seg-40"
+        ],
+        "argument": "STG-6.seg-12 evidencia que el pasajero percibe que se le imputa falsamente una conducta ('es simplemente alguien que no le gustó la pregunta'). STG-6.seg-40 refuerza esto al admitir que el pasajero estaba autorizado a embarcar, lo que contradice cualquier imputación de conducta disruptiva grave. No obstante, falta prueba directa del contenido de un parte o denuncia formal que contenga la suposición falsa.",
+        "element_id": "CL.CHIPENCOD.Art.212.elem.modalidad_tipica_simulacion",
+        "doctrinal_basis": "El tipo contempla tres modalidades: (1) simular ser víctima de crimen o simple delito; (2) suponer en el parte o denuncia la intervención de personas que no participaron; (3) hacer o facilitar que otro presente circunstancias inductoras de error. La modalidad relevante sería la segunda: atribuir al pasajero participación en una conducta delictiva o disruptiva que no cometió.",
+        "weaknesses": [
+          "No se dispone del texto de un parte o denuncia formal donde conste la imputación falsa.",
+          "La evidencia es circunstancial: se infiere la falsedad de la imputación pero no se prueba directamente la simulación."
+        ],
+        "open_questions": [
+          "¿Existe un registro documental (parte policial, informe de seguridad) que contenga afirmaciones falsas sobre la conducta del pasajero?"
+        ],
+        "article_short": "Art. 212 — Simulación de ser víctima / denuncia con circunstancias falsas (Código Penal)"
+      },
+      {
+        "element_name": "Objeto material — parte o denuncia ante la autoridad",
+        "status": "weak",
+        "evidence": [
+          "STG-6.seg-12"
+        ],
+        "argument": "Los segmentos disponibles no acreditan la existencia de un parte o denuncia formal ante autoridad. STG-6.seg-12 muestra al pasajero impugnando una imputación, pero no se identifica el instrumento formal ni la autoridad receptora. Este es el elemento más débil de la tipificación.",
+        "element_id": "CL.CHIPENCOD.Art.212.elem.objeto_material",
+        "doctrinal_basis": "El tipo exige que la simulación o suposición se materialice en un 'parte o denuncia' dirigido a 'la autoridad'. No basta una acusación verbal informal entre particulares; debe existir una comunicación a autoridad pública (policía, fiscalía, autoridad aeronáutica).",
+        "weaknesses": [
+          "Ningún segmento documenta la presentación efectiva de un parte o denuncia ante autoridad competente.",
+          "Sin este elemento, la conducta podría no ser subsumible en el Art. 212."
+        ],
+        "open_questions": [
+          "¿Se llamó a Carabineros o PDI y se les proporcionó un relato falso? ¿Existe un informe de la DGAC o de la aerolínea que constituya 'parte' ante autoridad?"
+        ],
+        "article_short": "Art. 212 — Simulación de ser víctima / denuncia con circunstancias falsas (Código Penal)"
+      },
+      {
+        "element_name": "Circunstancias que inducen a error sobre la perpetración de una acción delictiva",
+        "status": "contested",
+        "evidence": [
+          "STG-6.seg-12",
+          "STG-6.seg-40",
+          "STG-13.seg-1"
+        ],
+        "argument": "La combinación de STG-13.seg-1 (culpar al pasajero por 'no colaborar'), STG-6.seg-12 (el pasajero denuncia que se le imputa algo falso) y STG-6.seg-40 (admisión de que podía embarcar) sugiere que se creó un relato apto para inducir a error a la autoridad sobre una supuesta conducta disruptiva del pasajero. Sin embargo, la idoneidad de las circunstancias para inducir error sobre una 'acción delictiva' específica no está plenamente acreditada.",
+        "element_id": "CL.CHIPENCOD.Art.212.elem.circunstancias_inductoras_error",
+        "doctrinal_basis": "El Art. 212 exige que las circunstancias supuestas o facilitadas puedan 'inducir a error sobre la perpetración de una acción delictiva'. Es decir, la falsa imputación debe tener idoneidad para generar en la autoridad la creencia de que se cometió un delito o falta.",
+        "weaknesses": [
+          "No se precisa qué 'acción delictiva' concreta se habría simulado ante la autoridad.",
+          "La conducta imputada al pasajero podría haber sido presentada como infracción administrativa y no como delito, lo que debilitaría la tipicidad."
+        ],
+        "open_questions": [
+          "¿La imputación al pasajero fue presentada como delito (ej. desorden público, amenazas) o como mera infracción reglamentaria?"
+        ],
+        "article_short": "Art. 212 — Simulación de ser víctima / denuncia con circunstancias falsas (Código Penal)"
+      },
+      {
+        "element_name": "Resultado / perjuicio — afectación a la administración de justicia o al imputado",
+        "status": "strong",
+        "evidence": [
+          "STG-6.seg-12",
+          "STG-6.seg-40",
+          "STG-13.seg-1"
+        ],
+        "argument": "El pasajero fue efectivamente impedido de embarcar o sometido a un procedimiento de seguridad pese a que, según STG-6.seg-40, 'podía embarcar'. STG-13.seg-1 muestra que se le responsabilizó ('porque tú no colaboraste'), y STG-6.seg-12 evidencia que el pasajero tuvo que defenderse de una imputación que considera fabricada. Esto configura un perjuicio concreto al pasajero.",
+        "element_id": "CL.CHIPENCOD.Art.212.elem.resultado_perjuicio",
+        "doctrinal_basis": "Si bien el Art. 212 es un delito de mera actividad (se consuma con la simulación o suposición), la existencia de perjuicio concreto al falsamente imputado (denegación de embarque, intervención policial, detención) refuerza la gravedad y puede incidir en la determinación de la pena.",
+        "weaknesses": [
+          "No se acredita una detención policial formal ni un proceso penal iniciado contra el pasajero como consecuencia directa."
+        ],
+        "open_questions": [
+          "¿Se inició alguna actuación policial o administrativa formal contra el pasajero como resultado de la supuesta denuncia falsa?"
+        ],
+        "article_short": "Art. 212 — Simulación de ser víctima / denuncia con circunstancias falsas (Código Penal)"
+      },
+      {
+        "element_name": "Tipicidad subjetiva — dolo directo (conocimiento de la falsedad y voluntad de denunciar)",
+        "status": "contested",
+        "evidence": [
+          "STG-6.seg-40",
+          "STG-13.seg-1",
+          "STG-6.seg-12"
+        ],
+        "argument": "STG-6.seg-40 es clave: la admisión de que el pasajero 'podía embarcar' sugiere que el personal de seguridad sabía que no existía fundamento real para impedirle el embarque ni para imputarle conducta delictiva. STG-13.seg-1 ('porque tú no colaboraste') evidencia una motivación de represalia más que de denuncia legítima. STG-6.seg-12 muestra que el propio pasajero percibe la intencionalidad ('está intentando hacer eso'). No obstante, probar el dolo directo requiere evidencia adicional sobre el conocimiento efectivo de la falsedad por parte del denunciante.",
+        "element_id": "CL.CHIPENCOD.Art.212.elem.tipicidad_subjetiva_dolo",
+        "doctrinal_basis": "El Art. 212 requiere dolo directo: el agente debe saber que simula ser víctima o que las personas imputadas no participaron en el hecho, y actuar con la voluntad de presentar esas circunstancias ante la autoridad. El 'igual propósito' mencionado en la tercera modalidad refuerza la exigencia de intencionalidad.",
+        "weaknesses": [
+          "El dolo se infiere circunstancialmente; no hay declaración explícita del agente reconociendo la falsedad de la imputación.",
+          "Podría alegarse error o creencia razonable en la existencia de una conducta disruptiva."
+        ],
+        "open_questions": [
+          "¿Existen comunicaciones internas de LATAM que evidencien conocimiento de que la imputación carecía de fundamento?",
+          "¿El personal actuó siguiendo instrucciones superiores o por iniciativa propia?"
+        ],
+        "article_short": "Art. 212 — Simulación de ser víctima / denuncia con circunstancias falsas (Código Penal)"
+      }
+    ],
+    "CL.CONST.T1.C3.P3.Art.19.4": [
+      {
+        "element_name": "Sujeto activo (agente que ejecuta la coacción ilegítima)",
+        "status": "strong",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-6.seg-40"
+        ],
+        "argument": "Joaquín Barraza, identificado como jefe de seguridad de LATAM, es quien profiere la frase intimidatoria ('¡Porque tú no colaboraste!') y quien previamente admitió que el pasajero 'podía embarcar', lo que lo sitúa como agente con poder de facto sobre la situación del afectado.",
+        "element_id": "CL.CONST.Art.19.4.elem.sujeto_activo",
+        "doctrinal_basis": "Cualquier persona, natural o jurídica, que ejecute una acción que afecte la esfera protegida; en sede de recurso de protección puede ser un particular (art. 20 CPR).",
+        "weaknesses": [
+          "No se acredita con certeza el cargo formal de Barraza ni su relación contractual con LATAM."
+        ],
+        "open_questions": [
+          "¿Actuó Barraza por instrucción corporativa o por iniciativa propia?"
+        ],
+        "article_short": "Art. 19 N° 4 — Respeto y protección de la vida privada y la honra (Constitución Política)"
+      },
+      {
+        "element_name": "Sujeto pasivo (titular del derecho afectado)",
+        "status": "established",
+        "evidence": [
+          "STG-6.seg-12",
+          "STG-13.seg-12"
+        ],
+        "argument": "Leandro Disconzi es claramente identificable como el pasajero afectado; interviene en múltiples segmentos exigiendo pruebas y registros escritos, lo que demuestra su calidad de víctima directa de la conducta intimidatoria.",
+        "element_id": "CL.CONST.Art.19.4.elem.sujeto_pasivo",
+        "doctrinal_basis": "Toda persona natural titular de los derechos del art. 19 N° 4 CPR.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 19 N° 4 — Respeto y protección de la vida privada y la honra (Constitución Política)"
+      },
+      {
+        "element_name": "Acto de coacción o apremio ilegítimo",
+        "status": "strong",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-6.seg-12"
+        ],
+        "argument": "La frase '¡Porque tú no colaboraste!' constituye una imputación de culpa al pasajero y opera como amenaza implícita de consecuencias adversas si no se somete a las exigencias del personal. El pasajero responde denunciando que se trata de una represalia por una pregunta legítima, lo que refuerza el carácter coactivo del acto.",
+        "element_id": "CL.CONST.Art.19.4.elem.acto_ilicito_coaccion",
+        "doctrinal_basis": "La garantía prohíbe toda constricción ilegítima; la doctrina constitucional chilena (recurso de protección, art. 20) exige un acto u omisión arbitrario o ilegal que perturbe, prive o amenace el ejercicio legítimo del derecho.",
+        "weaknesses": [
+          "La frase aislada podría interpretarse como mera expresión de frustración y no como amenaza concreta de un mal futuro."
+        ],
+        "open_questions": [
+          "¿Existieron amenazas explícitas adicionales (e.g., 'más problemas') no capturadas en los segmentos disponibles?"
+        ],
+        "article_short": "Art. 19 N° 4 — Respeto y protección de la vida privada y la honra (Constitución Política)"
+      },
+      {
+        "element_name": "Ilegitimidad / arbitrariedad de la conducta",
+        "status": "strong",
+        "evidence": [
+          "STG-6.seg-40",
+          "STG-6.seg-12"
+        ],
+        "argument": "El propio Barraza admitió que el pasajero 'podía embarcar', lo que demuestra que no existía causa legítima para la restricción ni para la intimidación posterior. La conducta carece de base legal o contractual, configurando arbitrariedad.",
+        "element_id": "CL.CONST.Art.19.4.elem.ilegitimidad",
+        "doctrinal_basis": "El acto debe carecer de fundamento legal o contractual que lo justifique; la arbitrariedad se configura cuando la decisión no responde a parámetros objetivos ni a facultades legalmente conferidas.",
+        "weaknesses": [
+          "Podría alegarse que surgieron hechos nuevos entre la autorización de embarque y la confrontación."
+        ],
+        "open_questions": [
+          "¿Invocó LATAM alguna norma reglamentaria o protocolo de seguridad para justificar la conducta?"
+        ],
+        "article_short": "Art. 19 N° 4 — Respeto y protección de la vida privada y la honra (Constitución Política)"
+      },
+      {
+        "element_name": "Afectación a la honra o vida privada",
+        "status": "contested",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-6.seg-12"
+        ],
+        "argument": "La imputación pública de 'no colaborar' ante terceros (otros pasajeros, personal) afecta la honra del pasajero al atribuirle una conducta reprochable sin fundamento. Sin embargo, los segmentos no explicitan la presencia de terceros ni el contexto público de la declaración.",
+        "element_id": "CL.CONST.Art.19.4.elem.afectacion_honra_vida_privada",
+        "doctrinal_basis": "El art. 19 N° 4 protege tanto la honra (reputación) como la vida privada; basta la perturbación o amenaza, no se requiere daño consumado para el recurso de protección.",
+        "weaknesses": [
+          "No consta expresamente que la frase se haya proferido en presencia de terceros.",
+          "La afectación a la 'vida privada' stricto sensu no se evidencia con claridad."
+        ],
+        "open_questions": [
+          "¿Se produjo la confrontación en un espacio público (gate, counter) con testigos?",
+          "¿Existen registros de video que acrediten la publicidad del acto?"
+        ],
+        "article_short": "Art. 19 N° 4 — Respeto y protección de la vida privada y la honra (Constitución Política)"
+      },
+      {
+        "element_name": "Nexo causal entre el acto y la afectación del derecho",
+        "status": "strong",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-6.seg-12",
+          "STG-6.seg-40"
+        ],
+        "argument": "La secuencia fáctica muestra que: (1) se autorizó el embarque, (2) se profirió la amenaza/imputación, y (3) el pasajero se vio compelido a defenderse y exigir pruebas. La conducta de Barraza es la causa directa de la situación de coacción y menoscabo.",
+        "element_id": "CL.CONST.Art.19.4.elem.nexo_causal",
+        "doctrinal_basis": "Debe existir relación directa entre la conducta del agente y la perturbación, privación o amenaza al derecho fundamental.",
+        "weaknesses": [],
+        "open_questions": [
+          "¿Intervino algún otro agente (PDI, Carabineros) que pudiera haber interrumpido o agravado el nexo causal?"
+        ],
+        "article_short": "Art. 19 N° 4 — Respeto y protección de la vida privada y la honra (Constitución Política)"
+      },
+      {
+        "element_name": "Elemento subjetivo (intencionalidad de la intimidación)",
+        "status": "contested",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-6.seg-40"
+        ],
+        "argument": "Barraza sabía que el pasajero estaba autorizado a embarcar ('podía embarcar') y aun así le imputó falta de colaboración como justificación de consecuencias adversas, lo que sugiere intención deliberada de intimidar. No obstante, la prueba directa del ánimo subjetivo es inferencial.",
+        "element_id": "CL.CONST.Art.19.4.elem.tipicidad_subjetiva_dolo",
+        "doctrinal_basis": "En sede constitucional no se exige dolo penal, pero la arbitrariedad se refuerza cuando el agente actúa con conocimiento de la ilegitimidad de su conducta y con propósito de doblegar la voluntad del afectado.",
+        "weaknesses": [
+          "La intencionalidad se deduce del contexto; no hay confesión ni prueba directa del propósito intimidatorio."
+        ],
+        "open_questions": [
+          "¿Existen comunicaciones internas de LATAM que revelen instrucciones de presionar al pasajero?"
+        ],
+        "article_short": "Art. 19 N° 4 — Respeto y protección de la vida privada y la honra (Constitución Política)"
+      }
+    ],
+    "CL.LPDC.Art.3.b": [
+      {
+        "element_name": "Existencia de relación de consumo",
+        "status": "strong",
+        "evidence": [
+          "STG-6.seg-40"
+        ],
+        "argument": "La admisión de Joaquín Barraza de que el pasajero 'podía embarcar' confirma la existencia de un contrato de transporte aéreo vigente entre Latam y el pasajero, configurando la relación de consumo.",
+        "element_id": "CL.LPDC.Art.3.b.elem.relacion_de_consumo",
+        "doctrinal_basis": "El Art. 3 LPDC presupone una relación proveedor-consumidor en los términos del Art. 1 LPDC; el pasajero debe ser consumidor y la aerolínea proveedora del servicio de transporte aéreo.",
+        "weaknesses": [
+          "No se acompaña copia del boarding pass o ticket en los segmentos disponibles."
+        ],
+        "open_questions": [
+          "¿Se acreditará documentalmente el contrato de transporte?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Deber del proveedor de entregar información veraz",
+        "status": "contested",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-6.seg-12"
+        ],
+        "argument": "El proveedor no entregó información veraz sobre los motivos de la denegación de embarque; en su lugar, Barraza culpó al pasajero ('¡Porque tú no colaboraste!') sin explicar las razones objetivas. El pasajero desafía la imputación falsa, evidenciando que la información recibida no era veraz.",
+        "element_id": "CL.LPDC.Art.3.b.elem.deber_informacion_veraz",
+        "doctrinal_basis": "La norma impone al proveedor el deber de suministrar información veraz sobre el servicio, sus condiciones de contratación y características relevantes, incluyendo las razones de denegación de embarque o restricciones al servicio.",
+        "weaknesses": [
+          "La frase de Barraza podría interpretarse como una opinión subjetiva y no como información formal sobre el servicio."
+        ],
+        "open_questions": [
+          "¿Existió alguna comunicación escrita previa que informara verazmente al pasajero sobre restricciones?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Oportunidad de la información (entrega oportuna)",
+        "status": "strong",
+        "evidence": [
+          "STG-13.seg-12",
+          "STG-13.seg-1"
+        ],
+        "argument": "El pasajero exige información 'por escrito', lo que evidencia que hasta ese momento no se le había proporcionado información oportuna ni formal sobre las razones de la restricción del servicio. La respuesta del personal fue una imputación genérica sin fundamento documental.",
+        "element_id": "CL.LPDC.Art.3.b.elem.oportunidad_informacion",
+        "doctrinal_basis": "La información debe ser entregada en tiempo útil para que el consumidor pueda ejercer sus derechos. La omisión o entrega tardía configura infracción.",
+        "weaknesses": [
+          "No se establece con precisión el momento exacto en que debió entregarse la información."
+        ],
+        "open_questions": [],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Contenido: condiciones de contratación y características relevantes del servicio",
+        "status": "contested",
+        "evidence": [
+          "STG-6.seg-12",
+          "STG-6.seg-40"
+        ],
+        "argument": "El pasajero solicita que le prueben la causal invocada ('pruébame eso'), lo que demuestra que no se le informó adecuadamente sobre las condiciones contractuales que justificarían la restricción. Barraza admite que el pasajero podía embarcar, contradiciendo la propia actuación restrictiva de la aerolínea.",
+        "element_id": "CL.LPDC.Art.3.b.elem.contenido_informacion_condiciones",
+        "doctrinal_basis": "El derecho abarca conocer las condiciones de contratación, incluyendo causales de denegación de embarque, procedimientos de reclamo y consecuencias para el consumidor.",
+        "weaknesses": [
+          "Los segmentos no contienen referencia directa a cláusulas contractuales específicas omitidas."
+        ],
+        "open_questions": [
+          "¿Cuáles eran las condiciones contractuales aplicables y fueron comunicadas al pasajero antes del incidente?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Perjuicio al consumidor por falta de información veraz y oportuna",
+        "status": "strong",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-13.seg-12",
+          "STG-6.seg-12"
+        ],
+        "argument": "La desinformación y la intimidación ('¡Porque tú no colaboraste!') impidieron al consumidor ejercer oportunamente sus derechos. El pasajero se vio obligado a exigir constancia escrita y a desafiar imputaciones falsas, evidenciando un perjuicio concreto en su capacidad de defensa y en la continuidad del servicio contratado.",
+        "element_id": "CL.LPDC.Art.3.b.elem.perjuicio_consumidor",
+        "doctrinal_basis": "El perjuicio se configura cuando la falta de información impide al consumidor tomar decisiones informadas o ejercer sus derechos, incluyendo el derecho a reclamar formalmente.",
+        "weaknesses": [
+          "El perjuicio patrimonial específico (pérdida del vuelo, gastos adicionales) no se acredita directamente en estos segmentos."
+        ],
+        "open_questions": [
+          "¿Se acreditará el daño patrimonial y/o moral derivado de la falta de información?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Intimidación como mecanismo de obstrucción del derecho a información",
+        "status": "contested",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-6.seg-12"
+        ],
+        "argument": "La culpabilización del pasajero por parte de Barraza y la imputación falsa operan como mecanismos disuasivos que impiden al consumidor acceder a información veraz. Sin embargo, la amenaza explícita de 'más problemas' no aparece textualmente en los segmentos disponibles, quedando pendiente su acreditación.",
+        "element_id": "CL.LPDC.Art.3.b.elem.intimidacion_como_obstaculo_informativo",
+        "doctrinal_basis": "La amenaza de 'más problemas' si se recurre a autoridades constituye una conducta que obstaculiza el ejercicio del derecho a información, agravando la infracción al Art. 3 letra b) en conexión con el Art. 16 LPDC (cláusulas y conductas abusivas).",
+        "weaknesses": [
+          "No se identifica en los segmentos proporcionados la frase literal sobre amenaza de 'más problemas si llama a autoridades'."
+        ],
+        "open_questions": [
+          "¿Existe un segmento adicional que contenga la amenaza explícita referida en el título de la violación?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      }
+    ],
+    "CL.LPDC.Art.23": [
+      {
+        "element_name": "Sujeto activo: proveedor de bienes o servicios",
+        "status": "strong",
+        "evidence": [
+          "STG-6.seg-40",
+          "STG-13.seg-1"
+        ],
+        "argument": "Joaquín Barraza actúa en calidad de jefe de seguridad de LATAM Airlines, una aerolínea comercial que presta servicios de transporte aéreo a consumidores. Su intervención directa en el incidente (STG-13.seg-1) y su reconocimiento de la situación de embarque (STG-6.seg-40) lo sitúan como representante del proveedor. LATAM Airlines califica inequívocamente como proveedor de servicios de transporte aéreo.",
+        "element_id": "CL.LPDC.Art.23.elem.sujeto_activo_proveedor",
+        "doctrinal_basis": "Art. 23 LPDC exige que el infractor sea un 'proveedor' en los términos del Art. 1 N°2 LPDC, es decir, quien habitualmente desarrolla actividades de producción, fabricación, importación, distribución o comercialización de bienes o prestación de servicios a consumidores.",
+        "weaknesses": [
+          "No se identifica en los segmentos un documento formal que vincule a Barraza como empleado o mandatario de LATAM; la atribución se basa en la descripción contextual del speaker."
+        ],
+        "open_questions": [
+          "¿Existe contrato laboral o poder de representación que vincule formalmente a Barraza con LATAM para efectos de responsabilidad del proveedor?"
+        ],
+        "article_short": "Art. 23 — Infracción por negligencia del proveedor que causa menoscabo al consumidor (LPDC)"
+      },
+      {
+        "element_name": "Sujeto pasivo: consumidor final",
+        "status": "strong",
+        "evidence": [
+          "STG-6.seg-12",
+          "STG-13.seg-12"
+        ],
+        "argument": "Leandro Disconzi es un pasajero que adquirió un servicio de transporte aéreo con LATAM. Su exigencia de constancia escrita (STG-13.seg-12) y su defensa frente a imputaciones falsas (STG-6.seg-12) evidencian su posición de consumidor afectado. El contexto de embarque confirma la relación de consumo.",
+        "element_id": "CL.LPDC.Art.23.elem.sujeto_pasivo_consumidor",
+        "doctrinal_basis": "El menoscabo debe recaer sobre un 'consumidor' en los términos del Art. 1 N°1 LPDC, persona natural o jurídica que adquiere, utiliza o disfruta bienes o servicios como destinatario final.",
+        "weaknesses": [],
+        "open_questions": [
+          "¿Se cuenta con el boleto aéreo o comprobante de compra que acredite formalmente la relación de consumo?"
+        ],
+        "article_short": "Art. 23 — Infracción por negligencia del proveedor que causa menoscabo al consumidor (LPDC)"
+      },
+      {
+        "element_name": "Contexto: venta de un bien o prestación de un servicio",
+        "status": "strong",
+        "evidence": [
+          "STG-6.seg-40",
+          "STG-6.seg-12"
+        ],
+        "argument": "El propio personal de LATAM reconoce que el pasajero 'podía embarcar' (STG-6.seg-40), lo que sitúa los hechos en el marco de la prestación del servicio de transporte aéreo. La intimidación ocurre durante la ejecución del contrato de transporte, no en un contexto ajeno a la relación de consumo.",
+        "element_id": "CL.LPDC.Art.23.elem.venta_o_prestacion_servicio",
+        "doctrinal_basis": "La infracción debe producirse 'en la venta de un bien o en la prestación de un servicio'. Se requiere un nexo causal-contextual entre la conducta infractora y la relación de consumo.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 23 — Infracción por negligencia del proveedor que causa menoscabo al consumidor (LPDC)"
+      },
+      {
+        "element_name": "Elemento subjetivo: actuación con negligencia",
+        "status": "strong",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-6.seg-40"
+        ],
+        "argument": "La conducta de Barraza al culpar al pasajero ('¡Porque tú no colaboraste!' — STG-13.seg-1) constituye, como mínimo, una actuación negligente en la gestión del servicio, y posiblemente dolosa. El hecho de que el propio personal reconociera que el pasajero podía embarcar (STG-6.seg-40) demuestra que la intimidación carecía de justificación operacional, evidenciando falta de diligencia debida o mala fe.",
+        "element_id": "CL.LPDC.Art.23.elem.negligencia",
+        "doctrinal_basis": "Art. 23 LPDC requiere que el proveedor haya actuado 'con negligencia'. La doctrina y jurisprudencia del SERNAC han interpretado que la negligencia incluye tanto la culpa en sentido estricto como conductas que denotan falta de diligencia debida en la prestación del servicio. Conductas deliberadamente intimidatorias pueden superar el umbral de negligencia, configurando incluso dolo.",
+        "weaknesses": [
+          "El artículo 23 exige 'negligencia'; la conducta descrita podría calificarse más propiamente como dolosa, lo que no excluye la infracción pero podría requerir argumentación adicional sobre la relación dolo-negligencia en el marco de la LPDC."
+        ],
+        "open_questions": [
+          "¿Existen protocolos internos de LATAM para manejo de pasajeros que permitan evaluar si la conducta se desvió del estándar de diligencia exigible?"
+        ],
+        "article_short": "Art. 23 — Infracción por negligencia del proveedor que causa menoscabo al consumidor (LPDC)"
+      },
+      {
+        "element_name": "Resultado: menoscabo al consumidor",
+        "status": "contested",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-6.seg-12",
+          "STG-13.seg-12"
+        ],
+        "argument": "La intimidación mediante culpabilización ('¡Porque tú no colaboraste!' — STG-13.seg-1) y la amenaza implícita de 'más problemas' si se contactan autoridades configuran un menoscabo a la dignidad del consumidor. El pasajero se vio obligado a defenderse de imputaciones falsas (STG-6.seg-12) y a exigir constancia escrita (STG-13.seg-12), lo que evidencia la afectación sufrida. Sin embargo, la cuantificación del menoscabo patrimonial y extrapatrimonial requiere prueba adicional.",
+        "element_id": "CL.LPDC.Art.23.elem.menoscabo_consumidor",
+        "doctrinal_basis": "Se requiere que la conducta negligente 'cause menoscabo al consumidor'. El menoscabo puede ser patrimonial (pérdida del servicio contratado, gastos adicionales) o extrapatrimonial (daño moral, afectación de la dignidad). La jurisprudencia de los JPL ha reconocido el daño moral autónomo en infracciones a la LPDC.",
+        "weaknesses": [
+          "Los segmentos no contienen la amenaza textual de 'más problemas si llama a las autoridades' que el título de la violación describe; la evidencia directa de intimidación se limita a la frase de culpabilización.",
+          "No se acredita en los segmentos un menoscabo patrimonial concreto (pérdida del vuelo, gastos, etc.)."
+        ],
+        "open_questions": [
+          "¿Existen segmentos adicionales que contengan la amenaza explícita de 'más problemas'?",
+          "¿Se produjo finalmente la denegación de embarque u otro perjuicio patrimonial cuantificable?",
+          "¿Se cuenta con peritaje o certificación médica/psicológica que acredite daño moral?"
+        ],
+        "article_short": "Art. 23 — Infracción por negligencia del proveedor que causa menoscabo al consumidor (LPDC)"
+      },
+      {
+        "element_name": "Modalidad típica: falla o deficiencia en la calidad del servicio",
+        "status": "strong",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-6.seg-40",
+          "STG-6.seg-12"
+        ],
+        "argument": "La intimidación y culpabilización del pasajero por parte del personal de seguridad constituye una deficiencia grave en la calidad del servicio de transporte aéreo. El reconocimiento de que el pasajero podía embarcar (STG-6.seg-40) combinado con la conducta hostil (STG-13.seg-1) y las imputaciones falsas que el pasajero denuncia (STG-6.seg-12) evidencian una falla en la calidad del servicio, particularmente en su dimensión de seguridad y trato al consumidor.",
+        "element_id": "CL.LPDC.Art.23.elem.falla_calidad_servicio",
+        "doctrinal_basis": "El menoscabo debe deberse a 'fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio'. En servicios de transporte aéreo, la calidad del servicio incluye el trato digno al pasajero, la información veraz y el cumplimiento de las condiciones contratadas.",
+        "weaknesses": [
+          "La categoría 'calidad del servicio' en el contexto de intimidación requiere una interpretación extensiva del artículo 23, que tradicionalmente se aplica a defectos materiales del bien o servicio."
+        ],
+        "open_questions": [
+          "¿La jurisprudencia de los JPL ha aplicado Art. 23 LPDC a conductas de intimidación o trato indigno, o estas se canalizan preferentemente por Art. 3 letra d) (derecho a la seguridad) o Art. 16 (cláusulas abusivas)?"
+        ],
+        "article_short": "Art. 23 — Infracción por negligencia del proveedor que causa menoscabo al consumidor (LPDC)"
+      },
+      {
+        "element_name": "Nexo causal entre la negligencia y el menoscabo",
+        "status": "contested",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-6.seg-12"
+        ],
+        "argument": "La conducta intimidatoria del personal de LATAM (STG-13.seg-1) es la causa directa de la situación de vulnerabilidad y afectación del pasajero, quien se ve forzado a defenderse de imputaciones infundadas (STG-6.seg-12). No obstante, la cadena causal entre la intimidación y un menoscabo específico cuantificable no está plenamente desarrollada en los segmentos disponibles.",
+        "element_id": "CL.LPDC.Art.23.elem.nexo_causal",
+        "doctrinal_basis": "Debe existir relación de causalidad entre la actuación negligente del proveedor y el menoscabo sufrido por el consumidor. El artículo exige que el proveedor 'cause' el menoscabo 'debido a' las fallas o deficiencias.",
+        "weaknesses": [
+          "Los segmentos no documentan el desenlace final del incidente (si el pasajero abordó, si perdió el vuelo, si sufrió consecuencias adicionales).",
+          "La amenaza de 'más problemas si llama a autoridades' — elemento central del título de la violación — no aparece textualmente en los segmentos proporcionados."
+        ],
+        "open_questions": [
+          "¿Qué ocurrió después de los eventos registrados en los segmentos? ¿El pasajero fue finalmente embarcado o denegado?",
+          "¿Existen segmentos de audio/video adicionales que documenten la amenaza específica sobre contactar autoridades?"
+        ],
+        "article_short": "Art. 23 — Infracción por negligencia del proveedor que causa menoscabo al consumidor (LPDC)"
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CONST.T1.C3.P3.Art.19.3",
+      "candidate_name": "Constitutional guarantee of equal protection of the law (due process)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 19 Nº 3 of the Constitución Política de la República from bcn.cl/leychile and confirm it covers equal protection and due process rights",
+        "Confirm that the guarantee extends horizontally to private actors (eficacia horizontal) in the context of airline security procedures that effectively adjudicate passenger rights"
+      ],
+      "preliminary_view": "Art. 19 Nº 3 guarantees equal protection of the law in the exercise of rights. Threats of 'more problems' if authorities are called could constitute a de facto denial of the passenger's right to seek legal recourse, implicating this guarantee. Horizontal application to a private airline requires careful analysis under Chilean constitutional doctrine.",
+      "history_note": "Carried forward from legacy import candidate list. Needs verbatim verification and horizontal-applicability analysis."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.296",
+      "candidate_name": "Amenazas condicionales (conditional threats) — Código Penal",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 296 of the Código Penal from bcn.cl/leychile",
+        "Confirm whether the threat of 'more problems' if authorities are called meets the threshold of a conditional threat under Art. 296 numerals 1–3",
+        "Verify whether the threat must involve a serious evil (mal grave) or whether lesser threats are covered"
+      ],
+      "preliminary_view": "Art. 296 CP penalizes conditional threats — i.e., threatening someone with an evil to compel them to do or refrain from doing something. The statement implying the passenger would face 'more problems' if he contacted authorities could constitute a conditional threat aimed at dissuading the exercise of a legal right. The key question is whether the language used meets the statutory threshold of seriousness.",
+      "history_note": "New candidate. The violation title explicitly references threats of 'more problems' if authorities are called, which maps directly to the conditional-threat typology in Art. 296 CP."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.297",
+      "candidate_name": "Amenazas simples (simple threats) — Código Penal",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 297 of the Código Penal from bcn.cl/leychile",
+        "Determine whether Art. 297 applies as a residual category if Art. 296 threshold is not met",
+        "Confirm penalty range and whether it requires a formal complaint (querella) or proceeds de oficio"
+      ],
+      "preliminary_view": "Art. 297 CP covers threats that do not meet the gravity threshold of Art. 296 but still constitute intimidation. If the 'more problems' language is deemed insufficiently grave for Art. 296, Art. 297 may serve as the applicable residual provision.",
+      "history_note": "New candidate. Companion to Art. 296 for lesser-gravity threats."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.161",
+      "candidate_name": "Coacción — impedir el ejercicio de derechos (coercion preventing exercise of rights)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 161 of the Código Penal from bcn.cl/leychile",
+        "Confirm whether Art. 161 covers private actors or only public officials — if it is limited to public officials, flag the agent-fit mismatch",
+        "Verify whether a separate coercion provision (e.g., Art. 494 Nº 16 on apremios ilegítimos by private persons) is more appropriate"
+      ],
+      "preliminary_view": "AGENT-FIT CAUTION: Art. 161 CP may be limited to public officials who impede the exercise of rights. If so, it would not directly apply to LATAM airline security staff unless they were acting under delegated public authority at the airport. Verification of the article's subjective scope is essential before relying on it.",
+      "history_note": "New candidate. Included for completeness given the coercive nature of the conduct, but agent-fit mismatch is likely."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.494.16",
+      "candidate_name": "Falta de amenaza o coacción leve (minor-offense threat/coercion) — Código Penal",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 494 Nº 16 of the Código Penal from bcn.cl/leychile",
+        "Confirm whether this falta covers threats or intimidation by private persons that do not rise to the level of Arts. 296–297",
+        "Verify penalty classification (falta vs. simple delito)"
+      ],
+      "preliminary_view": "Art. 494 Nº 16 CP penalizes minor threats or intimidation as a falta. It may apply if the conduct does not meet the threshold for Arts. 296–297 but still constitutes punishable intimidation by a private actor.",
+      "history_note": "New candidate. Residual minor-offense provision for intimidation."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1457",
+      "candidate_name": "Fuerza como vicio del consentimiento (duress vitiating consent) — Código Civil",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 1457 of the Código Civil from bcn.cl/leychile",
+        "Confirm that 'fuerza' includes moral intimidation (not only physical force)",
+        "Assess whether the passenger's acquiescence to deplaning or other airline demands was vitiated by the threats"
+      ],
+      "preliminary_view": "Art. 1457 CC establishes that duress (fuerza) vitiates consent when it is capable of producing a strong impression on a reasonable person. If the passenger was coerced into accepting conditions (e.g., leaving the aircraft, not calling authorities) through threats of 'more problems,' any resulting agreement or waiver could be voidable for duress.",
+      "history_note": "New candidate. Civil-law dimension of the intimidation conduct."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1456",
+      "candidate_name": "Requisitos de la fuerza como vicio del consentimiento — Código Civil",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 1456 of the Código Civil from bcn.cl/leychile",
+        "Confirm the three requirements for duress (grave, injusta, determinante) and whether the facts meet them"
+      ],
+      "preliminary_view": "Art. 1456 CC sets out the requirements for duress to vitiate consent: it must be grave, unjust, and determinative. The threat of 'more problems' if authorities are called is arguably unjust (it seeks to prevent the exercise of a legal right) and determinative if it caused the passenger to refrain from calling authorities.",
+      "history_note": "New candidate. Companion to Art. 1457 CC on the civil-law duress analysis."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Responsabilidad extracontractual por hecho ilícito — Código Civil",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 2314 of the Código Civil from bcn.cl/leychile",
+        "Confirm that intimidation causing moral harm (daño moral) is actionable under this provision"
+      ],
+      "preliminary_view": "Art. 2314 CC establishes general tortious liability: whoever commits a wrongful act (delito o cuasidelito) that causes damage to another is obliged to indemnify. Intimidation causing moral harm (anxiety, humiliation) to the passenger would ground a civil claim under this article.",
+      "history_note": "New candidate. General tort provision for the civil damages dimension of the intimidation."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2329",
+      "candidate_name": "Reparación integral del daño — Código Civil",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 2329 of the Código Civil from bcn.cl/leychile",
+        "Confirm that it establishes a presumption of culpability for imprudent or negligent conduct and full reparation"
+      ],
+      "preliminary_view": "Art. 2329 CC complements Art. 2314 by establishing that all damage attributable to malice or negligence must be repaired. It also creates a presumption of fault in certain circumstances. The airline's intimidation conduct, if proven negligent or intentional, triggers full reparation including moral damages.",
+      "history_note": "New candidate. Companion to Art. 2314 for full-reparation principle."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.3.a",
+      "candidate_name": "Derecho a la libre elección del bien o servicio — Ley del Consumidor",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 3 letra a) of Ley 19.496 from bcn.cl/leychile",
+        "Confirm whether the right to free choice encompasses the right not to be coerced into accepting degraded service conditions"
+      ],
+      "preliminary_view": "Art. 3 letra a) LPC guarantees the consumer's right to free choice. Intimidation that pressures a passenger into accepting deplaning or forgoing complaints effectively negates free choice in the consumption of the air transport service.",
+      "history_note": "New candidate. Extends the consumer-rights analysis beyond Art. 3 letra b) already established."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.3.e",
+      "candidate_name": "Derecho a la reparación e indemnización adecuada — Ley del Consumidor",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 3 letra e) of Ley 19.496 from bcn.cl/leychile",
+        "Confirm it covers the right to adequate reparation and indemnification for damages suffered"
+      ],
+      "preliminary_view": "Art. 3 letra e) LPC establishes the consumer's right to adequate reparation and indemnification. Threats designed to dissuade the passenger from seeking redress directly undermine this statutory right.",
+      "history_note": "New candidate. The intimidation was specifically aimed at preventing the passenger from exercising his right to seek reparation."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.16.g",
+      "candidate_name": "Cláusulas abusivas — renuncia anticipada a derechos del consumidor",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 16 letra g) of Ley 19.496 from bcn.cl/leychile",
+        "Determine whether coerced verbal waivers (not just written contract clauses) fall within the scope of abusive-clause doctrine"
+      ],
+      "preliminary_view": "Art. 16 letra g) LPC declares abusive any clause that causes an unjustified imbalance to the detriment of the consumer. If the airline's intimidation effectively extracted a waiver of the passenger's right to complain, this could be analyzed as an abusive practice analogous to an abusive clause. Applicability to oral coercion (rather than written terms) requires verification.",
+      "history_note": "New candidate. Extends abusive-clause analysis to coerced waivers."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.133",
+      "candidate_name": "Derechos del pasajero en caso de denegación de embarque — Código Aeronáutico",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 133 of the Código Aeronáutico (DFL Nº 221 de 1931 / Ley 18.916) from bcn.cl/leychile",
+        "Confirm whether it establishes passenger rights when boarding is denied and whether it requires written justification",
+        "Verify the correct article number — the Código Aeronáutico's passenger-rights provisions may be in Arts. 131–135 range"
+      ],
+      "preliminary_view": "Art. 133 CACH may establish the airline's obligations when denying boarding, including providing written reasons. The passenger's demand for written documentation ('¡Por escrito!') and the airline's intimidation to avoid providing it would directly implicate this provision.",
+      "history_note": "New candidate. The aeronautical code's boarding-denial provisions are directly relevant to the factual context."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.147",
+      "candidate_name": "Responsabilidad del transportador aéreo por daños al pasajero — Código Aeronáutico",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 147 of the Código Aeronáutico from bcn.cl/leychile",
+        "Confirm whether it covers non-physical damages (moral harm) caused by the carrier's conduct during the transport operation",
+        "Verify the correct article number for carrier liability in the current consolidated text"
+      ],
+      "preliminary_view": "Art. 147 CACH establishes the air carrier's liability for damages caused to passengers. If intimidation by airline security staff during the boarding/deplaning process constitutes actionable harm, this provision would ground the carrier's liability under aeronautical law.",
+      "history_note": "New candidate. Sectoral liability provision specific to air transport."
+    },
+    {
+      "candidate_article_id": "CL.CONST.Art.19.7.a",
+      "candidate_name": "Derecho a la libertad personal y seguridad individual — Constitución",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 19 Nº 7 letra a) of the Constitución Política from bcn.cl/leychile",
+        "Confirm whether the right to personal liberty and security encompasses protection against private intimidation that restricts freedom of action",
+        "Assess horizontal applicability to private airline conduct"
+      ],
+      "preliminary_view": "Art. 19 Nº 7 letra a) CPR guarantees personal liberty and individual security. Threats of 'more problems' that effectively restrain the passenger's freedom to contact authorities or leave freely could implicate this guarantee. Horizontal application to a private airline requires analysis.",
+      "history_note": "New candidate. Constitutional dimension of the intimidation affecting personal liberty."
+    },
+    {
+      "candidate_article_id": "CL.CONST.Art.19.14",
+      "candidate_name": "Derecho de petición — Constitución",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 19 Nº 14 of the Constitución Política from bcn.cl/leychile",
+        "Confirm that the right of petition includes the right to contact authorities without retaliation"
+      ],
+      "preliminary_view": "Art. 19 Nº 14 CPR guarantees the right to present petitions to any authority. Threatening a passenger with 'more problems' if he calls authorities directly obstructs this constitutional right.",
+      "history_note": "New candidate. The intimidation was specifically aimed at preventing the passenger from contacting authorities."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.24",
+      "candidate_name": "Multas por infracciones a la Ley del Consumidor",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 24 of Ley 19.496 from bcn.cl/leychile",
+        "Confirm the penalty range for infractions and whether aggravating circumstances (intimidation) increase the sanction"
+      ],
+      "preliminary_view": "Art. 24 LPC establishes the penalty framework for infractions of the consumer protection law. If the intimidation constitutes an infraction under Art. 23 (already established), Art. 24 provides the sanctioning mechanism and may allow enhanced penalties for the gravity of the conduct.",
+      "history_note": "New candidate. Sanctioning complement to the already-established Art. 23 LPDC."
+    }
+  ],
+  "legal_reasoning": "**Applicable Framework**: CHIPENCOD Arts. 211–212 (false imputation, false complaint), CONST Art. 19 N°4 (illegitimate constraint), LPDC Arts. 3.b and 23 (consumer information rights, provider negligence). Incident: July 5, 2024, ~13:30, Santiago Airport (SCL), flight LA8159.\n\n**Factual Subsumption**: (1) Joaquín Barraza (LATAM security) accused the passenger of non-cooperation (STG-13.seg-1). (2) Barraza admitted the passenger \"could board\" (STG-6.seg-40). (3) The passenger demanded written documentation (STG-13.seg-12) and described retaliation for a question (STG-6.seg-12). (4) No formal crime was ever specified — the accusation remained at generic non-cooperation.\n\n**Nexus Fact-Norm**: CONST Art. 19 N°4 and LPDC framings are the strongest. CHIPENCOD Arts. 211–212 are structurally weaker — no formal criminal complaint was filed, and the core conduct (intimidation) is more naturally governed by Arts. 296–297 CP.\n\n**Evidentiary Strength**: 6 segments, 2 transcripts, 39 nexus entries, 5 element grids. Confidence 0.33 reflects absent authorities and weak CHIPENCOD framing.\n\n**Severity Assessment**: HIGH — security personnel exploiting position to intimidate, deliberate obstruction of passenger legal protections, coercive atmosphere in regulated environment.\n\n**Procedural Integrity**: Ontology Invariant I-1 compliance maintained.\n\n---",
+  "authorities": [],
+  "open_questions": [
+    {
+      "id": "OQ-CL019-DENUNCIA-FORMAL",
+      "question": "¿Se presentó efectivamente una denuncia, parte policial o comunicación formal ante Carabineros, PDI, DGAC u otra autoridad competente contra el pasajero Leandro Disconzi? De existir, ¿quién fue el denunciante formal y cuál fue el contenido textual de la imputación?",
+      "blocks_element": "CL.CHIPENCOD.Art.212.elem.objeto_material",
+      "priority": "critical",
+      "obtaining_method": "Solicitud de acceso a información pública (Ley 20.285) dirigida a la PDI y Carabineros de Chile, Comisaría jurisdiccional del Aeropuerto de Santiago (SCL), requiriendo copia de partes, denuncias o registros de intervención policial asociados al pasajero, fecha y vuelo involucrado. Complementar con solicitud a la DGAC por informes de seguridad aeroportuaria del incidente."
+    },
+    {
+      "id": "OQ-CL019-DELITO-ESPECIFICO",
+      "question": "¿Se le imputó al pasajero la comisión de un crimen o simple delito específico (e.g., desorden en aeronave, amenazas, resistencia) o la imputación se limitó a una infracción administrativa o reproche conductual genérico?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.elem.objeto_material_imputacion",
+      "priority": "critical",
+      "obtaining_method": "Revisión del parte policial o informe de seguridad obtenido mediante la solicitud anterior (OQ-CL019-DENUNCIA-FORMAL). Subsidiariamente, solicitar a LATAM Airlines mediante requerimiento judicial o carta certificada la entrega del informe de incidente de seguridad (Security Incident Report) correspondiente al vuelo y fecha."
+    },
+    {
+      "id": "OQ-CL019-AMENAZA-EXPLICITA",
+      "question": "¿Existe un segmento de audio, video o testimonio adicional que contenga la amenaza explícita de 'más problemas si llama a las autoridades' referida en el título de la violación CL-019?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.intimidacion_como_obstaculo_informativo",
+      "priority": "critical",
+      "obtaining_method": "Revisión exhaustiva de la totalidad de las grabaciones de audio/video del incidente (archivos STG completos) para identificar segmentos no indexados que contengan la frase amenazante. Solicitar al equipo de segmentación la re-transcripción completa de los archivos STG-6 y STG-13 con búsqueda específica de las palabras clave 'problemas', 'autoridades', 'Carabineros', 'policía', 'PDI'."
+    },
+    {
+      "id": "OQ-CL019-INFORME-SEGURIDAD-LATAM",
+      "question": "¿Existe un informe de seguridad interno de LATAM Airlines (Security Incident Report, bitácora de seguridad, o comunicación interna) que contenga afirmaciones sobre la conducta del pasajero y que haya sido remitido a alguna autoridad?",
+      "blocks_element": "CL.CHIPENCOD.Art.212.elem.modalidad_tipica_simulacion",
+      "priority": "high",
+      "obtaining_method": "Requerimiento judicial de exhibición de documentos dirigido a LATAM Airlines S.A. conforme al Art. 273 N°3 CPC (medida prejudicial), o solicitud directa mediante carta certificada invocando el derecho del consumidor a información (Art. 3 letra b LPDC). Alternativamente, solicitud a la DGAC por informes de incidentes de seguridad reportados por la aerolínea."
+    },
+    {
+      "id": "OQ-CL019-COMUNICACIONES-INTERNAS",
+      "question": "¿Existen comunicaciones internas de LATAM (correos electrónicos, mensajes, instrucciones de supervisores) que revelen la motivación real detrás de la imputación al pasajero o instrucciones de presionar/intimidar al pasajero?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.elem.tipicidad_subjetiva_dolo",
+      "priority": "high",
+      "obtaining_method": "Requerimiento judicial de exhibición de documentos (Art. 273 N°3 CPC) dirigido a LATAM Airlines, solicitando comunicaciones internas (correos, mensajes de radio, registros de sistema) entre Joaquín Barraza y sus superiores o el centro de operaciones de seguridad, correspondientes a la fecha y hora del incidente. En sede penal, solicitar al Ministerio Público la incautación de dichos registros."
+    },
+    {
+      "id": "OQ-CL019-VINCULO-LABORAL-BARRAZA",
+      "question": "¿Cuál es la relación contractual formal de Joaquín Barraza con LATAM Airlines? ¿Es empleado directo, contratista de seguridad o mandatario? ¿Cuál era su cargo y facultades al momento del incidente?",
+      "blocks_element": "CL.LPDC.Art.23.elem.sujeto_activo_proveedor",
+      "priority": "high",
+      "obtaining_method": "Solicitud de certificado de cotizaciones previsionales de Barraza ante la AFC/AFP correspondiente (con autorización judicial), o requerimiento a LATAM Airlines de exhibición del contrato de trabajo o de prestación de servicios. Alternativamente, consulta al Registro de Empresas y Sociedades para identificar la empresa de seguridad subcontratada, si aplica."
+    },
+    {
+      "id": "OQ-CL019-DESENLACE-EMBARQUE",
+      "question": "¿Qué ocurrió después de los eventos registrados en los segmentos? ¿El pasajero fue finalmente embarcado en el vuelo contratado, o se le denegó definitivamente el embarque? ¿Incurrió en gastos adicionales?",
+      "blocks_element": "CL.LPDC.Art.23.elem.nexo_causal",
+      "priority": "high",
+      "obtaining_method": "Declaración jurada o testimonio del pasajero Leandro Disconzi detallando el desenlace del incidente. Complementar con solicitud a LATAM Airlines del manifiesto de pasajeros del vuelo para verificar si el pasajero efectivamente abordó. Recopilar comprobantes de gastos adicionales (boletos de reemplazo, alojamiento, alimentación)."
+    },
+    {
+      "id": "OQ-CL019-TESTIGOS-PUBLICIDAD",
+      "question": "¿Se produjo la confrontación en un espacio público (gate, counter, zona de embarque) con presencia de terceros testigos? ¿Existen registros de video de las cámaras de seguridad del aeropuerto que acrediten la publicidad del acto?",
+      "blocks_element": "CL.CONST.Art.19.4.elem.afectacion_honra_vida_privada",
+      "priority": "medium",
+      "obtaining_method": "Solicitud de acceso a grabaciones de cámaras de seguridad del Aeropuerto de Santiago (SCL) mediante requerimiento judicial dirigido a Nuevo Pudahuel (concesionaria) o a la DGAC. Identificar y contactar testigos presenciales (otros pasajeros, personal de counter) mediante publicación de aviso o revisión de listas de pasajeros del vuelo."
+    },
+    {
+      "id": "OQ-CL019-ACTUACION-POLICIAL",
+      "question": "¿Se inició alguna actuación policial o administrativa formal contra el pasajero (detención, control de identidad, anotación en registros) como consecuencia directa de la supuesta imputación falsa?",
+      "blocks_element": "CL.CHIPENCOD.Art.212.elem.resultado_perjuicio",
+      "priority": "medium",
+      "obtaining_method": "Solicitud de certificado de antecedentes policiales del pasajero ante la PDI. Solicitud de acceso a información pública (Ley 20.285) a Carabineros y PDI requiriendo registros de intervención, controles de identidad o detenciones asociadas al pasajero en la fecha y lugar del incidente."
+    },
+    {
+      "id": "OQ-CL019-PROTOCOLO-LATAM",
+      "question": "¿Existen protocolos internos de LATAM Airlines para el manejo de pasajeros conflictivos o denegación de embarque que permitan evaluar si la conducta de Barraza se desvió del estándar de diligencia exigible?",
+      "blocks_element": "CL.LPDC.Art.23.elem.negligencia",
+      "priority": "medium",
+      "obtaining_method": "Requerimiento judicial de exhibición de documentos dirigido a LATAM Airlines solicitando manuales de procedimiento de seguridad, protocolos de manejo de pasajeros y políticas de denegación de embarque. Alternativamente, solicitud a la DGAC de las normas operacionales aprobadas para la aerolínea en materia de seguridad de pasajeros."
+    },
+    {
+      "id": "OQ-CL019-CONTRATO-TRANSPORTE",
+      "question": "¿Se cuenta con el boleto aéreo, boarding pass o comprobante de compra que acredite formalmente la relación de consumo entre el pasajero y LATAM Airlines?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.relacion_de_consumo",
+      "priority": "medium",
+      "obtaining_method": "Solicitar al pasajero Leandro Disconzi copia del boleto electrónico, confirmación de reserva (PNR), boarding pass o comprobante de pago. Subsidiariamente, requerir a LATAM Airlines la confirmación de la reserva y emisión del boleto."
+    },
+    {
+      "id": "OQ-CL019-CALIFICACION-IMPUTACION",
+      "question": "¿La imputación al pasajero fue presentada ante la autoridad como delito (desorden público, amenazas, interferencia con tripulación) o como mera infracción reglamentaria/administrativa, lo que determinaría la subsunción en Art. 211 o Art. 212 CP?",
+      "blocks_element": "CL.CHIPENCOD.Art.212.elem.circunstancias_inductoras_error",
+      "priority": "high",
+      "obtaining_method": "Análisis del contenido del parte policial o informe de seguridad obtenido mediante OQ-CL019-DENUNCIA-FORMAL. Consulta con la Fiscalía Local competente sobre si se inició investigación penal o se derivó a sede administrativa."
+    },
+    {
+      "id": "OQ-CL019-DANO-MORAL",
+      "question": "¿Se cuenta con peritaje psicológico, certificación médica u otra prueba que acredite el daño moral o extrapatrimonial sufrido por el pasajero como consecuencia de la intimidación?",
+      "blocks_element": "CL.LPDC.Art.23.elem.menoscabo_consumidor",
+      "priority": "medium",
+      "obtaining_method": "Solicitar al pasajero la realización de una evaluación psicológica pericial que documente el impacto emocional del incidente. Recopilar certificados médicos o psicológicos existentes. En sede judicial, solicitar peritaje conforme al Art. 409 y ss. CPC."
+    },
+    {
+      "id": "OQ-CL019-JPL-JURISPRUDENCIA",
+      "question": "¿La jurisprudencia de los Juzgados de Policía Local ha aplicado el Art. 23 LPDC a conductas de intimidación o trato indigno al consumidor, o estas se canalizan preferentemente por Art. 3 letra d) o Art. 16 LPDC?",
+      "blocks_element": "CL.LPDC.Art.23.elem.falla_calidad_servicio",
+      "priority": "low",
+      "obtaining_method": "Investigación jurisprudencial en bases de datos del Poder Judicial (www.pjud.cl), SERNAC y doctrina especializada (Revista de Derecho del Consumidor, Revista Chilena de Derecho Privado). Búsqueda de sentencias de JPL y Cortes de Apelaciones que apliquen Art. 23 LPDC a deficiencias en trato al consumidor en servicios de transporte aéreo."
+    },
+    {
+      "id": "OQ-CL019-NORMA-INVOCADA-LATAM",
+      "question": "¿Invocó LATAM Airlines alguna norma reglamentaria, protocolo de seguridad o cláusula contractual para justificar la restricción al pasajero o la conducta de su personal?",
+      "blocks_element": "CL.CONST.Art.19.4.elem.ilegitimidad",
+      "priority": "medium",
+      "obtaining_method": "Revisión de las condiciones generales de transporte de LATAM Airlines (disponibles en su sitio web) y de la normativa de la DGAC (DAN 91, Resoluciones aplicables). Solicitar a LATAM Airlines que indique la base normativa o contractual invocada para la actuación de su personal."
+    }
+  ],
+  "pipeline_validation": {
+    "pack": "Validation report CL-001",
+    "results": [
+      {
+        "check": "V01",
+        "name": "segment_resolution",
+        "result": "❌ fail",
+        "detail": "1 segment unresolved (STG-13.seg-40)"
+      },
+      {
+        "check": "V02",
+        "name": "verbatim_quote_match",
+        "result": "✅ pass",
+        "detail": "Verbatim quotes match source bytes"
+      },
+      {
+        "check": "V03",
+        "name": "article_text_hash",
+        "result": "⚠️ warn",
+        "detail": "CHIPENCOD + CONST self-reported SHA mismatch"
+      },
+      {
+        "check": "V04",
+        "name": "article_exists_in_framework_cache",
+        "result": "✅ pass",
+        "detail": "All 5 articles present in cache"
+      },
+      {
+        "check": "V05",
+        "name": "cross_references_resolve",
+        "result": "✅ pass",
+        "detail": "No cross-references declared"
+      },
+      {
+        "check": "V06",
+        "name": "element_coverage",
+        "result": "✅ pass",
+        "detail": "Every scored element has nexus entry"
+      },
+      {
+        "check": "V07",
+        "name": "authorities_verification",
+        "result": "⚠️ warn",
+        "detail": "No authorities listed"
+      },
+      {
+        "check": "V08",
+        "name": "contract_consistency",
+        "result": "⚠️ warn",
+        "detail": "confidence.value mismatch (0.33 vs 0.92)"
+      },
+      {
+        "check": "V09",
+        "name": "language_consistency",
+        "result": "⚠️ warn",
+        "detail": "STG-13.seg-40 missing verbatim_es and translation_en"
+      },
+      {
+        "check": "V10",
+        "name": "confidence_derivation",
+        "result": "✅ pass",
+        "detail": "Confidence 0.33 matches recomputed"
+      },
+      {
+        "check": "V11",
+        "name": "enrichment_integrity",
+        "result": "✅ pass",
+        "detail": "Enrichment integrity verified"
+      }
+    ],
+    "summary": {
+      "pass": 6,
+      "warn": 4,
+      "fail": 1
+    },
+    "note": "Validation results pre-Recommendation 9.3"
+  },
+  "cross_references": [
+    {
+      "ref": "CL-020",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-019__opus46",
+      "relation": "same_violation_detailed_instance"
+    }
+  ],
+  "note": "Full JSON reconstruction from markdown – includes all key admissions, legal reasoning, candidate articles, and cross-references.",
+  "full_segments": [
+    {
+      "segment_id": "STG-13.seg-1",
+      "role_in_argument": "blame_shifting_intimidation",
+      "audio_offset_start": 4.35,
+      "audio_offset_end": 6.26,
+      "speaker": "Joaquin Barraza (Chief of security Latam?)",
+      "verbatim_es": "¡Porque tú no colaboraste!",
+      "verbatim_sha256": "06f8074fac51565b07036e202a6bf55264ee8d7579c52bd7e008a7d62e38eeea",
+      "translation_en": "Because you didn't cooperate!",
+      "transcription_notes": "Spoken by LATAM security chief; frames the passenger as culpable, shifting blame to justify adverse treatment and implicitly warning of consequences for non-compliance.",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_13.html#seg-1",
+      "source_sha256": "f39afedf2b10be698dd96abcdf10ec363d530bf81b7b1254e372d619895c363e",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-13.seg-12",
+      "role_in_argument": "passenger_demand_written_record",
+      "audio_offset_start": 29.85,
+      "audio_offset_end": 30.6,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "¡Por escrito!",
+      "verbatim_sha256": "c6a2055e378b6e050bf952dfe9c0a93915563b1862b36fc4d889738b812c4a0b",
+      "translation_en": "In writing!",
+      "transcription_notes": "Passenger demands that any accusation or decision be documented in writing, asserting his right to truthful and verifiable information (LPDC Art. 3.b) and creating an evidentiary trail.",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_13.html#seg-12",
+      "source_sha256": "f39afedf2b10be698dd96abcdf10ec363d530bf81b7b1254e372d619895c363e",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-6.seg-1",
+      "role_in_argument": "passenger_acknowledgment_prompt",
+      "audio_offset_start": 13,
+      "audio_offset_end": 13.5,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "¿Sí?",
+      "verbatim_sha256": "9754246b4c9e01eb103c4eeada1d6e56323a2f802c3b593ab1f9c8963720bf8e",
+      "translation_en": "Yes?",
+      "transcription_notes": "Brief acknowledgment or prompt by the passenger at the start of the exchange; establishes conversational context.",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_6.html#seg-1",
+      "source_sha256": "eb5c0de30326eac272186164fd04796e665a8152b85f857408a977774a6c140a",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-6.seg-12",
+      "role_in_argument": "passenger_challenges_false_imputation",
+      "audio_offset_start": 46.6,
+      "audio_offset_end": 54.4,
+      "speaker": "Leandro",
+      "verbatim_es": "Yo salgo solo. Pero pruebame eso, por que es simplesmente alguien que no le gusto de la pregunta que lo hice y esta intentando hacer eso. Simplesmente, entiendes?",
+      "verbatim_sha256": "af95061994ba0702af2010510a56e755f27f3bb981365a317b0cde4c200e3f03",
+      "translation_en": "I'll leave on my own. But prove that to me, because it's simply someone who didn't like the question I asked him and is trying to do this. Simply, you understand?",
+      "transcription_notes": "Passenger challenges the legitimacy of the accusation against him, asserting it is retaliatory. Directly relevant to Arts. 211–212 CHIPENCOD (false imputation / simulated victimhood) and to the intimidation theory: the threat of 'more problems' rests on an unsubstantiated allegation the passenger contests.",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_6.html#seg-12",
+      "source_sha256": "eb5c0de30326eac272186164fd04796e665a8152b85f857408a977774a6c140a",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-6.seg-40",
+      "role_in_argument": "prior_boarding_authorization_admission",
+      "audio_offset_start": 679.01,
+      "audio_offset_end": 679.58,
+      "speaker": "Joaquin Barraza (Latam security staff)",
+      "verbatim_es": "podía embarcar.",
+      "verbatim_sha256": "0eacbecad9479ba928ff637d4a2e82e4bc3d68c7e289cca79b96be33f8149363",
+      "translation_en": "He was allowed to board.",
+      "transcription_notes": "LATAM security staff acknowledges the passenger had been cleared to board, undermining any justification for subsequent threats or denial of service and supporting the intimidation violation.",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_6.html#seg-40",
+      "source_sha256": "eb5c0de30326eac272186164fd04796e665a8152b85f857408a977774a6c140a",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-13.seg-40",
+      "role_in_argument": "indeterminate_empty_segment",
+      "audio_offset_start": 0,
+      "audio_offset_end": 0,
+      "speaker": "unknown",
+      "verbatim_es": "",
+      "verbatim_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "translation_en": "",
+      "transcription_notes": "Segment contains no audible or transcribed content; speaker unknown. Cannot assign substantive role. Retained for completeness; may require re-review of source audio.",
+      "source_uri": "legacy://CL-019/STG-13.seg-40",
+      "source_sha256": "fb8fb873746a359f415ae4ae8ec682a891dcb41e34c90521e85731e3e84aeedb",
+      "audio_uri": null
+    }
+  ],
+  "incident_meta": {
+    "date": "2024-07-05",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T13:30:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "framework_caches": [
+    {
+      "framework_code": "CHIPENCOD",
+      "framework_name": "Codigo Penal de Chile",
+      "cache_file": "Legal framework/CHIPENCOD.md",
+      "cache_file_sha256": "5e189a4a8d31010c3c09610bd439368e1b5d120d4b8a6cae7f13fa19d18cfb9f",
+      "cache_self_reported_sha256": "509efbf4814f18b681903a7e6c1cd828443c47cb4930c67991d7a32c69fe0baf",
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "1",
+        "141",
+        "148",
+        "193",
+        "194",
+        "195",
+        "196",
+        "197",
+        "211",
+        "212",
+        "255",
+        "296"
+      ]
+    },
+    {
+      "framework_code": "CONST",
+      "framework_name": "Constitucion Politica de la Republica de Chile",
+      "cache_file": "Legal framework/CONST.md",
+      "cache_file_sha256": "a42140a74935d28b0fef0a348c03c37153a98f774b70ebc4a13b3fdf1e0bfca8",
+      "cache_self_reported_sha256": "26b530c199a5505c31d320758d810f9d28b4e8bdf6c92e8eda78d06c1583e302",
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "1",
+        "5",
+        "6",
+        "19.1",
+        "19.3",
+        "19.7"
+      ]
+    },
+    {
+      "framework_code": "LPDC",
+      "framework_name": "Ley 19.496 — Ley de Proteccion de los Derechos del Consumidor",
+      "cache_file": "Legal framework/LPDC.md",
+      "cache_file_sha256": "222cb7cef77794c04cb903a3a4d519641255fa339cf32487f9496a1e0ba4c530",
+      "cache_self_reported_sha256": null,
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "3 letra b)",
+        "3 letra e)",
+        "12",
+        "23",
+        "23 bis",
+        "50",
+        "50 A",
+        "58"
+      ]
+    }
+  ],
+  "nexus_matrix": [
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.CHIPENCOD.T4.C6.Art.211",
+      "element_id": "CL.CHIPENCOD.Art.211.elem.sujeto_activo",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "The speaker who utters the blame-shifting phrase is identifiable as the person making the false imputation."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C6.Art.211",
+      "element_id": "CL.CHIPENCOD.Art.211.elem.sujeto_pasivo",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Passenger identifies himself as the target of a fabricated accusation, establishing his status as sujeto pasivo."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C6.Art.211",
+      "element_id": "CL.CHIPENCOD.Art.211.elem.modalidad_tipica_imputacion_falsa",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Passenger states someone fabricated an accusation simply because they disliked a question, evidencing false imputation."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C6.Art.211",
+      "element_id": "CL.CHIPENCOD.Art.211.elem.objeto_material_imputacion",
+      "nexus_type": "circumstantial_omission",
+      "strength": "medium",
+      "rationale_oneline": "Passenger challenges the accuser to prove the imputed conduct, implying a specific delictual imputation was made."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C6.Art.211",
+      "element_id": "CL.CHIPENCOD.Art.211.elem.falsedad_de_la_imputacion",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Passenger explicitly states the accusation is baseless and motivated by personal dislike, asserting objective falsity."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C6.Art.211",
+      "element_id": "CL.CHIPENCOD.Art.211.elem.tipicidad_subjetiva_dolo",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Passenger reveals accuser acted out of personal animosity, indicating the accuser knew the imputation was false."
+    },
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.CHIPENCOD.T4.C6.Art.211",
+      "element_id": "CL.CHIPENCOD.Art.211.elem.resultado_perjuicio",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Blame-shifting statement crystallizes reputational harm by publicly attributing fault to the passenger."
+    },
+    {
+      "fact_id": "STG-6.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C6.Art.211",
+      "element_id": "CL.CHIPENCOD.Art.211.elem.falsedad_de_la_imputacion",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Admission that passenger was authorized to board corroborates the falsity of any imputation of wrongful conduct."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C6.Art.212",
+      "element_id": "CL.CHIPENCOD.Art.212.elem.sujeto_activo",
+      "nexus_type": "speaker_identification",
+      "strength": "medium",
+      "rationale_oneline": "Passenger identifies the person who fabricated the complaint, establishing the sujeto activo of the simulated report."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C6.Art.212",
+      "element_id": "CL.CHIPENCOD.Art.212.elem.sujeto_pasivo",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Passenger is the innocent person whose participation was falsely supposed in the simulated complaint."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C6.Art.212",
+      "element_id": "CL.CHIPENCOD.Art.212.elem.modalidad_tipica_simulacion",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Passenger states someone fabricated a scenario to simulate victimhood and implicate an innocent person."
+    },
+    {
+      "fact_id": "STG-13.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C6.Art.212",
+      "element_id": "CL.CHIPENCOD.Art.212.elem.objeto_material",
+      "nexus_type": "functional_context",
+      "strength": "medium",
+      "rationale_oneline": "Passenger's demand for a written record implies a formal report or denuncia was made or threatened before authority."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C6.Art.212",
+      "element_id": "CL.CHIPENCOD.Art.212.elem.circunstancias_inductoras_error",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Passenger explains the accuser fabricated circumstances designed to mislead authorities about a delictive act."
+    },
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.CHIPENCOD.T4.C6.Art.212",
+      "element_id": "CL.CHIPENCOD.Art.212.elem.resultado_perjuicio",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Blame-shifting statement shows the false report already caused concrete prejudice to the passenger and to justice."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C6.Art.212",
+      "element_id": "CL.CHIPENCOD.Art.212.elem.tipicidad_subjetiva_dolo",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Passenger reveals the accuser acted deliberately out of personal animosity, evidencing dolo directo."
+    },
+    {
+      "fact_id": "STG-6.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C6.Art.212",
+      "element_id": "CL.CHIPENCOD.Art.212.elem.circunstancias_inductoras_error",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Prior boarding authorization proves the reported circumstances were fabricated to induce error."
+    },
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.CONST.T1.C3.P3.Art.19.4",
+      "element_id": "CL.CONST.Art.19.4.elem.sujeto_activo",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "The speaker delivering the intimidating blame-shifting statement is the agent executing illegitimate coercion."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.CONST.T1.C3.P3.Art.19.4",
+      "element_id": "CL.CONST.Art.19.4.elem.sujeto_pasivo",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Passenger is the rights-holder whose honor and dignity are affected by the false imputation and intimidation."
+    },
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.CONST.T1.C3.P3.Art.19.4",
+      "element_id": "CL.CONST.Art.19.4.elem.acto_ilicito_coaccion",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Blame-shifting exclamation constitutes an act of illegitimate coercion aimed at silencing the passenger."
+    },
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.CONST.T1.C3.P3.Art.19.4",
+      "element_id": "CL.CONST.Art.19.4.elem.ilegitimidad",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Blaming the passenger for not cooperating is arbitrary and lacks any lawful basis, establishing illegitimacy."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.CONST.T1.C3.P3.Art.19.4",
+      "element_id": "CL.CONST.Art.19.4.elem.afectacion_honra_vida_privada",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger's need to defend against a fabricated accusation demonstrates concrete harm to his honor."
+    },
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.CONST.T1.C3.P3.Art.19.4",
+      "element_id": "CL.CONST.Art.19.4.elem.nexo_causal",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "The intimidating blame-shifting directly causes the affront to the passenger's honor and dignity."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.CONST.T1.C3.P3.Art.19.4",
+      "element_id": "CL.CONST.Art.19.4.elem.tipicidad_subjetiva_dolo",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Passenger reveals the accuser acted intentionally out of personal animosity, showing deliberate intimidation."
+    },
+    {
+      "fact_id": "STG-6.seg-40",
+      "norm_id": "CL.CONST.T1.C3.P3.Art.19.4",
+      "element_id": "CL.CONST.Art.19.4.elem.ilegitimidad",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Prior boarding authorization proves the coercive conduct lacked any legitimate justification."
+    },
+    {
+      "fact_id": "STG-6.seg-1",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.relacion_de_consumo",
+      "nexus_type": "functional_context",
+      "strength": "medium",
+      "rationale_oneline": "Passenger's acknowledgment prompt establishes an active consumer-provider interaction context."
+    },
+    {
+      "fact_id": "STG-6.seg-40",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.relacion_de_consumo",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Boarding authorization confirms an existing contractual consumer relationship for air transport service."
+    },
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.deber_informacion_veraz",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Blame-shifting replaces truthful information with a false narrative, breaching the duty of veracious information."
+    },
+    {
+      "fact_id": "STG-13.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.oportunidad_informacion",
+      "nexus_type": "circumstantial_omission",
+      "strength": "medium",
+      "rationale_oneline": "Passenger's demand for written record implies timely information was withheld, forcing the consumer to request it."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.contenido_informacion_condiciones",
+      "nexus_type": "circumstantial_omission",
+      "strength": "medium",
+      "rationale_oneline": "Passenger was never informed of the true conditions or reasons for the service disruption."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.perjuicio_consumidor",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger suffers concrete prejudice from being denied boarding based on false, unverified information."
+    },
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.intimidacion_como_obstaculo_informativo",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Blame-shifting intimidation functions as a mechanism to obstruct the consumer's right to truthful information."
+    },
+    {
+      "fact_id": "STG-13.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.intimidacion_como_obstaculo_informativo",
+      "nexus_type": "corroborating_admission",
+      "strength": "medium",
+      "rationale_oneline": "Passenger's insistence on written documentation corroborates that oral information was being withheld or distorted."
+    },
+    {
+      "fact_id": "STG-6.seg-40",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.sujeto_activo_proveedor",
+      "nexus_type": "functional_context",
+      "strength": "high",
+      "rationale_oneline": "The entity that authorized boarding and then reversed it is identifiable as the service provider."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.sujeto_pasivo_consumidor",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Passenger is the final consumer who purchased the air transport service and suffered the service failure."
+    },
+    {
+      "fact_id": "STG-6.seg-40",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.venta_o_prestacion_servicio",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Boarding authorization confirms the air transport service was being actively provided to the consumer."
+    },
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.negligencia",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Blame-shifting instead of proper investigation reveals negligent handling of the consumer complaint process."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.menoscabo_consumidor",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger forced to leave based on unproven accusations suffers concrete detriment as a consumer."
+    },
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.falla_calidad_servicio",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Intimidating blame-shifting constitutes a deficiency in the quality of the air transport service provided."
+    },
+    {
+      "fact_id": "STG-6.seg-12",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.falla_calidad_servicio",
+      "nexus_type": "corroborating_admission",
+      "strength": "high",
+      "rationale_oneline": "Passenger's account of being removed based on fabricated grounds corroborates a severe service quality failure."
+    },
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.nexo_causal",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "The negligent blame-shifting directly caused the consumer's removal and consequent menoscabo."
+    },
+    {
+      "fact_id": "STG-6.seg-40",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.elem.negligencia",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Revoking a valid boarding authorization without verification demonstrates negligent provider conduct."
+    }
+  ],
+  "provenance": [
+    {
+      "timestamp": "2026-05-20T20:53:27.054061+00:00",
+      "actor": "manual_ingestion",
+      "operation": "ingest_v1",
+      "layer": 0,
+      "note": "From v1 _provenance"
+    },
+    {
+      "timestamp": "2026-05-12T12:52:33.642071Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CHIPENCOD.T4.C6.Art.211: 7 elements; weighted score 0.66."
+    },
+    {
+      "timestamp": "2026-05-12T12:54:11.850375Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CHIPENCOD.T4.C6.Art.212: 7 elements; weighted score 0.54."
+    },
+    {
+      "timestamp": "2026-05-12T12:54:50.256472Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CONST.T1.C3.P3.Art.19.4: 7 elements; weighted score 0.74."
+    },
+    {
+      "timestamp": "2026-05-12T12:55:21.362048Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.LPDC.Art.3.b: 6 elements; weighted score 0.65."
+    },
+    {
+      "timestamp": "2026-05-12T12:56:11.071160Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.LPDC.Art.23: 7 elements; weighted score 0.71."
+    },
+    {
+      "timestamp": "2026-05-12T12:57:06.180862Z",
+      "actor": "layers.build_nexus_layer",
+      "operation": "add_or_replace_nexus_entries",
+      "layer": 4,
+      "note": "Upserted 41 nexus entries."
+    },
+    {
+      "timestamp": "2026-05-12T12:59:39.122171Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-CALUMNIA-DOLO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T12:59:39.122509Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-CALUMNIA-OBJETO-MATERIAL (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T12:59:39.122564Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-SIMULACION-DELITO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T12:59:39.122588Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-SIMULACION-SUJETO-ACTIVO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T12:59:39.122605Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-HONRA-INTIMIDACION-CONST (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T12:59:39.122623Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-LPDC-INTIMIDACION-INFO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T12:59:39.122639Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-LPDC-ART23-MENOSCABO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T12:59:39.122655Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-DOCTRINA-CALUMNIA-AMENAZA (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T12:59:39.122671Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-DOCTRINA-SIMULACION (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T12:59:39.122687Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-DOCTRINA-CONSUMO-ABUSO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T12:59:39.122703Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-COMP-COACCION-CONSUMO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T12:59:39.122720Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-AMENAZAS-CONDICIONALES (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T12:59:39.122736Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-SERNAC-PRACTICAS-ABUSIVAS (verified=False)."
+    }
+  ]
+}
