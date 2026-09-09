@@ -422,6 +422,30 @@ function buildTimeline(caseGraph, violationsSummary) {
     }
   }
 
+  // Map segment node_id → original transcript index, and evidence node_id → its
+  // source document, so timeline rows can name the exact verbatim segment
+  // (document + index) that grounded each action.
+  const segByNodeId = {};
+  for (const seg of (caseGraph.nodes.segments || [])) {
+    if (seg && seg.node_id) segByNodeId[seg.node_id] = seg;
+  }
+  const evidenceSource = {};
+  for (const ev of (caseGraph.nodes.evidence || [])) {
+    if (ev && ev.node_id) evidenceSource[ev.node_id] = ev.source || null;
+  }
+  const resolveSourceSegments = (action) => {
+    const out = [];
+    for (const segId of (action._segment_ids || [])) {
+      const seg = segByNodeId[segId];
+      if (!seg || seg.index == null) continue;
+      const document = (seg.evidence_node_id && evidenceSource[seg.evidence_node_id])
+        || action._evidence_id && evidenceSource[action._evidence_id]
+        || null;
+      out.push({ document, index: seg.index });
+    }
+    return out;
+  };
+
   const events = actions.map((action, idx) => ({
     index:          idx + 1,
     action_id:      action.node_id,
@@ -433,7 +457,8 @@ function buildTimeline(caseGraph, violationsSummary) {
     actor_role:     action._performed_by_role_id,
     violations:     violsByAction[action.node_id] || [],
     findings:       violsByAction[action.node_id] || [],
-    evidence_id:    action._evidence_id || null
+    evidence_id:    action._evidence_id || null,
+    source_segments: resolveSourceSegments(action)
   }));
 
   return {

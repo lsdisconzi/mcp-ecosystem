@@ -114,6 +114,22 @@ function extractEventsFromFile(fileRef, extractionResult) {
   const violations = nodes.violations || [];
   const context   = (nodes.contexts && nodes.contexts[0]) || {};
 
+  // Map segment node_id → original transcript index (0-based), so actions can be
+  // traced to the exact source segment (document + index) that grounded them.
+  const segByNodeId = {};
+  for (const seg of (nodes.segments || [])) {
+    if (seg && seg.node_id) segByNodeId[seg.node_id] = seg;
+  }
+  const resolveSourceSegments = (action) => {
+    const out = [];
+    for (const segId of (action._segment_ids || [])) {
+      const seg = segByNodeId[segId];
+      if (!seg || seg.index == null) continue;
+      out.push({ document: fileRef, index: seg.index });
+    }
+    return out;
+  };
+
   // Map action sequence_index → grounding violations
   const violsByAction = {};
   for (const v of violations) {
@@ -151,6 +167,10 @@ function extractEventsFromFile(fileRef, extractionResult) {
       // Evidence linkage
       source_documents: [fileRef],
       evidence_node_id: evidence?.node_id || null,
+
+      // Verbatim source segments (document + original transcript index) that
+      // grounded this event — enables tracing quotes back to the segment.
+      source_segments: resolveSourceSegments(action),
 
       // From document context
       jurisdiction:    context.jurisdiction_hint || null,
@@ -230,6 +250,19 @@ function mergeEvents(rawEvents) {
       for (const doc of evt.source_documents) {
         if (!target.source_documents.includes(doc)) {
           target.source_documents.push(doc);
+        }
+      }
+
+      // Merge verbatim source segments (dedupe by document+index)
+      if (evt.source_segments && evt.source_segments.length) {
+        const seen = new Set((target.source_segments || []).map(s => `${s.document}|${s.index}`));
+        for (const s of evt.source_segments) {
+          const key = `${s.document}|${s.index}`;
+          if (!seen.has(key)) {
+            if (!target.source_segments) target.source_segments = [];
+            target.source_segments.push(s);
+            seen.add(key);
+          }
         }
       }
 

@@ -140,6 +140,9 @@ function buildFromTranscript(file, rootDir) {
       node_id: makeNodeId('segment'),
       type: 'Segment',
       text: text.slice(0, 500),
+      // original 0-based index in the source transcript — the upstream handle
+      // used to identify this exact segment verbatim
+      index: origIndex,
       position: (origIndex != null ? origIndex : segments.length) + 1,
       evidence_node_id: evidenceId,
       speaker: mapActorFunction(s.speaker || s.speaker_label || ''),
@@ -170,6 +173,153 @@ function buildFromTranscript(file, rootDir) {
     return out;
   }
 
+  // ── Verbatim → segment inference ─────────────────────────────────────────
+  // Findings whose author did not fill the `segments` field still usually quote
+  // the transcript verbatim (e.g. Stewardess: 'eso es lo que me indican.'). We
+  // locate the ORIGINAL segment index(s) whose text contains that quote, so the
+  // event/timeline can be traced upstream even without an explicit ref. Only
+  // text-level anchors are used — never meaning/paraphrase — so inferred links
+  // stay grounded (no fabrication). Anything that cannot be anchored stays empty.
+  function normForMatch(t) {
+    return String(t || '')
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9ñ\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  // Pull quoted spans out of a finding ("…", '…', “…”/‘…’, «…»). A quote must be
+  // bounded by real delimiters (start/space/colon/dash before the opener; space
+  // or punctuation after the closer) so apostrophes inside words like
+  // "document's" are never mistaken for quote delimiters.
+  function extractQuotedSpans(text) {
+    const spans = [];
+    const pairs = [["'", "'"], ['"', '"'], ['\u2018', '\u2019'], ['\u201c', '\u201d'], ['\u00ab', '\u00bb']];
+    for (const [open, close] of pairs) {
+      const openEsc = open === "'" || open === '"' ? '\\' + open : open;
+      const closeEsc = close === "'" || close === '"' ? '\\' + close : close;
+      const re = new RegExp(
+        '(^|[\\s:;\\u2014\\u2013\\(\\[/,\\u2019])' + openEsc + '([^' + openEsc + closeEsc + ']{4,})' + closeEsc +
+        '(?=$|[\\s.\\,\\?\\!;:\\u2014\\u2013\\-\\]\\)\\u2019])', 'g'
+      );
+      let m;
+      while ((m = re.exec(String(text || '')))) spans.push(m[2]);
+    }
+    return spans;
+  }
+
+  // Longest-common-substring length (characters) — robust to ASR typos/inserts.
+  function lcsLength(a, b) {
+    const n = a.length, m = b.length;
+    if (!n || !m) return 0;
+    let best = 0;
+    const dp = new Uint16Array(m + 1);
+    for (let i = 1; i <= n; i++) {
+      let prev = 0;
+      for (let j = 1; j <= m; j++) {
+        const cur = dp[j];
+        if (a[i - 1] === b[j - 1]) { dp[j] = prev + 1; if (dp[j] > best) best = dp[j]; }
+        else dp[j] = 0;
+        prev = cur;
+      }
+    }
+    return best;
+  }
+
+  // Match one normalized quote against the transcript's non-artifact segments.
+  // Returns original indices whose text contains the quote (exact) or shares a
+  // long-enough common substring (typo-tolerant). Empty when no anchor found.
+  const inferableSegments = [];      // { index, norm, dtMs } of kept segments
+  for (const s of rawSegments) {
+    const text = String((s && s.text) || '').trim();
+    if (!text || /^\[[^\]]*\]$/.test(text)) continue;
+    if ((s && s.index == null)) continue;
+    inferableSegments.push({
+      index: s.index,
+      norm: normForMatch(text),
+      dtMs: Date.parse(String((s && s.segment_datetime) || '').replace(' ', 'T'))
+    });
+  }
+
+  function matchQuoteToSegments(rawQuote) {
+    const nq = normForMatch(rawQuote);
+    if (nq.length < 5) return [];
+    const out = [];
+    // Short/distinctive quote → require exact containment.
+    if (nq.length <= 12) {
+      for (const seg of inferableSegments) if (seg.norm.includes(nq)) out.push(seg.index);
+      return out;
+    }
+    // Longer quote → exact first, else typo-tolerant LCS over the whole quote.
+    let exact = [];
+    for (const seg of inferableSegments) if (seg.norm.includes(nq)) exact.push(seg.index);
+    if (exact.length) return exact;
+    let bestLen = 0, bestIdx = [];
+    for (const seg of inferableSegments) {
+      const l = lcsLength(nq, seg.norm);
+      if (l > bestLen) { bestLen = l; bestIdx = [seg.index]; }
+      else if (l === bestLen && l > 0) bestIdx.push(seg.index);
+    }
+    const threshold = Math.max(10, Math.floor(nq.length * 0.5));
+    return bestLen >= threshold ? bestIdx.slice(0, 6) : [];
+  }
+
+  // Resolve the original transcript indices grounding a finding: explicit refs
+  // win; otherwise infer from verbatim quoted spans, "(segs N,M)" hints, or an
+  // unambiguous whole-text anchor. Returns { indices, inferred }.
+  function resolveFindingSegmentIndices(f) {
+    const textFull = String((f && (f.finding || f.description)) || '').trim();
+    const explicit = expandSegRefs((f && f.segments) || [])
+      .filter(idx => segByOrigIndex[idx]);
+    if (explicit.length) return { indices: explicit, inferred: false };
+
+    const found = new Set();
+    // "(segs 72, 87, 109)" hints embedded in the finding text.
+    for (const m of textFull.matchAll(/\(\s*segs?\s+([\d,\s]+)\s*\)/gi)) {
+      for (const n of m[1].match(/\d+/g)) { const idx = parseInt(n, 10); if (segByOrigIndex[idx]) found.add(idx); }
+    }
+    for (const span of extractQuotedSpans(textFull)) {
+      for (const idx of matchQuoteToSegments(span)) {
+        if (segByOrigIndex[idx]) found.add(idx);
+      }
+    }
+    // Whole-finding verbatim anchor (no quotes) — only when a single segment
+    // contains a long verbatim run of the description itself.
+    if (found.size === 0 && textFull.length > 0) {
+      const nf = normForMatch(textFull);
+      if (nf.length >= 12) {
+        let bestLen = 0, bestIdx = [];
+        for (const seg of inferableSegments) {
+          const l = lcsLength(nf, seg.norm);
+          if (l > bestLen) { bestLen = l; bestIdx = [seg.index]; }
+          else if (l === bestLen && l > 0) bestIdx.push(seg.index);
+        }
+        if (bestLen >= 14 && bestIdx.length <= 2) {
+          for (const idx of bestIdx) if (segByOrigIndex[idx]) found.add(idx);
+        }
+      }
+    }
+    // Time-anchor fallback (last resort): if no text/verbatim anchor exists,
+    // snap to the transcript segment whose segment_datetime is nearest to the
+    // finding's local datetime anchor. This keeps analytical summary findings
+    // (which quote nothing) traceable to a concrete upstream segment by time.
+    if (found.size === 0) {
+      const anchorMs = Date.parse(String(dec.recording_datetime || '').replace(' ', 'T'));
+      if (Number.isFinite(anchorMs)) {
+        let bestIdx = null, bestDiff = Infinity;
+        for (const seg of inferableSegments) {
+          if (!Number.isFinite(seg.dtMs)) continue;
+          const diff = Math.abs(seg.dtMs - anchorMs);
+          if (diff < bestDiff) { bestDiff = diff; bestIdx = seg.index; }
+        }
+        if (bestIdx != null && segByOrigIndex[bestIdx]) found.add(bestIdx);
+      }
+    }
+    const indices = [...found].sort((a, b) => a - b);
+    return { indices: indices.slice(0, 10), inferred: indices.length > 0 };
+  }
+
   // Earliest local datetime referenced by a set of original segment indices.
   function earliestSegDatetime(refs) {
     let earliest = null;
@@ -189,13 +339,18 @@ function buildFromTranscript(file, rootDir) {
   findings.forEach((f, i) => {
     const desc = String((f && (f.finding || f.description)) || '').trim().slice(0, 200);
     if (!desc) return;
-    const refs = (f && f.segments) || [];
-    const segIds = expandSegRefs(refs)
+
+    // Explicit transcript `segments` refs win; findings without them get the
+    // segment indices inferred from their own verbatim quotes (still grounded
+    // in exact transcript text, never paraphrased meaning).
+    const { indices, inferred } = resolveFindingSegmentIndices(f);
+    const segIds = indices
       .map(idx => (segByOrigIndex[idx] ? segByOrigIndex[idx].node_id : null))
       .filter(Boolean);
-    const localDt = earliestSegDatetime(refs) || dec.recording_datetime || null;
+    const localDt = earliestSegDatetime(indices.length ? indices : (f && f.segments)) || dec.recording_datetime || null;
+
     const actionId = makeNodeId('action');
-    actions.push({
+    const action = {
       node_id:            actionId,
       type:               'Action',
       action_type:        inferActionType(desc),
@@ -207,13 +362,32 @@ function buildFromTranscript(file, rootDir) {
       _performed_by_role_id: null,
       _evidence_id:       evidenceId,
       _segment_ids:       segIds.slice(0, 10)
-    });
+    };
+    // Traceability provenance: true when the segment links were inferred from
+    // verbatim text rather than declared by the transcript author.
+    if (inferred && segIds.length) action._segment_inferred = true;
+    actions.push(action);
   });
 
   // If no curated findings, emit a single stage event so the file still
   // contributes to the timeline (grounded in title/subtitle, not fabricated).
   if (actions.length === 0) {
     const title = String(parsed.subtitle || parsed.title || '').trim().slice(0, 200);
+    // Time-anchor this stage event to the transcript segment nearest the
+    // recording start, so it is still traceable to a concrete upstream segment.
+    const anchorMs = Date.parse(String(dec.recording_datetime || '').replace(' ', 'T'));
+    let stageIdx = null;
+    if (Number.isFinite(anchorMs)) {
+      let bestDiff = Infinity;
+      for (const seg of inferableSegments) {
+        if (!Number.isFinite(seg.dtMs)) continue;
+        const diff = Math.abs(seg.dtMs - anchorMs);
+        if (diff < bestDiff) { bestDiff = diff; stageIdx = seg.index; }
+      }
+    }
+    const stageSegIds = (stageIdx != null && segByOrigIndex[stageIdx])
+      ? [segByOrigIndex[stageIdx].node_id]
+      : [];
     actions.push({
       node_id:        makeNodeId('action'),
       type:           'Action',
@@ -225,8 +399,9 @@ function buildFromTranscript(file, rootDir) {
       location:       parsed.location || null,
       _performed_by_role_id: null,
       _evidence_id:   evidenceId,
-      _segment_ids:   []
+      _segment_ids:   stageSegIds
     });
+    if (stageSegIds.length) actions[actions.length - 1]._segment_inferred = true;
   }
 
   // Violations — the codes the transcript itself cites (ground truth), with a

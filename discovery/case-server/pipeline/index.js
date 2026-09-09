@@ -357,6 +357,9 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
     useCache     = true,
     concurrency  = 3,
     analysisProfile = ANALYSIS_PROFILE_DEFAULT,
+    // deterministicOnly: regenerate intelligence artifacts offline from
+    // structured transcripts via buildFromTranscript — no LLM/API key needed.
+    deterministicOnly = false,
     // KB options
     kbConfig     = null,
     augmentExtraction,
@@ -430,7 +433,9 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
   }
 
   // ── L5b: LLM Extraction ───────────────────────────────────────────────────────
-  if (!apiKey) {
+  // (deterministicOnly bypasses the API-key gate: extraction is rebuilt offline
+  // from structured transcripts via buildFromTranscript.)
+  if (!apiKey && !deterministicOnly) {
     progress('L5b', 'SKIPPED — no API key provided. Set apiKey in options.');
     return {
       ok:           false,
@@ -460,7 +465,7 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
   }
 
   const previousExtraction = store.getExtractionResults ? store.getExtractionResults() : {};
-  const cachedByHash = useCache ? buildExtractionCacheByHash(previousExtraction) : {};
+  const cachedByHash = (useCache && !deterministicOnly) ? buildExtractionCacheByHash(previousExtraction) : {};
   const cachedResults = {};
   const filesToExtract = [];
 
@@ -483,19 +488,62 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
 
   let freshResults = {};
   if (filesToExtract.length > 0) {
-    const extraction = await extractBatch(filesToExtract, {
-      apiKey,
-      model: resolvedModel,
-      analysisProfile: profile,
-      concurrency: effectiveConcurrency,
-      maxRetries: 2,
-      retryBaseMs: effectiveBulkFast ? 450 : 700,
-      rootDir,
-      onProgress: (done, total, ref) => {
-        progress('L5b', `${done}/${total} — ${ref}`);
+    if (deterministicOnly) {
+      // Deterministic offline extraction: rebuild grounded nodes from the
+      // transcripts' own curated metadata — never fabricates.
+      const { buildFromTranscript } = require('./structured_extract');
+      for (const file of filesToExtract) {
+        try {
+          const nodes = buildFromTranscript(file, rootDir);
+          if (nodes && (nodes.actions?.length || 0) > 0) {
+            freshResults[file.file_ref] = {
+              file_ref: file.file_ref,
+              _sha256: file.layers?.L0?.sha256 || null,
+              skipped: false,
+              chunk_count: 1,
+              run_ids: [],
+              errors: [],
+              empty_responses: 0,
+              degraded: false,
+              degraded_reason: null,
+              extraction_source: 'structured_transcript',
+              nodes
+            };
+          } else {
+            freshResults[file.file_ref] = {
+              file_ref: file.file_ref,
+              _sha256: file.layers?.L0?.sha256 || null,
+              skipped: true,
+              reason: 'deterministic_only: no structured transcript content',
+              nodes: null
+            };
+          }
+        } catch (extErr) {
+          freshResults[file.file_ref] = {
+            file_ref: file.file_ref,
+            _sha256: file.layers?.L0?.sha256 || null,
+            skipped: true,
+            reason: extErr.message,
+            nodes: null
+          };
+        }
+        progress('L5b', `Deterministic extract: ${file.file_ref}`);
       }
-    });
-    freshResults = extraction.results;
+    } else {
+      const extraction = await extractBatch(filesToExtract, {
+        apiKey,
+        model: resolvedModel,
+        analysisProfile: profile,
+        concurrency: effectiveConcurrency,
+        maxRetries: 2,
+        retryBaseMs: effectiveBulkFast ? 450 : 700,
+        rootDir,
+        onProgress: (done, total, ref) => {
+          progress('L5b', `${done}/${total} — ${ref}`);
+        }
+      });
+      freshResults = extraction.results;
+    }
   }
 
   const extractionResults = { ...cachedResults, ...freshResults };
