@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 
 # ===================== CONFIGURATION =====================
 # The directory that contains /pages and /texts subdirectories
-CRAWL_OUTPUT_DIR = './crawler_output/theburntchefproject'
+CRAWL_OUTPUT_DIR = './crawler_output/html-la8159'
 
 # Output filenames (will be saved inside CRAWL_OUTPUT_DIR)
 PAGES_OUTPUT = 'combined_pages.md'      # from HTML
@@ -166,9 +166,9 @@ def main():
     texts_output_file = os.path.join(CRAWL_OUTPUT_DIR, f"{SOURCE_FOLDER_NAME}_{TEXTS_OUTPUT}")
 
     # Process HTML pages
-    html_files = gather_files(CRAWL_OUTPUT_DIR, 'pages', '.html')
+    html_files = gather_files(CRAWL_OUTPUT_DIR, 'pages', '.md')
     if html_files or not SKIP_EMPTY:
-        build_combined_markdown(html_files, pages_output_file, 'html')
+        build_combined_markdown(html_files, pages_output_file, '.md')
     else:
         logger.info("No HTML pages found – skipping HTML Markdown generation.")
 

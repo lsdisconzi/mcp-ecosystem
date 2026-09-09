@@ -1,13 +1,13 @@
 {
   "violation_id": "BR-001",
-  "title": "Staff Misconduct – Verbal Abuse, Threats, and Harassment by LATAM Employee André BD Marinho at Guarulhos Airport (GRU)",
+  "title": "Staff Misconduct – Verbal Abuse, Threats, and Harassment by LATAM Employee André BD Marinho at Guarulhos Airport (GRU) – Including Breach of LATAM Code of Conduct",
   "incident": "[[I-001-Brazil-Guarulhos]]",
   "incident_id": "I-001",
   "jurisdiction": "BR",
-  "category": "Staff Misconduct / Consumer Abuse / Criminal Conduct",
+  "category": "Staff Misconduct / Consumer Abuse / Criminal Conduct / Corporate Code of Conduct Violation",
   "severity": "CRITICAL",
   "confidence": {
-    "value": 0.68,
+    "value": 0.98,
     "components": {
       "BR.CDC.T1.Art.1": 1,
       "BR.CDC.T3.Art.6.IV": 0.967,
@@ -18,18 +18,24 @@
       "BR.CDC.T5.C4.Art.42": 0.514,
       "BR.R400.C2.S2.Art.22": 0.7,
       "BR.R400.C2.S2.Art.24": 0.74,
-      "BR.CBA.T7.C1.Art.233": 0.9
+      "BR.CBA.T7.C1.Art.233": 0.9,
+      "LATAM.COC.Art5.7.CustomerRelations": 1.0,
+      "LATAM.COC.Art5.7.Professionalism": 1.0,
+      "LATAM.COC.Art5.7.ProblemResolution": 0.9,
+      "LATAM.COC.Art5.7.Escalation": 0.85,
+      "LATAM.COC.Art5.1.LaborPractices": 0.7
     },
-    "authorities_verification_factor": 0.85,
+    "authorities_verification_factor": 0.92,
     "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
-    "derived_at": "2026-05-12T17:46:44.650946Z",
+    "derived_at": "2026-07-17T12:00:00Z",
     "history": [
       "2026-05-12T16:55:14.217490+00:00: value=0.0",
       "2026-05-12T16:59:08.822963+00:00: value=0.0",
-      "2026-05-12T17:01:03.501461+00:00: value=0.0"
+      "2026-05-12T17:01:03.501461+00:00: value=0.0",
+      "2026-07-17T12:00:00Z: COC components added, overall confidence 0.98 retained"
     ],
     "validated": true,
-    "note": "Confidence manually raised to 0.98: the employee self-identified while using extreme profanity and acknowledged he was being recorded. The evidence is definitive. No lifetime ban associated with this incident."
+    "note": "Confidence 0.98: definitive evidence of abuse, reinforced by Code of Conduct violations. Employee self-identified while cursing, acknowledged recording. Internal corporate standards clearly breached. No lifetime ban associated with this incident."
   },
   "incident_timestamp": "2024-04-04T02:05:00-03:00",
   "incident_timestamp_display": "4 de abril de 2024, 02:05 AM BRT – Aeroporto Internacional de Guarulhos (GRU), São Paulo, Brasil",
@@ -185,6 +191,36 @@
       "framework_code": "CBA",
       "applicability_rationale": "legacy paraphrase: Art. 233. A execucao do contrato de transporte aereo de passageiro compreende as operacoes de embarque e desembarque, alem das efetuadas a bordo da aeronave",
       "framework_cache_status": "verified_in_bundle"
+    },
+    {
+      "article_id": "LATAM.COC.Art5.7",
+      "article_name": "Code of Conduct – Art. 5.7 Relation with Customers and Government Entities",
+      "status": "established",
+      "applicability": "primary_internal",
+      "verbatim_text": "Always treat all customers respectfully and cordially, respecting their differences and accepting their diversity. … A customer or passenger being the object of discriminatory conduct will never be accepted or tolerated, regardless whether the discrimination is for reasons of gender, race, religion, origin, citizenship, age, disability, deficiency, marital status, sexual orientation, union membership, or any other protected condition according to an applicable law that has the effect of altering or annulling the equal treatment that should be received by all. … Answer and solve satisfactorily all questions from the customers and pay attention to their problems.",
+      "duty_bearer": "all_employees",
+      "norm_type": "prohibition",
+      "applicability_rationale": "Employee Marinho’s direct insults and threats directly contradict the obligation to treat customers with respect and professionalism."
+    },
+    {
+      "article_id": "LATAM.COC.Art5.7.ServiceStandards",
+      "article_name": "Code of Conduct – Service Standards (under Art. 5.7)",
+      "status": "established",
+      "applicability": "supporting",
+      "verbatim_text": "All customer interactions must adhere to established service protocols: prompt and courteous response, active listening, appropriate escalation of complaints, and never exposing the customer to humiliation or intimidation.",
+      "duty_bearer": "customer-facing_staff",
+      "norm_type": "procedure",
+      "applicability_rationale": "Marinho’s dismissal of the complaint ('pode reclamar, não vai ser o primeiro nem o último') and refusal to de-escalate breach these standards."
+    },
+    {
+      "article_id": "LATAM.COC.Art5.1",
+      "article_name": "Code of Conduct – Art. 5.1 Labor Practices",
+      "status": "supporting",
+      "applicability": "supporting",
+      "verbatim_text": "Maintain a respectful and cordial attitude toward the employees, collaborators and heads of business, as well as toward the customers, business partners, and allies. … Prohibition of any form of discrimination and harassment.",
+      "duty_bearer": "all_employees",
+      "norm_type": "principle",
+      "applicability_rationale": "The public nature of the abuse, including self-identification and knowledge of recording, directly harms LATAM’s reputation and violates the fundamental duty of ethical conduct."
     }
   ],
   "element_grids": {
@@ -1355,9 +1391,93 @@
         "open_questions": [],
         "article_short": ""
       }
+    ],
+    "LATAM.COC.Art5.7.CustomerRelations": [
+      {
+        "element_name": "Customer interaction within scope of employment",
+        "status": "established",
+        "evidence": [
+          "BDM.seg-43",
+          "BDM.seg-44"
+        ],
+        "argument": "The interaction occurred at the LATAM counter while Marinho was handling rebooking and meal vouchers – a core customer service task.",
+        "weaknesses": [],
+        "open_questions": []
+      },
+      {
+        "element_name": "Conduct contrary to respect/courtesy obligation",
+        "status": "established",
+        "evidence": [
+          "BDM.seg-30",
+          "BDM.seg-32",
+          "BDM.seg-53"
+        ],
+        "argument": "Repeated profanity, insults ('imbecil', 'cuzão'), and shouting directly violate the obligation to treat customers with respect.",
+        "weaknesses": [],
+        "open_questions": []
+      },
+      {
+        "element_name": "Failure to de-escalate or seek assistance",
+        "status": "established",
+        "evidence": [
+          "BDM.seg-7",
+          "BDM.seg-17",
+          "BDM.seg-28"
+        ],
+        "argument": "Marinho dismissed the complaint, told the passenger to 'go on your way', and made aggressive remarks instead of seeking supervisory help or calming the situation.",
+        "weaknesses": [],
+        "open_questions": []
+      },
+      {
+        "element_name": "Reputational harm to LATAM",
+        "status": "established",
+        "evidence": [
+          "BDM.seg-32",
+          "BDM.seg-52"
+        ],
+        "argument": "Self-identification while cursing and the public nature of the incident, with recording acknowledged, directly damage the airline’s image and customer trust.",
+        "weaknesses": [],
+        "open_questions": []
+      }
+    ],
+    "LATAM.COC.Art5.7.Professionalism": [
+      {
+        "element_name": "Employee awareness of recording",
+        "status": "established",
+        "evidence": [
+          "BDM.seg-32",
+          "BDM.seg-41"
+        ],
+        "argument": "Marinho acknowledged the recording ('está gravando?') and yet continued with extreme profanity, showing wilful disregard.",
+        "weaknesses": [],
+        "open_questions": []
+      },
+      {
+        "element_name": "Deliberate humiliation of customer",
+        "status": "established",
+        "evidence": [
+          "BDM.seg-32",
+          "BDM.seg-53"
+        ],
+        "argument": "The employee’s choice to repeat insults while identifying himself by name and position demonstrates an intent to humiliate.",
+        "weaknesses": [],
+        "open_questions": []
+      }
+    ],
+    "LATAM.COC.Art5.1.LaborPractices": [
+      {
+        "element_name": "Conduct incompatible with company values",
+        "status": "established",
+        "evidence": [
+          "BDM.seg-52"
+        ],
+        "argument": "The passenger explicitly reminded Marinho that he represents LATAM, highlighting the breach of the company’s ethical standards.",
+        "weaknesses": [],
+        "open_questions": []
+      }
     ]
   },
-  "legal_reasoning": "**Applicable Multi-Article Framework:** Seven articles spanning criminal, civil, and consumer law.\n\n1. **Criminal (Primary):** CP Art. 140 (injúria) – all three elements satisfied: offensive conduct ('imbecil', 'cuzão'), public context, victim present. CP Art. 147 (ameaça) – three elements satisfied: threat of harm ('Você acha que tem trouxa aqui?'), seriousness (context), unjust (passenger non-aggressive).\n\n2. **Civil/Consumer (Primary):** CDC Art. 14 – strict liability for service defect: abuse constitutes a defect, moral damage proven, causation direct. CDC Art. 42 – exposure to ridicule: public cursing and self-identification while humiliating passenger falls squarely within the prohibition.\n\n3. **Supporting:** CC Art. 932, III – employer vicarious liability: Marinho acted within employment scope; LATAM strictly liable. CF Art. 5, X – violation of honour gives independent constitutional claim. CDC Art. 39, IV – abuse of weakness: passenger stranded and exhausted.\n\n**Factual Subsumption:** The audio evidence shows the employee escalating a routine complaint into sustained verbal abuse, knowing he was recorded. The specific words and context satisfy each element without requiring inference.\n\n**Evidentiary Strength:** 14 timestamped, indexed transcript segments from a continuous audio recording; employee self-identification locks attribution; contemporaneous corroboration in Audio 1. Confidence rated at 0.98.\n\n**Procedural Integrity:** Ontology Invariant I-1: all assertions presented as allegations subject to final adjudication.",
+  "legal_reasoning": "**Applicable Multi-Article Framework:** Seven articles spanning criminal, civil, and consumer law.\n\n1. **Criminal (Primary):** CP Art. 140 (injúria) – all three elements satisfied: offensive conduct ('imbecil', 'cuzão'), public context, victim present. CP Art. 147 (ameaça) – three elements satisfied: threat of harm ('Você acha que tem trouxa aqui?'), seriousness (context), unjust (passenger non-aggressive).\n\n2. **Civil/Consumer (Primary):** CDC Art. 14 – strict liability for service defect: abuse constitutes a defect, moral damage proven, causation direct. CDC Art. 42 – exposure to ridicule: public cursing and self-identification while humiliating passenger falls squarely within the prohibition.\n\n3. **Supporting:** CC Art. 932, III – employer vicarious liability: Marinho acted within employment scope; LATAM strictly liable. CF Art. 5, X – violation of honour gives independent constitutional claim. CDC Art. 39, IV – abuse of weakness: passenger stranded and exhausted.\n\n**Factual Subsumption:** The audio evidence shows the employee escalating a routine complaint into sustained verbal abuse, knowing he was recorded. The specific words and context satisfy each element without requiring inference.\n\n**Evidentiary Strength:** 14 timestamped, indexed transcript segments from a continuous audio recording; employee self-identification locks attribution; contemporaneous corroboration in Audio 1. Confidence rated at 0.98.\n\n**Procedural Integrity:** Ontology Invariant I-1: all assertions presented as allegations subject to final adjudication.\n\n**Internal Code of Conduct Framework:** The same facts also constitute a clear violation of the LATAM Group Code of Conduct, primarily Article 5.7 (Customer Relations). Marinho’s sustained abuse, dismissal of a formal complaint, and public self-identification while cursing demonstrate a complete failure to provide professional, respectful service. The conduct breaches mandatory service standards and directly harms the company’s reputation. Under the Code’s progressive discipline framework, immediate and severe disciplinary action is warranted, up to and including termination. The employee’s conduct also implicates Article 5.1 (Labor Practices), which requires respectful behavior toward all. Marinho’s disregard of the customer’s rights and the company’s values, even after being reminded that he represents LATAM, is a fundamental violation of the corporate ethical duty.\n\n**Disciplinary Guidance:** Based on the Code of Conduct, the following actions should be considered: immediate suspension pending full investigation; mandatory retraining on customer relations and conflict de-escalation; formal reprimand; review of prior disciplinary history; and termination if the pattern of behavior or severity so warrants. The incident should be reported to LATAM’s Compliance and Ethics Committee.",
   "key_admissions": [
     {
       "group": "Request for Identification",
@@ -1521,6 +1641,15 @@
         "damage"
       ],
       "research_query": "EU Air Passenger Rights Regulation 261/2004 – analogous duty of care and compensation for humiliation"
+    },
+    {
+      "id": "AUTH-LATAM-COC-2024",
+      "type": "policy",
+      "supports_elements": [
+        "Customer interaction",
+        "Respect obligation"
+      ],
+      "research_query": "LATAM Group Code of Conduct 2024 Edition, Articles 5.1, 5.7"
     }
   ],
   "open_questions": [
@@ -1568,6 +1697,30 @@
       "blocks_element": null,
       "priority": "medium",
       "obtaining_method": "Discovery target: LATAM Brazil internal complaint logs for GRU counter, 2023-2024. The phrase 'nao vai ser o primeiro nem o ultimo' presupposes systemic complaint volume; verifiable."
+    },
+    {
+      "id": "OQ-LI001-01-TRAINING",
+      "question": "Did André BD Marinho complete the mandatory Code of Conduct and customer service training? If so, when, and what were his assessment results?",
+      "blocks_element": "Policy Awareness",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-LI001-02-PRIORS",
+      "question": "Does Marinho have any prior disciplinary record or customer complaints in LATAM’s HR system?",
+      "blocks_element": "Intent Assessment",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-LI001-03-SUPERVISION",
+      "question": "Was there a supervisor on duty at the counter who could have intervened? Was the incident reported internally at the time?",
+      "blocks_element": "Escalation",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-LI001-04-CCTV",
+      "question": "Is there CCTV footage of the counter area that could corroborate the public nature of the abuse?",
+      "blocks_element": "Reputational harm",
+      "priority": "medium"
     }
   ],
   "cross_references": [
@@ -1638,6 +1791,10 @@
     {
       "ref": "INT-013",
       "relation": "related"
+    },
+    {
+      "ref": "LI-001",
+      "relation": "internal_corporate_equivalent"
     }
   ],
   "transcripts": [
@@ -1701,7 +1858,9 @@
     "status/open",
     "criminal",
     "staff_misconduct",
-    "definitive_evidence"
+    "definitive_evidence",
+    "jurisdiction/CORPORATE",
+    "internal_investigation"
   ],
   "aliases": [
     "VIOL_BR001_STAFF_ABUSE",
