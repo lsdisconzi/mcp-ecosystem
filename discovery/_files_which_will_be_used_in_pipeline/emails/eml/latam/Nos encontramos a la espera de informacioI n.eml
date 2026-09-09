@@ -1,0 +1,377 @@
+Delivered-To: disconzi@stockaware.co.uk
+Received: by 2002:a05:7208:80aa:b0:a2:ba01:7f2c with SMTP id k42csp5829622rbd;
+        Fri, 4 Jul 2025 08:02:40 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IG6m2hrymOxUgSaYm/XEhqH5lUrxICqtihF3KXzExhGdLDnYOPMeHC29Oet0rv7zyNPg3JL
+X-Received: by 2002:a05:6000:2210:b0:3a5:39d8:57e4 with SMTP id ffacd0b85a97d-3b4964f7100mr2543820f8f.41.1751641360462;
+        Fri, 04 Jul 2025 08:02:40 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1751641360; cv=none;
+        d=google.com; s=arc-20240605;
+        b=iyYkL7wSUN0fH7u4DxheBteXdd8v1MjXxgdMXPssqVuQxLXazBZ36v0b4FG+ZNoS43
+         RV9d592NANgreIy6RpOloI077zcVlWP+C71wp5de4ECnUXJ0EplVyZKrNcIpiMwArV7f
+         A9FhV0CfpaDl1JRjHlO8mPLnR/3LMjtm/BxTPBZPGLplK1OGS2cmqcrHnc7yxPGWpOdT
+         a1WAVDUdi591zBzv0ZZlCy4yYYnbUCkfSBdb86qZ0BSau3cWeiiwcjA/9i2slKX+Hj4w
+         UN4uXO2ClATIf39oS2bQVAEvdmD7zeaIwLxXy0+wAmSh6MIuOUtStzpvJsIdxqZ4GZ5L
+         6VYA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=dkim-signature:auto-submitted:content-transfer-encoding
+         :mime-version:subject:references:in-reply-to:message-id:to:reply-to
+         :from:date;
+        bh=XUVxWFsYMFe5EVsO8kd6QpZu2LU6ecjYrh1xfoVLSrE=;
+        fh=2b1yST7DuP3xWE48hufBcZnWajQ6LqQPPId/PxZqM/o=;
+        b=PL08IUcWlY4RkZjw2lwNYI876deeB/e58ABWr/vlMmaB8ZNwyAvoOglaAsV0Y0Ig4I
+         H6uGn7+JOXiYmnyLxV4dHDpjSFVAKyFz7EAp++6c2DG2zoxVBeiP2wKwFyDLCHgXBCKb
+         yS98pgvz9Giq4q7eWw2zO3Q/DGKzXBjJ3YjVGmpmOhkh4cE6lywBAeh8XfFojmV458cY
+         6xsUqZyL63D97FMjYcZaOY4GEjgI+zHGRD+fcIxU534EFK2Lh3E94zd7w+PAXk49bvTW
+         87xMdf0RDo1g9ZphTf6mZ/HFFb+SKaWi3l9Exr0DzLewz7+XIZEatZPiLjNiDfbL+Avg
+         /1iw==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@sac.latam.com header.s=zendesk1 header.b=jcQ44L53;
+       spf=pass (google.com: domain of grp_customerservice@sac.latam.com designates 192.161.149.6 as permitted sender) smtp.mailfrom=grp_customerservice@sac.latam.com;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=sac.latam.com
+Return-Path: <grp_customerservice@sac.latam.com>
+Received: from mta-out6.pod19.use1.zdsys.com (mta-out6.pod19.use1.zdsys.com. [192.161.149.6])
+        by mx.google.com with ESMTPS id 5b1f17b1804b1-454b16a0c6asi17431825e9.168.2025.07.04.08.02.40
+        for <disconzi@stockaware.co.uk>
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 04 Jul 2025 08:02:40 -0700 (PDT)
+Received-SPF: pass (google.com: domain of grp_customerservice@sac.latam.com designates 192.161.149.6 as permitted sender) client-ip=192.161.149.6;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@sac.latam.com header.s=zendesk1 header.b=jcQ44L53;
+       spf=pass (google.com: domain of grp_customerservice@sac.latam.com designates 192.161.149.6 as permitted sender) smtp.mailfrom=grp_customerservice@sac.latam.com;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=sac.latam.com
+Received: from zendesk.com (unknown [127.0.0.6])
+	by mta-out15.pod19.use1.zdsys.com (Zendesk) with ESMTP
+	id 813515ca-f741-4f77-8f9f-af98e771a264
+	for <disconzi@stockaware.co.uk>;
+	Fri, 04 Jul 2025 15:02:39 +0000 (UTC)
+Date: Fri, 04 Jul 2025 15:02:39 +0000
+From: LATAM Airlines <grp_customerservice@sac.latam.com>
+Reply-To: LATAM Airlines <grp_customerservice@sac.latam.com>
+To: Leandro Salton Disconzi <disconzi@stockaware.co.uk>
+Message-ID: <76X5RK75DGX_6867ed0fc85f3_c41590123435_sprut@zendesk.com>
+In-Reply-To: <CAJqux=A5o4N=eU=coqPGQ__fS8CsmhJyKPv0sNN+qE4UaJiPVQ@mail.gmail.com>
+ <76X5RK75DGX_6866960cb6a62_801578567675_sprut@zendesk.com>
+References: <76X5RK75DGX@zendesk.com>
+ <CAJqux=A5o4N=eU=coqPGQ__fS8CsmhJyKPv0sNN+qE4UaJiPVQ@mail.gmail.com>
+Subject: =?UTF-8?Q?Nos_encontramos_a_la_espera_de_informaci=C3=B3n.?=
+Mime-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="--==_mimepart_6867ed0fdd2a4_c41590123565";
+ charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Delivery-Context: event-id-42720846387347
+Auto-Submitted: auto-generated
+X-Auto-Response-Suppress: All
+X-Mailer: Zendesk Mailer
+X-Zendesk-From-Account-Id: 387974e
+X-Zendesk-Email-Id: 01JZAZC1ATRJJRME5TS6SF1ZK9
+DKIM-Signature:  v=1; a=rsa-sha256; c=relaxed/relaxed; d=sac.latam.com;
+ q=dns/txt; s=zendesk1; t=1751641359;
+ bh=XUVxWFsYMFe5EVsO8kd6QpZu2LU6ecjYrh1xfoVLSrE=;
+ h=date:from:reply-to:to:message-id:in-reply-to:references:subject:mime-version:content-type:content-transfer-encoding;
+ b=jcQ44L53UKH8ALBvdz9UG0Xlm35AifRMPFl+A/zjDAYL2AiiEIzG0Gz4pjQkZT6RQtNaTp1KR+F13O32YVuLCyV5f3WP70oD+MCj7I4acYEX50sJGdYY5zvG2We9g1GZrdGVwiUGN5I8t3PtsQnVyMDi0Hw7WNHrdeWywO+oS3+BogqFazMVhKVx+3HVdjwPs6LSC5c+Qf0aafCRYKY5zqqTcMOyUb4OHJp7ymW/+H1LpC5Z9TGMCF1VsxBAgEvIDM7L+ZjUr74dqAm9IvBdq3/+pKhyafq0TmlU0YLybeXVKlJY0SRnqSp6NvVP7pwdEYVLRv1Q+QH4wtM+LxKzRw==
+
+
+----==_mimepart_6867ed0fdd2a4_c41590123565
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+##- Por favor, escriba su respuesta por encima de esta l=C3=ADnea -##=0D
+=0D
+Queremos informar que no hemos podido resolver tu caso, ya que nos encont=
+ramos a la espera de la informaci=C3=B3n que fue solicitada en nuestro e-=
+mail anterior 66530377. =0D
+De no recibir respuesta en un plazo de 7 d=C3=ADas desde el env=C3=ADo de=
+ nuestro primer e-mail, entenderemos que tu solicitud fue atendida por ot=
+ra v=C3=ADa y el caso ser=C3=A1 cerrado. =0D
+ =0D
+ =0D
+Queremos mantenerte informado.=0D
+Equipo LATAM Airlines=0D
+=0D
+--------------------------------=0D
+Este correo electr=C3=B3nico es un servicio de LATAM.=0D
+=0D
+=0D
+=0D
+=0D
+=0D
+=0D
+=0D
+=0D
+=0D
+[76X5RK-75DGX]=
+
+----==_mimepart_6867ed0fdd2a4_c41590123565
+Content-Type: text/html;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns=3D"http://www.w3.org/1999/xhtml"><head>=0D
+  <meta content=3D"text/html; charset=3DISO-8859-1" http-equiv=3D"Content=
+-Type">=0D
+  <meta content=3D"width=3Ddevice-width, initial-scale=3D1, minimum-scale=
+=3D1, maximum-scale=3D1" name=3D"viewport">=0D
+  <meta name=3D"googlebot" content=3D"noindex">=0D
+  <meta name=3D"robots" content=3D"noindex">=0D
+      <link rel=3D"shortcut icon" href=3D"https://www.latam.com/construye=
+ndo-latam/wp-content/themes/latam-ES/favicon.ico" type=3D"image/png">=0D
+  <style type=3D"text/css">=0D
+body {=0D
+  -webkit-text-size-adjust: none;=0D
+}=0D
+@media only screen and (min-device-width : 320px) and (max-device-width :=
+ 480px), (max-width : 480px) {=0D
+*[class].content {=0D
+ width: 100%;=0D
+}=0D
+*[class].mobileTextCenter {=0D
+  text-align:center !important;=0D
+}=0D
+*[class].mobileTextLeft {=0D
+  text-align:left !important;=0D
+}=0D
+ *[class].banner {=0D
+ width: 100%;=0D
+ height: auto;=0D
+}=0D
+ *[class].oferta {=0D
+ width: 90%;=0D
+ height: auto;=0D
+}=0D
+ *[class].mobileStack {=0D
+ display:block;=0D
+ width: 100% !important;=0D
+ margin-bottom:15px;=0D
+}=0D
+ *[class].mobileFormTexto {=0D
+ display:block;=0D
+ width: 100% !important;=0D
+ margin-bottom:15px;=0D
+ font-size:12px !important;=0D
+}=0D
+ *[class].mobileBotonera {=0D
+ font-size:9px !important;=0D
+}=0D
+        =0D
+ *[class].mobileBotonera2 {=0D
+ font-size:20px !important;=0D
+}        =0D
+ *[class].mobilemargin {=0D
+ text-align:left !important;=0D
+ padding-left:15px;=0D
+ padding-bottom:15px;=0D
+ font-size:12px !important;=0D
+}=0D
+ *[class].mobileBanner {=0D
+ display:block;=0D
+ width: 100% !important;=0D
+ margin-bottom:0px;=0D
+}=0D
+ *[class].mobileBanner1 {=0D
+ display:block;=0D
+ width: 100% !important;=0D
+ margin-bottom:0px;=0D
+ text-align:left !important;=0D
+ margin-left:15px;=0D
+}=0D
+ *[class].mobileBanner2 {=0D
+ display:block;=0D
+ width: 100% !important;=0D
+ margin-bottom:0px;=0D
+ text-align:left !important;=0D
+ margin-left:35px;=0D
+}=0D
+ *[class].header-mobile {=0D
+ display:block;=0D
+ width: 100% !important;=0D
+ font-size:5px;=0D
+}=0D
+*[class].mobileHide {=0D
+ display:none !important;=0D
+}=0D
+ *[class].mobileTarifa {=0D
+ display:block;=0D
+ width: 100% !important;=0D
+ margin-bottom:0px;=0D
+}=0D
+</style>=0D
+  <style type=3D"text/css">=0D
+a.disabled {=0D
+  pointer-events: none !important;=0D
+  cursor: default !important;=0D
+}=0D
+a:link {=0D
+  text-decoration:none;=0D
+} /* Link no visitado*/=0D
+a:visited {=0D
+  text-decoration:none;=0D
+} /*Link visitado*/=0D
+a:active {=0D
+  text-decoration:none;=0D
+} /*Link activo*/=0D
+a:hover {=0D
+  text-decoration:underline;=0D
+} /*Mause sobre el link*/=0D
+.zd-comment {=0D
+  color: #10004F !important;=0D
+  text-align: justify;=0D
+}=0D
+p.libro_1{=0D
+  width: 200px=0D
+  text-decoration: bold=0D
+}=0D
+p.libro_2{=0D
+  width: 200px=0D
+}=0D
+</style>=0D
+  <title>LATAM</title>=0D
+</head>=0D
+=0D
+<body bgcolor=3D"#ededed"><table width=3D"100%" border=3D"0" cellspacing=3D=
+"0" cellpadding=3D"0">=0D
+  <tbody><tr>=0D
+    <td width=3D"25"></td>=0D
+    <td width=3D"275" style=3D"color:#300090; text-align:center; padding-=
+bottom:10px;" class=3D"mobileTextCenter">##- Por favor, escriba su respue=
+sta por encima de esta l=C3=ADnea -##</td> =0D
+    <td width=3D"25"></td>=0D
+  </tr>=0D
+</tbody></table>=0D
+=0D
+=0D
+=0D
+<table border=3D"0" cellspacing=3D"0" width=3D"100%" bgcolor=3D"#ededed">=
+=0D
+<tbody><tr>=0D
+  <td>=0D
+=0D
+<table width=3D"600" align=3D"center" class=3D"content">=0D
+  <tbody><tr>=0D
+      <td>=0D
+<!-- CONTENIDO INICIO -->=0D
+=0D
+<!-- HEADER -->=0D
+<table width=3D"100%" height=3D"66" border=3D"0" cellspacing=3D"0" cellpa=
+dding=3D"0" bgcolor=3D"#1B0088">=0D
+  <tbody><tr>=0D
+    <!--<td><a href=3D"http://www.lan.com/es_cl/sitio_personas/index.html=
+?utm_content=3DLogo" title=3D"LATAM Airlines" target=3D"_blank">-->=0D
+    <td><a href=3D"http://www.latam.com" title=3D"LATAM Airlines" target=3D=
+"_blank" style=3D"color:#1B0088">=0D
+      <table width=3D"100%" border=3D"0" cellspacing=3D"0" cellpadding=3D=
+"0">=0D
+        <tbody><tr>=0D
+          <td width=3D"25" class=3D"mobileHide"> </td>=0D
+          <td width=3D"143" class=3D"mobileBanner" align=3D"center"><a hr=
+ef=3D"www.latam.com"><img src=3D"http://p6.zdassets.com/hc/theme_assets/7=
+61341/200125368/LATAM_horizontal_negativo_RGB.png" width=3D"143" height=3D=
+"66" border=3D"0" alt=3D"LATAM" title=3D"LATAM Airlines" style=3D"font-fa=
+mily:'Trebuchet MS', Arial, Helvetica, sans-serif; color:#FFF; font-size:=
+18px;"></a></td>=0D
+          <td width=3D"370" class=3D"mobileHide"> </td>=0D
+          <!--<td width=3D"37" class=3D"mobileHide"><a href=3D"https://ww=
+w.oneworld.com/"><img src=3D"http://static.cdn.responsys.net/i2/responsys=
+images/latam/contentlibrary/matriz/bloques/estaticos/header_1d/Header_LAT=
+AM_BR/Files/logo_ow.png" width=3D"37" height=3D"37" alt=3D"oneworld" titl=
+e=3D"oneworld" border=3D"0" /></a></td>-->=0D
+          <td width=3D"25" class=3D"mobileHide"> </td>=0D
+        </tr>=0D
+      </tbody></table>=0D
+    </a></td>=0D
+  </tr>=0D
+</tbody></table>=0D
+<!--  HEADER -->=0D
+=0D
+<table width=3D"100%" height=3D"10" border=3D"0" cellspacing=3D"0" cellpa=
+dding=3D"0">=0D
+  <tbody><tr>=0D
+    <td colspan=3D"3" style=3D"padding:10px 20px 10px 20px;font-family:'T=
+rebuchet MS', Arial, Helvetica, sans-serif;font-size:11px;background-colo=
+r:#ffffff;line-height:20px;text-align:justify;">=0D
+      <div>=0D
+         =0D
+        <p dir=3D"ltr">Queremos informar que no hemos podido resolver tu =
+caso, ya que nos encontramos a la espera de la informaci=C3=B3n que fue s=
+olicitada en nuestro e-mail anterior 66530377. <br>De no recibir respuest=
+a en un plazo de 7 d=C3=ADas desde el env=C3=ADo de nuestro primer e-mail=
+, entenderemos que tu solicitud fue atendida por otra v=C3=ADa y el caso =
+ser=C3=A1 cerrado. <br> <br> <br>Queremos mantenerte informado.<br>Equipo=
+ LATAM Airlines</p> =0D
+        =0D
+      </div>=0D
+    </td>=0D
+  </tr>=0D
+</tbody></table>=0D
+=0D
+=0D
+<!-- FOOTER -->=0D
+<table width=3D"100%" border=3D"0" align=3D"center" cellpadding=3D"0" cel=
+lspacing=3D"0" bgcolor=3D"#1b0088">=0D
+  <tbody><tr>    =0D
+    <td style=3D"font-family:'Trebuchet MS', Arial, Helvetica, sans-serif=
+; font-size:16px; color:#FFF; padding:10px 25px; text-align:center; displ=
+ay:block;"><a href=3D"" title=3D"Cont=C3=A1ctenos" style=3D"color:#FFF; t=
+ext-decoration:none;">=0D
+      =0D
+        =0D
+        =0D
+          =0D
+          </a><a href=3D"https://www.latam.com/en_un/help-center/contact/=
+" style=3D"color:#FFF; text-decoration:none;" target=3D"_blank" title=3D"=
+"><strong>Do you need help? Contact us   </strong></a>=0D
+             =0D
+          =0D
+        =0D
+      =0D
+        =0D
+    </td>  =0D
+  </tr> =0D
+=0D
+  <tr>=0D
+    <td style=3D"font-family:'Trebuchet MS', Arial, Helvetica, sans-serif=
+; font-size:16px; color:#FFF; padding:10px 25px; text-align:center; displ=
+ay:block;"><a href=3D"" title=3D"Cont=C3=A1ctenos" style=3D"color:#FFF; t=
+ext-decoration:none;">=0D
+      =0D
+      =0D
+        =0D
+        =0D
+          =0D
+=0D
+        </a><a href=3D"https://www.latamairlines.com/us/en/help-center" s=
+tyle=3D"color:#FFF; text-decoration:none;" target=3D"_blank" title=3D""><=
+strong>Follow your case status at our Help Center</strong></a>=0D
+             =0D
+            =0D
+          =0D
+        =0D
+      =0D
+        =0D
+    </td>=0D
+  </tr> =0D
+  =0D
+</tbody></table> =0D
+=0D
+<table width=3D"100%" border=3D"0" cellspacing=3D"0" cellpadding=3D"0">=0D=
+
+  <tbody><tr>=0D
+    <td style=3D" font-family:'Trebuchet MS', Arial, Helvetica, sans-seri=
+f; font-size:11px; text-align:center; color:#808285;padding:20px 25px;">=0D=
+
+=0D
+=0D
+  </td></tr>=0D
+</tbody></table> =0D
+<!-- FOOTER -->=0D
+<!-- CONTENIDO FINAL -->=0D
+</td></tr></tbody></table>=0D
+</td></tr>=0D
+</tbody></table>=0D
+<span style=3D"color:#FFFFFF" aria-hidden=3D"true" class=3D"zd_encoded_id=
+">[76X5RK-75DGX]</span>=0D
+</body></html>=
+
+----==_mimepart_6867ed0fdd2a4_c41590123565--

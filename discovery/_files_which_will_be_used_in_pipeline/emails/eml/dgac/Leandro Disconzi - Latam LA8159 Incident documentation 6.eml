@@ -1,0 +1,508 @@
+Delivered-To: stockawaredev@gmail.com
+Received: by 2002:a05:7000:6bce:b0:79c:a6d4:4138 with SMTP id c14csp408633max;
+        Thu, 6 Nov 2025 04:26:35 -0800 (PST)
+X-Received: by 2002:a17:906:c112:b0:b37:4f78:55b2 with SMTP id a640c23a62f3a-b72654cc784mr629643966b.34.1762431995300;
+        Thu, 06 Nov 2025 04:26:35 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1762431995; cv=none;
+        d=google.com; s=arc-20240605;
+        b=jLsMGDLHivLSMF4iQBy5iGvHCrloR+L53qiZ5nTp8VKoA1yJQECaa7wDP5i6Ih6R/K
+         49R3BZ/iGHl41vm0bSZXfHJGXMf7XzHSFABAUpWeuANL7WNngNrw19L6pZ33zNaHdNVO
+         nvxpco7hDKrTYcQvw36R8fO56NIMl1WfWnbz82KkGqDB22oCULumX4xoNBSbSHZr2XDE
+         3q5aTYBOrbNmBQlMcTiMnlFjPSYlgf8aZBH+m2KcDMvCEbsx9RyXDLLQVr7gl/l7yRNQ
+         BUoBgUHhuJ1fRzQRbVEFOFitx/T1fEPintfRHNhaH1HzoVCuejS3NlQLOJGp84xu/cAl
+         Jteg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=V1SkVoZZDa67/hUSldpd6KTTe3xCGL+/2hEY3NTVUUk=;
+        fh=xkTHmNpngLjtZd4tRgU/6LhU1qxvcUqmPoK/y8PE18w=;
+        b=cZKraNn0xMwXeMfjtlX1HrVQyRwkrzi5H1dJR9JI2H5QKkZmrTed46Pw9gd62BwYd6
+         75CxejZg+egsm3wlIbQ+ipSTXHU9LwUJRm82ldFkqhurO9K016gHbSmEzWsFLAtQE0r7
+         fShPmu1NEewEDMiFTGHI5Wq4lw1dBp/6361NoOddBsZ8sUaeSYdmG5oZMENjtDvYatpj
+         9M6AStCR7S5/9GtoKVWSeCLLEhF4bP8v/s9EljJl/wiKo8LSsL3ZAfzPKTgD+bY8gtO7
+         asdCw2BgUWSekQK2WRmaxH39HnshDmUjKwjjHNbO4Wd6vBMZTAC5GALWR46fjq1gmSpD
+         2lzQ==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@dgac-gob-cl.20230601.gappssmtp.com header.s=20230601 header.b=eabQ506b;
+       spf=pass (google.com: domain of registratura@dgac.gob.cl designates 209.85.220.41 as permitted sender) smtp.mailfrom=registratura@dgac.gob.cl;
+       dara=pass header.i=@gmail.com
+Return-Path: <registratura@dgac.gob.cl>
+Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])
+        by mx.google.com with SMTPS id a640c23a62f3a-b7289bb1321sor67235866b.14.2025.11.06.04.26.35
+        for <stockawaredev@gmail.com>
+        (Google Transport Security);
+        Thu, 06 Nov 2025 04:26:35 -0800 (PST)
+Received-SPF: pass (google.com: domain of registratura@dgac.gob.cl designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@dgac-gob-cl.20230601.gappssmtp.com header.s=20230601 header.b=eabQ506b;
+       spf=pass (google.com: domain of registratura@dgac.gob.cl designates 209.85.220.41 as permitted sender) smtp.mailfrom=registratura@dgac.gob.cl;
+       dara=pass header.i=@gmail.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=dgac-gob-cl.20230601.gappssmtp.com; s=20230601; t=1762431993; x=1763036793; dara=google.com;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=V1SkVoZZDa67/hUSldpd6KTTe3xCGL+/2hEY3NTVUUk=;
+        b=eabQ506bTJ4udxQyUUzjMRTTLbhQSVsUayg94Vdhg7W5UOlYfNNNCLO1s07y3DBZUw
+         Oio5exepJeApLOw6nOcM9PsSCePs6zbvpIDCK1ShlvPsQmu8pK3JUbL1DZgLFLWwWxMk
+         T/xwsirOCwl9HGPiVTIo2zxWSZvihsOgtMzyzO2QZi/NOPNEGu1HcOYnnq44cr+lx00N
+         S0mbsCdyY8kkC4C7f3rtgz1nsEDIDyp+4AIwgQoJews61VUAWB9+MJ/LBYcZgFWV+MXs
+         bIkOTp/7/sqx0sr8WDHhbs38EcWMitTjgTIqUgzZ30zV5ndb2RvUx9DqefmRxrj+7bAA
+         S5tA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1762431993; x=1763036793;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=V1SkVoZZDa67/hUSldpd6KTTe3xCGL+/2hEY3NTVUUk=;
+        b=Ao9RMexHKoSnNUlWVY6zyEDXROHMQM+hxsltXFID2YvlC+HY2ZT5tbZ+TAOiJkZBPN
+         Q7yh9JexhUDF0g56uDTL1Tiq45hE9od2FnWdtjqW8/B0aadur2pzRLEPyBmV4x1UFall
+         xlHmWafpr0evnKIcrw9cT27z6wpa8IEDTOtUAT2101IrHEi404Woqte/HcC+29aBfVsk
+         OyGdy2i/qKcnrDZFdl7Fz8u4jOatYZ9t9NXckYBLPSno6EgKL7mLkb4uPI1yH1ga95Ar
+         Y/7di+p4uNqmS1TLTNj5FIkB0G4f44ilPZ1MxI0bUgw12b0dJsnD2GqViKPIFALd7wyc
+         92eQ==
+X-Gm-Message-State: AOJu0YygFAXDo2PDdyNZ/u9aSg4HT2vkVHI5AnapmEUzIdRKlabkz1iJ
+	TYaihTldXYGDGzed+jwNVaOUAH27Mu/3oHbBrOtMyw24gKMw1G+J/ZRGx2ThBuvkOV/kVmF6s+6
+	wGObSm6dQX7L7tI45BC7FVO5o6/eZ8/TD6ZKwFb8fg5sneF4fGvvYU9zP7A==
+X-Gm-Gg: ASbGnctIqDNPwUaXAkgBJjHL6IILQiziTM7WOSHDA3rqY3wgME6b6fpMr+7lAsIOHdj
+	4Xsye73FY7sHnTOpmcPk4ETxkgnTqBXNrl25Sb4pGqXCksRAkI6qR0vAzqdrk9eG+KU1ZarDxeI
+	PIJuGn0rZLC0TRVQ+vrRWiTeikaiqbZRoVCqVi/Ca8P/tcwGtyJz++a7b9FFSHpm8R95Z/y+/X6
+	M6Mn6Oj0fM2ZvBbW1b08wPpFCyArdad/fBR36jFOWW3CsNFRqHyrGj+oq2YUEmSDKjKh3DC4rWI
+	RDP1wNu1ikSg1U6hJ/rFEYfuQhcrPvwAnfbaYVqGbKA7u6+jSVypbxr+gWRVdWqTvMFZ9pw=
+X-Google-Smtp-Source: AGHT+IHpWdrVbTx1VRs7w+8HwF35AB+4/en5TJa9PSKBmMYxwDZZhR/Sp5NxXwY944JKqYcUB7T6GOav0eCeMTYj71s=
+X-Received: by 2002:a17:907:6e91:b0:b64:6795:e373 with SMTP id
+ a640c23a62f3a-b72654ce05fmr653395866b.36.1762431993229; Thu, 06 Nov 2025
+ 04:26:33 -0800 (PST)
+MIME-Version: 1.0
+References: <CAKPh779-PF_t=3Lu81ccyLx6y8h0HCL5hYX9syb4imPgqFRpnQ@mail.gmail.com>
+ <CADU+yL7HDBqyarGNHeB4PcjftOv_jbMvTRB1D4epU0CKddTmNQ@mail.gmail.com>
+In-Reply-To: <CADU+yL7HDBqyarGNHeB4PcjftOv_jbMvTRB1D4epU0CKddTmNQ@mail.gmail.com>
+From: REGISTRATURA DGAC <registratura@dgac.gob.cl>
+Date: Thu, 6 Nov 2025 09:26:20 -0300
+X-Gm-Features: AWmQ_blndm8KT6GWmW9qJyKhUuBaPMfoC8kIwtQKOIf8TPJgpKca3ldQWEpnt84
+Message-ID: <CAKPh77-MFetP2kTJrYM8kzb=-VyaqxFA6ckCBERRjU7njuAcBw@mail.gmail.com>
+Subject: Re: Leandro Disconzi - Latam LA8159 Incident documentation
+To: Stock Aware Dev Team <stockawaredev@gmail.com>
+Cc: Lissette Del Carmen Galarce Manriquez <lgalarce@dgac.gob.cl>, 
+	Claudio Plinio Pandolfi Garrido <cpandolfi@dgac.gob.cl>
+Content-Type: multipart/alternative; boundary="000000000000e669f00642ec2ce9"
+
+--000000000000e669f00642ec2ce9
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+ESTIMADO, BUEN D=C3=8DA, ACUSO RECIBO DE LA DOCUMENTACI=C3=93N, LA CUAL SER=
+=C3=81
+INGRESADA Y DERIVADA AL DEPARTAMENTO CORRESPONDIENTE,E BAJO N=C3=9AMERO DE
+EXPEDIENTE 15126.
+
+ATENTAMENTE;
+
+*Pamela Salas Salazar*
+*Asistente de Documentaci=C3=B3n*
+
+*Secci=C3=B3n Integral De Informaci=C3=B3n Y Documentaci=C3=B3n*
+*Secretar=C3=ADa General - Direcci=C3=B3n General de Aeron=C3=A1utica Civil=
+ - Chile*
+Tel=C3=A9fono : (56 2) 24392567 *- **www.dgac.gob.cl *
+<http://www.dgac.gob.cl/portalweb/dgac/>
+
+
+
+
+
+
+
+
+
+
+*HORARIO ATENCI=C3=93N OFICINA CENTRAL DE PARTES DGAC*
+
+INFORMA QUE PARA ENTREGA DE DOCUMENTACI=C3=93N EN PAPEL DE FORMA PRESENCIAL=
+ ES
+DE LUNES A JUEVES DE 08:30 A 16:30, Y VIERNES DE 08:30 A 15:30 HORAS.
+
+ENV=C3=8DO DE DOCUMENTACI=C3=93N V=C3=8DA MAIL A CORREO registratura@dgac.g=
+ob.cl, EN MISMO
+HORARIO MENCIONADO ANTERIORMENTE, TODO DOCUMENTO QUE LLEGUE DESPU=C3=89S DE
+ESA HORA,
+SER=C3=81 TRAMITADO EL D=C3=8DA H=C3=81BIL SIGUIENTE.
+
+
+El mi=C3=A9, 5 nov 2025 a las 16:47, Stock Aware Dev Team (<
+stockawaredev@gmail.com>) escribi=C3=B3:
+
+> Dear Mr. Condores P=C3=A9rez,
+>
+> Dear DGAC team,
+>
+> Thank you for your clarification regarding the submission process. I
+> understand that all documentation must be sent as a single compressed fil=
+e
+> via the official Registratura channel to ensure proper processing and
+> assignment of an expediente number.
+>
+> As requested, I have compiled the full documentation into a single .zip
+> file, which is attached to this email. This file contains the (not yet)
+> complete set of materials related to the incident involving LATAM flight
+> LA8159 on July 5=E2=80=936, 2024, including:
+>
+>    -
+>
+>    A comprehensive master document detailing the chronology, evidence,
+>    and analysis of the incident
+>    -
+>
+>    Individual narrative summaries of each recorded interaction
+>    -
+>
+>    Supporting transcripts, email chains, and related documentation
+>
+> Due to the volume of data (the file is over 1giga), I have also provided =
+a
+> secure download link below for your convenience, should you encounter any
+> issues with the attachment:
+>
+> https://drive.google.com/file/d/1289W13XYDOvUKUxgaKf97ARJkmnqm6yJ
+>
+> Please note that the documentation is still being refined and
+> cross-referenced. Additional information may follow as the analysis
+> progresses. I believe it is in the DGAC=E2=80=99s interest to review this=
+ material
+> thoroughly, as it highlights serious procedural and regulatory concerns
+> involving LATAM Airlines and multiple airport authorities.
+>
+> I would also like to reiterate the key question from my initial
+> communication:
+>
+>  What procedures does the DGAC intend to initiate based on the
+> documentation provided, and what is your official position regarding the
+> events described?
+>
+> I expect formal acknowledgment of receipt and a clear response regarding
+> the DGAC=E2=80=99s intended actions. This is not merely a passenger compl=
+aint but a
+> documented case involving potential violations of Chilean aviation law,
+> passenger rights, and international standards.
+>
+> Thank you for your attention to this matter. I look forward to your timel=
+y
+> and substantive reply.
+>
+> Kind regards,
+> Leandro Disconzi
+>
+>
+>
+>  LA8159_incident_partial_documentation.zip
+> <https://drive.google.com/file/d/1289W13XYDOvUKUxgaKf97ARJkmnqm6yJ/view?u=
+sp=3Ddrive_web>
+>
+> On Mon, 3 Nov 2025 at 13:27, REGISTRATURA DGAC <registratura@dgac.gob.cl>
+> wrote:
+>
+>> ESTIMADO SR DISCONZI
+>> BUENAS TARDES, SE SOLICITA ENVIAR NUEVAMENTE LOS ANTECEDENTES ENVIADOS Y=
+A
+>> QUE NO TENEMOS ACCESO A ELLOS, SOLICITA SU ENV=C3=8DO PARA DAR INGRESO A=
+ SU
+>> SOLICITUD.
+>>
+>> ESPERANDO SU PRONTA RESPUESTA
+>>
+>> Atte.
+>>
+>> Yessica Rodr=C3=ADguez L=C3=B3pez
+>>
+>> Oficina Central de Partes
+>>
+>> Secci=C3=B3n Integral de Informaci=C3=B3n y Documentaci=C3=B3n Departame=
+nto Secretar=C3=ADa
+>> General
+>>
+>> *Direcci=C3=B3n General de Aeron=C3=A1utica Civil - Chile*
+>>
+>>
+>>
+>>
+>>
+>>
+>>
+>>
+>>
+>>
+>> *HORARIO ATENCI=C3=93N OFICINA CENTRAL DE PARTES DGAC*
+>>
+>> INFORMA QUE PARA ENTREGA DE DOCUMENTACI=C3=93N EN PAPEL DE FORMA PRESENC=
+IAL ES
+>> DE LUNES A JUEVES DE 08:30 A 16:30, Y VIERNES DE 08:30 A 15:30 HORAS.
+>>
+>> ENV=C3=8DO DE DOCUMENTACI=C3=93N V=C3=8DA MAIL A CORREO registratura@dga=
+c.gob.cl, EN
+>> MISMO
+>> HORARIO MENCIONADO ANTERIORMENTE, TODO DOCUMENTO QUE LLEGUE DESPU=C3=89S=
+ DE
+>> ESA HORA, SER=C3=81 TRAMITADO EL D=C3=8DA H=C3=81BIL SIGUIENTE.
+>>
+>
+
+--000000000000e669f00642ec2ce9
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div><div class=3D"gmail_default" style=3D"font-family:ari=
+al,sans-serif;font-size:small">ESTIMADO, BUEN D=C3=8DA, ACUSO RECIBO DE LA =
+DOCUMENTACI=C3=93N, LA CUAL SER=C3=81 INGRESADA Y DERIVADA AL DEPARTAMENTO =
+CORRESPONDIENTE,E BAJO N=C3=9AMERO DE EXPEDIENTE 15126.</div><div class=3D"=
+gmail_default" style=3D"font-family:arial,sans-serif;font-size:small"><br><=
+/div><div class=3D"gmail_default" style=3D"font-family:arial,sans-serif;fon=
+t-size:small">ATENTAMENTE;</div><div class=3D"gmail_default" style=3D"font-=
+family:arial,sans-serif;font-size:small"><br></div><div class=3D"gmail_defa=
+ult" style=3D"font-family:arial,sans-serif;font-size:small"><div style=3D"f=
+ont-family:Arial,Helvetica,sans-serif"><b><font size=3D"2" face=3D"tahoma, =
+sans-serif" color=3D"#0b5394">Pamela Salas Salazar</font></b></div><div sty=
+le=3D"font-family:Arial,Helvetica,sans-serif"><b style=3D"font-size:12.8px"=
+><font face=3D"arial narrow, sans-serif" color=3D"#999999">Asistente de Doc=
+umentaci=C3=B3n</font></b><br></div><div style=3D"font-family:Arial,Helveti=
+ca,sans-serif"><b style=3D"font-size:12.8px"><font face=3D"arial narrow, sa=
+ns-serif" color=3D"#999999"><br></font></b></div><div style=3D"font-family:=
+Arial,Helvetica,sans-serif"><font face=3D"tahoma, sans-serif" color=3D"#0b5=
+394"><b>Secci=C3=B3n Integral De Informaci=C3=B3n Y Documentaci=C3=B3n</b><=
+/font></div><div style=3D"font-family:Arial,Helvetica,sans-serif"><font siz=
+e=3D"2" face=3D"arial narrow, sans-serif" color=3D"#999999"><b>Secretar=C3=
+=ADa General - Direcci=C3=B3n General de Aeron=C3=A1utica Civil - Chile</b>=
+</font></div><div style=3D"font-family:Arial,Helvetica,sans-serif"><div><fo=
+nt face=3D"arial narrow, sans-serif"><font size=3D"2" color=3D"#999999" sty=
+le=3D"font-weight:bold">Tel=C3=A9fono=C2=A0: (56 2)=C2=A024392567</font><fo=
+nt size=3D"2" style=3D"font-weight:bold">=C2=A0</font><font size=3D"2"><b><=
+font color=3D"#ffe599">-</font><font color=3D"#0000ff">=C2=A0</font></b></f=
+ont></font><a href=3D"http://www.dgac.gob.cl/portalweb/dgac/" target=3D"_bl=
+ank"><font size=3D"2" color=3D"#0000ff"><b><font face=3D"arial narrow, sans=
+-serif">www.d</font><font face=3D"tahoma, sans-serif">gac.gob.cl=C2=A0</fon=
+t></b></font></a></div></div></div><br clear=3D"all"></div><div><div dir=3D=
+"ltr" class=3D"gmail_signature" data-smartmail=3D"gmail_signature"><div dir=
+=3D"ltr"><div><font size=3D"1"><b><span style=3D"color:rgb(34,34,34)"><br><=
+/span></b></font></div><font size=3D"1"><span style=3D"font-weight:bold;col=
+or:rgb(34,34,34)"><div><font size=3D"1"><b><span style=3D"color:rgb(34,34,3=
+4)"><br></span></b></font></div><div><font size=3D"1"><b><span style=3D"col=
+or:rgb(34,34,34)"><br></span></b></font></div><div><font size=3D"1"><b><spa=
+n style=3D"color:rgb(34,34,34)"><br></span></b></font></div><div><font size=
+=3D"1"><b><span style=3D"color:rgb(34,34,34)"><br></span></b></font></div><=
+div><font size=3D"1"><b><span style=3D"color:rgb(34,34,34)"><br></span></b>=
+</font></div><div><font size=3D"1"><b><span style=3D"color:rgb(34,34,34)"><=
+br></span></b></font></div><div><font size=3D"1"><b><span style=3D"color:rg=
+b(34,34,34)"><br></span></b></font></div><div><font size=3D"1"><b><span sty=
+le=3D"color:rgb(34,34,34)"><br></span></b></font></div><div style=3D"text-a=
+lign:center"><b style=3D"color:rgb(32,33,36)"><span style=3D"color:rgb(34,3=
+4,34)">HORARIO ATENCI=C3=93N OFICINA CENTRAL DE PARTES DGAC</span></b></div=
+></span><div style=3D"text-align:center"><span style=3D"color:rgb(34,34,34)=
+;font-weight:700"><br></span></div><span style=3D"font-weight:bold;color:rg=
+b(34,34,34)"><div style=3D"text-align:center">INFORMA QUE PARA ENTREGA DE D=
+OCUMENTACI=C3=93N EN PAPEL DE FORMA PRESENCIAL ES DE=C2=A0LUNES A JUEVES DE=
+ 08:30 A 16:30, Y VIERNES DE 08:30 A 15:30 HORAS.</div></span><div style=3D=
+"text-align:center"><span style=3D"color:rgb(34,34,34)"><br></span></div><s=
+pan style=3D"font-weight:bold;color:rgb(34,34,34)"><div style=3D"text-align=
+:center">ENV=C3=8DO DE DOCUMENTACI=C3=93N V=C3=8DA MAIL A CORREO=C2=A0<a hr=
+ef=3D"mailto:registratura@dgac.gob.cl" style=3D"color:rgb(17,85,204)" targe=
+t=3D"_blank">registratura@dgac.gob.cl</a>, EN MISMO</div></span><div style=
+=3D"text-align:center"><span style=3D"font-weight:bold;color:rgb(34,34,34)"=
+>HORARIO MENCIONADO ANTERIORMENTE, TODO DOCUMENTO QUE LLEGUE DESPU=C3=89S D=
+E ESA=C2=A0</span><span style=3D"font-weight:bold;color:rgb(34,34,34)">HORA=
+, SER=C3=81 TRAMITADO EL D=C3=8DA H=C3=81BIL SIGUIENTE.</span></div></font>=
+</div></div></div><br></div><br><div class=3D"gmail_quote gmail_quote_conta=
+iner"><div dir=3D"ltr" class=3D"gmail_attr">El mi=C3=A9, 5 nov 2025 a las 1=
+6:47, Stock Aware Dev Team (&lt;<a href=3D"mailto:stockawaredev@gmail.com">=
+stockawaredev@gmail.com</a>&gt;) escribi=C3=B3:<br></div><blockquote class=
+=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rg=
+b(204,204,204);padding-left:1ex"><div dir=3D"ltr"><div dir=3D"ltr"><div dir=
+=3D"ltr"><p style=3D"margin:16px 0px;font-family:quote-cjk-patch,Inter,syst=
+em-ui,-apple-system,&quot;system-ui&quot;,&quot;Segoe UI&quot;,Roboto,Oxyge=
+n,Ubuntu,Cantarell,&quot;Open Sans&quot;,&quot;Helvetica Neue&quot;,sans-se=
+rif;font-size:16px"><span style=3D"color:rgb(0,0,0)">Dear Mr. Condores P=C3=
+=A9rez,</span></p><p style=3D"margin:16px 0px;font-family:quote-cjk-patch,I=
+nter,system-ui,-apple-system,&quot;system-ui&quot;,&quot;Segoe UI&quot;,Rob=
+oto,Oxygen,Ubuntu,Cantarell,&quot;Open Sans&quot;,&quot;Helvetica Neue&quot=
+;,sans-serif;font-size:16px"><span style=3D"background-color:rgb(255,255,25=
+5)"><font color=3D"#000000">Dear DGAC team,</font></span></p><p style=3D"ma=
+rgin:16px 0px;font-family:quote-cjk-patch,Inter,system-ui,-apple-system,&qu=
+ot;system-ui&quot;,&quot;Segoe UI&quot;,Roboto,Oxygen,Ubuntu,Cantarell,&quo=
+t;Open Sans&quot;,&quot;Helvetica Neue&quot;,sans-serif;font-size:16px"><sp=
+an style=3D"background-color:rgb(255,255,255)"><font color=3D"#000000">Than=
+k you for your clarification regarding the submission process. I understand=
+ that all documentation must be sent as a single compressed file via the of=
+ficial Registratura channel to ensure proper processing and assignment of a=
+n expediente number.</font></span></p><p style=3D"margin:16px 0px;font-fami=
+ly:quote-cjk-patch,Inter,system-ui,-apple-system,&quot;system-ui&quot;,&quo=
+t;Segoe UI&quot;,Roboto,Oxygen,Ubuntu,Cantarell,&quot;Open Sans&quot;,&quot=
+;Helvetica Neue&quot;,sans-serif;font-size:16px"><span style=3D"background-=
+color:rgb(255,255,255)"><font color=3D"#000000">As requested, I have compil=
+ed the full documentation into a single .zip file, which is attached to thi=
+s email. This file contains the (not yet) complete set of materials related=
+ to the incident involving LATAM flight LA8159 on July 5=E2=80=936, 2024, i=
+ncluding:</font></span></p><ul style=3D"margin:16px 0px;padding-left:18px;f=
+ont-family:quote-cjk-patch,Inter,system-ui,-apple-system,&quot;system-ui&qu=
+ot;,&quot;Segoe UI&quot;,Roboto,Oxygen,Ubuntu,Cantarell,&quot;Open Sans&quo=
+t;,&quot;Helvetica Neue&quot;,sans-serif;font-size:16px"><li><p style=3D"ma=
+rgin:0px"><span style=3D"background-color:rgb(255,255,255)"><font color=3D"=
+#000000">A comprehensive master document detailing the chronology, evidence=
+, and analysis of the incident</font></span></p></li><li style=3D"margin-to=
+p:6px"><p style=3D"margin:0px"><span style=3D"background-color:rgb(255,255,=
+255)"><font color=3D"#000000">Individual narrative summaries of each record=
+ed interaction</font></span></p></li><li style=3D"margin-top:6px"><p style=
+=3D"margin:0px"><span style=3D"background-color:rgb(255,255,255)"><font col=
+or=3D"#000000">Supporting transcripts, email chains, and related documentat=
+ion</font></span></p></li></ul><p style=3D"margin:16px 0px;font-family:quot=
+e-cjk-patch,Inter,system-ui,-apple-system,&quot;system-ui&quot;,&quot;Segoe=
+ UI&quot;,Roboto,Oxygen,Ubuntu,Cantarell,&quot;Open Sans&quot;,&quot;Helvet=
+ica Neue&quot;,sans-serif;font-size:16px"><span style=3D"background-color:r=
+gb(255,255,255)"><font color=3D"#000000">Due to the volume of data (the fil=
+e is over 1giga), I have also provided a secure download link below for you=
+r convenience, should you encounter any issues with the attachment:</font><=
+/span></p><p style=3D"margin:16px 0px;font-family:quote-cjk-patch,Inter,sys=
+tem-ui,-apple-system,&quot;system-ui&quot;,&quot;Segoe UI&quot;,Roboto,Oxyg=
+en,Ubuntu,Cantarell,&quot;Open Sans&quot;,&quot;Helvetica Neue&quot;,sans-s=
+erif;font-size:16px"><span style=3D"font-family:Arial,Helvetica,sans-serif;=
+font-size:small"><a href=3D"https://drive.google.com/file/d/1289W13XYDOvUKU=
+xgaKf97ARJkmnqm6yJ" target=3D"_blank">https://drive.google.com/file/d/1289W=
+13XYDOvUKUxgaKf97ARJkmnqm6yJ</a></span></p><p style=3D"margin:16px 0px;font=
+-family:quote-cjk-patch,Inter,system-ui,-apple-system,&quot;system-ui&quot;=
+,&quot;Segoe UI&quot;,Roboto,Oxygen,Ubuntu,Cantarell,&quot;Open Sans&quot;,=
+&quot;Helvetica Neue&quot;,sans-serif;font-size:16px"><span style=3D"color:=
+rgb(0,0,0)">Please note that the documentation is still being refined and c=
+ross-referenced. Additional information may follow as the analysis progress=
+es. I believe it is in the DGAC=E2=80=99s interest to review this material =
+thoroughly, as it highlights serious procedural and regulatory concerns inv=
+olving LATAM Airlines and multiple airport authorities.</span></p><p style=
+=3D"margin:16px 0px;font-family:quote-cjk-patch,Inter,system-ui,-apple-syst=
+em,&quot;system-ui&quot;,&quot;Segoe UI&quot;,Roboto,Oxygen,Ubuntu,Cantarel=
+l,&quot;Open Sans&quot;,&quot;Helvetica Neue&quot;,sans-serif;font-size:16p=
+x"><span style=3D"background-color:rgb(255,255,255)"><font color=3D"#000000=
+">I would also like to reiterate the key question from my initial communica=
+tion:</font></span></p><blockquote style=3D"border-left:1.33333px solid rgb=
+(129,133,140);margin:16px 0px 0px;padding-left:14px;font-family:quote-cjk-p=
+atch,Inter,system-ui,-apple-system,&quot;system-ui&quot;,&quot;Segoe UI&quo=
+t;,Roboto,Oxygen,Ubuntu,Cantarell,&quot;Open Sans&quot;,&quot;Helvetica Neu=
+e&quot;,sans-serif;font-size:16px"><p style=3D"margin:0px"><span style=3D"f=
+ont-weight:600;background-color:rgb(255,255,255)"><font color=3D"#000000">=
+=C2=A0What procedures does the DGAC intend to initiate based on the documen=
+tation provided, and what is your official position regarding the events de=
+scribed?</font></span></p></blockquote><p style=3D"margin:16px 0px;font-fam=
+ily:quote-cjk-patch,Inter,system-ui,-apple-system,&quot;system-ui&quot;,&qu=
+ot;Segoe UI&quot;,Roboto,Oxygen,Ubuntu,Cantarell,&quot;Open Sans&quot;,&quo=
+t;Helvetica Neue&quot;,sans-serif;font-size:16px"><span style=3D"background=
+-color:rgb(255,255,255)"><font color=3D"#000000">I expect formal acknowledg=
+ment of receipt and a clear response regarding the DGAC=E2=80=99s intended =
+actions. This is not merely a passenger complaint but a documented case inv=
+olving potential violations of Chilean aviation law, passenger rights, and =
+international standards.</font></span></p><p style=3D"margin:16px 0px;font-=
+family:quote-cjk-patch,Inter,system-ui,-apple-system,&quot;system-ui&quot;,=
+&quot;Segoe UI&quot;,Roboto,Oxygen,Ubuntu,Cantarell,&quot;Open Sans&quot;,&=
+quot;Helvetica Neue&quot;,sans-serif;font-size:16px"><span style=3D"backgro=
+und-color:rgb(255,255,255)"><font color=3D"#000000">Thank you for your atte=
+ntion to this matter. I look forward to your timely and substantive reply.<=
+/font></span></p><p style=3D"margin:16px 0px;font-family:quote-cjk-patch,In=
+ter,system-ui,-apple-system,&quot;system-ui&quot;,&quot;Segoe UI&quot;,Robo=
+to,Oxygen,Ubuntu,Cantarell,&quot;Open Sans&quot;,&quot;Helvetica Neue&quot;=
+,sans-serif;font-size:16px"><span style=3D"background-color:rgb(255,255,255=
+)"><font color=3D"#000000">Kind regards,<br></font></span></p><span style=
+=3D"font-family:quote-cjk-patch,Inter,system-ui,-apple-system,&quot;system-=
+ui&quot;,&quot;Segoe UI&quot;,Roboto,Oxygen,Ubuntu,Cantarell,&quot;Open San=
+s&quot;,&quot;Helvetica Neue&quot;,sans-serif;font-size:16px;background-col=
+or:rgb(255,255,255)"><font color=3D"#000000">Leandro Disconzi</font></span>=
+</div><div dir=3D"ltr"><br></div><div dir=3D"ltr"><br></div><div dir=3D"ltr=
+"><span style=3D"background-color:rgb(255,255,255)"><font color=3D"#000000"=
+></font></span><span style=3D"background-color:rgb(255,255,255)"><font colo=
+r=3D"#000000"></font></span></div><br><div class=3D"gmail_chip gmail_drive_=
+chip" style=3D"width:386px;height:20px;max-height:20px;background-color:rgb=
+(245,245,245);margin:6px 0px;padding:10px;color:rgb(34,34,34);font:400 14px=
+/20px &quot;Google Sans&quot;,sans-serif;border:1px solid rgb(221,221,221)"=
+><a href=3D"https://drive.google.com/file/d/1289W13XYDOvUKUxgaKf97ARJkmnqm6=
+yJ/view?usp=3Ddrive_web" style=3D"color:rgb(32,33,36);display:inline-block;=
+overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:n=
+one;border:none;width:100%" aria-label=3D"LA8159_incident_partial_documenta=
+tion.zip" target=3D"_blank"><img style=3D"vertical-align: text-bottom; bord=
+er: none; padding-right: 10px; height: 20px;" alt=3D"" src=3D"https://ssl.g=
+static.com/docs/doclist/images/icon_10_generic_list.png">=C2=A0<span dir=3D=
+"ltr" style=3D"vertical-align:bottom">LA8159_incident_partial_documentation=
+.zip</span></a></div><span style=3D"background-color:rgb(255,255,255)"><fon=
+t color=3D"#000000"><br></font></span><div class=3D"gmail_quote"><div dir=
+=3D"ltr" class=3D"gmail_attr"><span style=3D"background-color:rgb(255,255,2=
+55)"><font color=3D"#000000">On Mon, 3 Nov 2025 at 13:27, REGISTRATURA DGAC=
+ &lt;<a href=3D"mailto:registratura@dgac.gob.cl" target=3D"_blank">registra=
+tura@dgac.gob.cl</a>&gt; wrote:<br></font></span></div><blockquote class=3D=
+"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(2=
+04,204,204);padding-left:1ex"><div dir=3D"ltr"><div><div style=3D"font-fami=
+ly:arial,sans-serif;font-size:small"><span style=3D"background-color:rgb(25=
+5,255,255)"><font color=3D"#000000">ESTIMADO SR DISCONZI</font></span></div=
+><div style=3D"font-family:arial,sans-serif;font-size:small"><span style=3D=
+"background-color:rgb(255,255,255)"><font color=3D"#000000">BUENAS TARDES, =
+SE SOLICITA ENVIAR NUEVAMENTE LOS ANTECEDENTES ENVIADOS YA QUE NO TENEMOS A=
+CCESO A ELLOS, SOLICITA SU ENV=C3=8DO PARA DAR INGRESO A SU SOLICITUD.</fon=
+t></span></div><div style=3D"font-family:arial,sans-serif;font-size:small">=
+<span style=3D"background-color:rgb(255,255,255)"><font color=3D"#000000"><=
+br></font></span></div><div style=3D"font-family:arial,sans-serif;font-size=
+:small"><span style=3D"background-color:rgb(255,255,255)"><font color=3D"#0=
+00000">ESPERANDO SU PRONTA RESPUESTA</font></span></div><div style=3D"font-=
+family:arial,sans-serif;font-size:small"><span style=3D"background-color:rg=
+b(255,255,255)"><font color=3D"#000000"><br></font></span></div><div style=
+=3D"font-family:arial,sans-serif;font-size:small"><p style=3D"margin:7.95pt=
+ 0cm 0cm 5.75pt;font-size:11.5pt;font-family:Tahoma,sans-serif;font-weight:=
+bold"><span style=3D"background-color:rgb(255,255,255)"><font color=3D"#000=
+000"><span lang=3D"EN-US">Atte.</span><span lang=3D"EN-US"></span></font></=
+span></p>
+
+<p style=3D"margin:0.25pt 0cm 0cm 5.75pt;font-size:11.5pt;font-family:Tahom=
+a,sans-serif;font-weight:bold"><span style=3D"background-color:rgb(255,255,=
+255)"><font color=3D"#000000"><span lang=3D"EN-US">Yessica Rodr=C3=ADguez L=
+=C3=B3pez</span><span lang=3D"EN-US"></span></font></span></p>
+
+<p style=3D"margin:0.2pt 0cm 0cm 5.75pt;font-size:11.5pt;font-family:Tahoma=
+,sans-serif;font-weight:bold"><span style=3D"background-color:rgb(255,255,2=
+55)"><font color=3D"#000000"><span lang=3D"EN-US" style=3D"font-family:&quo=
+t;Arial Narrow&quot;,sans-serif">Oficina
+Central de Partes</span><span lang=3D"EN-US" style=3D"font-family:&quot;Ari=
+al Narrow&quot;,sans-serif"></span></font></span></p>
+
+<p style=3D"margin:0.1pt 55.8pt 0.0001pt 5.75pt;line-height:101%;font-size:=
+11.5pt;font-family:Tahoma,sans-serif;font-weight:bold"><span style=3D"backg=
+round-color:rgb(255,255,255)"><font color=3D"#000000"><span lang=3D"EN-US">=
+Secci=C3=B3n Integral de Informaci=C3=B3n y
+Documentaci=C3=B3n Departamento Secretar=C3=ADa General</span><span lang=3D=
+"EN-US"></span></font></span></p>
+
+<p class=3D"MsoNormal" style=3D"margin:0cm 0cm 0cm 5.75pt;line-height:10.85=
+pt;font-size:11pt;font-family:Tahoma,sans-serif"><span style=3D"background-=
+color:rgb(255,255,255)"><font color=3D"#000000"><b><span lang=3D"EN-US" sty=
+le=3D"font-size:9.5pt;font-family:&quot;Arial Narrow&quot;,sans-serif">Dire=
+cci=C3=B3n General de Aeron=C3=A1utica Civil - Chile</span></b><b><span lan=
+g=3D"EN-US" style=3D"font-size:9.5pt;font-family:&quot;Arial Narrow&quot;,s=
+ans-serif"></span></b></font></span></p></div><span style=3D"background-col=
+or:rgb(255,255,255)"><font color=3D"#000000"><br clear=3D"all"></font></spa=
+n></div><div><div dir=3D"ltr" class=3D"gmail_signature"><div dir=3D"ltr"><d=
+iv><font size=3D"1" color=3D"#000000"><b><span style=3D"background-color:rg=
+b(255,255,255)"><br></span></b></font></div><font size=3D"1" style=3D"backg=
+round-color:rgb(255,255,255)" color=3D"#000000"><span style=3D"font-weight:=
+bold"><div><font size=3D"1"><b><br></b></font></div><div><font size=3D"1"><=
+b><br></b></font></div><div><font size=3D"1"><b><br></b></font></div><div><=
+font size=3D"1"><b><br></b></font></div><div><font size=3D"1"><b><br></b></=
+font></div><div><font size=3D"1"><b><br></b></font></div><div><font size=3D=
+"1"><b><br></b></font></div><div><font size=3D"1"><b><br></b></font></div><=
+div style=3D"text-align:center"><b>HORARIO ATENCI=C3=93N OFICINA CENTRAL DE=
+ PARTES DGAC</b></div></span><div style=3D"text-align:center"><span style=
+=3D"font-weight:700"><br></span></div><span style=3D"font-weight:bold"><div=
+ style=3D"text-align:center">INFORMA QUE PARA ENTREGA DE DOCUMENTACI=C3=93N=
+ EN PAPEL DE FORMA PRESENCIAL ES DE=C2=A0LUNES A JUEVES DE 08:30 A 16:30, Y=
+ VIERNES DE 08:30 A 15:30 HORAS.</div></span><div style=3D"text-align:cente=
+r"><br></div><span style=3D"font-weight:bold"><div style=3D"text-align:cent=
+er">ENV=C3=8DO DE DOCUMENTACI=C3=93N V=C3=8DA MAIL A CORREO=C2=A0<a href=3D=
+"mailto:registratura@dgac.gob.cl" target=3D"_blank">registratura@dgac.gob.c=
+l</a>, EN MISMO</div></span><div style=3D"text-align:center"><span style=3D=
+"font-weight:bold">HORARIO MENCIONADO ANTERIORMENTE, TODO DOCUMENTO QUE LLE=
+GUE DESPU=C3=89S DE ESA=C2=A0</span><span style=3D"font-weight:bold">HORA, =
+SER=C3=81 TRAMITADO EL D=C3=8DA H=C3=81BIL SIGUIENTE.</span></div></font></=
+div></div></div></div>
+</blockquote></div></div>
+</div>
+</blockquote></div>
+
+--000000000000e669f00642ec2ce9--

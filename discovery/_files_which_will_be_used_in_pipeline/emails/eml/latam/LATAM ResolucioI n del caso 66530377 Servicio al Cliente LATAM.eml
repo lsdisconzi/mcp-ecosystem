@@ -1,0 +1,491 @@
+Delivered-To: disconzi@stockaware.co.uk
+Received: by 2002:a05:7208:80aa:b0:a2:ba01:7f2c with SMTP id k42csp5982788rbd;
+        Fri, 4 Jul 2025 12:50:41 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IEUx2wZWybvHxH46tKzEOb3Sw+u4I/SaR9asSJywAb5Xcc3Kh/55DT2kLL24cliQNG8yvkG
+X-Received: by 2002:ad4:5d61:0:b0:6fa:bedb:f61d with SMTP id 6a1803df08f44-702c6d4bdb8mr55692646d6.14.1751658641177;
+        Fri, 04 Jul 2025 12:50:41 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1751658641; cv=none;
+        d=google.com; s=arc-20240605;
+        b=MldWVzt15zjRVGFQPtPpDtpDzYD3AHm+G+54v33mMHwUUPW5nG8LKygpKioL0zt3uh
+         FcykdeTh2rWv8P/aIEokREvY4unhzxP4brq1N45sE9MQHt9ld+OY7pxsZMiBwPg49S2q
+         Sa8Dn3x71CSZn+w+YPVHSZPzMuxMlFGAzyU7Ym5XT2grGcAKbnniJoD9CKX5S/i0PFGv
+         csiNKvE+GTcPTbf5T17/XKhntzbE+ccNZ72O31tSIG8ZR6sOHksbr6SrWQPBF5nyJ1p+
+         Wik9IhJcc5cjQy9zBnonfydyvEYAzIkHGbpcG5C5XJgkrqJ1ohnmEjV4CpH5+VzwmKwy
+         l8Vw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=dkim-signature:auto-submitted:content-transfer-encoding
+         :mime-version:subject:references:in-reply-to:message-id:to:reply-to
+         :from:date;
+        bh=wC9gCOYefrCtRIBU2MRhCejCvOVd8jP37Yvofxqu/Bg=;
+        fh=2b1yST7DuP3xWE48hufBcZnWajQ6LqQPPId/PxZqM/o=;
+        b=E3oiiDg40cgiO+wvQgj7Dj+3ShSBb5SMFko0mVfAzt1WU3xzkobMwuBZXxpVb0V0E8
+         4ygB9Ac9T4lrW+gKAzcUp7dQAiBMxtg3Gru4yD3xU8EVv+j5fc78qwPp0edQDNLtLB30
+         7El7pMmIMS3SOq9mDXLDTBNE9LrEvzAsq/wrsWpUXCI1N6avIHFkiKYG89gHFl5o1z4V
+         Rbh7qt1LzRdjm3ZO7IiIVBiub+yS6fp0EYh9nxshItMTJz92Toq4FNeVPYmXVyiss1nH
+         hKXi8+s1ZKhytAhwQiippkFsE3hng4PcjbyEOuxPiXZdwDgOU40acLucCA2K1ypIE4wf
+         IIiw==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@sac.latam.com header.s=zendesk1 header.b=giXSCaja;
+       spf=pass (google.com: domain of grp_customerservice@sac.latam.com designates 192.161.149.2 as permitted sender) smtp.mailfrom=grp_customerservice@sac.latam.com;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=sac.latam.com
+Return-Path: <grp_customerservice@sac.latam.com>
+Received: from mta-out2.pod19.use1.zdsys.com (mta-out2.pod19.use1.zdsys.com. [192.161.149.2])
+        by mx.google.com with ESMTPS id af79cd13be357-7d5dbdc94d9si283171485a.6.2025.07.04.12.50.41
+        for <disconzi@stockaware.co.uk>
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 04 Jul 2025 12:50:41 -0700 (PDT)
+Received-SPF: pass (google.com: domain of grp_customerservice@sac.latam.com designates 192.161.149.2 as permitted sender) client-ip=192.161.149.2;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@sac.latam.com header.s=zendesk1 header.b=giXSCaja;
+       spf=pass (google.com: domain of grp_customerservice@sac.latam.com designates 192.161.149.2 as permitted sender) smtp.mailfrom=grp_customerservice@sac.latam.com;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=sac.latam.com
+Received: from zendesk.com (unknown [127.0.0.6])
+	by mta-out15.pod19.use1.zdsys.com (Zendesk) with ESMTP
+	id 837fc8be-7336-4d77-a9f2-8617cd7964c4
+	for <disconzi@stockaware.co.uk>;
+	Fri, 04 Jul 2025 19:50:40 +0000 (UTC)
+Date: Fri, 04 Jul 2025 19:50:40 +0000
+From: "Christopher Calle (LATAM Airlines)" <grp_customerservice@sac.latam.com>
+Reply-To: LATAM Airlines <grp_customerservice@sac.latam.com>
+To: Leandro Salton Disconzi <disconzi@stockaware.co.uk>
+Message-ID: <76X5RK75DGX_6868309087f19_62159047684_sprut@zendesk.com>
+In-Reply-To: <CAJqux=A5o4N=eU=coqPGQ__fS8CsmhJyKPv0sNN+qE4UaJiPVQ@mail.gmail.com>
+ <76X5RK75DGX_6866960cb6a62_801578567675_sprut@zendesk.com>
+References: <76X5RK75DGX@zendesk.com>
+ <CAJqux=A5o4N=eU=coqPGQ__fS8CsmhJyKPv0sNN+qE4UaJiPVQ@mail.gmail.com>
+Subject: =?UTF-8?Q?[LATAM]_Resoluci=C3=B3n_del_caso_#66530377_[Servicio_al?=
+ =?UTF-8?Q?_Cliente_LATAM]?=
+Mime-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="--==_mimepart_68683090c208f_621590477c9";
+ charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Delivery-Context: event-id-42727732880531
+Auto-Submitted: auto-generated
+X-Auto-Response-Suppress: All
+X-Mailer: Zendesk Mailer
+X-Zendesk-From-Account-Id: 387974e
+X-Zendesk-Email-Id: 01JZBFVCVRZFHAQKFFFCBDGTK5
+DKIM-Signature:  v=1; a=rsa-sha256; c=relaxed/relaxed; d=sac.latam.com;
+ q=dns/txt; s=zendesk1; t=1751658640;
+ bh=wC9gCOYefrCtRIBU2MRhCejCvOVd8jP37Yvofxqu/Bg=;
+ h=date:from:reply-to:to:message-id:in-reply-to:references:subject:mime-version:content-type:content-transfer-encoding;
+ b=giXSCajaNQk0qdTcXf7SPQ7aSyCSY9IfYsOezZ2sWdxPCpCTzLbHIk/wJQUyyrIHQerYySdU+N64p+0uMQjWPBtmLdFgIcI+U8BMbLU0nKpRxvL74C5d16iTqfUqkZLsQvZ3armCefCZWKIBdOzih2wkOXJDqW+r/R16W1ewLVYtKPH/y35b/oz8tenk+t5V2kSjF+7YRQAhAmjS24Anq5fduWlk2nJYyFm7+AtZgRHPBJQETdXGugCc4vX0AKEy6s5saxzXkEW3fkJJ2aUhpmsYGRvKTHn8nY2f9P51+BBEF7rE24UeBsJw2d8c0WECtasTgACT8jZ4Qon3QSeaeQ==
+
+
+----==_mimepart_68683090c208f_621590477c9
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+##- Por favor, escriba su respuesta por encima de esta l=C3=ADnea -##=0D
+=0D
+----------------------------------------------=0D
+=0D
+Actualizado por: Christopher Calle, 4 jul 2025, 15:50 GMT-4=0D
+=0D
+Estimado se=C3=B1or Disconzi,=0D
+=0D
+Previo cordial saludo, intentamos comunicarnos con usted a los n=C3=BAmer=
+os +56 9 4661 8020 y +56 9 3300 5619 sin =C3=A9xito.=0D
+=0D
+Por medio de la presente, queremos comentarle que verificamos que no fuer=
+an encontrados impedimentos en nuestros sistemas de modo que  usted puede=
+ realizar la compra de boletos a=C3=A9reos para viajar con nuestra aerol=C3=
+=ADnea desde nuestros distintos canales de atenci=C3=B3n (como latamairli=
+nes.com o contact center). Le sugerimos intentar nuevamente y, en caso de=
+ persistir el inconveniente, quedamos disponibles para asistirle.=0D
+=0D
+Respecto al proceso de reembolso de los tickets que no fueron utilizados,=
+ confirmamos que los montos correspondientes a sus boletos y servicios ad=
+icionales han sido gestionados de la siguiente manera:=0D
+=0D
+**Reserva DSNKVQ **=0D
+Boleto 9572163235166:=0D
+Reembolsado por BRL 1.152,03 a la tarjeta de cr=C3=A9dito terminada en 90=
+15.=0D
+Equipaje 9574432089409 (servicio adicional):=0D
+Reembolsado por BRL 276,14 a la tarjeta terminada en 9015.=0D
+Penalidad por reembolso:=0D
+BRL 500,22 (este monto ser=C3=A1 abonado pr=C3=B3ximamente a su LATAM Wal=
+let y le notificaremos cuando est=C3=A9 disponible).=0D
+=0D
+**Reserva HMORLG**=0D
+Boleto 9572149796762:=0D
+Reembolsado por BRL 1.518,03 a la tarjeta terminada en 6788.=0D
+Equipaje 9574427079069:=0D
+Reembolsado por BRL 250,60 a la tarjeta terminada en 6788.=0D
+Equipaje 9574427436844:=0D
+Reembolsado por BRL 309,76 a la tarjeta terminada en 6788.=0D
+=0D
+Adicionalmente, queremos informarle que los reembolsos siempre se procesa=
+n hacia la entidad bancaria emisora de la tarjeta de cr=C3=A9dito utiliza=
+da en la compra. Si su tarjeta fue bloqueada o reemplazada, el reembolso =
+ser=C3=A1 gestionado por su banco y reflejado en la nueva tarjeta o cuent=
+a asociada. En caso de que la tarjeta est=C3=A9 inactiva, le recomendamos=
+ contactar directamente a su banco, quienes le indicar=C3=A1n el procedim=
+iento para acceder a los fondos reembolsados.=0D
+=0D
+Por =C3=BAltimo, en cuanto a su solicitud de acceso a documentos, grabaci=
+ones de c=C3=A1maras y otros antecedentes, le informamos que, por normati=
+va de protecci=C3=B3n de datos y seguridad, estos solo pueden ser entrega=
+dos ante requerimiento formal de la autoridad competente.=0D
+=0D
+Quedamos atentos a cualquier consulta adicional que desee realizar.=0D
+=0D
+Atentamente.=0D
+=0D
+Christopher E. Calle=0D
+Equipo LATAM Airlines=0D
+=0D
+=0D
+=0D
+<p style=3D"display: none;">"Mercado" xp_Brasil</p>=0D
+=0D
+=0D
+=0D
+=0D
+--------------------------------=0D
+Este correo electr=C3=B3nico es un servicio de LATAM.=0D
+=0D
+=0D
+=0D
+=0D
+=0D
+=0D
+=0D
+=0D
+=0D
+[76X5RK-75DGX]=
+
+----==_mimepart_68683090c208f_621590477c9
+Content-Type: text/html;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns=3D"http://www.w3.org/1999/xhtml"><head>=0D
+  <meta content=3D"text/html; charset=3DISO-8859-1" http-equiv=3D"Content=
+-Type">=0D
+  <meta content=3D"width=3Ddevice-width, initial-scale=3D1, minimum-scale=
+=3D1, maximum-scale=3D1" name=3D"viewport">=0D
+  <meta name=3D"googlebot" content=3D"noindex">=0D
+  <meta name=3D"robots" content=3D"noindex">=0D
+      <link rel=3D"shortcut icon" href=3D"https://www.latam.com/construye=
+ndo-latam/wp-content/themes/latam-ES/favicon.ico" type=3D"image/png">=0D
+  <style type=3D"text/css">=0D
+body {=0D
+  -webkit-text-size-adjust: none;=0D
+}=0D
+@media only screen and (min-device-width : 320px) and (max-device-width :=
+ 480px), (max-width : 480px) {=0D
+*[class].content {=0D
+ width: 100%;=0D
+}=0D
+*[class].mobileTextCenter {=0D
+  text-align:center !important;=0D
+}=0D
+*[class].mobileTextLeft {=0D
+  text-align:left !important;=0D
+}=0D
+ *[class].banner {=0D
+ width: 100%;=0D
+ height: auto;=0D
+}=0D
+ *[class].oferta {=0D
+ width: 90%;=0D
+ height: auto;=0D
+}=0D
+ *[class].mobileStack {=0D
+ display:block;=0D
+ width: 100% !important;=0D
+ margin-bottom:15px;=0D
+}=0D
+ *[class].mobileFormTexto {=0D
+ display:block;=0D
+ width: 100% !important;=0D
+ margin-bottom:15px;=0D
+ font-size:12px !important;=0D
+}=0D
+ *[class].mobileBotonera {=0D
+ font-size:9px !important;=0D
+}=0D
+        =0D
+ *[class].mobileBotonera2 {=0D
+ font-size:20px !important;=0D
+}        =0D
+ *[class].mobilemargin {=0D
+ text-align:left !important;=0D
+ padding-left:15px;=0D
+ padding-bottom:15px;=0D
+ font-size:12px !important;=0D
+}=0D
+ *[class].mobileBanner {=0D
+ display:block;=0D
+ width: 100% !important;=0D
+ margin-bottom:0px;=0D
+}=0D
+ *[class].mobileBanner1 {=0D
+ display:block;=0D
+ width: 100% !important;=0D
+ margin-bottom:0px;=0D
+ text-align:left !important;=0D
+ margin-left:15px;=0D
+}=0D
+ *[class].mobileBanner2 {=0D
+ display:block;=0D
+ width: 100% !important;=0D
+ margin-bottom:0px;=0D
+ text-align:left !important;=0D
+ margin-left:35px;=0D
+}=0D
+ *[class].header-mobile {=0D
+ display:block;=0D
+ width: 100% !important;=0D
+ font-size:5px;=0D
+}=0D
+*[class].mobileHide {=0D
+ display:none !important;=0D
+}=0D
+ *[class].mobileTarifa {=0D
+ display:block;=0D
+ width: 100% !important;=0D
+ margin-bottom:0px;=0D
+}=0D
+</style>=0D
+  <style type=3D"text/css">=0D
+a.disabled {=0D
+  pointer-events: none !important;=0D
+  cursor: default !important;=0D
+}=0D
+a:link {=0D
+  text-decoration:none;=0D
+} /* Link no visitado*/=0D
+a:visited {=0D
+  text-decoration:none;=0D
+} /*Link visitado*/=0D
+a:active {=0D
+  text-decoration:none;=0D
+} /*Link activo*/=0D
+a:hover {=0D
+  text-decoration:underline;=0D
+} /*Mause sobre el link*/=0D
+.zd-comment {=0D
+  color: #10004F !important;=0D
+  text-align: justify;=0D
+}=0D
+p.libro_1{=0D
+  width: 200px=0D
+  text-decoration: bold=0D
+}=0D
+p.libro_2{=0D
+  width: 200px=0D
+}=0D
+</style>=0D
+  <title>LATAM</title>=0D
+</head>=0D
+=0D
+<body bgcolor=3D"#ededed"><table width=3D"100%" border=3D"0" cellspacing=3D=
+"0" cellpadding=3D"0">=0D
+  <tbody><tr>=0D
+    <td width=3D"25"></td>=0D
+    <td width=3D"275" style=3D"color:#300090; text-align:center; padding-=
+bottom:10px;" class=3D"mobileTextCenter">##- Por favor, escriba su respue=
+sta por encima de esta l=C3=ADnea -##</td> =0D
+    <td width=3D"25"></td>=0D
+  </tr>=0D
+</tbody></table>=0D
+=0D
+=0D
+=0D
+<table border=3D"0" cellspacing=3D"0" width=3D"100%" bgcolor=3D"#ededed">=
+=0D
+<tbody><tr>=0D
+  <td>=0D
+=0D
+<table width=3D"600" align=3D"center" class=3D"content">=0D
+  <tbody><tr>=0D
+      <td>=0D
+<!-- CONTENIDO INICIO -->=0D
+=0D
+<!-- HEADER -->=0D
+<table width=3D"100%" height=3D"66" border=3D"0" cellspacing=3D"0" cellpa=
+dding=3D"0" bgcolor=3D"#1B0088">=0D
+  <tbody><tr>=0D
+    <!--<td><a href=3D"http://www.lan.com/es_cl/sitio_personas/index.html=
+?utm_content=3DLogo" title=3D"LATAM Airlines" target=3D"_blank">-->=0D
+    <td><a href=3D"http://www.latam.com" title=3D"LATAM Airlines" target=3D=
+"_blank" style=3D"color:#1B0088">=0D
+      <table width=3D"100%" border=3D"0" cellspacing=3D"0" cellpadding=3D=
+"0">=0D
+        <tbody><tr>=0D
+          <td width=3D"25" class=3D"mobileHide"> </td>=0D
+          <td width=3D"143" class=3D"mobileBanner" align=3D"center"><a hr=
+ef=3D"www.latam.com"><img src=3D"http://p6.zdassets.com/hc/theme_assets/7=
+61341/200125368/LATAM_horizontal_negativo_RGB.png" width=3D"143" height=3D=
+"66" border=3D"0" alt=3D"LATAM" title=3D"LATAM Airlines" style=3D"font-fa=
+mily:'Trebuchet MS', Arial, Helvetica, sans-serif; color:#FFF; font-size:=
+18px;"></a></td>=0D
+          <td width=3D"370" class=3D"mobileHide"> </td>=0D
+          <!--<td width=3D"37" class=3D"mobileHide"><a href=3D"https://ww=
+w.oneworld.com/"><img src=3D"http://static.cdn.responsys.net/i2/responsys=
+images/latam/contentlibrary/matriz/bloques/estaticos/header_1d/Header_LAT=
+AM_BR/Files/logo_ow.png" width=3D"37" height=3D"37" alt=3D"oneworld" titl=
+e=3D"oneworld" border=3D"0" /></a></td>-->=0D
+          <td width=3D"25" class=3D"mobileHide"> </td>=0D
+        </tr>=0D
+      </tbody></table>=0D
+    </a></td>=0D
+  </tr>=0D
+</tbody></table>=0D
+<!--  HEADER -->=0D
+=0D
+<table width=3D"100%" height=3D"10" border=3D"0" cellspacing=3D"0" cellpa=
+dding=3D"0">=0D
+  <tbody><tr>=0D
+    <td colspan=3D"3" style=3D"padding:10px 20px 10px 20px;font-family:'T=
+rebuchet MS', Arial, Helvetica, sans-serif;font-size:11px;background-colo=
+r:#ffffff;line-height:20px;text-align:justify;">=0D
+      <div>=0D
+         =0D
+        <p dir=3D"ltr"></p><div style=3D"margin-top: 25px" data-version=3D=
+"2"><table class=3D"zd-liquid-comment" width=3D"100%" cellpadding=3D"0" c=
+ellspacing=3D"0" border=3D"0" role=3D"presentation">  <tbody><tr>    <td =
+width=3D"100%" style=3D"padding: 15px 0; border-top: 1px dotted #c5c5c5;"=
+>      <table width=3D"100%" cellpadding=3D"0" cellspacing=3D"0" border=3D=
+"0" style=3D"table-layout:fixed;" role=3D"presentation">        <tbody><t=
+r>                    <td width=3D"100%" style=3D"padding: 0; margin: 0;"=
+ valign=3D"top">            <p style=3D"font-family:'Lucida Grande','Luci=
+da Sans Unicode','Lucida Sans',Verdana,Tahoma,sans-serif; font-size: 15px=
+; line-height: 18px; margin-bottom: 0; margin-top: 0; padding: 0; color:#=
+1b1d1e;" dir=3D"ltr">                                                <str=
+ong>Christopher Calle</strong> (LATAM)                                   =
+       </p>            <p style=3D"font-family:'Lucida Grande','Lucida Sa=
+ns Unicode','Lucida Sans',Verdana,Tahoma,sans-serif; font-size: 13px; lin=
+e-height: 25px; margin-bottom: 15px; margin-top: 0; padding: 0; color:#bb=
+bbbb;" dir=3D"ltr">              4 jul 2025, 15:50 GMT-4            </p> =
+                                   <div class=3D"zd-comment" dir=3D"auto"=
+ style=3D"color: #2b2e2f; line-height: 22px; margin: 15px 0;">Estimado se=
+=C3=B1or Disconzi,<br>&nbsp;<br>Previo cordial saludo, intentamos comunic=
+arnos con usted a los n=C3=BAmeros +56 9 4661 8020 y +56 9 3300 5619 sin =
+=C3=A9xito.<br>&nbsp;<br>Por medio de la presente, queremos comentarle qu=
+e verificamos que no fueran encontrados impedimentos en nuestros sistemas=
+ de modo que&nbsp; usted puede realizar la compra de boletos a=C3=A9reos =
+para viajar con nuestra aerol=C3=ADnea desde nuestros distintos canales d=
+e atenci=C3=B3n (como&nbsp;<a rel=3D"noopener noreferrer" href=3D"http://=
+latamairlines.com"><u>latamairlines.com</u></a> o contact center). Le sug=
+erimos intentar nuevamente y, en caso de persistir el inconveniente, qued=
+amos disponibles para asistirle.<br>&nbsp;<br>Respecto al proceso de reem=
+bolso de los tickets que no fueron utilizados, confirmamos que los montos=
+ correspondientes a sus boletos y servicios adicionales han sido gestiona=
+dos de la siguiente manera:<br>&nbsp;<br><strong>Reserva DSNKVQ&nbsp;</st=
+rong><br>Boleto 9572163235166:&nbsp;&nbsp;<br>Reembolsado por BRL 1.152,0=
+3 a la tarjeta de cr=C3=A9dito terminada en 9015.<br>Equipaje 95744320894=
+09 (servicio adicional):&nbsp;&nbsp;<br>Reembolsado por BRL 276,14 a la t=
+arjeta terminada en 9015.<br>Penalidad por reembolso:&nbsp;&nbsp;<br>BRL =
+500,22 (este monto ser=C3=A1 abonado pr=C3=B3ximamente a su LATAM Wallet =
+y le notificaremos cuando est=C3=A9 disponible).<br>&nbsp;<br><strong>Res=
+erva HMORLG</strong><br>Boleto 9572149796762:&nbsp;&nbsp;<br>Reembolsado =
+por BRL 1.518,03 a la tarjeta terminada en 6788.<br>Equipaje 957442707906=
+9:&nbsp;&nbsp;<br>Reembolsado por BRL 250,60 a la tarjeta terminada en 67=
+88.<br>Equipaje 9574427436844:&nbsp;&nbsp;<br>Reembolsado por BRL 309,76 =
+a la tarjeta terminada en 6788.<br>&nbsp;<br>Adicionalmente, queremos inf=
+ormarle que los reembolsos siempre se procesan hacia la entidad bancaria =
+emisora de la tarjeta de cr=C3=A9dito utilizada en la compra. Si su tarje=
+ta fue bloqueada o reemplazada, el reembolso ser=C3=A1 gestionado por su =
+banco y reflejado en la nueva tarjeta o cuenta asociada. En caso de que l=
+a tarjeta est=C3=A9 inactiva, le recomendamos contactar directamente a su=
+ banco, quienes le indicar=C3=A1n el procedimiento para acceder a los fon=
+dos reembolsados.<br>&nbsp;<br>Por =C3=BAltimo, en cuanto a su solicitud =
+de acceso a documentos, grabaciones de c=C3=A1maras y otros antecedentes,=
+ le informamos que, por normativa de protecci=C3=B3n de datos y seguridad=
+, estos solo pueden ser entregados ante requerimiento formal de la autori=
+dad competente.<br>&nbsp;<br>Quedamos atentos a cualquier consulta adicio=
+nal que desee realizar.<br>&nbsp;<br>Atentamente.<br><div class=3D"signat=
+ure"><p dir=3D"ltr" style=3D"color: #2b2e2f; line-height: 22px; margin: 1=
+5px 0;">Christopher E. Calle<br>=0D
+Equipo LATAM Airlines</p></div></div><p dir=3D"ltr">                     =
+ </p></td>        </tr>      </tbody></table>    </td>  </tr></tbody></ta=
+ble></div><p dir=3D"ltr"></p><p style=3D"display: none;" dir=3D"ltr">"Mer=
+cado" xp_Brasil</p> =0D
+        =0D
+      </div>=0D
+    </td>=0D
+  </tr>=0D
+</tbody></table>=0D
+=0D
+=0D
+<!-- FOOTER -->=0D
+<table width=3D"100%" border=3D"0" align=3D"center" cellpadding=3D"0" cel=
+lspacing=3D"0" bgcolor=3D"#1b0088">=0D
+  <tbody><tr>    =0D
+    <td style=3D"font-family:'Trebuchet MS', Arial, Helvetica, sans-serif=
+; font-size:16px; color:#FFF; padding:10px 25px; text-align:center; displ=
+ay:block;"><a href=3D"" title=3D"Cont=C3=A1ctenos" style=3D"color:#FFF; t=
+ext-decoration:none;">=0D
+      =0D
+        =0D
+        =0D
+          </a><a href=3D"https://www.latam.com/es_cl/centro-de-ayuda/cont=
+acto/" style=3D"color:#FFF; text-decoration:none;" target=3D"_blank" titl=
+e=3D""><strong>=C2=BFNecesitas ayuda? Cont=C3=A1ctanos</strong></a>=0D
+          =0D
+        =0D
+      =0D
+        =0D
+    </td>  =0D
+  </tr> =0D
+=0D
+  <tr>=0D
+    <td style=3D"font-family:'Trebuchet MS', Arial, Helvetica, sans-serif=
+; font-size:16px; color:#FFF; padding:10px 25px; text-align:center; displ=
+ay:block;"><a href=3D"" title=3D"Cont=C3=A1ctenos" style=3D"color:#FFF; t=
+ext-decoration:none;">=0D
+      =0D
+      =0D
+        =0D
+        =0D
+          =0D
+      </a><a href=3D"https://www.latamairlines.com/cl/es/centro-ayuda" st=
+yle=3D"color:#FFF; text-decoration:none;" target=3D"_blank" title=3D""><s=
+trong>Sigue el estado de tu caso en nuestro Centro de Ayuda</strong></a>=0D=
+
+      =0D
+          =0D
+        =0D
+      =0D
+        =0D
+    </td>=0D
+  </tr> =0D
+  =0D
+</tbody></table> =0D
+=0D
+<table width=3D"100%" border=3D"0" cellspacing=3D"0" cellpadding=3D"0">=0D=
+
+  <tbody><tr>=0D
+    <td style=3D" font-family:'Trebuchet MS', Arial, Helvetica, sans-seri=
+f; font-size:11px; text-align:center; color:#808285;padding:20px 25px;">=0D=
+
+=0D
+Para m=C3=A1s informaciones, vis=C3=ADtanos en <a href=3D"http://www.lata=
+m.com" target=3D"_blank" title=3D"www.lan.com" style=3D"color:#808285; te=
+xt-decoration:none;">www.latam.com</a>=0D
+</td></tr><tr>=0D
+<td style=3D" font-family:'Trebuchet MS', Arial, Helvetica, sans-serif; f=
+ont-size:11px; text-align:center; color:#808285;padding:20px 25px;">=0D
+=C2=A9 LATAM Airlines Group S.A. - todos los derechos reservados=0D
+</td>=0D
+=0D
+=0D
+  </tr>=0D
+</tbody></table> =0D
+<!-- FOOTER -->=0D
+<!-- CONTENIDO FINAL -->=0D
+</td></tr></tbody></table>=0D
+</td></tr>=0D
+</tbody></table>=0D
+<span style=3D"color:#FFFFFF" aria-hidden=3D"true" class=3D"zd_encoded_id=
+">[76X5RK-75DGX]</span>=0D
+</body></html>=
+
+----==_mimepart_68683090c208f_621590477c9--

@@ -77,6 +77,11 @@ const SESSION_ID_RE = /^[A-Za-z0-9._-]{1,80}$/;
 const WORKSPACE_META_DIR = ".discovery";
 const WORKSPACE_EXPORT_FORMAT = "awareness-discovery-workspace-export";
 const WORKSPACE_EXPORT_VERSION = "2.0";
+const SESSION_META_FORMAT = "awareness-discovery-session-meta";
+const SESSION_META_VERSION = 1;
+const SESSION_META_FILE = "session.json";
+const SESSION_RESERVED_PREFIXES = [".", "_"];
+const SESSION_NAME_MAX_LENGTH = 80;
 
 // ********** MUTABLE STATE ************
 let currentRootDir = process.env.ROOT_DIR || path.resolve("./documents_scanned");
@@ -196,6 +201,147 @@ function cleanupGeneratedArtifacts(workspaceRoot) {
     const target = path.resolve(workspaceRoot, rel);
     fs.rmSync(target, { recursive: true, force: true });
   }
+}
+
+// ── Session registry (friendly, named workspaces) ─────────────────────────
+// Each session maps 1:1 to <sessionsBase>/<sessionId>/, with its workspace at
+// <sessionId>/workspace and its metadata (name, timestamps) in a small
+// session.json at the session root (NOT inside workspace/.discovery, which is
+// cleaned up as a generated artifact).
+function sessionsBaseDir() {
+  return path.resolve(DEFAULT_UPLOAD_ROOT, "sessions");
+}
+
+function sessionRootDir(sessionId) {
+  return path.resolve(sessionsBaseDir(), sessionId);
+}
+
+function sessionMetaPath(sessionId) {
+  return path.join(sessionRootDir(sessionId), SESSION_META_FILE);
+}
+
+function defaultSessionName(sessionId) {
+  return `Sessão ${String(sessionId).slice(0, 8)}`;
+}
+
+function sanitizeSessionName(value, sessionId) {
+  const raw = String(value === undefined || value === null ? "" : value)
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!raw) return defaultSessionName(sessionId);
+  return raw.slice(0, SESSION_NAME_MAX_LENGTH).trim() || defaultSessionName(sessionId);
+}
+
+function loadSessionMeta(sessionId) {
+  try {
+    const raw = JSON.parse(fs.readFileSync(sessionMetaPath(sessionId), "utf8"));
+    if (raw && typeof raw === "object" && raw.format === SESSION_META_FORMAT) {
+      return raw;
+    }
+  } catch { /* not present or invalid */ }
+  return null;
+}
+
+function saveSessionMeta(sessionId, fields = {}) {
+  const existing = loadSessionMeta(sessionId) || {};
+  const now = new Date().toISOString();
+  const name = fields.name !== undefined
+    ? sanitizeSessionName(fields.name, sessionId)
+    : (existing.name || defaultSessionName(sessionId));
+
+  const meta = {
+    format: SESSION_META_FORMAT,
+    version: SESSION_META_VERSION,
+    id: sessionId,
+    name,
+    created_at: existing.created_at || fields.created_at || now,
+    updated_at: fields.updated_at !== undefined ? fields.updated_at : now,
+    last_opened_at: fields.last_opened_at !== undefined
+      ? fields.last_opened_at
+      : (existing.last_opened_at || null),
+  };
+
+  fs.mkdirSync(sessionRootDir(sessionId), { recursive: true });
+  fs.writeFileSync(sessionMetaPath(sessionId), JSON.stringify(meta, null, 2));
+  return meta;
+}
+
+function ensureSessionMeta(sessionId) {
+  // Called whenever a session is opened: creates metadata with a default name
+  // for legacy dirs (so they surface in the session list) and refreshes the
+  // last-opened timestamp without touching created_at/updated_at.
+  const existing = loadSessionMeta(sessionId);
+  const now = new Date().toISOString();
+  if (!existing) {
+    return saveSessionMeta(sessionId, { last_opened_at: now });
+  }
+  return saveSessionMeta(sessionId, {
+    name: existing.name,
+    updated_at: existing.updated_at,
+    last_opened_at: now,
+  });
+}
+
+function workspaceStats(workspaceRoot) {
+  // Count real source files (generated artifacts are already skipped by walkDir)
+  // plus their total bytes, without traversing into session metadata.
+  let files = 0;
+  let totalBytes = 0;
+  if (fs.existsSync(workspaceRoot) && fs.statSync(workspaceRoot).isDirectory()) {
+    for (const abs of walkDir(workspaceRoot)) {
+      files += 1;
+      try { totalBytes += fs.statSync(abs).size; } catch { /* skip */ }
+    }
+  }
+  return { files, total_bytes: totalBytes };
+}
+
+function listSessions() {
+  const base = sessionsBaseDir();
+  let entries = [];
+  try {
+    entries = fs.readdirSync(base, { withFileTypes: true });
+  } catch {
+    return []; // sessions dir not created yet
+  }
+
+  const sessions = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    if (SESSION_RESERVED_PREFIXES.some((p) => entry.name.startsWith(p))) continue; // _server_boot, .hidden
+    const sessionId = entry.name;
+    if (!SESSION_ID_RE.test(sessionId)) continue;
+
+    const workspaceRoot = path.resolve(sessionRootDir(sessionId), "workspace");
+    const meta = loadSessionMeta(sessionId);
+    const { files, total_bytes: totalBytes } = workspaceStats(workspaceRoot);
+
+    let mtime = null;
+    try { mtime = fs.statSync(workspaceRoot).mtime.toISOString(); } catch { /* missing */ }
+    const candidates = [
+      meta && meta.updated_at,
+      meta && meta.last_opened_at,
+      meta && meta.created_at,
+      mtime,
+    ].filter(Boolean).sort();
+    const lastActivityAt = candidates.length ? candidates[candidates.length - 1] : null;
+
+    sessions.push({
+      id: sessionId,
+      name: (meta && meta.name) || defaultSessionName(sessionId),
+      created_at: (meta && meta.created_at) || null,
+      updated_at: (meta && meta.updated_at) || null,
+      last_opened_at: (meta && meta.last_opened_at) || null,
+      last_activity_at: lastActivityAt,
+      files,
+      total_bytes: totalBytes,
+      root_dir: workspaceRoot,
+      workspace: workspaceRoot,
+    });
+  }
+
+  sessions.sort((a, b) => String(b.last_activity_at || "").localeCompare(String(a.last_activity_at || "")));
+  return sessions;
 }
 
 function assertSafeRelativePath(incomingPath) {
@@ -873,10 +1019,15 @@ function createDiscoveryApp() {
       fs.mkdirSync(workspaceRoot, { recursive: true });
       if (resetGenerated) cleanupGeneratedArtifacts(workspaceRoot);
 
+      // Register/refresh the friendly session record so legacy workspaces
+      // appear in the session list and the picker can show the right name.
+      const sessionMeta = ensureSessionMeta(sessionId);
+
       const rebuild = rebuildFromDir(workspaceRoot);
       return res.json({
         ok: true,
         user_id: sessionId,
+        session: sessionMeta,
         root_dir: workspaceRoot,
         layout: {
           workspace: workspaceRoot,
@@ -919,6 +1070,83 @@ function createDiscoveryApp() {
         },
         rebuild: { ok: true, ...rebuild },
       });
+    } catch (err) {
+      const status = err.statusCode || 500;
+      return res.status(status).json({ error: err.message });
+    }
+  });
+
+  // ── Session registry (list / create / rename named sessions) ───────
+  app.get("/api/discovery/sessions", (req, res) => {
+    try {
+      const sessions = listSessions();
+      return res.json({ ok: true, total: sessions.length, sessions });
+    } catch (err) {
+      const status = err.statusCode || 500;
+      return res.status(status).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/discovery/sessions", (req, res) => {
+    try {
+      const payload = req.body || {};
+      let sessionId = crypto.randomUUID();
+      let guard = 0;
+      while (fs.existsSync(sessionRootDir(sessionId)) && guard++ < 5) {
+        sessionId = crypto.randomUUID();
+      }
+      if (fs.existsSync(sessionRootDir(sessionId))) {
+        const err = new Error("Could not allocate a unique session id");
+        err.statusCode = 409;
+        throw err;
+      }
+
+      const name = sanitizeSessionName(payload.name, sessionId);
+      const workspaceRoot = path.resolve(sessionRootDir(sessionId), "workspace");
+      fs.mkdirSync(workspaceRoot, { recursive: true });
+
+      const sessionMeta = saveSessionMeta(sessionId, {
+        name,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        last_opened_at: new Date().toISOString(),
+      });
+
+      const rebuild = rebuildFromDir(workspaceRoot);
+      return res.status(201).json({
+        ok: true,
+        session: {
+          ...sessionMeta,
+          files: 0,
+          total_bytes: 0,
+          root_dir: workspaceRoot,
+          workspace: workspaceRoot,
+        },
+        rebuild: { ok: true, ...rebuild },
+      });
+    } catch (err) {
+      const status = err.statusCode || 500;
+      return res.status(status).json({ error: err.message });
+    }
+  });
+
+  app.patch("/api/discovery/sessions/:sessionId", (req, res) => {
+    try {
+      const sessionId = getSafeSessionId(req.params.sessionId);
+      if (sessionId === "default") {
+        const err = new Error("Invalid session id");
+        err.statusCode = 400;
+        throw err;
+      }
+      if (!fs.existsSync(sessionRootDir(sessionId))) {
+        const err = new Error("Session not found");
+        err.statusCode = 404;
+        throw err;
+      }
+      const payload = req.body || {};
+      const name = sanitizeSessionName(payload.name, sessionId);
+      const updated = saveSessionMeta(sessionId, { name });
+      return res.json({ ok: true, session: updated });
     } catch (err) {
       const status = err.statusCode || 500;
       return res.status(status).json({ error: err.message });

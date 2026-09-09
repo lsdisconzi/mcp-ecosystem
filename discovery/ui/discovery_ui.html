@@ -52,6 +52,25 @@ nav{position:fixed;top:0;left:0;right:0;height:56px;background:rgba(25,25,23,0.9
 .nav-status .dot{width:7px;height:7px;border-radius:50%;background:var(--gray)}
 .nav-status .dot.live{background:var(--green);box-shadow:0 0 6px rgba(74,158,112,.5)}
 
+/* ─── NAV SESSION CONTROL ─── */
+.nav-session{position:relative}
+.nav-session-btn{display:inline-flex;align-items:center;gap:8px;padding:5px 11px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--white);font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;max-width:240px}
+.nav-session-btn:hover{border-color:rgba(196,98,45,.45);background:var(--amber-lo)}
+.nav-session-btn .sess-icon{color:var(--amber);font-size:11px;flex-shrink:0}
+.nav-session-btn .sess-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+.nav-session-btn .sess-caret{color:var(--gray);font-size:10px;flex-shrink:0}
+.nav-session-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:268px;background:var(--bg-card);border:1px solid var(--border-hi);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.55);overflow:hidden;z-index:160;display:none}
+.nav-session-menu.open{display:block}
+.nav-session-menu-head{padding:9px 14px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--gray);font-family:var(--mono);background:var(--bg);border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-session-menu-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--gray-hi);font-family:var(--sans);font-size:13px;cursor:pointer;text-align:left;transition:background .12s}
+.nav-session-menu-item:last-child{border-bottom:none}
+.nav-session-menu-item:hover{background:var(--amber-lo);color:var(--white)}
+.nav-session-menu-item>i{color:var(--amber);font-size:12px;width:16px;text-align:center;flex-shrink:0}
+.nav-session-menu-item .smi-body{display:flex;flex-direction:column;min-width:0}
+.nav-session-menu-item .smi-title{color:var(--gray-hi);transition:color .12s}
+.nav-session-menu-item:hover .smi-title{color:var(--white)}
+.nav-session-menu-item .smi-sub{font-size:10px;color:var(--gray);font-family:var(--mono);margin-top:1px}
+
 /* ─── CONTAINER ─── */
 .container{max-width:1200px;margin:0 auto;padding:76px 32px 40px}
 
@@ -448,6 +467,27 @@ footer a{color:var(--amber);text-decoration:none}
 .chat-suggestion:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-lo)}
 @media(max-width:480px){.chat-panel{width:calc(100vw - 32px);right:16px;bottom:76px}.chat-fab{right:16px;bottom:16px}}
 
+/* ─── SESSION PICKER ─── */
+.session-picker-wrap{padding:18px 22px}
+.session-picker-meta{font-size:12px;color:var(--gray-hi);margin:0 0 14px;line-height:1.6}
+.session-list{display:flex;flex-direction:column;gap:8px}
+.session-card{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg);cursor:pointer;transition:border-color .15s,background .15s}
+.session-card:hover{border-color:rgba(196,98,45,.45);background:var(--amber-lo)}
+.session-card.active{border-color:var(--amber)}
+.session-card-icon{width:34px;height:34px;border-radius:8px;background:var(--amber-lo);border:1px solid rgba(196,98,45,.25);color:var(--amber);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.session-card-main{flex:1;min-width:0}
+.session-card-name{font-family:var(--serif);font-size:14px;color:var(--white);display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.session-card-sub{font-size:11px;color:var(--gray);font-family:var(--mono);margin-top:3px}
+.session-card-actions{display:flex;gap:4px;flex-shrink:0;opacity:.45;transition:opacity .15s}
+.session-card:hover .session-card-actions{opacity:1}
+.session-card-actions button{background:transparent;border:1px solid transparent;color:var(--gray-hi);border-radius:5px;padding:5px 8px;cursor:pointer;font-size:11px;transition:all .12s}
+.session-card-actions button:hover{border-color:var(--border-hi);color:var(--amber);background:var(--bg)}
+.session-empty{text-align:center;padding:34px 20px;color:var(--gray);font-size:13px}
+.session-empty i{display:block;font-size:30px;margin-bottom:10px;color:var(--border-hi)}
+.session-rename-row{display:flex;gap:8px;align-items:center;flex:1;min-width:0}
+.session-rename-row input[type="text"]{flex:1;min-width:0;padding:7px 10px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--sans);font-size:13px}
+.session-rename-row input[type="text"]:focus{outline:none;border-color:rgba(196,98,45,.5)}
+
 /* ─── INTELLIGENCE TAB ─── */
 .intel-hero{display:flex;align-items:center;gap:16px;padding:20px 22px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin-bottom:18px}
 .intel-hero-icon{width:48px;height:48px;border-radius:10px;background:var(--amber-lo);border:1px solid rgba(196,98,45,.3);display:flex;align-items:center;justify-content:center;color:var(--amber);font-size:20px;flex-shrink:0}
@@ -543,6 +583,24 @@ footer a{color:var(--amber);text-decoration:none}
   </a>
   <div class="nav-right">
     <span class="nav-badge">ONT v2.4</span>
+    <div class="nav-session" id="navSession">
+      <button class="nav-session-btn" id="navSessionBtn" onclick="toggleSessionMenu(event)" title="Gerenciar sessões">
+        <i class="fas fa-layer-group sess-icon"></i>
+        <span class="sess-name" id="navSessionName">carregando…</span>
+        <i class="fas fa-chevron-down sess-caret"></i>
+      </button>
+      <div class="nav-session-menu" id="navSessionMenu">
+        <div class="nav-session-menu-head" id="navSessionMeta">Sessão atual</div>
+        <button class="nav-session-menu-item" onclick="openNewSessionModal()">
+          <i class="fas fa-plus"></i>
+          <span class="smi-body"><span class="smi-title">Nova Sessão</span><span class="smi-sub">começar do zero, workspace limpo</span></span>
+        </button>
+        <button class="nav-session-menu-item" onclick="openSessionPicker()">
+          <i class="fas fa-clock-rotate-left"></i>
+          <span class="smi-body"><span class="smi-title">Continuar Sessão Salva</span><span class="smi-sub">abrir uma sessão anterior</span></span>
+        </button>
+      </div>
+    </div>
     <span class="nav-status" id="serverStatus"><span class="dot" id="statusDot"></span> verificando…</span>
   </div>
 </nav>
@@ -1136,6 +1194,59 @@ footer a{color:var(--amber);text-decoration:none}
   </div>
 </div>
 
+<!-- SESSION PICKER MODAL — continue a saved session -->
+<div class="modal-backdrop hidden" id="sessionPickerModal" onclick="closeSessionPickerOnBackdrop(event)">
+  <div class="modal-box" onclick="event.stopPropagation()" style="max-width:640px">
+    <div class="modal-header">
+      <div class="modal-header-icon"><i class="fas fa-clock-rotate-left"></i></div>
+      <div class="modal-header-meta">
+        <div class="modal-header-name">Continuar Sessão</div>
+        <div class="modal-header-chips"><span class="modal-chip">escolha uma sessão salva ou comece uma nova</span></div>
+      </div>
+      <button class="modal-close" onclick="closeSessionPicker()" title="Fechar">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-content-area" style="padding:0">
+        <div class="session-picker-wrap" id="sessionPickerBody">
+          <div class="modal-loading"><i class="fas fa-spinner fa-spin"></i> Carregando sessões…</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <span style="flex:1;font-size:11px;color:var(--gray)">Clique em uma sessão para continuar de onde parou.</span>
+      <button class="btn btn-sm" onclick="closeSessionPicker()">Fechar</button>
+      <button class="btn btn-sm btn-primary" onclick="openNewSessionModal()"><i class="fas fa-plus"></i> Nova Sessão</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW SESSION MODAL — create a clean session -->
+<div class="modal-backdrop hidden" id="sessionNewModal" onclick="closeSessionNewOnBackdrop(event)">
+  <div class="modal-box" onclick="event.stopPropagation()" style="max-width:460px">
+    <div class="modal-header">
+      <div class="modal-header-icon"><i class="fas fa-plus"></i></div>
+      <div class="modal-header-meta">
+        <div class="modal-header-name">Nova Sessão</div>
+        <div class="modal-header-chips"><span class="modal-chip">workspace limpo, separado das demais</span></div>
+      </div>
+      <button class="modal-close" onclick="closeSessionNew()" title="Fechar">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-content-area">
+        <label style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);margin-bottom:6px">Nome da sessão</label>
+        <input type="text" id="sessionNewName" placeholder="Ex.: Caso LATAM I-002" maxlength="80"
+               style="width:100%;padding:10px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--sans);font-size:13px"
+               onkeydown="if(event.key==='Enter')createNewSession()">
+        <p style="font-size:12px;color:var(--gray-hi);margin:12px 0 0;line-height:1.6"><i class="fas fa-circle-info" style="color:var(--amber);margin-right:4px"></i> Uma sessão nova cria um workspace vazio e isolado. Você poderá voltar a qualquer sessão salva depois.</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-sm" onclick="closeSessionNew()">Cancelar</button>
+      <button class="btn btn-sm btn-primary" id="sessionNewCreateBtn" onclick="createNewSession()"><i class="fas fa-wand-magic-sparkles"></i> Criar Sessão</button>
+    </div>
+  </div>
+</div>
+
 <script src="/assets/llm-provider.js"></script>
 <script>
 // ============================================================================
@@ -1180,7 +1291,301 @@ function getDiscoveryUserId() {
   localStorage.setItem('discoveryUserId', uid);
   return uid;
 }
-const DISCOVERY_USER_ID = getDiscoveryUserId();
+let DISCOVERY_USER_ID = getDiscoveryUserId();
+
+// ── Session management: new / continue / rename ───────────────────
+// Sessions are named workspaces stored server-side under
+// documents_scanned/sessions/<id>/. The active session id lives in
+// localStorage['discoveryUserId'] — the same key used to tag every request
+// with X-Discovery-User-Id.
+let sessionCache = [];
+
+function defaultSessionLabel(id) {
+  return `Sessão ${String(id || '').slice(0, 8)}`;
+}
+
+function setActiveSessionId(id) {
+  DISCOVERY_USER_ID = id;
+  localStorage.setItem('discoveryUserId', id);
+}
+
+function refreshSessionNav(name, id) {
+  const el = document.getElementById('navSessionName');
+  if (el) {
+    el.textContent = name || 'escolher sessão…';
+    el.title = id ? `${name || ''} · ${id}` : '';
+  }
+  const meta = document.getElementById('navSessionMeta');
+  if (meta) meta.textContent = id ? `${name || defaultSessionLabel(id)} · ${String(id).slice(0, 8)}…` : 'Nenhuma sessão ativa';
+}
+
+async function fetchSessions() {
+  try {
+    const r = await fetch(`${DISCOVERY_UI_API}/api/discovery/sessions`, {
+      headers: { 'X-Discovery-User-Id': DISCOVERY_USER_ID },
+    });
+    if (!r.ok) return [];
+    const data = await r.json();
+    return Array.isArray(data.sessions) ? data.sessions : [];
+  } catch (e) {
+    console.warn('fetchSessions:', e);
+    return [];
+  }
+}
+
+function clearUploadQueue() {
+  uploadFiles = [];
+  const organizeBtn = document.getElementById('organizeBtn');
+  if (organizeBtn) organizeBtn.style.display = 'none';
+  const list = document.getElementById('uploadFileList');
+  if (list) list.innerHTML = '';
+  const hint = document.getElementById('browseHint');
+  if (hint) { hint.innerHTML = ''; hint.style.display = 'none'; }
+}
+
+async function activateSession(id, opts = {}) {
+  const silent = Boolean(opts && opts.silent);
+  try {
+    const initResp = await fetch(`${DISCOVERY_UI_API}/api/discovery/init-session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Discovery-User-Id': id },
+      body: JSON.stringify({ user_id: id }),
+    });
+    if (!initResp.ok) {
+      const detail = await initResp.text();
+      showAlert('error', `Falha ao abrir a sessão: ${esc(detail)}`);
+      return false;
+    }
+    const data = await initResp.json();
+    setActiveSessionId(id);
+    activeCategory = null;
+    clearUploadQueue();
+    const session = data.session || {};
+    const label = session.name || defaultSessionLabel(id);
+    refreshSessionNav(label, id);
+    await loadDashboard();
+    if (!silent) {
+      showAlert('success', `<i class="fas fa-check-circle"></i> Sessão <strong>${esc(label)}</strong> aberta.`);
+    }
+    return true;
+  } catch (e) {
+    showAlert('error', `Falha ao abrir a sessão: ${esc(e.message || String(e))}`);
+    return false;
+  }
+}
+
+// ── Nav dropdown ──────────────────────────────────────────────────
+function toggleSessionMenu(ev) {
+  if (ev) ev.stopPropagation();
+  const menu = document.getElementById('navSessionMenu');
+  if (!menu) return;
+  const willOpen = !menu.classList.contains('open');
+  closeSessionMenu();
+  if (willOpen) menu.classList.add('open');
+}
+function closeSessionMenu() {
+  const menu = document.getElementById('navSessionMenu');
+  if (menu) menu.classList.remove('open');
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#navSession')) closeSessionMenu();
+});
+
+// ── Session picker (continue a saved session) ─────────────────────
+async function openSessionPicker() {
+  closeSessionMenu();
+  const modal = document.getElementById('sessionPickerModal');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  setTimeout(() => modal.classList.add('open'), 10);
+  const body = document.getElementById('sessionPickerBody');
+  body.innerHTML = '<div class="modal-loading"><i class="fas fa-spinner fa-spin"></i> Carregando sessões…</div>';
+  sessionCache = await fetchSessions();
+  renderSessionList();
+}
+function closeSessionPicker() {
+  const m = document.getElementById('sessionPickerModal');
+  if (m) { m.classList.remove('open'); setTimeout(() => m.classList.add('hidden'), 180); }
+}
+function closeSessionPickerOnBackdrop(e) { if (e.target.id === 'sessionPickerModal') closeSessionPicker(); }
+
+function renderSessionList() {
+  const body = document.getElementById('sessionPickerBody');
+  if (!body) return;
+  const current = DISCOVERY_USER_ID;
+  if (!sessionCache.length) {
+    body.innerHTML = '<div class="session-picker-wrap"><div class="session-empty"><i class="fas fa-folder-open"></i>Nenhuma sessão salva ainda.<br><span style="font-size:11px">Crie a primeira sessão para começar.</span></div></div>';
+    return;
+  }
+  body.innerHTML = `<div class="session-picker-wrap">
+    <p class="session-picker-meta"><strong>${sessionCache.length}</strong> sessão(ões) neste computador. Escolha uma para continuar de onde parou, ou crie uma nova sessão limpa.</p>
+    <div class="session-list">${sessionCache.map((s) => sessionCardHTML(s, s.id === current)).join('')}</div>
+  </div>`;
+}
+
+function sessionCardHTML(s, isActive) {
+  const label = s.name || defaultSessionLabel(s.id);
+  const last = s.last_activity_at ? new Date(s.last_activity_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+  const word = s.files === 1 ? 'arquivo' : 'arquivos';
+  const activeBadge = isActive ? '<span class="badge" style="background:var(--amber-lo);color:var(--amber);border:1px solid rgba(196,98,45,.25)">atual</span>' : '';
+  return `<div class="session-card ${isActive ? 'active' : ''}" data-id="${esc(s.id)}" onclick="chooseSession('${esc(s.id)}')" title="Continuar esta sessão">
+    <div class="session-card-icon"><i class="fas fa-layer-group"></i></div>
+    <div class="session-card-main">
+      <div class="session-card-name" id="sessName-${esc(s.id)}">${esc(label)} ${activeBadge}</div>
+      <div class="session-card-sub">${s.files} ${word} · ${humanSize(s.total_bytes) || '0 B'} · atividade em ${last}</div>
+    </div>
+    <div class="session-card-actions">
+      <button onclick="event.stopPropagation();startRenameSession('${esc(s.id)}')" title="Renomear sessão"><i class="fas fa-pen"></i></button>
+    </div>
+  </div>`;
+}
+
+async function chooseSession(id) {
+  closeSessionPicker();
+  const s = sessionCache.find((x) => x.id === id);
+  const label = (s && s.name) || defaultSessionLabel(id);
+  showAlert('info', `<i class="fas fa-spinner fa-spin"></i> Abrindo sessão <strong>${esc(label)}</strong>…`);
+  await activateSession(id);
+}
+
+function startRenameSession(id) {
+  const s = sessionCache.find((x) => x.id === id);
+  const nameEl = document.getElementById('sessName-' + id);
+  if (!s || !nameEl) return;
+  nameEl.innerHTML = `<span class="session-rename-row">
+    <input type="text" id="renameInput-${esc(id)}" value="${esc(s.name || '')}" maxlength="80"
+      onkeydown="if(event.key==='Enter'){commitRenameSession('${esc(id)}');}else if(event.key==='Escape'){cancelRenameSession('${esc(id)}');}">
+    <button class="btn btn-sm btn-primary" onclick="commitRenameSession('${esc(id)}')" title="Salvar"><i class="fas fa-check"></i></button>
+    <button class="btn btn-sm" onclick="cancelRenameSession('${esc(id)}')" title="Cancelar"><i class="fas fa-xmark"></i></button>
+  </span>`;
+  const input = document.getElementById('renameInput-' + id);
+  if (input) { input.focus(); input.select(); }
+}
+function cancelRenameSession() { renderSessionList(); }
+
+async function commitRenameSession(id) {
+  const input = document.getElementById('renameInput-' + id);
+  if (!input) return;
+  const name = (input.value || '').trim();
+  if (!name) { cancelRenameSession(); return; }
+  try {
+    const resp = await fetch(`${DISCOVERY_UI_API}/api/discovery/sessions/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'X-Discovery-User-Id': DISCOVERY_USER_ID },
+      body: JSON.stringify({ name }),
+    });
+    const payload = await resp.json().catch(() => null);
+    if (!resp.ok || !payload || !payload.session) {
+      showAlert('error', `Falha ao renomear: ${esc((payload && payload.error) || `HTTP ${resp.status}`)}`);
+      cancelRenameSession();
+      return;
+    }
+    const updated = payload.session;
+    const idx = sessionCache.findIndex((x) => x.id === id);
+    // The PATCH payload only carries identity + timestamps; keep the existing
+    // listing stats (files, bytes, activity) by merging over the old record.
+    const merged = idx >= 0 ? { ...sessionCache[idx], ...updated } : updated;
+    if (idx >= 0) sessionCache[idx] = merged; else sessionCache.unshift(merged);
+    renderSessionList();
+    if (id === DISCOVERY_USER_ID) refreshSessionNav(updated.name, updated.id);
+    showAlert('success', `Sessão renomeada para <strong>${esc(updated.name)}</strong>.`);
+  } catch (e) {
+    showAlert('error', `Falha ao renomear: ${esc(e.message || String(e))}`);
+    cancelRenameSession();
+  }
+}
+
+// ── New (clean) session ───────────────────────────────────────────
+function openNewSessionModal() {
+  closeSessionMenu();
+  closeSessionPicker();
+  const modal = document.getElementById('sessionNewModal');
+  if (!modal) return;
+  const input = document.getElementById('sessionNewName');
+  input.value = `Sessão ${new Date().toLocaleDateString('pt-BR')}`;
+  modal.classList.remove('hidden');
+  setTimeout(() => modal.classList.add('open'), 10);
+  setTimeout(() => { input.focus(); input.select(); }, 120);
+}
+function closeSessionNew() {
+  const m = document.getElementById('sessionNewModal');
+  if (m) { m.classList.remove('open'); setTimeout(() => m.classList.add('hidden'), 180); }
+}
+function closeSessionNewOnBackdrop(e) { if (e.target.id === 'sessionNewModal') closeSessionNew(); }
+
+async function createNewSession() {
+  const btn = document.getElementById('sessionNewCreateBtn');
+  const name = (document.getElementById('sessionNewName').value || '').trim();
+  if (btn) btn.disabled = true;
+  showAlert('info', '<i class="fas fa-spinner fa-spin"></i> Criando nova sessão…');
+  try {
+    const resp = await fetch(`${DISCOVERY_UI_API}/api/discovery/sessions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Discovery-User-Id': DISCOVERY_USER_ID },
+      body: JSON.stringify({ name }),
+    });
+    const payload = await resp.json().catch(() => null);
+    if (!resp.ok || !payload || !payload.session) {
+      showAlert('error', `Falha ao criar a sessão: ${esc((payload && payload.error) || `HTTP ${resp.status}`)}`);
+      return;
+    }
+    const session = payload.session;
+    setActiveSessionId(session.id);
+    closeSessionNew();
+    sessionCache = await fetchSessions();
+    refreshSessionNav(session.name, session.id);
+    activeCategory = null;
+    clearUploadQueue();
+    await loadDashboard();
+    showAlert('success', `<i class="fas fa-check-circle"></i> Nova sessão <strong>${esc(session.name)}</strong> criada — workspace limpo e pronto.`);
+  } catch (e) {
+    showAlert('error', `Falha ao criar a sessão: ${esc(e.message || String(e))}`);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (!document.getElementById('sessionNewModal').classList.contains('hidden')) closeSessionNew();
+  if (!document.getElementById('sessionPickerModal').classList.contains('hidden')) closeSessionPicker();
+});
+
+// Boot: open the stored session, let the user choose, or create a clean one.
+async function bootSession() {
+  sessionCache = await fetchSessions();
+  const activeId = localStorage.getItem('discoveryUserId') || '';
+
+  // 1) Stored active session still exists → open it silently.
+  if (activeId && sessionCache.some((s) => s.id === activeId)) {
+    await activateSession(activeId, { silent: true });
+    return;
+  }
+  // 2) Saved sessions exist, but no stored active one → lightweight chooser.
+  if (sessionCache.length) {
+    refreshSessionNav('escolher sessão…', null);
+    openSessionPicker();
+    return;
+  }
+  // 3) Very first run → auto-create a clean session.
+  try {
+    const resp = await fetch(`${DISCOVERY_UI_API}/api/discovery/sessions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: `Sessão ${new Date().toLocaleDateString('pt-BR')}` }),
+    });
+    const payload = await resp.json().catch(() => null);
+    if (!resp.ok || !payload || !payload.session) {
+      showAlert('error', `Falha ao criar a primeira sessão: ${esc((payload && payload.error) || `HTTP ${resp.status}`)}`);
+      return;
+    }
+    setActiveSessionId(payload.session.id);
+    sessionCache = await fetchSessions();
+    await activateSession(payload.session.id, { silent: true });
+  } catch (e) {
+    showAlert('error', `Falha ao criar a primeira sessão: ${esc(e.message || String(e))}`);
+  }
+}
 
 function normalizeIntelConcurrency(value) {
   const n = Number.parseInt(String(value ?? ''), 10);
@@ -3453,34 +3858,8 @@ async function runComprehension(buttonId = 'intelComprehendBtn') {
   initIntelProfileControl();
   initImportModeControl();
   checkServer();
-  // Initialize per-user workspace (starts from 0 — user only sees their own docs)
-  let sessionInitOk = false;
-  try {
-    const initResp = await fetch(`${DISCOVERY_UI_API}/api/discovery/init-session`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Discovery-User-Id': DISCOVERY_USER_ID,
-      },
-      body: JSON.stringify({ user_id: DISCOVERY_USER_ID })
-    });
-    if (!initResp.ok) {
-      const detail = await initResp.text();
-      showAlert('error', `Falha ao inicializar sessão isolada: ${esc(detail)}`);
-      return;
-    }
-    sessionInitOk = true;
-  } catch(e) {
-    console.warn('init-session:', e);
-    showAlert('error', `Falha ao inicializar sessão isolada: ${esc(e.message || String(e))}`);
-    return;
-  }
-  if (!sessionInitOk) return;
-  try{
-    const r=await fetch(`${CASE_SERVER}/api/endpoints`);
-    const data=await r.json();
-    if(data.length>0) await loadDashboard();
-  } catch{}
+  // Start (or let the user choose / create) the active session.
+  await bootSession();
 })();
 </script>
 </body>

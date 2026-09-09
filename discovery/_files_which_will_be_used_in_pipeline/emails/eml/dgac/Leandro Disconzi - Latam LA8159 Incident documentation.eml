@@ -1,0 +1,204 @@
+Delivered-To: stockawaredev@gmail.com
+Received: by 2002:a05:7000:2c03:b0:79c:a6d4:4138 with SMTP id ea3csp1579046mab;
+        Mon, 3 Nov 2025 08:27:42 -0800 (PST)
+X-Received: by 2002:a17:906:9fcd:b0:b3f:f822:2d9b with SMTP id a640c23a62f3a-b70700b3bd2mr1325996766b.9.1762187262584;
+        Mon, 03 Nov 2025 08:27:42 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1762187262; cv=none;
+        d=google.com; s=arc-20240605;
+        b=haEu5ozhyvBfwjMSaJ7MI8lhLzpfkjtNcgZRpp2r5HbjuJG7s+DKBqx6ewlXWfDreo
+         fGCFmq0oGdwCrR7Q3vYDccMA6Ocg9zqKgE/6ZADS7SVhP3s8GfgWm8soUSVvsoz1IFs4
+         Q3rP4ATN0uZqjqx+gBWzDhK4Vb2ICUCnaEVqytZPaRdnsi1JLyWle7g/3Qo/O6Zs0xbo
+         BNZTOWjauDG2E78ou8up0W5JCDsvWlge6xO55Jde02aUixB/Vw7e4F2PiJ2gTvBFR6mD
+         871Xuy99fKB6olOJ+Zpi4VQEvotvmYp2vExwrIEC94v9CDdH18XzklmLqr/cbOzga6hQ
+         I5XQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
+        bh=cwOBKbsreVFF0lh6ssRYtwME00lw8b1bpH7l5YKbBzs=;
+        fh=aYdKhiBHKVyH5ERkyrBOoYV0aIAFqfkYRab6AXvKZD0=;
+        b=B0pvvtbKpSP5Tw5rN3/xah2qFrIhpLuFu8nuWi4yGVOYQPBENrutkmmwKajwUWZjKo
+         a3EC/GHDcHbkXzyqBYwwDbzLYvv3jxpg3/xyIu8gRzDesyG3Y2A1O45VLJEf9GpzunzD
+         n2APu6aAtklQHe6O7PdowOMk5TDssh7aR1f8fPSSe5Bnp2R/Wvav1xywHZe1pZIZ4NBR
+         DrjCb2tWU+dYMPzxhd92l+U0JPjkcoCs8HpPKxC7pJ+CIqEKde5WpUZj8ZjyHzdbxFsG
+         +5Cob/GjbBJ+cbjOG6eT/rgcbl1kfJ8YsIq1xLmLfLys864ueuqz2ST0Ih7zdWribKBR
+         P3GA==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@dgac-gob-cl.20230601.gappssmtp.com header.s=20230601 header.b=PAXPgFWm;
+       spf=pass (google.com: domain of registratura@dgac.gob.cl designates 209.85.220.41 as permitted sender) smtp.mailfrom=registratura@dgac.gob.cl;
+       dara=pass header.i=@gmail.com
+Return-Path: <registratura@dgac.gob.cl>
+Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])
+        by mx.google.com with SMTPS id a640c23a62f3a-b707797bc35sor320306166b.4.2025.11.03.08.27.42
+        for <stockawaredev@gmail.com>
+        (Google Transport Security);
+        Mon, 03 Nov 2025 08:27:42 -0800 (PST)
+Received-SPF: pass (google.com: domain of registratura@dgac.gob.cl designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@dgac-gob-cl.20230601.gappssmtp.com header.s=20230601 header.b=PAXPgFWm;
+       spf=pass (google.com: domain of registratura@dgac.gob.cl designates 209.85.220.41 as permitted sender) smtp.mailfrom=registratura@dgac.gob.cl;
+       dara=pass header.i=@gmail.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=dgac-gob-cl.20230601.gappssmtp.com; s=20230601; t=1762187261; x=1762792061; dara=google.com;
+        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=cwOBKbsreVFF0lh6ssRYtwME00lw8b1bpH7l5YKbBzs=;
+        b=PAXPgFWmBWALhk1O59NIBrXqbi+fjkWuh2i+aTYkCrRoOmuuhZFkZKR+ySJJKTRwfW
+         kluLcIPKq2nO5W4JbP2rE8Dw/XJdSqaTj5fkCeYnXWS0O0aOKkrvv0fu2L7nlIjzaOcK
+         +Z61Uts6qTiWCoGSA62DCs3hNqEhtfpNic8k1RTqMTpMcz3PYroJdMxKQy3McNZKFyCf
+         rdkkKgWa390TxXBzh+H/xFVxUq9hdCQ0MaYF1VxUAyZzdDeR9fhuQBz21mEIG0aZPAsL
+         6+ZZy6EBM4NtJ9B07ZJEuvZ/Rhklng8shD2GtcTXQ68wuUvhOfct/NqIXQRagxwQKdef
+         V6ig==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1762187261; x=1762792061;
+        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=cwOBKbsreVFF0lh6ssRYtwME00lw8b1bpH7l5YKbBzs=;
+        b=lTX0KphXlYZEb/Kuc5+rBHAy+6jL869U4zScATWei4ArKL8N0wjG1fzjYPK6WwsjKf
+         BSTfeuR6CRfQ4dqtEWBj+8K6TsdVk/ekAMG9xNKrIOzcAjgL95b8Zy7rCiK+HQMSoP2J
+         Z7Pt8TiIA/iYyHeMo2j96AeNyKw2h7XY0c/GZ4Qy076yF5G3+yY2SLXCvyG07ztfh/te
+         ZvMoy3rSQTokHBuqgos3ydDP+3PJvvUT2ritGPx/2lufGH8K8tzuulZJSNBmIIIm0qrw
+         BZvoNWuE5nywfMoLQVQQLkHE2zg6QyTjmqyNzUK1IAAJo5L7n2+qSMwMLe4U52z4lf1D
+         z3TQ==
+X-Gm-Message-State: AOJu0Yyiri6fosstVFLK7OjsqvSBlT/dCcyEGa7KoD4OcAQrnZQo2si/
+	VDv+RrvEZwdZlq839qlRt7znK20sZ93hH9EakNSY4MnfHAeYSXOSfc/cPjmL4Ul2L+ODVCtjAuC
+	LYN18I434RMuVHgzJvWZiyHVU2FiLFDdRNLBd0GwH28QwODsZHmiXTls=
+X-Gm-Gg: ASbGncvldPVe07IXCOVpLeZq+YjmvrpRgRxhXA9O8FGQDGr0ixfNOjG7EBZckjn5HL3
+	sw18e/NxxHSDtgSaoquD4yKNHy1D4gn+b40/jWEZFjwldXP1zz69EvFgTFPaljUagsSZ0LwzURM
+	/ExkhPVpy3eajPV15WAqGM79YbnCqV2Q2W7//z3nP0GaujnKgH2K9hSOuzRiT9Uzqzoj11mfD7T
+	tqhi3MPVV/UQ/xFrESvyj+KEF16EXetclkRNh21gypdGCZG0XtIp8LJks5ZG6kSHpLvnSOiMlME
+	DeEbnak8USvXJX+dxvaYfENDE8p0esqBcZj2ebo8PRSvP1g/gs7jsFKOUSgvIQ==
+X-Google-Smtp-Source: AGHT+IEnPDYrVvqGCvjmjqGy0aNTpXnv5udfYm5cflXFgGIGEgEIpiLCSIxwJ/TdMwQBV9WZlRXTW92W3dpCaN7Ovew=
+X-Received: by 2002:a17:907:7fa8:b0:b3a:a16e:3db8 with SMTP id
+ a640c23a62f3a-b7070178f86mr1352755866b.20.1762187261411; Mon, 03 Nov 2025
+ 08:27:41 -0800 (PST)
+MIME-Version: 1.0
+From: REGISTRATURA DGAC <registratura@dgac.gob.cl>
+Date: Mon, 3 Nov 2025 13:27:29 -0300
+X-Gm-Features: AWmQ_bnZ8TtooGtBcVYodzhZHwKdlYK5wn9rQNKCJSm0h_pLJ0ROxJb0hnpy8C0
+Message-ID: <CAKPh779-PF_t=3Lu81ccyLx6y8h0HCL5hYX9syb4imPgqFRpnQ@mail.gmail.com>
+Subject: Leandro Disconzi - Latam LA8159 Incident documentation
+To: stockawaredev@gmail.com
+Cc: Lissette Del Carmen Galarce Manriquez <lgalarce@dgac.gob.cl>, 
+	Claudio Plinio Pandolfi Garrido <cpandolfi@dgac.gob.cl>
+Content-Type: multipart/alternative; boundary="000000000000bf459b0642b3315c"
+
+--000000000000bf459b0642b3315c
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+ESTIMADO SR DISCONZI
+BUENAS TARDES, SE SOLICITA ENVIAR NUEVAMENTE LOS ANTECEDENTES ENVIADOS YA
+QUE NO TENEMOS ACCESO A ELLOS, SOLICITA SU ENV=C3=8DO PARA DAR INGRESO A SU
+SOLICITUD.
+
+ESPERANDO SU PRONTA RESPUESTA
+
+Atte.
+
+Yessica Rodr=C3=ADguez L=C3=B3pez
+
+Oficina Central de Partes
+
+Secci=C3=B3n Integral de Informaci=C3=B3n y Documentaci=C3=B3n Departamento=
+ Secretar=C3=ADa
+General
+
+*Direcci=C3=B3n General de Aeron=C3=A1utica Civil - Chile*
+
+
+
+
+
+
+
+
+
+
+*HORARIO ATENCI=C3=93N OFICINA CENTRAL DE PARTES DGAC*
+
+INFORMA QUE PARA ENTREGA DE DOCUMENTACI=C3=93N EN PAPEL DE FORMA PRESENCIAL=
+ ES
+DE LUNES A JUEVES DE 08:30 A 16:30, Y VIERNES DE 08:30 A 15:30 HORAS.
+
+ENV=C3=8DO DE DOCUMENTACI=C3=93N V=C3=8DA MAIL A CORREO registratura@dgac.g=
+ob.cl, EN MISMO
+HORARIO MENCIONADO ANTERIORMENTE, TODO DOCUMENTO QUE LLEGUE DESPU=C3=89S DE
+ESA HORA,
+SER=C3=81 TRAMITADO EL D=C3=8DA H=C3=81BIL SIGUIENTE.
+
+--000000000000bf459b0642b3315c
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div><div class=3D"gmail_default" style=3D"font-family:ari=
+al,sans-serif;font-size:small">ESTIMADO SR DISCONZI</div><div class=3D"gmai=
+l_default" style=3D"font-family:arial,sans-serif;font-size:small">BUENAS TA=
+RDES, SE SOLICITA ENVIAR NUEVAMENTE LOS ANTECEDENTES ENVIADOS YA QUE NO TEN=
+EMOS ACCESO A ELLOS, SOLICITA SU ENV=C3=8DO PARA DAR INGRESO A SU SOLICITUD=
+.</div><div class=3D"gmail_default" style=3D"font-family:arial,sans-serif;f=
+ont-size:small"><br></div><div class=3D"gmail_default" style=3D"font-family=
+:arial,sans-serif;font-size:small">ESPERANDO SU PRONTA RESPUESTA</div><div =
+class=3D"gmail_default" style=3D"font-family:arial,sans-serif;font-size:sma=
+ll"><br></div><div class=3D"gmail_default" style=3D"font-family:arial,sans-=
+serif;font-size:small"><p class=3D"gmail-MsoBodyText" style=3D"margin:7.95p=
+t 0cm 0cm 5.75pt;font-size:11.5pt;font-family:Tahoma,sans-serif;font-weight=
+:bold"><span lang=3D"EN-US" style=3D"color:rgb(10,82,148)">Atte.</span><spa=
+n lang=3D"EN-US"></span></p>
+
+<p class=3D"gmail-MsoBodyText" style=3D"margin:0.25pt 0cm 0cm 5.75pt;font-s=
+ize:11.5pt;font-family:Tahoma,sans-serif;font-weight:bold"><span lang=3D"EN=
+-US" style=3D"color:rgb(10,82,148)">Yessica Rodr=C3=ADguez L=C3=B3pez</span=
+><span lang=3D"EN-US"></span></p>
+
+<p class=3D"gmail-MsoBodyText" style=3D"margin:0.2pt 0cm 0cm 5.75pt;font-si=
+ze:11.5pt;font-family:Tahoma,sans-serif;font-weight:bold"><span lang=3D"EN-=
+US" style=3D"font-family:&quot;Arial Narrow&quot;,sans-serif;color:rgb(153,=
+153,153)">Oficina
+Central de Partes</span><span lang=3D"EN-US" style=3D"font-family:&quot;Ari=
+al Narrow&quot;,sans-serif"></span></p>
+
+<p class=3D"gmail-MsoBodyText" style=3D"margin:0.1pt 55.8pt 0.0001pt 5.75pt=
+;line-height:101%;font-size:11.5pt;font-family:Tahoma,sans-serif;font-weigh=
+t:bold"><span lang=3D"EN-US" style=3D"color:rgb(10,82,148)">Secci=C3=B3n In=
+tegral de Informaci=C3=B3n y
+Documentaci=C3=B3n Departamento Secretar=C3=ADa General</span><span lang=3D=
+"EN-US"></span></p>
+
+<p class=3D"MsoNormal" style=3D"margin:0cm 0cm 0cm 5.75pt;line-height:10.85=
+pt;font-size:11pt;font-family:Tahoma,sans-serif"><b><span lang=3D"EN-US" st=
+yle=3D"font-size:9.5pt;font-family:&quot;Arial Narrow&quot;,sans-serif;colo=
+r:rgb(153,153,153)">Direcci=C3=B3n General de Aeron=C3=A1utica Civil - Chil=
+e</span></b><b><span lang=3D"EN-US" style=3D"font-size:9.5pt;font-family:&q=
+uot;Arial Narrow&quot;,sans-serif"></span></b></p></div><br clear=3D"all"><=
+/div><div><div dir=3D"ltr" class=3D"gmail_signature" data-smartmail=3D"gmai=
+l_signature"><div dir=3D"ltr"><div><font size=3D"1"><b><span style=3D"color=
+:rgb(34,34,34)"><br></span></b></font></div><font size=3D"1"><span style=3D=
+"font-weight:bold;color:rgb(34,34,34)"><div><font size=3D"1"><b><span style=
+=3D"color:rgb(34,34,34)"><br></span></b></font></div><div><font size=3D"1">=
+<b><span style=3D"color:rgb(34,34,34)"><br></span></b></font></div><div><fo=
+nt size=3D"1"><b><span style=3D"color:rgb(34,34,34)"><br></span></b></font>=
+</div><div><font size=3D"1"><b><span style=3D"color:rgb(34,34,34)"><br></sp=
+an></b></font></div><div><font size=3D"1"><b><span style=3D"color:rgb(34,34=
+,34)"><br></span></b></font></div><div><font size=3D"1"><b><span style=3D"c=
+olor:rgb(34,34,34)"><br></span></b></font></div><div><font size=3D"1"><b><s=
+pan style=3D"color:rgb(34,34,34)"><br></span></b></font></div><div><font si=
+ze=3D"1"><b><span style=3D"color:rgb(34,34,34)"><br></span></b></font></div=
+><div style=3D"text-align:center"><b style=3D"color:rgb(32,33,36)"><span st=
+yle=3D"color:rgb(34,34,34)">HORARIO ATENCI=C3=93N OFICINA CENTRAL DE PARTES=
+ DGAC</span></b></div></span><div style=3D"text-align:center"><span style=
+=3D"color:rgb(34,34,34);font-weight:700"><br></span></div><span style=3D"fo=
+nt-weight:bold;color:rgb(34,34,34)"><div style=3D"text-align:center">INFORM=
+A QUE PARA ENTREGA DE DOCUMENTACI=C3=93N EN PAPEL DE FORMA PRESENCIAL ES DE=
+=C2=A0LUNES A JUEVES DE 08:30 A 16:30, Y VIERNES DE 08:30 A 15:30 HORAS.</d=
+iv></span><div style=3D"text-align:center"><span style=3D"color:rgb(34,34,3=
+4)"><br></span></div><span style=3D"font-weight:bold;color:rgb(34,34,34)"><=
+div style=3D"text-align:center">ENV=C3=8DO DE DOCUMENTACI=C3=93N V=C3=8DA M=
+AIL A CORREO=C2=A0<a href=3D"mailto:registratura@dgac.gob.cl" style=3D"colo=
+r:rgb(17,85,204)" target=3D"_blank">registratura@dgac.gob.cl</a>, EN MISMO<=
+/div></span><div style=3D"text-align:center"><span style=3D"font-weight:bol=
+d;color:rgb(34,34,34)">HORARIO MENCIONADO ANTERIORMENTE, TODO DOCUMENTO QUE=
+ LLEGUE DESPU=C3=89S DE ESA=C2=A0</span><span style=3D"font-weight:bold;col=
+or:rgb(34,34,34)">HORA, SER=C3=81 TRAMITADO EL D=C3=8DA H=C3=81BIL SIGUIENT=
+E.</span></div></font></div></div></div></div>
+
+--000000000000bf459b0642b3315c--

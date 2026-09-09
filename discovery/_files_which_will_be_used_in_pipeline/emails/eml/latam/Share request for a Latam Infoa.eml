@@ -1,0 +1,526 @@
+Delivered-To: disconzi@stockaware.co.uk
+Received: by 2002:a05:7208:b00f:b0:a0:245d:eff2 with SMTP id z15csp3649863rba;
+        Wed, 18 Jun 2025 09:22:26 -0700 (PDT)
+X-Received: by 2002:a05:6902:2308:b0:e82:1c42:4bc1 with SMTP id 3f1490d57ef6-e841bcafaf3mr277643276.5.1750263746378;
+        Wed, 18 Jun 2025 09:22:26 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1750263746; cv=none;
+        d=google.com; s=arc-20240605;
+        b=lHo8+Le/HXZj2R7xPUq5rDFI7hFs2yhYoVg2SuObxsIPsPxGcWrPw7zcXL2yR3oVZN
+         RWknMnzpP3TKhsiXwIhYPIZGDevkyXXPMqHXOTTrMdFKhxFOOh87Gy+HUZVihYm1JYWV
+         ESVTmD5DuZO8DQo8NRHerlrnBaNvxjZ6P9LFXO46rk4exoP/7BsvI96sqNTPD7senYjq
+         ZjcSVZ6mUBpyjIlZ7AK3ZzNeSMnqr5V/8q6rSB6DDa/xhcWikOWwTNxgkjoFfhugIY97
+         cPfETMQ8pgih+NJtzgjeDIgT6x4WtttqxSU8GmG3zyDeF3yQNGKtI1oQN891+uTz6CqW
+         fg5A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=to:from:subject:date:message-id:references:reply-to:mime-version
+         :dkim-signature;
+        bh=6ZyMSxmzf29vbUQumrSa37GKb2lhKCM9Cy/g0bmXyuY=;
+        fh=miXhaHqGCX4bgiOqjXsiDkQwQoQ4TBiR0mXH4CfJ6Uc=;
+        b=LnC3lZlhwDZViMO0EiKgl+ySQ3IkCvmzfBbYM6Rkm8l5RFA0CCTeTwbfLSx6SruRrZ
+         3M0ESodVpF4xi8VMqvVZVwbH3StkEYcsusJjIcvdEacWER3bA7tHzWzo+vwvrb/wCXiD
+         nVKNwSh/O2RibaudDL96mZ3KTPeNfmgzN8ErlEPEX5gLbsRuASzFbLd6YUM0U9QVVMtg
+         FweMJSntogv4mLfzbDAOag+99XqFd13nJ8oAOBX/lVma6FlUsTtJzfD09QkdubDAsa0G
+         O09+v6WVzOgbV54rWdgRfEu2g2FpB5dPIjstxJM2pqrmZNC8FteMNSKqnPC8EMTXvUh+
+         ZEOg==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@google.com header.s=20230601 header.b=ammMhkf1;
+       spf=pass (google.com: domain of 3wedsabckacyftkxg-ujctgu-fo-pqtgrnaiqqing.eqo@doclist.bounces.google.com designates 209.85.220.69 as permitted sender) smtp.mailfrom=3wedSaBcKACYFTKXG-UJCTGU-FO-PQTGRNaIQQING.EQO@doclist.bounces.google.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=google.com;
+       dara=pass header.i=@stockaware.co.uk
+Return-Path: <3wedSaBcKACYFTKXG-UJCTGU-FO-PQTGRNaIQQING.EQO@doclist.bounces.google.com>
+Received: from mail-sor-f69.google.com (mail-sor-f69.google.com. [209.85.220.69])
+        by mx.google.com with SMTPS id 3f1490d57ef6-e841bb59af8sor63110276.6.2025.06.18.09.22.26
+        for <disconzi@stockaware.co.uk>
+        (Google Transport Security);
+        Wed, 18 Jun 2025 09:22:26 -0700 (PDT)
+Received-SPF: pass (google.com: domain of 3wedsabckacyftkxg-ujctgu-fo-pqtgrnaiqqing.eqo@doclist.bounces.google.com designates 209.85.220.69 as permitted sender) client-ip=209.85.220.69;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@google.com header.s=20230601 header.b=ammMhkf1;
+       spf=pass (google.com: domain of 3wedsabckacyftkxg-ujctgu-fo-pqtgrnaiqqing.eqo@doclist.bounces.google.com designates 209.85.220.69 as permitted sender) smtp.mailfrom=3wedSaBcKACYFTKXG-UJCTGU-FO-PQTGRNaIQQING.EQO@doclist.bounces.google.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=google.com;
+       dara=pass header.i=@stockaware.co.uk
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1750263746; x=1750868546; darn=stockaware.co.uk;
+        h=to:from:subject:date:message-id:references:reply-to:mime-version
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=6ZyMSxmzf29vbUQumrSa37GKb2lhKCM9Cy/g0bmXyuY=;
+        b=ammMhkf1Ax5ZlbIxpmxzmENpKWmeCIDabcVIJi/uyzHbu1lrj9kL50B3vNfwFFxCyT
+         oXhHjTu3tOowIfHCAug8iwLC5mruK2hsPmCZJvnQB44LPW2CePpxAQqrNlAXCWy2xc/+
+         tD59pUQc+56yJc7SK15IdCR3bkY5imzo4h5F/gniDUjsi22BTsDkkGXpC0BI/8yGVODG
+         lfDKsJRXFFPjzK0Qi+MKa8qmVT/65ObVOCPL7YrKItrk8lNOIlvr3xmLtPcCC8CF64pp
+         hOfW50KbQGiDkHcL+rkO7xKm6f9a80sroDNyWqxPSAAG/obRJHVWg8P+dr3S0MYBWWKS
+         B0zg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1750263746; x=1750868546;
+        h=to:from:subject:date:message-id:references:reply-to:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=6ZyMSxmzf29vbUQumrSa37GKb2lhKCM9Cy/g0bmXyuY=;
+        b=IKppMG/z+RvV8QXIzEGkV5vms3biy1tJbz7V1Ez5WTjRg5lmkrQnYQ4ObsttXjnTwH
+         OXNdEka8a645ZY/G5RTE56aF3//JjDPU3wu1Wm7upHPIhmcpsJw5VFVJeozjq7caaPAn
+         DqgJub4sOk0vDRDYMpgoWViNYuSgGS4Ldg+Kw5mj4IwzlEtImKrrmbRrdFuq2CDTRril
+         ZYRhGbsjolK+WJfyWt0uGITcSFh034Ct7wvkTOAZr1k9kaHxjwQEjOQoH/j02WFuG35J
+         /kWit2z/ot5F3eeifwdqu1aNPt21Ebv2LTmVkUsXRN4ncVaDv7+vKWUvsiQPzS0mM8Fw
+         wrjQ==
+X-Gm-Message-State: AOJu0YzonFWOzk50stKr95s1Li0C2FHqIQ4vofrq+Yn6Efpc4ZecZz8j
+	nO9j9VQiXU2+74f0XkafsW2l4rDnUt8TdybZCuXQl2/a0pIK1yDJ22HXAogsUBi34aM27I8xH8L
+	9zb7dQ6X1ljsjDvJEtOuEtafDUB2msrwGl+rjkKzZusXeqoC36SqYFhD7M3tQ/mF6urZffvDM1A
+	sVbqED9rFuiOGN
+X-Google-Smtp-Source: AGHT+IGrqqNuiDqr6B3gc/WFUmVG6IRJ5bZYnR417s/wQEkimavU39lv7nJ3JmQ2TNfwSzpDEd//p4t/64w=
+MIME-Version: 1.0
+X-Received: by 2002:a05:6902:2603:b0:e81:b89f:3fb with SMTP id
+ 3f1490d57ef6-e841bd56e0cmr284346276.24.1750263745446; Wed, 18 Jun 2025
+ 09:22:25 -0700 (PDT)
+Reply-To: "Jose Julian Silva Leon..." <jose.silval@latam.com>
+X-No-Auto-Attachment: 1
+References: <a4feb959-3407-401d-8918-b9a8f9c566e9@docs-share.google.com>
+Message-ID: <autogen-java-dd54c69f-01fa-490a-bc23-83739529810e@google.com>
+Date: Wed, 18 Jun 2025 16:22:25 +0000
+Subject: =?UTF-8?Q?Share_request_for_=E2=80=98Latam_Info=E2=80=99?=
+From: "Jose Julian Silva Leon... (via Google Drive)" <drive-shares-dm-noreply@google.com>
+To: disconzi@stockaware.co.uk
+Content-Type: multipart/alternative; boundary="000000000000cfefc60637db089c"
+
+--000000000000cfefc60637db089c
+Content-Type: text/plain; charset="UTF-8"; format=flowed; delsp=yes
+
+jose.silval@latam.com requests access to an item:
+
+Latam Info
+https://drive.google.com/drive/folders/1e44X_w1D8LI1IFG0qzRRnLcA4MUy5MVq?usp=sharing&userstoinvite=jose.silval@latam.com&sharingaction=manageaccess&role=writer&ts=6852e7c1
+
+You are the owner of this document. To give this user access, click the  
+link above and add them as a collaborator or viewer.
+
+--000000000000cfefc60637db089c
+Content-Type: text/x-amp-html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<!doctype html><html amp4email><head><meta charset=3D"utf-8"><script async =
+src=3D"https://cdn.ampproject.org/v0.js"></script><script async custom-elem=
+ent=3D"amp-form" src=3D"https://cdn.ampproject.org/v0/amp-form-0.1.js"></sc=
+ript><script async custom-element=3D"amp-bind" src=3D"https://cdn.ampprojec=
+t.org/v0/amp-bind-0.1.js"></script><script async custom-element=3D"amp-list=
+" src=3D"https://cdn.ampproject.org/v0/amp-list-0.1.js"></script><script as=
+ync custom-template=3D"amp-mustache" src=3D"https://cdn.ampproject.org/v0/a=
+mp-mustache-0.2.js"></script><style amp4email-boilerplate>body{visibility:h=
+idden}</style><style amp-custom>.material-button{-webkit-appearance: none; =
+cursor: pointer; outline: none;}.material-button:focus {outline: 1px solid =
+transparent;}.material-button:disabled{cursor: initial; outline: none;}.mat=
+erial-dropdown-select{appearance: none; -webkit-appearance: none; -mozkit-a=
+ppearance: none; font-family: Roboto, Arial, Helvetica, sans-serif; font-si=
+ze: 14px; background: url(https://www.gstatic.com/images/icons/material/sys=
+tem_gm/1x/arrow_drop_down_black_48dp.png) no-repeat right 10px top 50%/24px=
+ 24px #f1f3f4; border: none; border-radius: 4px; color: #202124; letter-spa=
+cing: 0.2px; line-height: 20px; padding: 0 44px 0 14px;}.material-button-fi=
+lled{background-color: #1a73e8; color: #fff;}.material-button-filled:hover{=
+background-color: #1b55c9; box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0=
+ 1px 3px 1px rgba(60,64,67,0.15);}.material-button-filled:focus{background-=
+color: #1b5fb9; box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1p=
+x rgba(60,64,67,0.15);}.material-button-filled:active{background-color: #1b=
+63c1; box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 2px 6px 2px rgba(60,=
+ 64, 67, 0.15);}.material-button-filled:disabled{background-color: rgba(60,=
+ 64, 67, .12); color: rgba(60, 64, 67, .38);}.material-button-transparent{b=
+ackground-color: transparent; color: #1a73e8;}.material-button-transparent:=
+hover{background-color: rgba(26, 115, 232, .04);}.material-button-transpare=
+nt:focus{background-color: rgba(26, 115, 232, .12);}.material-button-transp=
+arent:active{background-color: rgba(26, 115, 232, .12); box-shadow: 0 1px 3=
+px 1px rgba(60, 64, 67, .15);}.material-button-transparent:disabled{backgro=
+und-color: transparent; color: #3c4043; opacity: 0.38;}.material-text-input=
+{border: none; border-bottom: 1px solid #3c4043;}.material-text-input:focus=
+{border-bottom: 2px solid #2277e8;}@media screen and (max-width: 600px){.co=
+ntent-spacer{height: 24px;}.content-spacer-small{height: 12px;}}@media scre=
+en and (min-width: 601px){.content-spacer{height: 32px;}.content-spacer-sma=
+ll{height: 20px;}}.submitting-form{opacity: 0.4;}input:disabled{opacity: 0.=
+4;}</style></head><body><amp-list diffable binding=3D"refresh-evaluate" src=
+=3D"https://drive.google.com/sharing/boq/dynamicmail/fetchstatefulaccess?ts=
+=3D6852e7c1&amp;shareService=3Dsmores&amp;hl=3Den-GB&amp;userstoinvite=3Djo=
+se.silval@latam.com&amp;id=3D1e44X_w1D8LI1IFG0qzRRnLcA4MUy5MVq&amp;dynamicE=
+mailToken=3DAbHZ1PbRgPqSLuaSUsSOz78m_lGRbcZ2Cvo-zFNui1_H9wmWScj8pjKGjPxTZtk=
+bsiXH1nNi4BlvNIbLp1_6qtTFaowS_pfCxu6LIgGp25gzZa9giF0mpJPdUarMyCaWybLEsi29A2=
+i0gA7TzAoHEGpYm9tzQQ%3D%3D&amp;resourcekey&amp;requesterEmail=3Djose.silval=
+@latam.com&amp;buildLabel=3Ddrive.explorer_20250606.04_p0" single-item item=
+s=3D"." layout=3D"container"><div role=3D"list"><table style=3D"border-coll=
+apse: collapse; width: 100%; background-color: white; text-align: center;" =
+role=3D"presentation"><tr><td style=3D"padding: 24px 0 16px 0;"><table styl=
+e=3D"border-collapse: collapse;font-family: Roboto, Arial, Helvetica, sans-=
+serif;hyphens: auto; overflow-wrap: break-word; word-wrap: break-word; word=
+-break: break-word;width: 90%; margin: auto;max-width: 700px;min-width: 280=
+px; text-align: left;" role=3D"presentation"><tr><td style=3D"padding: 0;">=
+<table style=3D"width:100%; border: 1px solid #dadce0; border-radius: 8px; =
+border-spacing: 0; table-layout:fixed; border-collapse: separate;" role=3D"=
+presentation"><tr><td style=3D"padding: 4.5%;" dir=3D"ltr"><div style=3D"ma=
+rgin-bottom:32px;font-family: Google Sans, Roboto, Arial, Helvetica, sans-s=
+erif; font-style: normal; font-size: 28px; line-height: 36px; color: #3c404=
+3;">Share a folder?</div><table style=3D"border-collapse: collapse;font-fam=
+ily: Roboto, Arial, Helvetica, sans-serif; font-size:16px; line-height:24px=
+; color:#202124; letter-spacing:0.1px; table-layout:fixed; width:100%; over=
+flow-wrap: break-word;" role=3D"presentation"><tr><td style=3D"padding: 0; =
+vertical-align:top; width:50px;"><div><amp-img style=3D"border-radius:50%; =
+display:block;" width=3D"50" height=3D"50" src=3D"https://lh3.googleusercon=
+tent.com/a-/ALV-UjWd71IH-EgTaCS17V7JnLCog2Ysm8S_SPB2s7vIzUD7m6FpnIF8812BZA4=
+Gm_uX7e5eCYzEV-w9eo_B6Fz_w1k4pxY34vKBW0egreH6_14QndVM0bzBGpyDg6SuwbUr2lavzK=
+9uwUI7RF5pc2SurqnuKr2AhAK-MZaBaVX29L4rB5b_r0eZx22rmpyn4YStn_B4opSD4iA6rNvCI=
+V8aHsOp1wFjhu8LFflL55PxHvF-4QKi3VoT-2UTmr0tb7-JP1uwrmn5Y4T_EKjs8blEWKr3jTH7=
+XV_ZL9qapJyJlQ_Bv3YhGfC3LLGruSkUrCtRmOhomSAop3wLwp9aM_BBxVytesIXOwR8gSJUACH=
+VlCUeFtMAXdhcZ3lHWTIQ_9onw1PzAaFutQnoMME_L7hAX4AenIr8Y8kQBrY7CbsU0QTAptkkp9=
+Pfr4Og257k-97P2iRlXl0hgg6NeJ7AEqO54nLg0zyZvSqtJZgOkYRhMX-1uHQew8oWyKoCexdzn=
+lqE1YGehgNWiX4XojPHRogWQ_PqaIpWVuYMmIj7dt__m799AhwUQQvJmRxXanso93x3KBBkV6_h=
+6ZcLCSY71ZFGNx858mCKowAKlLenlJTiTuvwpsukbPX9nAAIv7fNNuCIPTQ01yOg_0aiuZjLxnR=
+ipogI6xmUgMDYQucWRTrxkXY-AP-iwURocBRlFeuyYP_aruW-mm4Zl0oFgMWmLqZriNsKocdlFF=
+DPj8_-8mO6ng6gsFlfpqQHW5JKB9BoPnUjk_7QEMBeL52uempgN-bGKTEJocUcnpx3V256PCpbE=
+rthL3KhsQ-zkQUJc1LQQdoPbdd6vHxy6swrNn6dSCh3iFePOqNg7hILUpFSgftMEEiDOXHlldON=
+0R0kKu44QwrBOWEonur0MK1N5uk1lvRtWaAIqFnz5gfbJn65EA-hMatgsCtubRjbhbJQ_y9piiH=
+ZINlr5fdpWULau6Zakh6-NcG1IhpEqdinog=3Ds64" alt=3D"Header profile photo"></a=
+mp-img></div></td><td style=3D"padding: 0; vertical-align:top; padding-left=
+:12px;"><div style=3D"padding-top:12px;">Jose Julian Silva Leon (LATAM) (<a=
+ href=3D"mailto:jose.silval@latam.com" style=3D"color:inherit;text-decorati=
+on:none">jose.silval@latam.com</a>) is <b>requesting access</b> to the foll=
+owing folder:</div></td></tr></table><table style=3D"border-spacing:0 4px; =
+table-layout:fixed; width:100%; overflow-wrap: break-word;" role=3D"present=
+ation"><tr style=3D"height:28px;"></tr><tr><td style=3D"padding: 0;"><a hre=
+f=3D"https://drive.google.com/drive/folders/1e44X_w1D8LI1IFG0qzRRnLcA4MUy5M=
+Vq?usp=3Dsharing_esl_dm&amp;userstoinvite=3Djose.silval@latam.com&amp;shari=
+ngaction=3Dmanageaccess&amp;role=3Dwriter&amp;ts=3D6852e7c1" target=3D"_bla=
+nk" style=3D"color: #3c4043; display: inline-block; max-width: 100%; text-d=
+ecoration: none; vertical-align: top;border: 1px solid #DADCE0; border-radi=
+us: 16px; white-space: nowrap;"><div style=3D"line-height: 18px; overflow: =
+hidden; text-overflow: ellipsis;padding: 6px 12px;"><span style=3D"display:=
+ inline-block; vertical-align: top; min-width: 26px; width: 26px;"><amp-img=
+ src=3D"https://ssl.gstatic.com/docs/documents/share/images/services/folder=
+-3.png" width=3D"18" height=3D"18" style=3D"vertical-align: top;" role=3D"p=
+resentation"></amp-img></span><span style=3D"font: 500 14px/18px Google San=
+s, Roboto, Arial, Helvetica, sans-serif; display: inline; letter-spacing: 0=
+.2px;">Latam Info</span></div></a></td></tr></table><div class=3D"content-s=
+pacer"></div><div fetch-error><a href=3D"https://drive.google.com/drive/fol=
+ders/1e44X_w1D8LI1IFG0qzRRnLcA4MUy5MVq?usp=3Dsharing_esp_dm&amp;userstoinvi=
+te=3Djose.silval@latam.com&amp;sharingaction=3Dmanageaccess&amp;role=3Dwrit=
+er&amp;ts=3D6852e7c1" class=3D"material-button material-button-filled" targ=
+et=3D"_blank" tabindex=3D"0" role=3D"button" style=3D"padding: 0 24px;font:=
+ 500 14px/36px Google Sans, Roboto, Arial, Helvetica, sans-serif; border: n=
+one; border-radius: 18px; box-sizing: border-box; display: inline-block; le=
+tter-spacing: .25px; min-height: 36px; text-align: center; text-decoration:=
+ none;">Manage sharing</a></div><table style=3D"border-collapse: collapse;"=
+ role=3D"presentation"><tr style=3D"height: 24px"><td></td></tr></table><di=
+v style=3D"background: #fef7e0; border-radius: 4px; padding:12px 16px;"><di=
+v style=3D"display: table-cell; vertical-align: middle;"><amp-img src=3D"ht=
+tps://ssl.gstatic.com/docs/documents/share/images/warning_callout_outline_y=
+ellow.png" width=3D"24px" height=3D"24px" style=3D"margin-left: 7px; margin=
+-right: 19px; vertical-align: middle;"></amp-img></div><div style=3D"color:=
+ #3c4043; display: table-cell; font-size: 14px; line-height: 20px; vertical=
+-align: middle;"><a href=3D"mailto:jose.silval@latam.com" style=3D"color:in=
+herit;text-decoration:none">Jose Julian Silva Leon (LATAM)</a> is outside y=
+our organisation.</div></div></td></tr></table><table style=3D"border-colla=
+pse: collapse; width: 100%;" role=3D"presentation"><tr><td style=3D"padding=
+: 24px 4.5%"><table style=3D"border-collapse: collapse; width: 100%;" dir=
+=3D"ltr"><tr><td style=3D"padding: 0;font-family: Roboto, Arial, Helvetica,=
+ sans-serif; color: #5F6368; width: 100%; font-size: 12px; line-height: 16p=
+x; min-height: 40px; letter-spacing: .3px;">Google LLC, 1600 Amphitheatre P=
+arkway, Mountain View, CA 94043, USA<br/> You have received this email beca=
+use <a href=3D"mailto:jose.silval@latam.com" style=3D"color:inherit;text-de=
+coration:none">jose.silval@latam.com</a> requested access to a file or fold=
+er located in Google Drive.</td><td style=3D"padding: 0;padding-left: 20px;=
+ min-width: 96px"><a href=3D"https://workspace.google.com/" target=3D"_blan=
+k" style=3D"text-decoration: none"><amp-img src=3D"https://www.gstatic.com/=
+docs/documents/share/images/googleworkspace_logo_192x80.png" width=3D"96" h=
+eight=3D"40" alt=3D"Google" style=3D"font-size:16px;font-weight:500;color:#=
+5F6368"></amp-img></a></td></tr></table></td></tr></table></td></tr></table=
+></td></tr></table></div><template type=3D"amp-mustache"><table style=3D"bo=
+rder-collapse: collapse; width: 100%; background-color: white; text-align: =
+center;" role=3D"presentation"><tr><td style=3D"padding: 24px 0 16px 0;"><t=
+able style=3D"border-collapse: collapse;font-family: Roboto, Arial, Helveti=
+ca, sans-serif;hyphens: auto; overflow-wrap: break-word; word-wrap: break-w=
+ord; word-break: break-word;width: 90%; margin: auto;max-width: 700px;min-w=
+idth: 280px; text-align: left;" role=3D"presentation"><tr><td style=3D"padd=
+ing: 0;"><table style=3D"width:100%; border: 1px solid #dadce0; border-radi=
+us: 8px; border-spacing: 0; table-layout:fixed; border-collapse: separate;"=
+ role=3D"presentation"><tr><td style=3D"padding: 4.5%;" dir=3D"ltr"><div st=
+yle=3D"margin-bottom:32px;font-family: Google Sans, Roboto, Arial, Helvetic=
+a, sans-serif; font-style: normal; font-size: 28px; line-height: 36px; colo=
+r: #3c4043;">Share a folder?</div><table style=3D"border-collapse: collapse=
+;font-family: Roboto, Arial, Helvetica, sans-serif; font-size:16px; line-he=
+ight:24px; color:#202124; letter-spacing:0.1px; table-layout:fixed; width:1=
+00%; overflow-wrap: break-word;" role=3D"presentation"><tr><td style=3D"pad=
+ding: 0; vertical-align:top; width:50px;"><div><amp-img style=3D"border-rad=
+ius:50%; display:block;" width=3D"50" height=3D"50" src=3D"https://lh3.goog=
+leusercontent.com/a-/ALV-UjWd71IH-EgTaCS17V7JnLCog2Ysm8S_SPB2s7vIzUD7m6FpnI=
+F8812BZA4Gm_uX7e5eCYzEV-w9eo_B6Fz_w1k4pxY34vKBW0egreH6_14QndVM0bzBGpyDg6Suw=
+bUr2lavzK9uwUI7RF5pc2SurqnuKr2AhAK-MZaBaVX29L4rB5b_r0eZx22rmpyn4YStn_B4opSD=
+4iA6rNvCIV8aHsOp1wFjhu8LFflL55PxHvF-4QKi3VoT-2UTmr0tb7-JP1uwrmn5Y4T_EKjs8bl=
+EWKr3jTH7XV_ZL9qapJyJlQ_Bv3YhGfC3LLGruSkUrCtRmOhomSAop3wLwp9aM_BBxVytesIXOw=
+R8gSJUACHVlCUeFtMAXdhcZ3lHWTIQ_9onw1PzAaFutQnoMME_L7hAX4AenIr8Y8kQBrY7CbsU0=
+QTAptkkp9Pfr4Og257k-97P2iRlXl0hgg6NeJ7AEqO54nLg0zyZvSqtJZgOkYRhMX-1uHQew8oW=
+yKoCexdznlqE1YGehgNWiX4XojPHRogWQ_PqaIpWVuYMmIj7dt__m799AhwUQQvJmRxXanso93x=
+3KBBkV6_h6ZcLCSY71ZFGNx858mCKowAKlLenlJTiTuvwpsukbPX9nAAIv7fNNuCIPTQ01yOg_0=
+aiuZjLxnRipogI6xmUgMDYQucWRTrxkXY-AP-iwURocBRlFeuyYP_aruW-mm4Zl0oFgMWmLqZri=
+NsKocdlFFDPj8_-8mO6ng6gsFlfpqQHW5JKB9BoPnUjk_7QEMBeL52uempgN-bGKTEJocUcnpx3=
+V256PCpbErthL3KhsQ-zkQUJc1LQQdoPbdd6vHxy6swrNn6dSCh3iFePOqNg7hILUpFSgftMEEi=
+DOXHlldON0R0kKu44QwrBOWEonur0MK1N5uk1lvRtWaAIqFnz5gfbJn65EA-hMatgsCtubRjbhb=
+JQ_y9piiHZINlr5fdpWULau6Zakh6-NcG1IhpEqdinog=3Ds64" alt=3D"Header profile p=
+hoto"></amp-img></div></td><td style=3D"padding: 0; vertical-align:top; pad=
+ding-left:12px;"><div style=3D"padding-top:12px;">Jose Julian Silva Leon (L=
+ATAM) (<a href=3D"mailto:jose.silval@latam.com" style=3D"color:inherit;text=
+-decoration:none">jose.silval@latam.com</a>) is <b>requesting access</b> to=
+ the following folder:</div></td></tr></table><table style=3D"border-spacin=
+g:0 4px; table-layout:fixed; width:100%; overflow-wrap: break-word;" role=
+=3D"presentation"><tr style=3D"height:28px;"></tr><tr><td style=3D"padding:=
+ 0;"><a href=3D"https://drive.google.com/drive/folders/1e44X_w1D8LI1IFG0qzR=
+RnLcA4MUy5MVq?usp=3Dsharing_esl_dm&amp;userstoinvite=3Djose.silval@latam.co=
+m&amp;sharingaction=3Dmanageaccess&amp;role=3Dwriter&amp;ts=3D6852e7c1" tar=
+get=3D"_blank" style=3D"color: #3c4043; display: inline-block; max-width: 1=
+00%; text-decoration: none; vertical-align: top;border: 1px solid #DADCE0; =
+border-radius: 16px; white-space: nowrap;"><div style=3D"line-height: 18px;=
+ overflow: hidden; text-overflow: ellipsis;padding: 6px 12px;"><span style=
+=3D"display: inline-block; vertical-align: top; min-width: 26px; width: 26p=
+x;"><amp-img src=3D"https://ssl.gstatic.com/docs/documents/share/images/ser=
+vices/folder-3.png" width=3D"18" height=3D"18" style=3D"vertical-align: top=
+;" role=3D"presentation"></amp-img></span><span style=3D"font: 500 14px/18p=
+x Google Sans, Roboto, Arial, Helvetica, sans-serif; display: inline; lette=
+r-spacing: 0.2px;">Latam Info</span></div></a></td></tr></table><div class=
+=3D"content-spacer-small"></div>{{#isPendingRequest}}<form id=3D"resolve-ac=
+cess-form" method=3D"post" autocomplete=3D"off" action-xhr=3D"https://drive=
+.google.com/sharing/boq/dynamicmail/resolvestatefulaccess?ts=3D6852e7c1&amp=
+;shareService=3Dsmores&amp;hl=3Den-GB&amp;userstoinvite=3Djose.silval@latam=
+.com&amp;id=3D1e44X_w1D8LI1IFG0qzRRnLcA4MUy5MVq&amp;dynamicEmailToken=3DAbH=
+Z1PbRgPqSLuaSUsSOz78m_lGRbcZ2Cvo-zFNui1_H9wmWScj8pjKGjPxTZtkbsiXH1nNi4BlvNI=
+bLp1_6qtTFaowS_pfCxu6LIgGp25gzZa9giF0mpJPdUarMyCaWybLEsi29A2i0gA7TzAoHEGpYm=
+9tzQQ%3D%3D&amp;resourcekey&amp;requesterEmail=3Djose.silval@latam.com&amp;=
+buildLabel=3Ddrive.explorer_20250606.04_p0" on=3D"submit: message-textarea.=
+toggleClass('class' =3D 'submitting-form'), hide-on-submit-success.hide(), =
+response-error-message.hide(), share-button.hide(), decline-button.hide(), =
+AMP.setState({scope: {'resolveAccessButtonsDisabled': true},}); submit-succ=
+ess: message-textarea.toggleClass('class' =3D 'submitting-form'), share-but=
+ton.hide(), decline-button.hide(), response-success-message.show(); submit-=
+error: response-error-message.show(), AMP.setState({scope: {'resolveAccessB=
+uttonsDisabled': false, 'shareErrorMsg': event.response.errorMessage || 'Co=
+uld not share'},});"><div id=3D"hide-on-submit-success"><select id=3D"role-=
+select" name=3D"selectedRole" class=3D"material-dropdown-select" data-type=
+=3D"text" style=3D"height:48px; max-width:100%; margin-top:12px;" required>=
+<option value=3D"READER">Viewer</option><option value=3D"COMMENTER">Comment=
+er</option><option value=3D"WRITER" selected>Editor</option></select><div c=
+lass=3D"content-spacer-small"></div><div style=3D"display:flex;align-items:=
+center;"><input type=3D"hidden" name=3D"notify" value=3D"true" data-amp-bin=
+d-value=3D"scope['notify']"><input type=3D"checkbox" value=3D"selected" che=
+cked style=3D"margin-right:10px; color: #3c4043; width:18px;height:18px;" o=
+n=3D"change: AMP.setState({scope: {'notify': event.checked ? 'true' : 'fals=
+e'},});"><label>Notify</label></div><div style=3D"margin-left:32px; margin-=
+top: 6px; font-size: 12px; color: #3c4043;">If you notify the recipient, th=
+ey will see your name and decision</div><div class=3D"content-spacer-small"=
+></div><div id=3D"message-textarea"><textarea autoexpand style=3D"font-fami=
+ly: Roboto, Arial, Helvetica, sans-serif; font-size: 14px; background-color=
+: #f8f9fa; border-radius: 4px 4px 0 0; box-sizing: border-box; color: #3c40=
+43; height: 54px; letter-spacing: .2px; line-height: 20px; outline: none; p=
+adding: 16px 10px; resize: none; width: 100%; word-break: break-word; verti=
+cal-align: top;" class=3D"material-text-input" name=3D"message" autocomplet=
+e=3D"off" placeholder=3D"Message" aria-label=3D" Message"></textarea></div>=
+<div class=3D"content-spacer-small"></div></div><div style=3D"display:flex;=
+flex-wrap:wrap;" role=3D"region" aria-live=3D"polite"><input type=3D"hidden=
+" name=3D"grantAccess" data-amp-bind-value=3D"scope['grantAccess']"><button=
+ style=3D"padding: 0 24px;font: 500 14px/36px Google Sans, Roboto, Arial, H=
+elvetica, sans-serif; border: none; border-radius: 18px; box-sizing: border=
+-box; display: inline-block; letter-spacing: .25px; min-height: 36px; text-=
+align: center; text-decoration: none;margin-top:12px; margin-right:9px;" ty=
+pe=3D"button" id=3D"share-button" class=3D"material-button material-button-=
+filled" data-amp-bind-disabled=3D"scope['resolveAccessButtonsDisabled']" on=
+=3D"tap: AMP.setState({scope: {'grantAccess': 'true', 'hideShareMessage': f=
+alse, 'hideDeclineMessage': true,},}), resolve-access-form.submit;">Share</=
+button><button style=3D"padding: 0 8px;font: 500 14px/36px Google Sans, Rob=
+oto, Arial, Helvetica, sans-serif; border: none; border-radius: 18px; box-s=
+izing: border-box; display: inline-block; letter-spacing: .25px; min-height=
+: 36px; text-align: center; text-decoration: none;border: 1px solid #80868b=
+; padding: 0 24px;margin-top:12px; margin-right:9px;" type=3D"button" id=3D=
+"decline-button" class=3D"material-button material-button-transparent" data=
+-amp-bind-disabled=3D"scope['resolveAccessButtonsDisabled']" on=3D"tap: AMP=
+.setState({scope: {'grantAccess': 'false', 'hideShareMessage': true, 'hideD=
+eclineMessage': false,},}), resolve-access-form.submit;">Decline</button><d=
+iv style=3D"display:flex;align-items:center;flex-wrap:wrap;"><div style=3D"=
+margin-top:12px;" id=3D"response-success-message" hidden><div id=3D"share-s=
+uccess-message" hidden data-amp-bind-hidden=3D"scope['hideShareMessage']"><=
+div style=3D"display:flex; align-items:center;"><div style=3D"height:24px; =
+margin-right:8px;"><amp-img width=3D"24" height=3D"24" src=3D"https://www.g=
+static.com/docs/documents/share/images/check_circle_outline_green.png"></am=
+p-img></div><span style=3D"margin-right:8px"><span>You shared this file</sp=
+an></span></div></div><div id=3D"decline-success-message" hidden data-amp-b=
+ind-hidden=3D"scope['hideDeclineMessage']"><div style=3D"display:flex; alig=
+n-items:center;"><div style=3D"height:24px; margin-right:8px;"><amp-img wid=
+th=3D"24" height=3D"24" src=3D"https://www.gstatic.com/docs/documents/share=
+/images/cancel_red.png"></amp-img></div><span style=3D"margin-right:8px"><s=
+pan>You declined access</span></span></div></div></div><div style=3D"margin=
+-top:12px;" id=3D"response-error-message" hidden><div id=3D"share-error-mes=
+sage" hidden data-amp-bind-hidden=3D"scope['hideShareMessage']"><div style=
+=3D"display:flex; align-items:center;"><div style=3D"height:24px; margin-ri=
+ght:8px;"><amp-img width=3D"24" height=3D"24" src=3D"https://www.gstatic.co=
+m/docs/documents/share/images/warn_circle_outline_red.png"></amp-img></div>=
+<span style=3D"margin-right:8px"><span data-amp-bind-text=3D"scope['shareEr=
+rorMsg']"></span></span></div></div><div id=3D"decline-error-message" hidde=
+n data-amp-bind-hidden=3D"scope['hideDeclineMessage']"><div style=3D"displa=
+y:flex; align-items:center;"><div style=3D"height:24px; margin-right:8px;">=
+<amp-img width=3D"24" height=3D"24" src=3D"https://www.gstatic.com/docs/doc=
+uments/share/images/warn_circle_outline_red.png"></amp-img></div><span styl=
+e=3D"margin-right:8px"><span>Something went wrong and the request could not=
+ be declined</span></span></div></div></div><a href=3D"https://drive.google=
+.com/drive/folders/1e44X_w1D8LI1IFG0qzRRnLcA4MUy5MVq?usp=3Dsharing_esp_dm&a=
+mp;userstoinvite=3Djose.silval@latam.com&amp;sharingaction=3Dmanageaccess&a=
+mp;role=3Dwriter&amp;ts=3D6852e7c1" class=3D"material-button material-butto=
+n-transparent" target=3D"_blank" tabindex=3D"0" role=3D"button" style=3D"pa=
+dding: 0 8px;font: 500 14px/36px Google Sans, Roboto, Arial, Helvetica, san=
+s-serif; border: none; border-radius: 18px; box-sizing: border-box; display=
+: inline-block; letter-spacing: .25px; min-height: 36px; text-align: center=
+; text-decoration: none;margin-top:12px;">Manage sharing</a></div></div></f=
+orm>{{/isPendingRequest}}{{^isPendingRequest}}<div class=3D"content-spacer-=
+small"></div><div style=3D"display:flex; align-items:center;"><div style=3D=
+"margin-top:12px;font-size:14px;line-height:36px;"><div style=3D"display:fl=
+ex; align-items:center;"><span style=3D"margin-right:8px">This request no l=
+onger exists</span></div></div><a href=3D"https://drive.google.com/drive/fo=
+lders/1e44X_w1D8LI1IFG0qzRRnLcA4MUy5MVq?usp=3Dsharing_esp_dm&amp;userstoinv=
+ite=3Djose.silval@latam.com&amp;sharingaction=3Dmanageaccess&amp;role=3Dwri=
+ter&amp;ts=3D6852e7c1" class=3D"material-button material-button-transparent=
+" target=3D"_blank" tabindex=3D"0" role=3D"button" style=3D"padding: 0 8px;=
+font: 500 14px/36px Google Sans, Roboto, Arial, Helvetica, sans-serif; bord=
+er: none; border-radius: 18px; box-sizing: border-box; display: inline-bloc=
+k; letter-spacing: .25px; min-height: 36px; text-align: center; text-decora=
+tion: none;margin-top:12px;">Manage sharing</a></div>{{/isPendingRequest}}<=
+table style=3D"border-collapse: collapse;" role=3D"presentation"><tr style=
+=3D"height: 24px"><td></td></tr></table><div style=3D"background: #fef7e0; =
+border-radius: 4px; padding:12px 16px;"><div style=3D"display: table-cell; =
+vertical-align: middle;"><amp-img src=3D"https://ssl.gstatic.com/docs/docum=
+ents/share/images/warning_callout_outline_yellow.png" width=3D"24px" height=
+=3D"24px" style=3D"margin-left: 7px; margin-right: 19px; vertical-align: mi=
+ddle;"></amp-img></div><div style=3D"color: #3c4043; display: table-cell; f=
+ont-size: 14px; line-height: 20px; vertical-align: middle;"><a href=3D"mail=
+to:jose.silval@latam.com" style=3D"color:inherit;text-decoration:none">Jose=
+ Julian Silva Leon (LATAM)</a> is outside your organisation.</div></div></t=
+d></tr></table><table style=3D"border-collapse: collapse; width: 100%;" rol=
+e=3D"presentation"><tr><td style=3D"padding: 24px 4.5%"><table style=3D"bor=
+der-collapse: collapse; width: 100%;" dir=3D"ltr"><tr><td style=3D"padding:=
+ 0;font-family: Roboto, Arial, Helvetica, sans-serif; color: #5F6368; width=
+: 100%; font-size: 12px; line-height: 16px; min-height: 40px; letter-spacin=
+g: .3px;">Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, U=
+SA<br/> You have received this email because <a href=3D"mailto:jose.silval@=
+latam.com" style=3D"color:inherit;text-decoration:none">jose.silval@latam.c=
+om</a> requested access to a file or folder located in Google Drive.</td><t=
+d style=3D"padding: 0;padding-left: 20px; min-width: 96px"><a href=3D"https=
+://workspace.google.com/" target=3D"_blank" style=3D"text-decoration: none"=
+><amp-img src=3D"https://www.gstatic.com/docs/documents/share/images/google=
+workspace_logo_192x80.png" width=3D"96" height=3D"40" alt=3D"Google" style=
+=3D"font-size:16px;font-weight:500;color:#5F6368"></amp-img></a></td></tr><=
+/table></td></tr></table></td></tr></table></td></tr></table></template></a=
+mp-list></body></html>
+--000000000000cfefc60637db089c
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<html><head></head><body><table style=3D"border-collapse: collapse; width: =
+100%; background-color: white; text-align: center;" role=3D"presentation"><=
+tr><td style=3D"padding: 24px 0 16px 0;"><table style=3D"border-collapse: c=
+ollapse;font-family: Roboto, Arial, Helvetica, sans-serif;hyphens: auto; ov=
+erflow-wrap: break-word; word-wrap: break-word; word-break: break-word;widt=
+h: 90%; margin: auto;max-width: 700px;min-width: 280px; text-align: left;" =
+role=3D"presentation"><tr><td style=3D"padding: 0;"><table style=3D"width:1=
+00%; border: 1px solid #dadce0; border-radius: 8px; border-spacing: 0; tabl=
+e-layout:fixed; border-collapse: separate;" role=3D"presentation"><tr><td s=
+tyle=3D"padding: 4.5%;" dir=3D"ltr"><div style=3D"margin-bottom:32px;font-f=
+amily: Google Sans, Roboto, Arial, Helvetica, sans-serif; font-style: norma=
+l; font-size: 28px; line-height: 36px; color: #3c4043;">Share a folder?</di=
+v><table style=3D"border-collapse: collapse;font-family: Roboto, Arial, Hel=
+vetica, sans-serif; font-size:16px; line-height:24px; color:#202124; letter=
+-spacing:0.1px; table-layout:fixed; width:100%; overflow-wrap: break-word;"=
+ role=3D"presentation"><tr><td style=3D"padding: 0; vertical-align:top; wid=
+th:50px;"><!--[if mso]><v:oval xmlns:v=3D"urn:schemas-microsoft-com:vml" xm=
+lns:w=3D"urn:schemas-microsoft-com:office:word" style=3D"height:50px;width:=
+50px;" fill=3D"t" stroke=3D"f"><v:fill type=3D"frame" src=3D"https://lh3.go=
+ogleusercontent.com/a-/ALV-UjWd71IH-EgTaCS17V7JnLCog2Ysm8S_SPB2s7vIzUD7m6Fp=
+nIF8812BZA4Gm_uX7e5eCYzEV-w9eo_B6Fz_w1k4pxY34vKBW0egreH6_14QndVM0bzBGpyDg6S=
+uwbUr2lavzK9uwUI7RF5pc2SurqnuKr2AhAK-MZaBaVX29L4rB5b_r0eZx22rmpyn4YStn_B4op=
+SD4iA6rNvCIV8aHsOp1wFjhu8LFflL55PxHvF-4QKi3VoT-2UTmr0tb7-JP1uwrmn5Y4T_EKjs8=
+blEWKr3jTH7XV_ZL9qapJyJlQ_Bv3YhGfC3LLGruSkUrCtRmOhomSAop3wLwp9aM_BBxVytesIX=
+OwR8gSJUACHVlCUeFtMAXdhcZ3lHWTIQ_9onw1PzAaFutQnoMME_L7hAX4AenIr8Y8kQBrY7Cbs=
+U0QTAptkkp9Pfr4Og257k-97P2iRlXl0hgg6NeJ7AEqO54nLg0zyZvSqtJZgOkYRhMX-1uHQew8=
+oWyKoCexdznlqE1YGehgNWiX4XojPHRogWQ_PqaIpWVuYMmIj7dt__m799AhwUQQvJmRxXanso9=
+3x3KBBkV6_h6ZcLCSY71ZFGNx858mCKowAKlLenlJTiTuvwpsukbPX9nAAIv7fNNuCIPTQ01yOg=
+_0aiuZjLxnRipogI6xmUgMDYQucWRTrxkXY-AP-iwURocBRlFeuyYP_aruW-mm4Zl0oFgMWmLqZ=
+riNsKocdlFFDPj8_-8mO6ng6gsFlfpqQHW5JKB9BoPnUjk_7QEMBeL52uempgN-bGKTEJocUcnp=
+x3V256PCpbErthL3KhsQ-zkQUJc1LQQdoPbdd6vHxy6swrNn6dSCh3iFePOqNg7hILUpFSgftME=
+EiDOXHlldON0R0kKu44QwrBOWEonur0MK1N5uk1lvRtWaAIqFnz5gfbJn65EA-hMatgsCtubRjb=
+hbJQ_y9piiHZINlr5fdpWULau6Zakh6-NcG1IhpEqdinog=3Ds64" alt=3D"Header profile=
+ photo" style=3D"height:50px;width:50px;"/></v:oval><![endif]--><div style=
+=3D"mso-hide:all;"><img style=3D"border-radius:50%; display:block;" width=
+=3D"50" height=3D"50" src=3D"https://lh3.googleusercontent.com/a-/ALV-UjWd7=
+1IH-EgTaCS17V7JnLCog2Ysm8S_SPB2s7vIzUD7m6FpnIF8812BZA4Gm_uX7e5eCYzEV-w9eo_B=
+6Fz_w1k4pxY34vKBW0egreH6_14QndVM0bzBGpyDg6SuwbUr2lavzK9uwUI7RF5pc2SurqnuKr2=
+AhAK-MZaBaVX29L4rB5b_r0eZx22rmpyn4YStn_B4opSD4iA6rNvCIV8aHsOp1wFjhu8LFflL55=
+PxHvF-4QKi3VoT-2UTmr0tb7-JP1uwrmn5Y4T_EKjs8blEWKr3jTH7XV_ZL9qapJyJlQ_Bv3YhG=
+fC3LLGruSkUrCtRmOhomSAop3wLwp9aM_BBxVytesIXOwR8gSJUACHVlCUeFtMAXdhcZ3lHWTIQ=
+_9onw1PzAaFutQnoMME_L7hAX4AenIr8Y8kQBrY7CbsU0QTAptkkp9Pfr4Og257k-97P2iRlXl0=
+hgg6NeJ7AEqO54nLg0zyZvSqtJZgOkYRhMX-1uHQew8oWyKoCexdznlqE1YGehgNWiX4XojPHRo=
+gWQ_PqaIpWVuYMmIj7dt__m799AhwUQQvJmRxXanso93x3KBBkV6_h6ZcLCSY71ZFGNx858mCKo=
+wAKlLenlJTiTuvwpsukbPX9nAAIv7fNNuCIPTQ01yOg_0aiuZjLxnRipogI6xmUgMDYQucWRTrx=
+kXY-AP-iwURocBRlFeuyYP_aruW-mm4Zl0oFgMWmLqZriNsKocdlFFDPj8_-8mO6ng6gsFlfpqQ=
+HW5JKB9BoPnUjk_7QEMBeL52uempgN-bGKTEJocUcnpx3V256PCpbErthL3KhsQ-zkQUJc1LQQd=
+oPbdd6vHxy6swrNn6dSCh3iFePOqNg7hILUpFSgftMEEiDOXHlldON0R0kKu44QwrBOWEonur0M=
+K1N5uk1lvRtWaAIqFnz5gfbJn65EA-hMatgsCtubRjbhbJQ_y9piiHZINlr5fdpWULau6Zakh6-=
+NcG1IhpEqdinog=3Ds64" alt=3D"Header profile photo"></div></td><td style=3D"=
+padding: 0; vertical-align:top; padding-left:12px;"><div style=3D"padding-t=
+op:12px;">Jose Julian Silva Leon (LATAM) (<a href=3D"mailto:jose.silval@lat=
+am.com" style=3D"color:inherit;text-decoration:none">jose.silval@latam.com<=
+/a>) is <b>requesting access</b> to the following folder:</div></td></tr></=
+table><table style=3D"border-spacing:0 4px; table-layout:fixed; width:100%;=
+ overflow-wrap: break-word;" role=3D"presentation"><tr style=3D"height:28px=
+;"></tr><tr><td style=3D"padding: 0;"><a href=3D"https://drive.google.com/d=
+rive/folders/1e44X_w1D8LI1IFG0qzRRnLcA4MUy5MVq?usp=3Dsharing_esl&amp;userst=
+oinvite=3Djose.silval@latam.com&amp;sharingaction=3Dmanageaccess&amp;role=
+=3Dwriter&amp;ts=3D6852e7c1" target=3D"_blank" style=3D"color: #3c4043; dis=
+play: inline-block; max-width: 100%; text-decoration: none; vertical-align:=
+ top;border: 1px solid #DADCE0; border-radius: 16px; white-space: nowrap;">=
+<div style=3D"line-height: 18px; overflow: hidden; text-overflow: ellipsis;=
+padding: 6px 12px;"><span style=3D"display: inline-block; vertical-align: t=
+op; min-width: 26px; width: 26px;"><img src=3D"https://ssl.gstatic.com/docs=
+/documents/share/images/services/folder-3.png" width=3D"18" height=3D"18" s=
+tyle=3D"vertical-align: top;" role=3D"presentation"></span><span style=3D"f=
+ont: 500 14px/18px Google Sans, Roboto, Arial, Helvetica, sans-serif; displ=
+ay: inline; letter-spacing: 0.2px;">Latam Info</span></div></a></td></tr></=
+table><table style=3D"border-collapse: collapse;" role=3D"presentation"><tr=
+ style=3D"height: 24px"><td></td></tr></table><div style=3D"background: #fe=
+f7e0; border-radius: 4px; padding:12px 16px;"><div style=3D"display: table-=
+cell; vertical-align: middle;"><img src=3D"https://ssl.gstatic.com/docs/doc=
+uments/share/images/warning_callout_outline_yellow.png" width=3D"24px" heig=
+ht=3D"24px" style=3D"margin-left: 7px; margin-right: 19px; vertical-align: =
+middle;"></div><div style=3D"color: #3c4043; display: table-cell; font-size=
+: 14px; line-height: 20px; vertical-align: middle;"><a href=3D"mailto:jose.=
+silval@latam.com" style=3D"color:inherit;text-decoration:none">Jose Julian =
+Silva Leon (LATAM)</a> is outside your organisation.</div></div><table styl=
+e=3D"border-collapse: collapse;" role=3D"presentation"><tr style=3D"height:=
+ 32px"><td></td></tr></table><div><!--[if mso]><v:roundrect xmlns:v=3D"urn:=
+schemas-microsoft-com:vml" xmlns:w=3D"urn:schemas-microsoft-com:office:word=
+" href=3D"https://drive.google.com/drive/folders/1e44X_w1D8LI1IFG0qzRRnLcA4=
+MUy5MVq?usp=3Dsharing_esp&amp;userstoinvite=3Djose.silval@latam.com&amp;sha=
+ringaction=3Dmanageaccess&amp;role=3Dwriter&amp;ts=3D6852e7c1" style=3D"hei=
+ght:36px; width:100px; v-text-anchor:middle;" arcsize=3D"50%" stroke=3D"f" =
+fillcolor=3D"#1a73e8"><w:anchorlock/><center style=3D"color:#ffffff;font-fa=
+mily:Arial,Helvetica,sans-serif;font-weight:500;font-size:14px;">Manage sha=
+ring </center></v:roundrect><![endif]--><a href=3D"https://drive.google.com=
+/drive/folders/1e44X_w1D8LI1IFG0qzRRnLcA4MUy5MVq?usp=3Dsharing_esp&amp;user=
+stoinvite=3Djose.silval@latam.com&amp;sharingaction=3Dmanageaccess&amp;role=
+=3Dwriter&amp;ts=3D6852e7c1" class=3D"material-button material-button-fille=
+d" target=3D"_blank" tabindex=3D"0" role=3D"button" style=3D"mso-hide:all;p=
+adding: 0 24px;font: 500 14px/36px Google Sans, Roboto, Arial, Helvetica, s=
+ans-serif; border: none; border-radius: 18px; box-sizing: border-box; displ=
+ay: inline-block; letter-spacing: .25px; min-height: 36px; text-align: cent=
+er; text-decoration: none;background-color: #1a73e8; color: #fff; cursor: p=
+ointer;">Manage sharing</a></div></td></tr></table><table style=3D"border-c=
+ollapse: collapse; width: 100%;" role=3D"presentation"><tr><td style=3D"pad=
+ding: 24px 4.5%"><table style=3D"border-collapse: collapse; width: 100%;" d=
+ir=3D"ltr"><tr><td style=3D"padding: 0;font-family: Roboto, Arial, Helvetic=
+a, sans-serif; color: #5F6368; width: 100%; font-size: 12px; line-height: 1=
+6px; min-height: 40px; letter-spacing: .3px;">Google LLC, 1600 Amphitheatre=
+ Parkway, Mountain View, CA 94043, USA<br/> You have received this email be=
+cause <a href=3D"mailto:jose.silval@latam.com" style=3D"color:inherit;text-=
+decoration:none">jose.silval@latam.com</a> requested access to a file or fo=
+lder located in Google Drive.</td><td style=3D"padding: 0;padding-left: 20p=
+x; min-width: 96px"><a href=3D"https://workspace.google.com/" target=3D"_bl=
+ank" style=3D"text-decoration: none"><img src=3D"https://www.gstatic.com/do=
+cs/documents/share/images/googleworkspace_logo_192x80.png" width=3D"96" hei=
+ght=3D"40" alt=3D"Google" style=3D"font-size:16px;font-weight:500;color:#5F=
+6368"></a></td></tr></table></td></tr></table></td></tr></table></td></tr><=
+/table></body></html>
+--000000000000cfefc60637db089c--
