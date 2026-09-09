@@ -1,0 +1,240 @@
+{
+  "_spec": "Stage 4 pipeline output for MC99. Produced by ai_enrichment_stage.py running over 03_ontology_v2.4.json. Enrichment adds: (1) verified article_text from law JSON, (2) sanitized descriptions (no personal data), (3) completed metadata fields. Compare with 03_ontology_v2.4.json line-by-line to understand exactly what enrichment changes.",
+  "metadata": {
+    "analysis_id": "ANALYSIS_golden01",
+    "framework_name": "Montreal Convention 1999",
+    "jurisdiction": "INT",
+    "framework_code": "MC99",
+    "analysis_date": "2026-03-03T12:05:00.000Z",
+    "ontology_version": "2.4",
+    "pipeline_stage": "enrichment",
+    "enrichment": {
+      "method": "multi_step_local_llm",
+      "model": "deepseek-chat",
+      "prompt_version": "legal-enrichment-v2.4",
+      "steps": [
+        "legal_articles",
+        "description_sanitization",
+        "metadata_completion"
+      ]
+    }
+  },
+  "nodes": {
+    "cases": [
+      {
+        "node_id": "CASE_gc2026a1",
+        "type": "Case",
+        "title": "Denied Rerouting and Assistance After Carrier-Caused Delay — International Route, Brazilian Operator",
+        "created_date": "2026-03-03T12:00:00.000Z",
+        "description": "Passenger on an international flight operated by a Brazilian carrier misses their connection due to an airline-caused delay. Upon requesting rerouting and assistance at the departure airport, the carrier's agent denies rerouting, refuses refund, and redirects the passenger to file a written complaint with no immediate assistance offered.",
+        "jurisdiction": "BR",
+        "framework_code": "MC99"
+      }
+    ],
+    "violations": [
+      {
+        "node_id": "VIOL_mc99v001",
+        "type": "Violation",
+        "category": "liability_for_delay",
+        "description": "Carrier failed to rebut its liability for delay under MC99 Art.19 by taking all reasonably required measures to avoid or mitigate damage. Specifically, the carrier did not offer rerouting or any alternative remedy when the passenger's missed connection was caused by an airline-controlled delay.",
+        "timestamp": "2026-03-03T12:00:00.000Z",
+        "severity": "high",
+        "confidence": 0.9,
+        "framework_code": "MC99",
+        "jurisdiction": "INT",
+        "_enrichment": "Description sanitized — original LLM output confirmed clean, no personal data found. severity and confidence verified to be within spec."
+      }
+    ],
+    "actions": [
+      {
+        "node_id": "ACTN_deny0001",
+        "type": "Action",
+        "action_type": "refusal_to_reroute",
+        "description": "Carrier agent verbally denied passenger's request for rerouting to destination on an alternative flight and refused to process a refund for the unused ticket portion.",
+        "sequence_index": 2,
+        "timestamp": "2026-03-03T09:12:30.000Z",
+        "location": "Departure check-in counter, Guarulhos International Airport",
+        "_enrichment": "Action description verified: factual only, no legal conclusions embedded."
+      }
+    ],
+    "actor_roles": [
+      {
+        "node_id": "ROLE_carr0001",
+        "type": "ActorRole",
+        "function": "airline_staff",
+        "context": "Carrier check-in and service agent at departure counter"
+      },
+      {
+        "node_id": "ROLE_pass0001",
+        "type": "ActorRole",
+        "function": "passenger",
+        "context": "Ticketed passenger on delayed international flight requesting assistance"
+      }
+    ],
+    "evidences": [
+      {
+        "node_id": "EVID_trscr001",
+        "type": "Evidence",
+        "evidence_type": "transcript",
+        "source": "Audio/video recording of passenger-carrier interaction at departure counter, file /payload/recording.mp4, transcribed to /payload/transcript.json.",
+        "timestamp": "2026-03-03T09:10:00.000Z",
+        "description": "Three-segment transcript of the full exchange: (1) passenger requests assistance, (2) carrier denies rerouting and refund, (3) carrier redirects to written complaint process with no assistance offered."
+      }
+    ],
+    "segments": [
+      {
+        "node_id": "SEG_seg00001",
+        "type": "Segment",
+        "text": "Passenger requests assistance due to missed connection caused by delay.",
+        "position": 1,
+        "evidence_node_id": "EVID_trscr001",
+        "speaker": "passenger"
+      },
+      {
+        "node_id": "SEG_seg00002",
+        "type": "Segment",
+        "text": "Carrier denies rerouting and refuses to refund.",
+        "position": 2,
+        "evidence_node_id": "EVID_trscr001",
+        "speaker": "airline_staff"
+      },
+      {
+        "node_id": "SEG_seg00003",
+        "type": "Segment",
+        "text": "Passenger is informed to file a written complaint; assistance is not offered.",
+        "position": 3,
+        "evidence_node_id": "EVID_trscr001",
+        "speaker": "airline_staff"
+      }
+    ],
+    "source_packs": [
+      {
+        "node_id": "PACK_src00001",
+        "type": "SourcePack",
+        "created_at": "2026-03-03T11:55:00.000Z",
+        "integrity_hash": "sha256:a3f8e1d2c4b6a9f0e7d5c3b1a2f8e4d6c9b7a5f0e3d1c8b6a4f2e0d9c7b5a3f1"
+      }
+    ],
+    "source_files": [
+      {
+        "node_id": "FILE_vid00001",
+        "type": "SourceFile",
+        "path": "/payload/recording.mp4",
+        "sha256": "e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6",
+        "file_type": "video/mp4"
+      },
+      {
+        "node_id": "FILE_txt00001",
+        "type": "SourceFile",
+        "path": "/payload/transcript.json",
+        "sha256": "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3",
+        "file_type": "application/json"
+      }
+    ],
+    "media_assets": [
+      {
+        "node_id": "MEDIA_aud00001",
+        "type": "MediaAsset",
+        "created_at": "2026-03-03T09:00:00.000Z",
+        "modified_at": "2026-03-03T09:05:00.000Z",
+        "gps_lat": -23.4356,
+        "gps_lon": -46.4731,
+        "media_type": "video",
+        "_enrichment": "GPS coordinates added from file metadata in enrichment step. Guarulhos International Airport (GRU)."
+      }
+    ],
+    "transcripts": [
+      {
+        "node_id": "TRNS_trs00001",
+        "type": "Transcript",
+        "created_at": "2026-03-03T10:30:00.000Z",
+        "language": "pt-BR",
+        "transcription_engine": "whisper-large-v3"
+      }
+    ],
+    "applicability_bases": [
+      {
+        "node_id": "APPL_intc0001",
+        "type": "ApplicabilityBasis",
+        "basis_type": "international_air_carriage"
+      }
+    ],
+    "legal_frameworks": [
+      {
+        "node_id": "INT.MC99",
+        "type": "LegalFramework",
+        "name": "Montreal Convention 1999",
+        "jurisdiction": "INT",
+        "effective_date": "2003-11-04",
+        "version": "1999"
+      }
+    ],
+    "legal_articles": [
+      {
+        "node_id": "INT.MC99.C3.Art.19",
+        "type": "LegalArticle",
+        "article_number": "19",
+        "article_reference": "Montreal Convention 1999, Chapter III — Liability of the Carrier and Extent of Compensation for Damage, Article 19 — Delay",
+        "article_text": "The carrier is liable for damage occasioned by delay in the carriage by air of passengers, baggage or cargo. Nevertheless, the carrier shall not be liable for damage occasioned by delay if it proves that it and its servants and agents took all measures that could reasonably be required to avoid the damage or that it was impossible for it or them to take such measures.",
+        "title": null,
+        "chapter": "Chapter III — Liability of the Carrier and Extent of Compensation for Damage",
+        "framework_code": "MC99",
+        "jurisdiction": "INT",
+        "_enrichment": "article_text verified against data/law/INT/json/MC99.json — verbatim match confirmed."
+      },
+      {
+        "node_id": "INT.MC99.C3.Art.21",
+        "type": "LegalArticle",
+        "article_number": "21",
+        "article_reference": "Montreal Convention 1999, Chapter III — Liability of the Carrier and Extent of Compensation for Damage, Article 21 — Compensation in Case of Death or Injury of Passengers",
+        "article_text": "1. For damages arising under paragraph 1 of Article 17 not exceeding 100 000 Special Drawing Rights for each passenger, the carrier shall not be able to exclude or limit its liability. 2. The carrier shall not be liable for damages arising under paragraph 1 of Article 17 to the extent that they exceed for each passenger 100 000 Special Drawing Rights if the carrier proves that: (a) such damage was not due to the negligence or other wrongful act or omission of the carrier or its servants or agents; or (b) such damage was solely due to the negligence or other wrongful act or omission of a third party.",
+        "title": null,
+        "chapter": "Chapter III — Liability of the Carrier and Extent of Compensation for Damage",
+        "framework_code": "MC99",
+        "jurisdiction": "INT",
+        "_enrichment": "Art.21 loaded but not cited in VIOLATES_ARTICLE — deliberate (see PRECISION RULE §12.5)."
+      }
+    ],
+    "llm_runs": [
+      {
+        "node_id": "RUN_llmr0001",
+        "type": "LLMRun",
+        "framework": "awareness-pipeline-v2.4",
+        "timestamp": "2026-03-03T12:05:00.000Z",
+        "model": "deepseek-chat",
+        "prompt_version": "legal-extraction-v2.4",
+        "pipeline_stage": "extraction"
+      }
+    ]
+  },
+  "relationships": [
+    {"type": "GENERATED_CASE", "from_node_id": "RUN_llmr0001", "to_node_id": "CASE_gc2026a1"},
+    {"type": "HAS_PROVENANCE", "from_node_id": "CASE_gc2026a1", "to_node_id": "PACK_src00001"},
+    {"type": "HAS_APPLICABILITY_BASIS", "from_node_id": "CASE_gc2026a1", "to_node_id": "APPL_intc0001"},
+    {"type": "SCOPES_VIOLATION", "from_node_id": "CASE_gc2026a1", "to_node_id": "VIOL_mc99v001"},
+    {"type": "GROUNDED_IN_ACTION", "from_node_id": "VIOL_mc99v001", "to_node_id": "ACTN_deny0001"},
+    {"type": "VIOLATES_ARTICLE", "from_node_id": "VIOL_mc99v001", "to_node_id": "INT.MC99.C3.Art.19"},
+    {"type": "INVOLVES_ACTOR", "from_node_id": "VIOL_mc99v001", "to_node_id": "ROLE_carr0001"},
+    {"type": "INVOLVES_ACTOR", "from_node_id": "VIOL_mc99v001", "to_node_id": "ROLE_pass0001"},
+    {"type": "SUPPORTED_BY_EVIDENCE", "from_node_id": "VIOL_mc99v001", "to_node_id": "EVID_trscr001"},
+    {"type": "SUPPORTS_ACTION", "from_node_id": "EVID_trscr001", "to_node_id": "ACTN_deny0001"},
+    {"type": "CONTAINS_SEGMENT", "from_node_id": "EVID_trscr001", "to_node_id": "SEG_seg00001"},
+    {"type": "CONTAINS_SEGMENT", "from_node_id": "EVID_trscr001", "to_node_id": "SEG_seg00002"},
+    {"type": "CONTAINS_SEGMENT", "from_node_id": "EVID_trscr001", "to_node_id": "SEG_seg00003"},
+    {"type": "GENERATED_FROM", "from_node_id": "EVID_trscr001", "to_node_id": "TRNS_trs00001"},
+    {"type": "DERIVED_FROM", "from_node_id": "EVID_trscr001", "to_node_id": "MEDIA_aud00001"},
+    {"type": "TRANSCRIBES", "from_node_id": "TRNS_trs00001", "to_node_id": "MEDIA_aud00001"},
+    {"type": "PERFORMED_BY", "from_node_id": "ACTN_deny0001", "to_node_id": "ROLE_carr0001"},
+    {"type": "CONTAINS_FILE", "from_node_id": "PACK_src00001", "to_node_id": "FILE_vid00001"},
+    {"type": "CONTAINS_FILE", "from_node_id": "PACK_src00001", "to_node_id": "FILE_txt00001"},
+    {"type": "REPRESENTS_MEDIA", "from_node_id": "FILE_vid00001", "to_node_id": "MEDIA_aud00001"},
+    {"type": "CONTAINS_ARTICLE", "from_node_id": "INT.MC99", "to_node_id": "INT.MC99.C3.Art.19"},
+    {"type": "CONTAINS_ARTICLE", "from_node_id": "INT.MC99", "to_node_id": "INT.MC99.C3.Art.21"}
+  ],
+  "compliance": {
+    "ontology_valid": true,
+    "message": "v2.4 compliant",
+    "violations_found": 1,
+    "framework_code": "MC99"
+  }
+}

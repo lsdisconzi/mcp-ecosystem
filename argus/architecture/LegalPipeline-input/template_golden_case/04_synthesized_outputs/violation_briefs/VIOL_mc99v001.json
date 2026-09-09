@@ -1,0 +1,66 @@
+{
+  "_spec": "Violation brief for VIOL_mc99v001. Violation briefs are human-readable summaries of each violation, consolidating all traceability paths into a single auditable document. They do NOT add new legal conclusions — they summarize what the graph already contains. Use briefs for review and reporting; use the canonical output for machine processing.",
+  "violation_id": "VIOL_mc99v001",
+  "case_id": "CASE_gc2026a1",
+  "framework": "Montreal Convention 1999 (MC99)",
+  "jurisdiction": "INT",
+  "category": "liability_for_delay",
+  "severity": "high",
+  "confidence": 0.9,
+  "timestamp": "2026-03-03T12:00:00.000Z",
+
+  "allegation_summary": "Carrier failed to rebut its liability for delay under MC99 Art.19 by taking all reasonably required measures to avoid or mitigate damage. Specifically, the carrier did not offer rerouting or any alternative remedy when the passenger's missed connection was caused by an airline-controlled delay.",
+
+  "legal_basis": [
+    {
+      "article_eli": "INT.MC99.C3.Art.19",
+      "article_reference": "Montreal Convention 1999, Chapter III, Article 19 — Delay",
+      "relevant_excerpt": "The carrier is liable for damage occasioned by delay... [the carrier] shall not be liable... if it proves that it and its servants and agents took all measures that could reasonably be required to avoid the damage.",
+      "nexus": "The carrier failed to take reasonable measures (Art.19 rebuttal test): it did not offer rerouting, refused the refund, and directed the passenger to a written complaint process. No mitigation attempt was made."
+    }
+  ],
+
+  "factual_basis": [
+    {
+      "action_id": "ACTN_deny0001",
+      "action_type": "refusal_to_reroute",
+      "description": "Carrier agent verbally denied passenger's request for rerouting and refused to process a refund.",
+      "grounding_segment": {
+        "segment_id": "SEG_seg00002",
+        "text": "Carrier denies rerouting and refuses to refund.",
+        "speaker": "airline_staff",
+        "timestamp_in_recording": "00:00:05.400"
+      }
+    }
+  ],
+
+  "evidence": [
+    {
+      "evidence_id": "EVID_trscr001",
+      "evidence_type": "transcript",
+      "source": "/payload/recording.mp4",
+      "forensic_path": "EVID_trscr001 → GENERATED_FROM → TRNS_trs00001 → TRANSCRIBES → MEDIA_aud00001"
+    }
+  ],
+
+  "actors_involved": [
+    {"role_id": "ROLE_carr0001", "function": "airline_staff"},
+    {"role_id": "ROLE_pass0001", "function": "passenger"}
+  ],
+
+  "cross_jurisdiction_note": "MC99 (INT) applies to this BR-jurisdiction case via ApplicabilityBasis APPL_intc0001 (basis_type: 'international_air_carriage'). The flight was an international route operated by a Brazilian carrier — MC99 Art.1(1) governs all international carriage of passengers.",
+
+  "invariant_compliance": {
+    "II-2": "PASS — 1 GROUNDED_IN_ACTION (ACTN_deny0001) + 1 VIOLATES_ARTICLE (INT.MC99.C3.Art.19)",
+    "IX-1": "PASS — ACTN_deny0001 has 1 incoming SUPPORTS_ACTION from EVID_trscr001",
+    "I-1": "PASS — allegation only, no guilt or liability conclusion stated"
+  },
+
+  "related_violations": [
+    {
+      "violation_id": "VIOL_cbav0001",
+      "framework": "CBA",
+      "note": "Same incident grounds both violations. The carrier's failure to assist causes a parallel service contract breach under Brazilian law."
+    }
+  ]
+}

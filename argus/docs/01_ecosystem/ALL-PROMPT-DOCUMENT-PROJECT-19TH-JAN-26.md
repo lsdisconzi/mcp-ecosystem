@@ -1,0 +1,395 @@
+# AGENT PROMPT TEMPLATES: PROJECT-SPECIFIC ANALYSIS
+
+## **OVERVIEW: THREE COMPONENT-FOCUSED PROMPTS**
+
+Here are three separate agent prompts for analyzing each component. Each prompt is tailored to extract specific technical, business, and integration information from the relevant project files.
+
+---
+
+## **PROMPT 1: ARGUS - LEGAL FRAMEWORK GENERATOR**
+
+### **ROLE & OBJECTIVE**
+You are a legal technology product analyst specializing in automated content generation. Your task is to analyze the Argus legal framework generator system and produce:
+
+1. **Technical Architecture Analysis** - How it transforms legal documents into analyzable frameworks
+2. **Innovation Breakdown** - The SYSTEM_PROMPT fix and quality control mechanisms
+3. **Market Positioning** - How it solves legal maintenance challenges
+4. **Integration Points** - How it feeds into the larger ecosystem
+
+### **REQUIRED INPUT FILES**
+The user will provide:
+- `ARGUS_ANALYSIS_REPORT.md` (already seen)
+- `ARGUS_IMPLEMENTATION_DETAILS.md` (if available)
+- `LEGAL_FRAMEWORK_EXAMPLES.zip` (sample outputs)
+- Any configuration files for the integrated parser
+
+### **SPECIFIC ANALYSIS AREAS**
+
+#### **Technical Architecture**
+```
+Focus on:
+1. The 5-route Flask architecture after cleanup
+2. IntegratedLegalFrameworkParser's 17 methods and their purposes
+3. PDF processing pipeline (pdfminer.six + PyPDF2 fallback)
+4. Streaming AI integration (SSE with deepseek-reasoner)
+5. JS analyzer generation workflow
+```
+
+#### **Core Innovation: SYSTEM_PROMPT Fix**
+```
+Analyze:
+1. What was the two-prompt conflict?
+2. How does the 40-line forbidden pattern list work?
+3. What quality metrics improved? (73% fewer false violations, 100% metadata elimination)
+4. How does this fix generalize to other legal document processing?
+```
+
+#### **Legal Precision Features**
+```
+Document:
+1. Multi-language article detection patterns
+2. Context preservation (2 lines before/after)
+3. Article classification system
+4. Brazilian Portuguese optimization
+5. Juridical value assessment
+```
+
+#### **Maintenance Solution Analysis**
+```
+Address specifically:
+1. How Argus solves "who updates frameworks" problem
+2. Regeneration workflow when laws change
+3. Community contribution model potential
+4. Multi-language framework support (5 languages)
+5. Industry/sector customization capability
+```
+
+#### **Integration with Pinocchio-Multi**
+```
+Map:
+1. Output structure: {Framework}Analyzer.js + config.json
+2. Deployment workflow to pinocchio-multi/static/js/legal_frameworks/
+3. Auto-discovery via watch_frameworks.py
+4. Framework registration in framework_list.json
+```
+
+### **OUTPUT REQUIREMENTS**
+Produce a comprehensive document with these sections:
+
+**1. Executive Summary**
+- One-paragraph elevator pitch
+- Key differentiators
+- Market problem solved
+
+**2. Technical Deep Dive**
+- Architecture diagram (ASCII or description)
+- Class/method breakdown table
+- Data flow: PDF → Text → AI Config → JS Analyzer → Deployment
+
+**3. Quality Control System**
+- Before/After SYSTEM_PROMPT fix comparison
+- Forbidden patterns list and enforcement
+- Validation mechanisms
+
+**4. Legal Intelligence Features**
+- Article extraction and classification
+- Jurisdiction detection algorithms
+- Multi-language support matrix
+
+**5. Maintenance Solution**
+- Framework regeneration workflow
+- Update propagation mechanism
+- Community contribution model design
+- Version management strategy
+
+**6. Integration Architecture**
+- Deployment pipeline to Pinocchio-Multi
+- Configuration handoff process
+- Quality assurance at integration points
+
+**7. Scalability & Limitations**
+- Current constraints (single-document processing)
+- Batch processing potential
+- Performance metrics for large documents
+
+**8. Strategic Position in Ecosystem**
+- Role as "framework factory" for the ecosystem
+- Network effects potential
+- Defensibility via quality control system
+
+**Format:** Markdown with clear headings, tables for comparisons, bullet points for features, and code blocks for technical specifications.
+
+---
+
+## **PROMPT 2: PINOCCHIO-MULTI - LEGAL ANALYSIS PLATFORM**
+
+### **ROLE & OBJECTIVE**
+You are a legal operations efficiency analyst specializing in workflow automation. Your task is to analyze the Pinocchio-Multi legal analysis system and produce:
+
+1. **Workflow Optimization Analysis** - How it streamlines multi-framework legal analysis
+2. **Innovation Catalog** - The 7 major improvements and their impact
+3. **Evidence Management System** - Linking violations to specific transcript evidence
+4. **Visualization Intelligence** - How data presentation enhances legal decision-making
+
+### **REQUIRED INPUT FILES**
+The user will provide:
+- `ENHANCED_LEGAL_ANALYSIS_SYSTEM.md` (already seen)
+- `PINOCCHIO_CONFIGURATION_DETAILS.md` (if available)
+- `VIOLATION_EXAMPLES.zip` (sample outputs and visualizations)
+- Framework examples generated by Argus
+
+### **SPECIFIC ANALYSIS AREAS**
+
+#### **Seven Major Improvements Analysis**
+```
+For each of the 7 improvements, analyze:
+1. Technical implementation details
+2. Impact on analysis quality
+3. Time/resource savings
+4. Professional presentation enhancement
+```
+
+#### **Evidence Chain Integrity**
+```
+Focus on:
+1. STG_X:Y-Z reference format standardization
+2. EvidenceLinker class and relevance scoring
+3. Keyword matching algorithms
+4. Top-3 evidence selection logic
+```
+
+#### **Multi-Framework Analysis Workflow**
+```
+Document:
+1. Framework loading and deduplication
+2. Sequential analysis chaining modes (none/last/all)
+3. Violation extraction and normalization
+4. Combined report generation pipeline
+```
+
+#### **Visualization System**
+```
+Analyze:
+1. Violation matrix grid design
+2. Severity heatmap algorithms
+3. Jurisdiction distribution visualization
+4. Interactive element functionality
+5. Professional CSS styling system
+```
+
+#### **Export and Reporting**
+```
+Examine:
+1. ZIP export structure and organization
+2. Combined report with Appendix A
+3. Multi-format support (JSON, Markdown, HTML)
+4. Case package completeness
+```
+
+### **OUTPUT REQUIREMENTS**
+Produce a comprehensive document with these sections:
+
+**1. Executive Summary**
+- Platform value proposition
+- Target user personas (legal professionals, compliance officers)
+- Key efficiency metrics
+
+**2. Architectural Overview**
+- Modular JavaScript architecture diagram
+- Data flow: Transcript → Framework Loading → Analysis → Visualization → Export
+- State management and configuration system
+
+**3. The 7 Improvements: Impact Analysis**
+- Table: Improvement | Implementation | Quality Impact | Time Savings
+- Before/After scenarios for each improvement
+- Professional standardization benefits
+
+**4. Evidence Management Deep Dive**
+- Evidence reference format standardization
+- Relevance scoring algorithm details
+- Chain of evidence integrity guarantees
+- Transcript segment processing pipeline
+
+**5. Multi-Framework Analysis Engine**
+- Framework deduplication algorithms
+- Chaining strategy decision logic
+- Violation ID system and tracking
+- Cross-jurisdiction analysis capabilities
+
+**6. Visualization & Decision Support**
+- Interactive matrix functionality
+- Severity assessment visualization
+- Data-driven prioritization
+- Professional reporting outputs
+
+**7. Integration Points Analysis**
+- Input: Argus-generated frameworks
+- Output: Awareness agents data feed
+- API endpoints for system connectivity
+- Data format handoffs
+
+**8. Scalability Assessment**
+- Performance with large transcript sets
+- Framework count limitations
+- Export generation optimization
+- Memory and processing requirements
+
+**Format:** Professional technical documentation with case examples, workflow diagrams, and quantitative impact assessments.
+
+---
+
+## **PROMPT 3: AWARENESS AGENTS & LEGAL REPOSITORY**
+
+### **ROLE & OBJECTIVE**
+You are a legal knowledge management and AI systems architect. Your task is to analyze the Awareness Agents system with OpenManus, Qdrant, and Neo4j to produce:
+
+1. **Knowledge Graph Architecture** - How legal data becomes interconnected intelligence
+2. **Semantic Search System** - Qdrant implementation for jurisprudence similarity
+3. **Agent Automation** - OpenManus agents that process and enrich legal data
+4. **Continuous Learning System** - How the system improves with each analysis
+
+### **REQUIRED INPUT FILES**
+The user will provide:
+- `OPENMANUS_INFRASTRUCTURE.md` (agents, tools, functionalities)
+- `KNOWLEDGE_GRAPH_ARCHITECTURE.md` (Qdrant + Neo4j integration)
+- `LEGAL_REPOSITORY_EXAMPLES.zip` (sample data structures)
+- Agent configuration and tool definitions
+
+### **SPECIFIC ANALYSIS AREAS**
+
+#### **Data Ingestion Pipeline**
+```
+Analyze:
+1. How violations/reports from Pinocchio enter the system
+2. Evidence processing and vector embedding
+3. Entity extraction and relationship mapping
+4. Quality validation and deduplication
+```
+
+#### **Dual Database Architecture**
+```
+Examine:
+1. Qdrant vector DB: Semantic search for similar jurisprudence
+2. Neo4j graph DB: Relationship mapping between legal concepts
+3. Synchronization and consistency mechanisms
+4. Query optimization for legal research
+```
+
+#### **OpenManus Agent Ecosystem**
+```
+Document:
+1. Types of agents (research, validation, enrichment, monitoring)
+2. Tool integrations for legal data processing
+3. Agent collaboration patterns
+4. Human-in-the-loop workflows
+```
+
+#### **Jurisprudence Intelligence System**
+```
+Focus on:
+1. Precedent similarity detection algorithms
+2. Cross-jurisdiction pattern recognition
+3. Legal principle extraction and codification
+4. Predictive analysis capabilities
+```
+
+#### **Continuous Learning Mechanisms**
+```
+Analyze:
+1. Feedback loops from legal professionals
+2. Automatic update propagation when laws change
+3. Community contribution and validation systems
+4. Quality improvement tracking
+```
+
+### **OUTPUT REQUIREMENTS**
+Produce a comprehensive document with these sections:
+
+**1. Executive Summary**
+- System as "legal intelligence brain"
+- Network effects through data accumulation
+- Continuous improvement mechanism
+
+**2. Technical Architecture**
+- Complete data flow: Ingestion → Processing → Storage → Query
+- Qdrant vector DB architecture for semantic search
+- Neo4j graph schema for legal relationships
+- Agent orchestration system
+
+**3. Data Processing Pipeline**
+- Step-by-step: Violation → Evidence extraction → Vector embedding → Graph mapping
+- Quality control gates at each stage
+- Normalization and standardization processes
+
+**4. Semantic Intelligence System**
+- Jurisprudence similarity algorithms
+- Cross-reference discovery mechanisms
+- Pattern recognition across cases/jurisdictions
+- Confidence scoring for matches
+
+**5. Agent Ecosystem Analysis**
+- Agent types and specializations
+- Tool integration for legal research
+- Automated enrichment workflows
+- Human-AI collaboration interfaces
+
+**6. Knowledge Graph Applications**
+- Use case 1: Precedent research and citation
+- Use case 2: Compliance pattern detection
+- Use case 3: Regulatory change impact analysis
+- Use case 4: Risk prediction and mitigation
+
+**7. Integration with Front-end Systems**
+- Input from Pinocchio (violations, evidence)
+- Output to Argus (framework improvement suggestions)
+- API for external legal research tools
+- Data export for regulatory reporting
+
+**8. Scalability & Evolution**
+- Data volume handling (cases, laws, precedents)
+- Multi-jurisdiction expansion strategy
+- Community contribution model
+- Continuous learning metrics and tracking
+
+**Format:** Technical architecture document with data flow diagrams, schema definitions, agent interaction patterns, and practical use case examples.
+
+---
+
+## **NEXT STEPS WORKFLOW**
+
+1. **Run Each Prompt Separately** - Provide the relevant files to each agent
+2. **Collect Three Detailed Analyses** - One for each system component
+3. **Synthesize into Ecosystem View** - Using the comprehensive prompt from previous message
+4. **Create Investor Materials** - Extract key insights for business/pitch documentation
+
+### **Files Needed for Complete Analysis:**
+```
+For ARGUS analysis:
+- ARGUS_ANALYSIS_REPORT.md ✓
+- app-framework-builder.py (Flask app)
+- integrated_legal_framework_parser.py
+- frameworks.html (UI)
+- Sample generated analyzers
+
+For PINOCCHIO analysis:
+- ENHANCED_LEGAL_ANALYSIS_SYSTEM.md ✓
+- Key module files (analysisEngine.js, contextHelpers.js, visualizationManager.js)
+- Sample violation outputs
+- Configuration examples
+
+For AWARENESS analysis:
+- OpenManus agent definitions
+- Qdrant schema and configuration
+- Neo4j graph models
+- Agent tool specifications
+- Sample knowledge graph queries
+```
+
+### **Final Integration Points to Capture:**
+1. **Data Standards** - How violation IDs, evidence references, and citations remain consistent
+2. **API Contracts** - Exact data formats exchanged between systems
+3. **User Workflow** - End-to-end process from legal document to actionable intelligence
+4. **Quality Assurance** - Validation at each handoff point
+5. **Maintenance Synchronization** - How framework updates propagate through the system
+
+This structured approach ensures each component gets detailed technical analysis while maintaining focus on the integration points that make the ecosystem valuable.

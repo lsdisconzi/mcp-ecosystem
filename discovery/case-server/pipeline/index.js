@@ -575,7 +575,11 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
   const { case_graph, violations, law_registry, stats: normStats, neo4j: neo4jResult } =
     await normalizeExtractionResults(extractionResults, allFiles, rootDir, {
       analysisProfile: profile,
-      kbConfig: effectiveKbConfig
+      kbConfig: effectiveKbConfig,
+      // code → provisions index (seed always; runtime dossiers override when present)
+      dossierCodeIndex: dossierRegistry && dossierRegistry.byCode
+        ? dossierRegistry.byCode
+        : undefined
     });
 
   const graphPath      = path.join(outputDir, 'case_graph.json');

@@ -1,0 +1,1177 @@
+<!--
+    FRAMEWORKS.HTML - Enhanced Framework Builder Interface
+    ========================================================
+    
+    OVERVIEW:
+        This HTML application provides a comprehensive web interface for generating AI-powered 
+        legal framework analyzers and city investigation plans. It combines document processing,
+        AI configuration generation, and automated code generation into a unified workflow.
+    
+    PRIMARY COMPONENTS:
+        1. Framework Builder Section
+           - Handles legal document uploads (.txt, .pdf)
+           - Extracts text content from PDF files
+           - Generates framework configurations using AI with real-time reasoning display
+           - Validates content extraction quality
+           - Produces JavaScript analyzer modules
+           - Supports multiple output languages and parser versions
+        
+        2. Export & Packaging System
+           - Creates downloadable .zip archives containing:
+             * Original framework documents
+             * Generated configuration files (JSON)
+             * Generated JavaScript analyzers
+             * AI prompt logs
+             * Validation reports 
+    
+    TECHNICAL ARCHITECTURE:
+        
+        State Management Variables:
+            - frameworkTextContent: Stores extracted document text
+            - originalFrameworkFilename: Preserves original file name
+            - extractedSections: Parsed content sections from framework
+            - contentValidation: Quality assessment results
+        
+        API Integration Endpoints:
+            POST /api/extract_pdf_text
+                - Extracts plain text from uploaded PDF documents
+                - Returns: { text: string }
+            
+            POST /api/generate_config_from_text
+                - AI-powered configuration generation with streaming
+                - Supports Server-Sent Events (SSE) for real-time updates
+                - Returns: Stream of JSON chunks with reasoning and content
+            
+            POST /api/build_framework
+                - Generates JavaScript analyzer from config and framework text
+                - Validates content extraction quality
+                - Returns: { generated_js, generated_prompt, validation_results }
+        
+        Streaming Protocol:
+            - Uses Server-Sent Events (SSE) format
+            - Data format: "data: {JSON}\n\n"
+            - Handles two content types:
+              * reasoning_content: AI's thought process
+              * content: Actual configuration JSON
+            - Termination signal: "data: [DONE]\n\n"
+    
+    USER WORKFLOW:
+        1. Upload Framework Document
+           → Automatic text extraction (PDF) or direct text loading (.txt)
+           → Display extraction success/failure feedback
+        
+        2. AI Configuration Generation
+           → Send framework text to AI endpoint
+           → Stream and display reasoning steps in real-time
+           → Populate configuration textarea with generated JSON
+           → Auto-fill suggested output filename
+        
+        3. Configuration Review & Refinement
+           → Manual editing of AI-generated config
+           → JSON validation on generation attempt
+        
+        4. Analyzer Generation
+           → Select parser version (Standard/Integrated)
+           → Choose output language
+           → Generate JavaScript analyzer module
+           → Display validation results with status badges
+        
+        5. Export Package
+           → Bundle all generated files into .zip archive
+           → Include validation reports
+           → Trigger browser download
+    
+    VALIDATION SYSTEM:
+        Content Validation Checks:
+            - Section completeness (complete/incomplete/missing)
+            - Content length verification
+            - Extraction quality assessment
+            - PDF extraction confirmation
+        
+        Display Components:
+            - Visual status badges with color coding:
+              * Green (complete): Successful extraction
+              * Yellow (incomplete): Partial extraction
+              * Red (missing): Failed extraction
+            - Detailed validation panel with per-section results
+            - Character count metrics
+    
+    STYLING & RESPONSIVE DESIGN:
+        CSS Variables (Theme):
+            --primary: #2c3e50 (Dark blue-gray)
+            --secondary: #3498db (Blue)
+            --success: #27ae60 (Green)
+            --warning: #f39c12 (Orange)
+            --danger: #e74c3c (Red)
+        
+        Layout Strategy:
+            - Flexbox two-column layout for desktop
+            - Stacked single-column for mobile (<992px)
+            - Auto-scrolling content areas with max-height constraints
+            - Hover effects with elevation (transform + box-shadow)
+        
+        Interactive Elements:
+            - Gradient buttons with hover states
+            - Focus indicators for accessibility
+            - Loading states with disabled styling
+            - Auto-dismissing alerts (5s timeout)
+    
+    ACCESSIBILITY FEATURES:
+        - ARIA labels on main sections
+        - Live region for dynamic alerts (aria-live="polite")
+        - Semantic HTML5 structure (<header>, <main>, <section>)
+        - Keyboard-navigable form controls
+        - High contrast status badges
+        - Clear visual feedback for all actions
+    
+    SYNTAX HIGHLIGHTING:
+        Library: Prism.js v1.29.0
+        Supported Languages: JavaScript
+        Applied To:
+            - Generated JavaScript code output
+            - Configuration JSON display
+            - AI reasoning output
+    
+    ERROR HANDLING:
+        User-Facing Errors:
+            - File upload failures
+            - PDF extraction errors
+            - AI generation timeouts
+            - Invalid JSON configurations
+            - Network request failures
+        
+        Developer Errors:
+            - Stream parsing failures (logged, not thrown)
+            - JSON parsing errors with graceful degradation
+            - Missing content validation warnings
+        
+        Recovery Mechanisms:
+            - Auto-retry for failed streams
+            - Partial content preservation
+            - Detailed error messages in alert system
+    
+    DEPENDENCIES:
+        External Libraries:
+            - JSZip 3.10.1: ZIP archive creation
+            - FileSaver.js 2.0.5: Client-side file downloads
+            - Prism.js 1.29.0: Code syntax highlighting
+        
+        Browser APIs:
+            - FileReader API: Local file reading
+            - Fetch API: HTTP requests with streaming
+            - ReadableStream: SSE data processing
+            - Blob API: Binary file generation
+    
+    INTERNATIONALIZATION:
+        Supported Output Languages:
+            - English (en)
+            - Portuguese (pt)
+            - Spanish (es)
+            - Italian (it)
+            - Hindi (hi)
+        
+        Language Selection:
+            - Dropdown in generation form
+            - Affects generated analyzer interface text
+            - Does not affect configuration structure
+    
+    PARSER VERSIONS:
+        Standard Parser:
+            - Basic pattern matching
+            - Fast processing
+            - English-optimized
+        
+        Integrated Parser (Enhanced):
+            - Advanced pattern recognition
+            - Multi-language support
+            - Better handling of complex formatting
+            - Recommended for international documents
+    
+    FILE NAMING CONVENTIONS:
+        Generated Filenames:
+            - Framework: {original_name}.{ext}
+            - Config: config.json
+            - Analyzer: {FunctionName}Analyzer.js
+            - Prompt: generated_prompt.txt
+            - Validation: validation_report.txt
+            - Package: {FunctionName}.zip
+        
+        Validation Rules:
+            - Only alphanumeric, underscore, hyphen allowed
+            - Must end with .js extension
+            - Regex: /^[\w\-]+\.js$/
+    
+    PERFORMANCE CONSIDERATIONS:
+        - Chunked streaming for large AI responses
+        - Lazy syntax highlighting (only on demand)
+        - Debounced scroll events
+        - Maximum content heights to prevent DOM bloat
+        - Efficient ZIP compression with JSZip
+    
+    SECURITY NOTES:
+        - No client-side storage of sensitive data
+        - All file processing happens in-memory
+        - Server-side validation required for uploaded files
+        - No eval() or dangerous innerHTML usage
+        - CSP-compatible script loading
+    
+    BROWSER COMPATIBILITY:
+        Minimum Requirements:
+            - ES6+ support (async/await, arrow functions)
+            - Fetch API with streaming
+            - FileReader API
+            - Blob and URL APIs
+        
+        Tested Browsers:
+            - Chrome 90+
+            - Firefox 88+
+            - Safari 14+
+            - Edge 90+
+    
+    MAINTENANCE NOTES:
+        - API endpoint paths are hardcoded (consider config file)
+        - Alert timeout is fixed at 5000ms (could be configurable)
+        - Prism.js version pinned for stability
+        - Consider adding version number to UI
+        - Monitor SSE connection timeouts in production
+    
+    VERSION HISTORY:
+        - Enhanced PDF extraction capabilities
+        - Added multi-language output support
+        - Implemented Integrated parser option
+        - Added comprehensive validation system
+        - Improved streaming UI with reasoning display
+-->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <title>Enhanced Framework Builder</title>
+    <!-- Prism.js CSS for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #34495e;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            background-color: #f5f7f9; 
+            color: #333; 
+            line-height: 1.6;
+            min-height: fit-content;
+            resize: both;
+        }
+        
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 20px;
+            min-height: fit-content;
+            resize: both;
+            overflow: hidden;
+        }
+        
+        .header { 
+            background: linear-gradient(135deg, var(--primary) 0%, var(--dark) 100%);
+            color: white; 
+            padding: 25px 0; 
+            margin-bottom: 30px; 
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 { 
+            margin: 0; 
+            text-align: center; 
+            font-size: 32px; 
+            font-weight: 600;
+        }
+        
+        .header p {
+            text-align: center;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 10px auto 0;
+        }
+        
+        .flex-container { 
+            display: flex; 
+            gap: 25px; 
+            margin-bottom: 30px;
+            min-height: fit-content;
+            resize: both;
+            overflow: auto;
+        }
+        
+        .column { 
+            flex: 1; 
+            background-color: white; 
+            border-radius: 10px; 
+            padding: 25px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            min-height: fit-content;
+        }
+        
+        .column:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        
+        h2, h3 { 
+            color: var(--primary); 
+            border-bottom: 2px solid var(--light); 
+            padding-bottom: 12px; 
+            margin-top: 0;
+        }
+        
+        .form-group { 
+            margin-bottom: 22px;
+            resize: vertical;
+            
+        }
+        
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        input[type="file"], input[type="text"], textarea { 
+            width: 100%; 
+            padding: 12px; 
+            box-sizing: border-box; 
+            border: 1px solid #ddd; 
+            border-radius: 6px; 
+            font-size: 15px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        textarea { 
+            font-family: 'Fira Code', 'Courier New', monospace; 
+            font-size: 14px; 
+            line-height: 1.5;
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .btn { 
+            background-color: var(--secondary); 
+            color: white; 
+            border: none; 
+            padding: 14px 22px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: 600;
+            width: 100%; 
+            transition: all 0.3s; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover { 
+            background-color: #2980b9; 
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled { 
+            background-color: #95a5a6; 
+            cursor: not-allowed; 
+            transform: none;
+        }
+        
+        .btn-ai { 
+            background: linear-gradient(135deg, #16a085 0%, #1abc9c 100%);
+        }
+        
+        .btn-ai:hover { 
+            background: linear-gradient(135deg, #138a72 0%, #16a085 100%);
+        }
+        
+        .btn-download {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        } 
+        
+        .btn-download:hover {
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+        }
+        
+        pre { 
+            background-color: #d8dadb; 
+            padding: 14px; 
+            resize: both;
+            border-radius: 6px; 
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            border: 1px solid #eee;
+        }
+        
+        code { 
+            font-family: 'Fira Code', 'Courier New', monospace; 
+        }
+        
+        .alert { 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border-radius: 6px; 
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .alert-error { 
+            background-color: #ffeaea; 
+            color: #c0392b; 
+            border: 1px solid #f5c6cb; 
+        }
+        
+        .alert-success { 
+            background-color: #eaffea; 
+            color: #27ae60; 
+            border: 1px solid #c3e6cb; 
+        }
+        
+        .alert-warning { 
+            background-color: #fff4e6; 
+            color: #e67e22; 
+            border: 1px solid #ffeaa7; 
+        }
+        
+        .alert-info { 
+            background-color: #e8f4fd; 
+            color: #3498db; 
+            border: 1px solid #b8daff; 
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-complete {
+            background-color: #e8f6f3;
+            color: #16a085;
+        }
+        
+        .status-incomplete {
+            background-color: #fef9e7;
+            color: #f39c12;
+        }
+        
+        .status-missing {
+            background-color: #fdedec;
+            color: #e74c3c;
+        }
+        
+        .validation-panel {
+            background-color: #f9f9f9;
+            border-left: 4px solid var(--secondary);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .validation-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        /* Add these styles to fix container overflow */
+        .flex-container .column {
+            overflow: auto;  /* Add scrolling when content overflows */
+            max-height: calc(100vh - 200px);  /* Limit height with scrolling */
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .flex-container .column .form-group {
+            flex: 0 0 auto;  /* Don't allow form groups to stretch */
+        }
+        
+        .flex-container .column pre {
+            flex: 1 1 auto;  /* Allow pre elements to grow and shrink */
+            min-height: 100px;
+            max-height: 300px;  /* Limit height of pre elements */
+        }
+
+        #ai-analysis-reasoning {
+            display: block !important; /* Override the display:none from the .reasoning-stream class */
+            min-height: 100px;
+        }        
+        /* Articles-mode indicator badge */
+        .articles-mode-badge {
+            padding: 10px 15px;
+            background: #e8f6f3;
+            border-left: 4px solid #16a085;
+            border-radius: 0 6px 6px 0;
+            margin-bottom: 14px;
+            font-size: 14px;
+            color: #16a085;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .articles-mode-badge button {
+            margin-left: auto;
+            background: none;
+            border: 1px solid #16a085;
+            color: #16a085;
+            border-radius: 4px;
+            padding: 3px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .articles-mode-badge button:hover { background: #16a085; color: white; }
+        .or-divider {
+            text-align: center;
+            margin: 10px 0;
+            color: #aaa;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        /* Reasoning streams container */
+        .reasoning-stream {
+            background-color: #f8f9fa;
+            border-left: 3px solid #16a085;
+            padding: 10px 15px;
+            margin: 10px 0;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #555;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            overflow: auto;
+            max-height: 200px;
+            white-space: pre-wrap;
+            display: none; /* Hidden by default */
+        }
+        
+        @media (max-width: 992px) {
+            .flex-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header" role="banner">
+        <div class="container">
+            <h1>Legal Framework Builder</h1>
+            <p>Create specialized legal analysis panels with Improved Content Extraction and MCLAF integration</p>
+        </div>
+    </header>
+
+    <main class="container" role="main">
+        <div id="alert-container" aria-live="polite"></div>
+        <div class="flex-container">
+            <!-- Input Column -->
+            <section class="column" aria-label="Framework Input">
+                <form id="framework-form" autocomplete="off">
+                    <!-- Framework Upload -->
+                    <div class="form-group">
+                        <label for="framework-file-input">1a. Upload Framework Document (.txt, .pdf, or .md)</label>
+                        <input type="file" id="framework-file-input" accept=".txt,.pdf,.md">
+                        <div class="hint">
+                            For best results, use a clean text version of the legal document. PDFs will be automatically extracted.
+                        </div>
+                    </div>
+                    <!-- PDF Extraction Loading -->
+                    <div id="pdf-extraction-loading" class="alert alert-info" style="display: none; margin-bottom: 20px;">
+                        <span style="font-size: 18px;">⏳</span> Extracting text from PDF...
+                    </div>
+                    <!-- AI Config Generation -->
+                    <button id="ai-generate-config-btn" class="btn btn-ai" type="button" style="margin-bottom: 20px;">
+                        <span>🤖</span> Generate Config with AI
+                    </button>
+
+                    <!-- ─── OR: upload a pre-parsed articles JSON ─────────────────────── -->
+                    <div class="or-divider">— OR —</div>
+
+                    <div class="form-group">
+                        <label for="articles-json-input">1b. Upload Articles JSON (structured, no AI needed)</label>
+                        <input type="file" id="articles-json-input" accept=".json">
+                        <div class="hint">
+                            Use any file from <code>data/law/law_actual/BR/</code>,
+                            <code>data/law/law_actual/INT/</code>, or
+                            <code>data/law/law_actual/CL/</code>
+                            (e.g. <strong>CBA.json</strong>, <strong>MC99.json</strong>, <strong>R400.json</strong>,
+                            <strong>ACHR.json</strong> …). All 35 files share the same schema:
+                            <code>article_number</code>, <code>text</code>, <code>eli_id</code>,
+                            <code>reference</code>, <code>theme</code>, <code>framework_name</code>,
+                            <code>jurisdiction</code>, <code>framework_code</code>.
+                            The config textarea will be auto-populated — no AI step required.
+                        </div>
+                    </div>
+
+                    <!-- Articles mode active badge -->
+                    <div id="articles-mode-badge" class="articles-mode-badge" style="display:none;">
+                        <span>✓ <strong>Articles Mode</strong> — <span id="articles-mode-info"></span></span>
+                        <button type="button" id="clear-articles-btn">✕ Clear</button>
+                    </div>
+                    <!-- Config JSON Textarea -->
+                    <div class="form-group">
+                        <label for="config-json-textarea">2. Review &amp; Refine AI-Generated Config</label>
+                        <textarea id="config-json-textarea" rows="15" placeholder="Upload a framework and click 'Generate Config with AI' to populate this area."></textarea>
+                    </div>
+                    <!-- AI Reasoning Output -->
+                    <div class="form-group">
+                        <h3>AI Reasoning Steps</h3>
+                        <pre><code id="ai-reasoning-output" style="color: #555; font-size: 12px;">The AI's thought process will appear here...</code></pre>
+                    </div>
+                    <!-- Output Filename -->
+                    <div class="form-group">
+                        <label for="output-filename-input">3. Output Filename</label>
+                        <input type="text" id="output-filename-input" placeholder="e.g., MontrealConventionAnalyzer.js">
+                    </div>
+                    <!-- Output Language Selector -->
+                    <div class="form-group">
+                        <label for="output-language-select">4. Output Language</label>
+                        <select id="output-language-select">
+                            <option value="en">English</option>
+                            <option value="pt">Portuguese</option>
+                            <option value="es">Spanish</option>
+                            <option value="it">Italian</option>
+                            <option value="hi">Hindi</option>
+                        </select>
+                        <div class="hint">
+                            Choose the language for the generated analyzer interface text
+                        </div>
+                    </div>
+                    <!-- Generate JS Analyzer Button -->
+                    <button id="generate-btn" class="btn" type="button">
+                        <span>⚡</span> Generate JS Analyzer
+                    </button>
+                </form>
+            </section>
+
+            <!-- Output Column -->
+            <section class="column" aria-label="Generated Output">
+                <h2>Generated Output</h2>
+                <!-- Validation Results -->
+                <div id="validation-results" class="validation-panel" style="display: none;">
+                    <h3>Content Validation</h3>
+                    <div id="validation-items"></div>
+                </div>
+                <!-- Generated AI Prompt -->
+                <div class="form-group">
+                    <h3>Generated AI Prompt</h3>
+                    <pre><code id="generated-prompt-output">The generated AI prompt will be displayed here.</code></pre>
+                </div>
+                <!-- Generated JS Output -->
+                <div class="form-group">
+                    <h3>Generated JavaScript File Content</h3>
+                    <pre><code id="generated-js-output" class="language-javascript">The generated JavaScript code will be displayed here.</code></pre>
+                </div>
+                <!-- Export Button -->
+                <button id="exportResultsBtn" class="btn btn-download" type="button">
+                    <span>📦</span> Export Generated Files as .zip
+                </button>
+            </section>
+        </div>
+    </main>
+<!-- Keep body open so scripts below execute inside <body> -->
+ 
+     <!-- Prism.js JS for syntax highlighting -->
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+     <script>
+         document.addEventListener('DOMContentLoaded', function() {
+             const frameworkFileInput = document.getElementById('framework-file-input');
+             const configTextarea = document.getElementById('config-json-textarea');
+             const outputFilenameInput = document.getElementById('output-filename-input');
+             const aiGenerateBtn = document.getElementById('ai-generate-config-btn');
+             const generateBtn = document.getElementById('generate-btn');
+             const promptOutput = document.getElementById('generated-prompt-output');
+             const jsOutput = document.getElementById('generated-js-output');
+             const alertContainer = document.getElementById('alert-container');
+             const reasoningOutput = document.getElementById('ai-reasoning-output');
+             const validationResults = document.getElementById('validation-results');
+             const validationItems = document.getElementById('validation-items');
+
+            let frameworkTextContent = '';
+            let originalFrameworkFilename = 'framework.txt';
+            let extractedSections = {};
+            let contentValidation = {};
+            // Articles mode: user uploaded a structured JSON instead of a raw document
+            let articlesMode = false;
+            let articlesData = null;  // the parsed array
+
+    // ─── Articles JSON input handler ─────────────────────────────────────────
+    document.getElementById('articles-json-input').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const parsed = JSON.parse(event.target.result);
+                const articles = Array.isArray(parsed) ? parsed : (parsed.articles || null);
+                if (!articles || articles.length === 0) {
+                    showAlert('Invalid articles JSON: expected a non-empty array (or object with an "articles" key).', 'error');
+                    return;
+                }
+
+                // Derive top-level metadata from the first article
+                const first = articles[0];
+                const framework_name = first.framework_name  || first.name          || 'Unknown Framework';
+                const jurisdiction   = first.jurisdiction    || first.country       || 'Unknown';
+                const framework_code = first.framework_code  || first.code          || 'UNK';
+                const framework_type = first.framework_type  || 'national_law';
+                const legal_style    = first.legal_style     || (jurisdiction.toLowerCase() === 'br' ? 'civil_law' : 'mixed');
+
+                // Build config template with articles embedded
+                const config = {
+                    framework_name,
+                    jurisdiction,
+                    framework_code,
+                    framework_type,
+                    legal_style,
+                    articles
+                };
+
+                configTextarea.value = JSON.stringify(config, null, 4);
+
+                // Suggest a filename
+                const fnBase = framework_code.replace(/[^a-zA-Z0-9]/g, '');
+                outputFilenameInput.value = fnBase + 'Analyzer.js';
+
+                // Activate articles mode
+                articlesMode = true;
+                articlesData = articles;
+
+                // Show badge
+                document.getElementById('articles-mode-badge').style.display = 'flex';
+                document.getElementById('articles-mode-info').textContent =
+                    `${articles.length} articles loaded from "${file.name}" → ${framework_name} (${jurisdiction.toUpperCase()})`;
+
+                // Disable AI config button (not needed in this mode)
+                aiGenerateBtn.disabled = true;
+                aiGenerateBtn.title = 'AI config generation is not needed when articles JSON is loaded.';
+                aiGenerateBtn.style.opacity = '0.5';
+
+                showAlert(
+                    `Loaded ${articles.length} articles from "${file.name}". Config pre-populated – click Generate JS Analyzer.`,
+                    'success'
+                );
+            } catch (err) {
+                showAlert('Error parsing JSON: ' + err.message, 'error');
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    // Clear articles mode
+    document.getElementById('clear-articles-btn').addEventListener('click', function() {
+        articlesMode = false;
+        articlesData = null;
+        document.getElementById('articles-json-input').value = '';
+        document.getElementById('articles-mode-badge').style.display = 'none';
+        aiGenerateBtn.disabled = false;
+        aiGenerateBtn.title = '';
+        aiGenerateBtn.style.opacity = '';
+        configTextarea.value = '';
+        outputFilenameInput.value = '';
+        showAlert('Articles mode cleared.', 'info');
+    });
+
+    // ─── Framework document (text/pdf) input handler ────────────────────────
+    // Update the file input change event handler
+    frameworkFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            originalFrameworkFilename = file.name;
+            
+            if (file.name.toLowerCase().endsWith('.pdf')) {
+                // Show loading indicator
+                document.getElementById('pdf-extraction-loading').style.display = 'flex';
+                
+                // Extract text from PDF
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    const response = await fetch('/api/extract_pdf_text', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    if (response.ok) {
+                        frameworkTextContent = result.text;
+                        showAlert(`PDF ${file.name} extracted successfully`, 'success');
+                    } else {
+                        throw new Error(result.error || 'Failed to extract text from PDF');
+                    }
+                } catch (error) {
+                    showAlert(`Error extracting PDF: ${error.message}`, 'error');
+                    frameworkTextContent = '';
+                } finally {
+                    // Hide loading indicator
+                    document.getElementById('pdf-extraction-loading').style.display = 'none';
+                }
+            } else {
+                // Handle text files as before
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    frameworkTextContent = event.target.result;
+                    showAlert(`Loaded ${file.name} successfully`, 'success');
+                };
+                reader.readAsText(file);
+            }
+        }
+    });
+
+            // Handle AI Config Generation button click
+            aiGenerateBtn.addEventListener('click', async () => {
+                clearAlerts();
+                if (!frameworkTextContent) {
+                    showAlert('Please upload a framework .txt file first.', 'error');
+                    return;
+                }
+                
+                aiGenerateBtn.textContent = 'Generating...';
+                aiGenerateBtn.disabled = true;
+                configTextarea.value = '';
+                reasoningOutput.textContent = 'AI is analyzing your document...';
+
+                try {
+                    const response = await fetch('/api/generate_config_from_text', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            framework_text: frameworkTextContent,
+                            options: {
+                                standardize_names: true,
+                                detect_entity: true
+                            }
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Server responded with status: ${response.status}`);
+                    }
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let fullResponseContent = '';
+                    let reasoningStarted = false;
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        
+                        const chunk = decoder.decode(value, { stream: true });
+                        const lines = chunk.split('\n').filter(line => line.trim().startsWith('data:'));
+
+                        for (const line of lines) {
+                            const jsonStr = line.substring(6).trim();
+                            if (jsonStr === '[DONE]') continue;
+                            
+                            try {
+                                const data = JSON.parse(jsonStr);
+                                
+                                if (data.error) throw new Error(`AI Proxy Error: ${data.error.message}`);
+
+                                const delta = data.choices?.[0]?.delta;
+                                if (!delta) continue;
+
+                                // Handle and display reasoning content
+                                if (delta.reasoning_content) {
+                                    if (!reasoningStarted) {
+                                        reasoningOutput.textContent = '';
+                                        reasoningStarted = true;
+                                    }
+                                    reasoningOutput.textContent += delta.reasoning_content;
+                                }
+
+                                // Handle and assemble the main JSON content
+                                if (delta.content) {
+                                    fullResponseContent += delta.content;
+                                    configTextarea.value = fullResponseContent;
+                                }
+
+                            } catch (e) {
+                                if (e.message.startsWith('AI Proxy Error:')) throw e;
+                                console.warn('Could not parse stream chunk, continuing...', jsonStr);
+                            }
+                        }
+                    }
+
+                    if (!fullResponseContent) {
+                        throw new Error("Stream ended without providing any valid JSON content. Check AI reasoning for clues.");
+                    }
+
+                    // Final formatting and auto-fill after stream is complete
+                    const finalJson = JSON.parse(fullResponseContent);
+                    configTextarea.value = JSON.stringify(finalJson, null, 4);
+                    
+                    if (finalJson.js_function_name) {
+                        const functionName = finalJson.js_function_name.replace('inject', '').replace('Panel', '');
+                        outputFilenameInput.value = `${functionName}Analyzer.js`;
+                    }
+                    
+                    showAlert('AI configuration generated successfully! Please review and refine.', 'success');
+
+                } catch (error) {
+                    showAlert(`Error: ${error.message}`, 'error');
+                    reasoningOutput.textContent = `An error occurred: ${error.message}`;
+                } finally {
+                    aiGenerateBtn.innerHTML = '<span>🤖</span> Generate Config with AI';
+                    aiGenerateBtn.disabled = false;
+                }
+            });
+
+            // Handle Generate JS Analyzer button click
+            generateBtn.addEventListener('click', async () => {
+                clearAlerts();
+                const configJson = configTextarea.value;
+                const outputFilename = outputFilenameInput.value;
+                const outputLanguage = document.getElementById('output-language-select').value;
+
+                // In text mode we need a document; in articles mode we don't.
+                if (!articlesMode && !frameworkTextContent) {
+                    showAlert('Please upload a framework document (txt/pdf/md) OR an Articles JSON file.', 'error');
+                    return;
+                }
+                if (!configJson) {
+                    showAlert('Please generate or write a config JSON.', 'error');
+                    return;
+                }
+                if (!outputFilename) {
+                    showAlert('Please provide an output filename.', 'error');
+                    return;
+                }
+                // Validate filename format: only allow letters, numbers, underscores, hyphens, and must end with .js
+                if (!/^[\w\-]+\.js$/.test(outputFilename)) {
+                    showAlert('Invalid filename. Use only letters, numbers, underscores, hyphens, and end with .js (e.g., MontrealConventionAnalyzer.js)', 'error');
+                    return;
+                }
+
+                try {
+                    const requestBody = {
+                        config_json: configJson,
+                        output_filename: outputFilename,
+                        validate_content: !articlesMode,
+                        output_language: outputLanguage
+                    };
+                    // Only send framework_text in text mode; articles mode embeds
+                    // everything inside config_json already.
+                    if (!articlesMode) {
+                        requestBody.framework_text = frameworkTextContent;
+                    }
+
+                    const response = await fetch('/api/build_framework', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestBody)
+                    });
+
+                    const result = await response.json();
+                    if (!response.ok) {
+                        throw new Error(result.error || 'An unknown error occurred.');
+                    }
+
+                    // Update config textarea with the version returned by server (includes metadata)
+                    if (result.updated_config) {
+                        configTextarea.value = JSON.stringify(result.updated_config, null, 4);
+                    }
+
+                    promptOutput.textContent = result.generated_prompt;
+                    jsOutput.textContent = result.generated_js;
+                    // Trigger Prism.js syntax highlighting
+                    Prism.highlightElement(jsOutput);
+
+                    // Show validation results if available
+                    if (result.validation_results) {
+                        contentValidation = result.validation_results;
+                        displayValidationResults(contentValidation);
+                    }
+                    
+                    // Show which parser was used and language
+                    showAlert(`Successfully generated analyzer for ${result.filename} using ${result.parser_used} parser in ${getLanguageName(outputLanguage)}!`, 'success');
+
+                } catch (error) {
+                    showAlert(`Error: ${error.message}`, 'error');
+                }
+            });
+            
+            // Handle export functionality
+            document.getElementById('exportResultsBtn').addEventListener('click', () => {
+                clearAlerts();
+                const configJson = configTextarea.value;
+                const jsContent = jsOutput.textContent;
+                const promptContent = promptOutput.textContent;
+                let jsFilename = outputFilenameInput.value;
+
+                if (!configJson) {
+                    showAlert('Please generate the AI Config before exporting.', 'error');
+                    return;
+                }
+
+                try {
+                    const zip = new JSZip();
+                    
+                    // Always add the original framework and the generated config
+                    zip.file(originalFrameworkFilename, frameworkTextContent);
+                    zip.file("config.json", configJson);
+
+                    // Conditionally add the JS and prompt files if they exist
+                    if (jsContent && jsContent !== 'The generated JavaScript code will be displayed here.') {
+                        if (!jsFilename) {
+                            jsFilename = "generatedAnalyzer.js";
+                        }
+                        zip.file(jsFilename, jsContent);
+                    }
+                    
+                    if (promptContent && promptContent !== 'The generated AI prompt will be displayed here.') {
+                        zip.file("generated_prompt.txt", promptContent);
+                    }
+                    
+                    // Add validation report if available
+                    if (Object.keys(contentValidation).length > 0) {
+                        let validationReport = "CONTENT VALIDATION REPORT\n\n";
+                        validationReport += "This report shows how well the content was extracted from your legal document.\n\n";
+                        
+                        for (const [section, result] of Object.entries(contentValidation)) {
+                            validationReport += `SECTION: ${section}\n`;
+                            validationReport += `STATUS: ${result.status.toUpperCase()}\n`;
+                            if (result.message) validationReport += `MESSAGE: ${result.message}\n`;
+                            if (result.length) validationReport += `CONTENT LENGTH: ${result.length} characters\n`;
+                            validationReport += "\n";
+                        }
+                        
+                        zip.file("validation_report.txt", validationReport);
+                    }
+
+                    // Extract the framework name from the JS filename (without extension)
+                    let frameworkName = "FrameworkExport";
+                    if (jsFilename) {
+                        // Remove the .js extension if present
+                        frameworkName = jsFilename.replace(/\.js$/, '');
+                    }
+
+                    // Generate the zip file and trigger the download
+                    zip.generateAsync({ type: "blob" }).then(content => {
+                        saveAs(content, `${frameworkName}.zip`);
+                        showAlert(`Export successful! All files packaged in "${frameworkName}.zip"`, 'success');
+                    });
+
+                } catch (error) {
+                    showAlert(`An error occurred during the export process: ${error.message}`, 'error');
+                }
+            });
+
+            function displayValidationResults(validationResultsObj) {
+                // Fix: use validationResults (existing element), not undefined validationPanel
+                validationResults.style.display = 'block';
+                validationItems.innerHTML = '';
+
+                if (window.frameworkTextContent && window.originalFrameworkFilename && window.originalFrameworkFilename.toLowerCase().endsWith('.pdf')) {
+                    const pdfInfo = document.createElement('div');
+                    pdfInfo.className = 'validation-item';
+                    pdfInfo.innerHTML = `
+                        <span style="font-size: 18px;">📄</span>
+                        <div style="flex: 1;">
+                            <strong>PDF Extraction</strong>
+                            <div>Text extracted from PDF: ${window.frameworkTextContent.length} characters</div>
+                        </div>
+                        <span class="status-badge status-complete">PDF</span>
+                    `;
+                    validationItems.appendChild(pdfInfo);
+                }
+
+                for (const [section, result] of Object.entries(validationResultsObj)) {
+                    const statusClass = `status-${result.status}`;
+                    const icon = result.status === 'complete' ? '✓' : result.status === 'incomplete' ? '⚠' : '✗';
+                    const item = document.createElement('div');
+                    item.className = 'validation-item';
+                    item.innerHTML = `
+                        <span style="font-size: 18px;">${icon}</span>
+                        <div style="flex: 1;">
+                            <strong>${section}</strong>
+                            <div>${result.message || 'Content extracted successfully'}</div>
+                        </div>
+                        <span class="status-badge ${statusClass}">${result.status}</span>
+                    `;
+                    validationItems.appendChild(item);
+                }
+            }
+
+            function showAlert(message, type) {
+                const div = document.createElement('div');
+                div.className = `alert alert-${type}`;
+                
+                const icon = type === 'success' ? '✓' : type === 'error' ? '✗' : type === 'warning' ? '⚠' : 'ℹ';
+                div.innerHTML = `<span style="font-size: 18px;">${icon}</span> <span>${message}</span>`;
+                
+                alertContainer.appendChild(div);
+                
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    if (div.parentNode) {
+                        div.style.opacity = '0';
+                        setTimeout(() => div.remove(), 300);
+                    }
+                }, 5000);
+            } 
+
+            function clearAlerts() {
+                alertContainer.innerHTML = '';
+            }
+
+            // Add a helper function to get the full language name from code
+            function getLanguageName(code) {
+                const languages = {
+                    'en': 'English',
+                    'pt': 'Portuguese',
+                    'es': 'Spanish',
+                    'it': 'Italian',
+                    'hi': 'Hindi'
+                };
+                return languages[code] || code;
+            }
+
+         }); // END OF DOMContentLoaded
+</script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+ </body>
+ </html>

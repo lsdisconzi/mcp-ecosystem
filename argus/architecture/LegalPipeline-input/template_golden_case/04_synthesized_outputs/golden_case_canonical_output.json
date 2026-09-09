@@ -1,0 +1,522 @@
+{
+  "canonical_output": {
+    "metadata": {
+      "analysis_id": "ANALYSIS_golden01",
+      "case_name": "Golden Case — Denied Rerouting After Delay (International Flight, Brazilian Operator)",
+      "ontology_version": "2.4",
+      "pipeline_version": "awareness-pipeline-v2.4",
+      "jurisdiction": "BR",
+      "analysis_date": "2026-03-03T12:00:00.000Z",
+      "golden_case": true,
+      "description": "Canonical reference case. Every field, node and relationship satisfies Invariants I-1 through IX-3 of the Legal Intelligence Ontology v2.4. This file is the CONTRACT and VALIDATION BASELINE for all pipeline outputs. The _spec field on each node/relationship explains the rule it demonstrates."
+    },
+
+    "nodes": {
+
+      "llm_runs": [
+        {
+          "node_id": "RUN_llmr0001",
+          "type": "LLMRun",
+          "framework": "awareness-pipeline-v2.4",
+          "timestamp": "2026-03-03T12:05:00.000Z",
+          "model": "deepseek-chat",
+          "prompt_version": "legal-extraction-v2.4",
+          "pipeline_stage": "extraction",
+          "_spec": "§3.14. Mandatory: node_id (RUN_8id), framework, timestamp, model, prompt_version (Invariant IX-3). Optional: pipeline_stage ('extraction'|'enrichment'|'validation'). Invariant VIII-4: exactly ONE LLMRun per Case via GENERATED_CASE. prompt_version enables full prompt auditability (new in v2.4)."
+        }
+      ],
+
+      "source_packs": [
+        {
+          "node_id": "PACK_src00001",
+          "type": "SourcePack",
+          "created_at": "2026-03-03T11:55:00.000Z",
+          "integrity_hash": "sha256:a3f8e1d2c4b6a9f0e7d5c3b1a2f8e4d6c9b7a5f0e3d1c8b6a4f2e0d9c7b5a3f1",
+          "_spec": "§3.9. Mandatory: node_id (PACK_8id), created_at, integrity_hash (v2.4 rename from 'hash'). integrity_hash MUST be SHA-256 of the entire pack payload. Invariants II-5 and VIII-1: Case → HAS_PROVENANCE → SourcePack is mandatory."
+        }
+      ],
+
+      "source_files": [
+        {
+          "node_id": "FILE_vid00001",
+          "type": "SourceFile",
+          "path": "/payload/recording.mp4",
+          "sha256": "e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6",
+          "file_type": "video/mp4",
+          "_spec": "§3.10. Mandatory: node_id (FILE_8id), path (relative within pack), sha256, file_type (MIME). Linked to MediaAsset via REPRESENTS_MEDIA. Cardinality N:1 — multiple files may represent the same MediaAsset."
+        },
+        {
+          "node_id": "FILE_txt00001",
+          "type": "SourceFile",
+          "path": "/payload/transcript.json",
+          "sha256": "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3",
+          "file_type": "application/json",
+          "_spec": "Second SourceFile for the transcript document. Same SourcePack must CONTAINS_FILE both."
+        }
+      ],
+
+      "media_assets": [
+        {
+          "node_id": "MEDIA_aud00001",
+          "type": "MediaAsset",
+          "created_at": "2026-03-03T09:00:00.000Z",
+          "modified_at": "2026-03-03T09:05:00.000Z",
+          "gps_lat": -23.4356,
+          "gps_lon": -46.4731,
+          "media_type": "video",
+          "_spec": "§3.11. Mandatory: node_id (MEDIA_8id), created_at, media_type. created_at is the ORIGINAL RECORDING timestamp from file metadata — not the analysis date. GPS coords: Guarulhos International Airport (GRU). media_type: 'audio' or 'video' only."
+        }
+      ],
+
+      "transcripts": [
+        {
+          "node_id": "TRNS_trs00001",
+          "type": "Transcript",
+          "created_at": "2026-03-03T10:30:00.000Z",
+          "language": "pt-BR",
+          "transcription_engine": "whisper-large-v3",
+          "_spec": "§3.12. v2.4: created_at and language are NOW MANDATORY (breaking change from v2.3). transcription_engine is optional. This node links Evidence to MediaAsset: Evidence → GENERATED_FROM → Transcript → TRANSCRIBES → MediaAsset. Required for Invariant VIII-2 when evidence_type='transcript'."
+        }
+      ],
+
+      "applicability_bases": [
+        {
+          "node_id": "APPL_intc0001",
+          "type": "ApplicabilityBasis",
+          "basis_type": "international_air_carriage",
+          "_spec": "§3.13. Mandatory: node_id (APPL_8id), basis_type (controlled vocabulary). Invariant VIII-3: Case.jurisdiction='BR' but VIOL_mc99v001 references MC99 articles (jurisdiction='INT'). Cross-jurisdictional application MUST be formally justified. basis_type values: 'international_air_carriage', 'brazilian_operator', 'passenger_nationality', 'territorial_waters', etc."
+        }
+      ],
+
+      "cases": [
+        {
+          "node_id": "CASE_gc2026a1",
+          "type": "Case",
+          "title": "Denied Rerouting and Assistance After Carrier-Caused Delay — International Route, Brazilian Operator",
+          "created_date": "2026-03-03T12:00:00.000Z",
+          "description": "Passenger on an international flight operated by a Brazilian carrier misses their connection due to an airline-caused delay. Upon requesting rerouting and assistance at the departure airport, the carrier's agent denies rerouting, refuses refund, and redirects the passenger to file a written complaint with no immediate assistance offered.",
+          "jurisdiction": "BR",
+          "_spec": "§3.1. Mandatory: node_id (CASE_8id), title, created_date, jurisdiction. Case.jurisdiction='BR' because the incident occurred at a Brazilian airport with a Brazilian operator. MC99 (INT) also applies on this same case — justified by APPL_intc0001. Prohibited: direct links from Case to Action, Evidence, ActorRole or LegalArticle."
+        }
+      ],
+
+      "violations": [
+        {
+          "node_id": "VIOL_mc99v001",
+          "type": "Violation",
+          "category": "liability_for_delay",
+          "description": "Carrier failed to rebut its liability for delay under MC99 Art.19 by taking all reasonably required measures to avoid or mitigate damage. Specifically, the carrier did not offer rerouting or any alternative remedy when the passenger's missed connection was caused by an airline-controlled delay.",
+          "timestamp": "2026-03-03T12:00:00.000Z",
+          "severity": "high",
+          "confidence": 0.9,
+          "_spec": "§3.2. Mandatory: node_id (VIOL_8id), category, description, timestamp. Optional: severity (MUST be lowercase: 'low'|'medium'|'high'), confidence (float 0.0-1.0). A Violation is an ALLEGATION not a conclusion. description must be factual and specific. Invariant II-2: MUST have ≥1 BASED_ON_ACTION and ≥1 VIOLATES_ARTICLE."
+        },
+        {
+          "node_id": "VIOL_cbav0001",
+          "type": "Violation",
+          "category": "service_failure",
+          "description": "Carrier breached its contractual service obligation under CBA Art.175 §2 by refusing to provide alternative transport or any assistance to a passenger whose connection was missed due to operational delay, violating the service contract relationship established between carrier and passenger under Brazilian aviation law.",
+          "timestamp": "2026-03-03T12:00:00.000Z",
+          "severity": "medium",
+          "confidence": 0.85,
+          "_spec": "Second Violation for the CBA/BR framework. Two separate Violations for two separate legal frameworks is CORRECT — do not collapse multi-framework analysis into one Violation node. Each Violation must map to exactly one legal analysis scope."
+        }
+      ],
+
+      "actions": [
+        {
+          "node_id": "ACTN_deny0001",
+          "type": "Action",
+          "action_type": "refusal_to_reroute",
+          "description": "Carrier agent verbally denied passenger's request for rerouting to destination on an alternative flight and refused to process a refund for the unused ticket portion.",
+          "sequence_index": 2,
+          "timestamp": "2026-03-03T09:12:30.000Z",
+          "location": "Departure check-in counter, Guarulhos International Airport",
+          "_spec": "§3.3. Mandatory: node_id (ACTN_8id), action_type (controlled vocabulary), description (FACTUAL ONLY — no legal interpretation), timestamp. Optional: sequence_index (1-based), location. Invariant IX-1 (v2.3 NEW): MUST have at least one incoming SUPPORTS_ACTION from Evidence. Prohibited: direct link to LegalArticle or Violation."
+        },
+        {
+          "node_id": "ACTN_noasst01",
+          "type": "Action",
+          "action_type": "failure_to_provide_assistance",
+          "description": "Carrier agent directed passenger to file a written complaint and offered no immediate assistance — no meal vouchers, no accommodation, no rebooking — despite the delay being caused by the carrier's own operational failure.",
+          "sequence_index": 3,
+          "timestamp": "2026-03-03T09:14:00.000Z",
+          "location": "Departure check-in counter, Guarulhos International Airport",
+          "_spec": "Second Action grounding the CBA service-failure Violation. Separate Action nodes for separate observable behaviors — do not bundle multiple behaviors into one Action."
+        }
+      ],
+
+      "actor_roles": [
+        {
+          "node_id": "ROLE_carr0001",
+          "type": "ActorRole",
+          "function": "airline_staff",
+          "context": "Carrier check-in and service agent at departure counter",
+          "_spec": "§3.4. ABSOLUTE PROHIBITION: no name, employee_id, government_id or any personal identifier in ANY field. function MUST be from the controlled vocabulary: service_provider | regulator | operator | crew | controller | passenger | witness | police_officer | airline_staff | security_personnel | ground_handler. context is optional and MUST NOT contain personal names. 'airline_staff' is an accepted v2.3 extension per §9.0.3."
+        },
+        {
+          "node_id": "ROLE_pass0001",
+          "type": "ActorRole",
+          "function": "passenger",
+          "context": "Ticketed passenger on delayed international flight requesting assistance",
+          "_spec": "Second ActorRole. 'passenger' is a core allowed function value (§3.4). Prohibited: ActorRole → ActorRole relationships. No personal data of any kind."
+        }
+      ],
+
+      "evidences": [
+        {
+          "node_id": "EVID_trscr001",
+          "type": "Evidence",
+          "evidence_type": "transcript",
+          "source": "Audio/video recording of passenger-carrier interaction at departure counter, file /payload/recording.mp4, transcribed to /payload/transcript.json.",
+          "timestamp": "2026-03-03T09:10:00.000Z",
+          "description": "Three-segment transcript of the full exchange: (1) passenger requests assistance, (2) carrier denies rerouting and refund, (3) carrier redirects to written complaint process with no assistance offered.",
+          "_spec": "§3.5. Mandatory: node_id (EVID_8id), evidence_type ('transcript'|'document'|'recording'), source, timestamp. Invariant II-3: MUST link to ≥1 Segment via CONTAINS_SEGMENT OR be DERIVED_FROM MediaAsset OR GENERATED_FROM Transcript. Invariant I-3: MUST NOT have any outgoing relationship to Violation — direction is always Violation → SUPPORTED_BY_EVIDENCE → Evidence."
+        }
+      ],
+
+      "segments": [
+        {
+          "node_id": "SEG_seg00001",
+          "type": "Segment",
+          "text": "Passenger requests assistance due to missed connection caused by delay.",
+          "position": 1,
+          "evidence_node_id": "EVID_trscr001",
+          "speaker": "passenger",
+          "_spec": "§3.6. Mandatory: node_id (SEG_8id), text (EXACT excerpt — verbatim from source, NEVER paraphrased), position (1-based integer), evidence_node_id (v2.4 rename of source_reference; MUST be valid node_id of an Evidence node). speaker MUST be a functional role — NEVER a personal name. No legal interpretation in text. No outgoing relationships — Segment is a terminal node."
+        },
+        {
+          "node_id": "SEG_seg00002",
+          "type": "Segment",
+          "text": "Carrier denies rerouting and refuses to refund.",
+          "position": 2,
+          "evidence_node_id": "EVID_trscr001",
+          "speaker": "airline_staff",
+          "_spec": "This segment is the primary factual ground for ACTN_deny0001. The chain is: SEG_seg00002 ← Evidence (CONTAINS_SEGMENT) → Action (SUPPORTS_ACTION). Facts flow upward through Evidence; law flows down through Violation."
+        },
+        {
+          "node_id": "SEG_seg00003",
+          "type": "Segment",
+          "text": "Passenger is informed to file a written complaint; assistance is not offered.",
+          "position": 3,
+          "evidence_node_id": "EVID_trscr001",
+          "speaker": "airline_staff",
+          "_spec": "This segment grounds ACTN_noasst01. Observe: three segments, one Evidence node, two Actions grounded from the same Evidence — this is the correct pattern for an interaction covered by a single recording."
+        }
+      ],
+
+      "legal_frameworks": [
+        {
+          "node_id": "INT.MC99",
+          "type": "LegalFramework",
+          "name": "Montreal Convention 1999",
+          "jurisdiction": "INT",
+          "effective_date": "2003-11-04",
+          "version": "1999",
+          "_spec": "§3.7. LegalFramework.node_id format is {jurisdiction}.{code} — NOT the 8id pattern. This is the only exception to the 8id rule. Mandatory: node_id, name, jurisdiction. Invariants VII-1/VII-2: all contained LegalArticles MUST have framework='MC99' and jurisdiction='INT'."
+        },
+        {
+          "node_id": "BR.CBA",
+          "type": "LegalFramework",
+          "name": "Código Brasileiro de Aeronáutica",
+          "jurisdiction": "BR",
+          "effective_date": "1986-12-19",
+          "version": "1986",
+          "_spec": "Second LegalFramework. All articles under BR.CBA MUST have framework='CBA' and jurisdiction='BR' to satisfy Invariants VII-1 and VII-2."
+        }
+      ],
+
+      "legal_articles": [
+        {
+          "node_id": "INT.MC99.C3.Art.19",
+          "type": "LegalArticle",
+          "article_number": "19",
+          "article_reference": "Montreal Convention 1999, Chapter III — Liability of the Carrier and Extent of Compensation for Damage, Article 19 — Delay",
+          "article_text": "The carrier is liable for damage occasioned by delay in the carriage by air of passengers, baggage or cargo. Nevertheless, the carrier shall not be liable for damage occasioned by delay if it proves that it and its servants and agents took all measures that could reasonably be required to avoid the damage or that it was impossible for it or them to take such measures.",
+          "title": null,
+          "chapter": "Chapter III — Liability of the Carrier and Extent of Compensation for Damage",
+          "framework_code": "MC99",
+          "jurisdiction": "INT",
+          "_spec": "§3.8. Mandatory: node_id (full ELI ID), article_number, article_reference, article_text (VERBATIM from source), framework_code (v2.4 rename of 'framework'), jurisdiction. ELI format: {JURISDICTION}.{FRAMEWORK}.{HIERARCHY}.Art.{NUMBER}. MC99 has no Titles — hierarchy is Chapter only (C3). framework_code='MC99' satisfies Invariant VII-1. jurisdiction='INT' satisfies Invariant VII-2. Invariant II-4: MUST be contained by exactly one LegalFramework via CONTAINS_ARTICLE."
+        },
+        {
+          "node_id": "INT.MC99.C3.Art.21",
+          "type": "LegalArticle",
+          "article_number": "21",
+          "article_reference": "Montreal Convention 1999, Chapter III — Liability of the Carrier and Extent of Compensation for Damage, Article 21 — Compensation in Case of Death or Injury of Passengers",
+          "article_text": "1. For damages arising under paragraph 1 of Article 17 not exceeding 100 000 Special Drawing Rights for each passenger, the carrier shall not be able to exclude or limit its liability. 2. The carrier shall not be liable for damages arising under paragraph 1 of Article 17 to the extent that they exceed for each passenger 100 000 Special Drawing Rights if the carrier proves that: (a) such damage was not due to the negligence or other wrongful act or omission of the carrier or its servants or agents; or (b) such damage was solely due to the negligence or other wrongful act or omission of a third party.",
+          "title": null,
+          "chapter": "Chapter III — Liability of the Carrier and Extent of Compensation for Damage",
+          "framework_code": "MC99",
+          "jurisdiction": "INT",
+          "_spec": "Art.21 is loaded (CONTAINS_ARTICLE) but NOT directly violated in this scenario. It exists here to show the difference between: articles loaded under a framework (present) vs articles cited in a VIOLATES_ARTICLE relationship (only Art.19 for this violation). PRECISION RULE from §12.5 Data Quality Issue #2: do NOT link a Violation to Art.21 here — factual basis (delay, not death/injury) does not support it."
+        },
+        {
+          "node_id": "BR.CBA.T6.C1.Art.175",
+          "type": "LegalArticle",
+          "article_number": "175",
+          "article_reference": "CBA Title VI, Chapter I, Article 175 — Public Air Services Scope",
+          "article_text": "Art. 175. Os serviços aéreos públicos abrangem os serviços aéreos especializados públicos e os serviços de transporte aéreo público de passageiro, carga ou mala postal, regular ou não regular, doméstico ou internacional. § 1° A relação jurídica entre a União e o empresário que explora os serviços aéreos públicos pauta-se pelas normas estabelecidas neste Código e legislação complementar e pelas condições da respectiva concessão ou autorização. § 2º A relação jurídica entre o empresário e o usuário ou beneficiário dos serviços é contratual, regendo-se pelas respectivas normas previstas neste Código e legislação complementar, e, em se tratando de transporte público internacional, pelo disposto nos Tratados e Convenções pertinentes (artigos 1°, § 1°; 203 a 213). § 3° No contrato de serviços aéreos públicos, o empresário, pessoa física ou jurídica, proprietário ou explorador da aeronave, obriga-se, em nome próprio, a executar determinados serviços aéreos, mediante remuneração, aplicando-se o disposto nos artigos 222 a 245 quando se tratar de transporte aéreo regular.",
+          "title": "Title VI — Air Services",
+          "chapter": "Chapter I — Public Air Services",
+          "framework_code": "CBA",
+          "jurisdiction": "BR",
+          "_spec": "ELI: BR.CBA.T6.C1.Art.175 — T6 (Title 6), C1 (Chapter 1). Sourced from data/law/BR/json/CBA.json. framework_code='CBA' (v2.4 rename of 'framework'; suffix of BR.CBA) satisfies Invariant VII-1. jurisdiction='BR' satisfies Invariant VII-2. §2 of this article directly establishes the contractual service relationship — factual nexus to VIOL_cbav0001 is clear."
+        },
+        {
+          "node_id": "BR.CBA.T8.C3.Art.260",
+          "type": "LegalArticle",
+          "article_number": "260",
+          "article_reference": "CBA Title VIII, Chapter III, Article 260 — Liability Limits for Baggage Damage",
+          "article_text": "Art. 260. A responsabilidade do transportador por dano, conseqüente da destruição, perda ou avaria da bagagem despachada ou conservada em mãos do passageiro, ocorrida durante a execução do contrato de transporte aéreo, limita-se ao valor correspondente a 150 (cento e cinqüenta) Obrigações do Tesouro Nacional - OTN, por ocasião do pagamento, em relação a cada passageiro.",
+          "title": "Title VIII — Liability and Exemptions",
+          "chapter": "Chapter III — Liability for Damage",
+          "framework_code": "CBA",
+          "jurisdiction": "BR",
+          "_spec": "ELI: BR.CBA.T8.C3.Art.260 — T8 (Title 8), C3 (Chapter 3). Loaded under BR.CBA but NOT linked via VIOLATES_ARTICLE in this scenario because the factual basis (denied rerouting) does not directly engage baggage liability. Demonstrates that CONTAINS_ARTICLE (framework loads article) is distinct from VIOLATES_ARTICLE (violation cites article)."
+        }
+      ]
+    },
+
+    "relationships": [
+
+      {
+        "type": "GENERATED_CASE",
+        "from_node_id": "RUN_llmr0001",
+        "to_node_id": "CASE_gc2026a1",
+        "_spec": "Invariant VIII-4: exactly ONE LLMRun MUST generate each Case. Direction: LLMRun → GENERATED_CASE → Case."
+      },
+
+      {
+        "type": "HAS_PROVENANCE",
+        "from_node_id": "CASE_gc2026a1",
+        "to_node_id": "PACK_src00001",
+        "_spec": "Invariants II-5 and VIII-1: every Case MUST have exactly one outgoing HAS_PROVENANCE to a SourcePack."
+      },
+
+      {
+        "type": "HAS_APPLICABILITY_BASIS",
+        "from_node_id": "CASE_gc2026a1",
+        "to_node_id": "APPL_intc0001",
+        "_spec": "Invariant VIII-3: Case.jurisdiction='BR' but VIOL_mc99v001 references MC99 (INT) articles. Cross-jurisdiction gap MUST be bridged by an ApplicabilityBasis node."
+      },
+
+      {
+        "type": "CONTAINS_FILE",
+        "from_node_id": "PACK_src00001",
+        "to_node_id": "FILE_vid00001",
+        "_spec": "SourcePack MUST CONTAINS_FILE for every SourceFile in the pack."
+      },
+      {
+        "type": "CONTAINS_FILE",
+        "from_node_id": "PACK_src00001",
+        "to_node_id": "FILE_txt00001",
+        "_spec": null
+      },
+
+      {
+        "type": "REPRESENTS_MEDIA",
+        "from_node_id": "FILE_vid00001",
+        "to_node_id": "MEDIA_aud00001",
+        "_spec": "SourceFile → REPRESENTS_MEDIA → MediaAsset. Cardinality N:1 (multiple files may represent the same asset, e.g. original + compressed). Only the video file represents the media; the transcript file links via the Transcript node."
+      },
+
+      {
+        "type": "TRANSCRIBES",
+        "from_node_id": "TRNS_trs00001",
+        "to_node_id": "MEDIA_aud00001",
+        "_spec": "Transcript → TRANSCRIBES → MediaAsset. Required to complete the forensic chain for Evidence Forensics (Invariant VIII-2)."
+      },
+
+      {
+        "type": "GENERATED_FROM",
+        "from_node_id": "EVID_trscr001",
+        "to_node_id": "TRNS_trs00001",
+        "_spec": "Evidence → GENERATED_FROM → Transcript. Satisfies Invariant II-3 (Evidence Must Have Content) via the Transcript path. Together with TRANSCRIBES, completes the path: Evidence → Transcript → MediaAsset (Invariant VIII-2)."
+      },
+
+      {
+        "type": "DERIVED_FROM",
+        "from_node_id": "EVID_trscr001",
+        "to_node_id": "MEDIA_aud00001",
+        "_spec": "Evidence → DERIVED_FROM → MediaAsset. Also satisfies Invariant VIII-2 directly. Both GENERATED_FROM and DERIVED_FROM may coexist on the same Evidence node."
+      },
+
+      {
+        "type": "CONTAINS_SEGMENT",
+        "from_node_id": "EVID_trscr001",
+        "to_node_id": "SEG_seg00001",
+        "_spec": "Evidence → CONTAINS_SEGMENT → Segment. Direction is always from Evidence down to Segment. Segment has NO outgoing relationships — it is a terminal node."
+      },
+      {
+        "type": "CONTAINS_SEGMENT",
+        "from_node_id": "EVID_trscr001",
+        "to_node_id": "SEG_seg00002",
+        "_spec": null
+      },
+      {
+        "type": "CONTAINS_SEGMENT",
+        "from_node_id": "EVID_trscr001",
+        "to_node_id": "SEG_seg00003",
+        "_spec": null
+      },
+
+      {
+        "type": "SUPPORTS_ACTION",
+        "from_node_id": "EVID_trscr001",
+        "to_node_id": "ACTN_deny0001",
+        "_spec": "Invariant IX-1 (NEW in v2.3): every Action MUST have at least one incoming SUPPORTS_ACTION from Evidence. Without this, the Action is an unverifiable factual claim. SEG_seg00002 (inside this Evidence) is the specific excerpt that grounds ACTN_deny0001."
+      },
+      {
+        "type": "SUPPORTS_ACTION",
+        "from_node_id": "EVID_trscr001",
+        "to_node_id": "ACTN_noasst01",
+        "_spec": "Invariant IX-1: ACTN_noasst01 is grounded by SEG_seg00003 within the same Evidence. One Evidence may SUPPORTS_ACTION to multiple Actions when the recording covers the full interaction."
+      },
+
+      {
+        "type": "PERFORMED_BY",
+        "from_node_id": "ACTN_deny0001",
+        "to_node_id": "ROLE_carr0001",
+        "_spec": "Action → PERFORMED_BY → ActorRole. Optional but strongly recommended — links the observable behavior to the functional role that performed it."
+      },
+      {
+        "type": "PERFORMED_BY",
+        "from_node_id": "ACTN_noasst01",
+        "to_node_id": "ROLE_carr0001",
+        "_spec": "Both actions performed by the same carrier agent role node — no duplication of ActorRole needed."
+      },
+
+      {
+        "type": "SCOPES_VIOLATION",
+        "from_node_id": "CASE_gc2026a1",
+        "to_node_id": "VIOL_mc99v001",
+        "_spec": "Case → SCOPES_VIOLATION → Violation (v2.4; renamed from CONTAINS_VIOLATION). PROHIBITED: Case must NOT link directly to Action, Evidence or LegalArticle (§4.2)."
+      },
+      {
+        "type": "SCOPES_VIOLATION",
+        "from_node_id": "CASE_gc2026a1",
+        "to_node_id": "VIOL_cbav0001",
+        "_spec": null
+      },
+
+      {
+        "type": "GROUNDED_IN_ACTION",
+        "from_node_id": "VIOL_mc99v001",
+        "to_node_id": "ACTN_deny0001",
+        "_spec": "Invariant II-2: every Violation MUST have ≥1 GROUNDED_IN_ACTION (v2.4; renamed from BASED_ON_ACTION). This is THE mandatory link between the legal allegation layer and the factual layer."
+      },
+      {
+        "type": "GROUNDED_IN_ACTION",
+        "from_node_id": "VIOL_cbav0001",
+        "to_node_id": "ACTN_noasst01",
+        "_spec": "Each Violation maps to the most directly relevant Action(s). Use multiple GROUNDED_IN_ACTION links when the same observable act grounds multiple violations."
+      },
+
+      {
+        "type": "VIOLATES_ARTICLE",
+        "from_node_id": "VIOL_mc99v001",
+        "to_node_id": "INT.MC99.C3.Art.19",
+        "_spec": "Invariant II-2: every Violation MUST have ≥1 VIOLATES_ARTICLE. PRECISION RULE (§12.5 Data Quality Issue #2): only cite articles with a DIRECT factual nexus to a specific observed Action. Do NOT bulk-add all articles that might be tangentially related. MC99 Art.19 is directly triggered by the denial of rerouting after carrier-caused delay."
+      },
+      {
+        "type": "VIOLATES_ARTICLE",
+        "from_node_id": "VIOL_cbav0001",
+        "to_node_id": "BR.CBA.T6.C1.Art.175",
+        "_spec": "CBA Art.175 §2 establishes the contractual service relationship — the carrier's refusal to assist directly violates the obligation created by this article. NOTE: CBA Art.260 (baggage liability limits) is NOT cited here because it has no factual nexus to the denied rerouting scenario."
+      },
+
+      {
+        "type": "INVOLVES_ACTOR",
+        "from_node_id": "VIOL_mc99v001",
+        "to_node_id": "ROLE_carr0001",
+        "_spec": "Violation → INVOLVES_ACTOR → ActorRole. Optional but recommended. Identifies the functional roles involved in the violation."
+      },
+      {
+        "type": "INVOLVES_ACTOR",
+        "from_node_id": "VIOL_mc99v001",
+        "to_node_id": "ROLE_pass0001",
+        "_spec": "Passenger is the affected party in the violation."
+      },
+      {
+        "type": "INVOLVES_ACTOR",
+        "from_node_id": "VIOL_cbav0001",
+        "to_node_id": "ROLE_carr0001",
+        "_spec": null
+      },
+      {
+        "type": "INVOLVES_ACTOR",
+        "from_node_id": "VIOL_cbav0001",
+        "to_node_id": "ROLE_pass0001",
+        "_spec": null
+      },
+
+      {
+        "type": "SUPPORTED_BY_EVIDENCE",
+        "from_node_id": "VIOL_mc99v001",
+        "to_node_id": "EVID_trscr001",
+        "_spec": "Violation → SUPPORTED_BY_EVIDENCE → Evidence. Direction is ALWAYS from Violation to Evidence (never the reverse). Invariant I-3: Evidence must NOT have an outgoing relationship to Violation."
+      },
+      {
+        "type": "SUPPORTED_BY_EVIDENCE",
+        "from_node_id": "VIOL_cbav0001",
+        "to_node_id": "EVID_trscr001",
+        "_spec": "Both Violations share the same Evidence node — this is valid. One Evidence may ground multiple Violations across multiple frameworks."
+      },
+
+      {
+        "type": "CONTAINS_ARTICLE",
+        "from_node_id": "INT.MC99",
+        "to_node_id": "INT.MC99.C3.Art.19",
+        "_spec": "LegalFramework → CONTAINS_ARTICLE → LegalArticle. Invariant II-4: every LegalArticle MUST be contained by exactly one LegalFramework. Invariant VII-1: article.framework ('MC99') must equal suffix of framework.node_id ('INT.MC99' → 'MC99')."
+      },
+      {
+        "type": "CONTAINS_ARTICLE",
+        "from_node_id": "INT.MC99",
+        "to_node_id": "INT.MC99.C3.Art.21",
+        "_spec": null
+      },
+      {
+        "type": "CONTAINS_ARTICLE",
+        "from_node_id": "BR.CBA",
+        "to_node_id": "BR.CBA.T6.C1.Art.175",
+        "_spec": null
+      },
+      {
+        "type": "CONTAINS_ARTICLE",
+        "from_node_id": "BR.CBA",
+        "to_node_id": "BR.CBA.T8.C3.Art.260",
+        "_spec": null
+      }
+    ],
+
+    "invariant_checklist": {
+      "_description": "Self-declared compliance checklist. Pipeline validation MUST independently verify each item using the queries/validation logic in §10.2 and §10.3 of the ontology spec. A green checklist here does NOT replace automated validation.",
+      "I-1_no_conclusions": "PASS — no guilt, liability, or judgment asserted. Violations are 'allegations not conclusions' per §3.2.",
+      "I-2_no_interpretive_collapse": "PASS — Facts layer (Action, Evidence, Segment) and Law layer (LegalFramework, LegalArticle) are separate. All prohibited relationships from §4.2 are absent.",
+      "I-3_evidence_never_decides": "PASS — EVID_trscr001 has zero outgoing relationships to any Violation node.",
+      "II-1_violation_traceability": "PASS — Full path exists: VIOL → ACTN → EVID → TRNS → MEDIA → FILE → PACK for both violations.",
+      "II-2_no_orphan_violations": "PASS — VIOL_mc99v001: 1 GROUNDED_IN_ACTION + 1 VIOLATES_ARTICLE. VIOL_cbav0001: 1 GROUNDED_IN_ACTION + 1 VIOLATES_ARTICLE.",
+      "II-3_evidence_must_have_content": "PASS — EVID_trscr001 has CONTAINS_SEGMENT (×3) + GENERATED_FROM + DERIVED_FROM.",
+      "II-4_no_orphan_articles": "PASS — All 4 LegalArticles have exactly one CONTAINS_ARTICLE from their LegalFramework.",
+      "II-5_case_provenance_path": "PASS — CASE_gc2026a1 → HAS_PROVENANCE → PACK_src00001.",
+      "III-1_role_purity": "PASS — ROLE_carr0001 and ROLE_pass0001 contain only node_id, type, function, context. No name or identifier.",
+      "III-2_identity_exclusion": "PASS — No personal name, CPF, passport, employee_id anywhere in the graph.",
+      "IV-1_law_not_flow_downward": "PASS — No LegalArticle → Action relationship exists.",
+      "IV-2_facts_not_flow_upward": "PASS — No Segment → LegalArticle or Action → LegalArticle relationship exists.",
+      "V-1_no_cyclic_legal_reasoning": "PASS — VIOLATES_ARTICLE graph is acyclic (two simple terminal edges).",
+      "V-2_controlled_action_recursion": "PASS — No GROUNDED_IN_ACTION loops. No recursion.",
+      "V-3_no_leakage_between_cases": "PASS — All Violation, Action, Evidence, Segment, ActorRole nodes belong to exactly one Case (CASE_gc2026a1). SourcePack, MediaAsset, Transcript MAY be reused across cases per spec.",
+      "VI-1_semantic_minimalism": "PASS — Only the 14 node types defined in §3 are used. No ad hoc extensions.",
+      "VII-1_framework_consistency": "PASS — MC99 articles: framework='MC99' = suffix of 'INT.MC99'. CBA articles: framework='CBA' = suffix of 'BR.CBA'.",
+      "VII-2_jurisdiction_consistency": "PASS — MC99 articles: jurisdiction='INT' = INT.MC99.jurisdiction. CBA articles: jurisdiction='BR' = BR.CBA.jurisdiction.",
+      "VIII-1_provenance_integrity": "PASS — CASE_gc2026a1 has exactly one HAS_PROVENANCE to PACK_src00001.",
+      "VIII-2_evidence_forensics": "PASS — EVID_trscr001 → GENERATED_FROM → TRNS_trs00001 → TRANSCRIBES → MEDIA_aud00001. Also EVID_trscr001 → DERIVED_FROM → MEDIA_aud00001.",
+      "VIII-3_applicability_requirement": "PASS — Case.jurisdiction='BR', MC99 jurisdiction='INT' (mismatch). Bridged by APPL_intc0001 (basis_type='international_air_carriage').",
+      "VIII-4_agent_traceability": "PASS — RUN_llmr0001 → GENERATED_CASE → CASE_gc2026a1. Exactly one LLMRun.",
+      "IX-1_evidence_backed_actions": "PASS — EVID_trscr001 → SUPPORTS_ACTION → ACTN_deny0001. EVID_trscr001 → SUPPORTS_ACTION → ACTN_noasst01. Both Actions have ≥1 incoming SUPPORTS_ACTION.",
+      "IX-2_confidence_bounds": "PASS — VIOL_mc99v001.confidence=0.9, VIOL_cbav0001.confidence=0.85. Both in [0.0, 1.0].",
+      "IX-3_prompt_auditability": "PASS — RUN_llmr0001.prompt_version='legal-extraction-v2.4'. Non-empty string."
+    }
+  }
+}

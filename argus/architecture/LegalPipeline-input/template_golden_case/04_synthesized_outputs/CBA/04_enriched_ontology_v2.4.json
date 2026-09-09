@@ -1,0 +1,222 @@
+{
+  "_spec": "Stage 4 enriched output for CBA framework. Enrichment verified CBA article_text against data/law/BR/json/CBA.json, sanitized descriptions, and confirmed no personal data. This is the final per-framework ontology before cross-framework synthesis into golden_case_canonical_output.json.",
+  "metadata": {
+    "analysis_id": "ANALYSIS_golden01",
+    "framework_name": "Código Brasileiro de Aeronáutica",
+    "jurisdiction": "BR",
+    "framework_code": "CBA",
+    "analysis_date": "2026-03-03T12:06:00.000Z",
+    "ontology_version": "2.4",
+    "pipeline_stage": "enrichment",
+    "enrichment": {
+      "method": "multi_step_local_llm",
+      "model": "deepseek-chat",
+      "prompt_version": "legal-enrichment-v2.4",
+      "steps": [
+        "legal_articles",
+        "description_sanitization",
+        "metadata_completion"
+      ]
+    }
+  },
+  "nodes": {
+    "cases": [
+      {
+        "node_id": "CASE_gc2026a1",
+        "type": "Case",
+        "title": "Denied Rerouting and Assistance After Carrier-Caused Delay — International Route, Brazilian Operator",
+        "created_date": "2026-03-03T12:00:00.000Z",
+        "description": "Passenger on an international flight operated by a Brazilian carrier misses their connection due to an airline-caused delay. Upon requesting rerouting and assistance at the departure airport, the carrier's agent denies rerouting, refuses refund, and redirects the passenger to file a written complaint with no immediate assistance offered.",
+        "jurisdiction": "BR",
+        "framework_code": "CBA"
+      }
+    ],
+    "violations": [
+      {
+        "node_id": "VIOL_cbav0001",
+        "type": "Violation",
+        "category": "service_failure",
+        "description": "Carrier breached its contractual service obligation under CBA Art.175 §2 by refusing to provide alternative transport or any assistance to a passenger whose connection was missed due to operational delay, violating the service contract relationship established between carrier and passenger under Brazilian aviation law.",
+        "timestamp": "2026-03-03T12:00:00.000Z",
+        "severity": "medium",
+        "confidence": 0.85,
+        "framework_code": "CBA",
+        "jurisdiction": "BR",
+        "_enrichment": "Description clean — no personal data, no legal conclusions. severity='medium' and confidence=0.85 are within spec."
+      }
+    ],
+    "actions": [
+      {
+        "node_id": "ACTN_noasst01",
+        "type": "Action",
+        "action_type": "failure_to_provide_assistance",
+        "description": "Carrier agent directed passenger to file a written complaint and offered no immediate assistance — no meal vouchers, no accommodation, no rebooking — despite the delay being caused by the carrier's own operational failure.",
+        "sequence_index": 3,
+        "timestamp": "2026-03-03T09:14:00.000Z",
+        "location": "Departure check-in counter, Guarulhos International Airport",
+        "_enrichment": "Action description factual only, no interpretive collapse detected."
+      }
+    ],
+    "actor_roles": [
+      {
+        "node_id": "ROLE_carr0001",
+        "type": "ActorRole",
+        "function": "airline_staff",
+        "context": "Carrier check-in and service agent at departure counter"
+      },
+      {
+        "node_id": "ROLE_pass0001",
+        "type": "ActorRole",
+        "function": "passenger",
+        "context": "Ticketed passenger on delayed international flight requesting assistance"
+      }
+    ],
+    "evidences": [
+      {
+        "node_id": "EVID_trscr001",
+        "type": "Evidence",
+        "evidence_type": "transcript",
+        "source": "Audio/video recording of passenger-carrier interaction at departure counter, file /payload/recording.mp4, transcribed to /payload/transcript.json.",
+        "timestamp": "2026-03-03T09:10:00.000Z",
+        "description": "Three-segment transcript of the full exchange."
+      }
+    ],
+    "segments": [
+      {
+        "node_id": "SEG_seg00003",
+        "type": "Segment",
+        "text": "Passenger is informed to file a written complaint; assistance is not offered.",
+        "position": 3,
+        "evidence_node_id": "EVID_trscr001",
+        "speaker": "airline_staff"
+      }
+    ],
+    "source_packs": [
+      {
+        "node_id": "PACK_src00001",
+        "type": "SourcePack",
+        "created_at": "2026-03-03T11:55:00.000Z",
+        "integrity_hash": "sha256:a3f8e1d2c4b6a9f0e7d5c3b1a2f8e4d6c9b7a5f0e3d1c8b6a4f2e0d9c7b5a3f1"
+      }
+    ],
+    "source_files": [
+      {
+        "node_id": "FILE_vid00001",
+        "type": "SourceFile",
+        "path": "/payload/recording.mp4",
+        "sha256": "e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6",
+        "file_type": "video/mp4"
+      },
+      {
+        "node_id": "FILE_txt00001",
+        "type": "SourceFile",
+        "path": "/payload/transcript.json",
+        "sha256": "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3",
+        "file_type": "application/json"
+      }
+    ],
+    "media_assets": [
+      {
+        "node_id": "MEDIA_aud00001",
+        "type": "MediaAsset",
+        "created_at": "2026-03-03T09:00:00.000Z",
+        "modified_at": "2026-03-03T09:05:00.000Z",
+        "gps_lat": -23.4356,
+        "gps_lon": -46.4731,
+        "media_type": "video",
+        "_enrichment": "GPS metadata enriched. Location: Guarulhos International Airport (GRU), São Paulo, Brazil."
+      }
+    ],
+    "transcripts": [
+      {
+        "node_id": "TRNS_trs00001",
+        "type": "Transcript",
+        "created_at": "2026-03-03T10:30:00.000Z",
+        "language": "pt-BR",
+        "transcription_engine": "whisper-large-v3"
+      }
+    ],
+    "applicability_bases": [
+      {
+        "node_id": "APPL_intc0001",
+        "type": "ApplicabilityBasis",
+        "basis_type": "international_air_carriage"
+      }
+    ],
+    "legal_frameworks": [
+      {
+        "node_id": "BR.CBA",
+        "type": "LegalFramework",
+        "name": "Código Brasileiro de Aeronáutica",
+        "jurisdiction": "BR",
+        "effective_date": "1986-12-19",
+        "version": "1986"
+      }
+    ],
+    "legal_articles": [
+      {
+        "node_id": "BR.CBA.T6.C1.Art.175",
+        "type": "LegalArticle",
+        "article_number": "175",
+        "article_reference": "CBA Title VI, Chapter I, Article 175 — Public Air Services Scope",
+        "article_text": "Art. 175. Os serviços aéreos públicos abrangem os serviços aéreos especializados públicos e os serviços de transporte aéreo público de passageiro, carga ou mala postal, regular ou não regular, doméstico ou internacional. § 1° A relação jurídica entre a União e o empresário que explora os serviços aéreos públicos pauta-se pelas normas estabelecidas neste Código e legislação complementar e pelas condições da respectiva concessão ou autorização. § 2º A relação jurídica entre o empresário e o usuário ou beneficiário dos serviços é contratual, regendo-se pelas respectivas normas previstas neste Código e legislação complementar, e, em se tratando de transporte público internacional, pelo disposto nos Tratados e Convenções pertinentes (artigos 1°, § 1°; 203 a 213). § 3° No contrato de serviços aéreos públicos, o empresário, pessoa física ou jurídica, proprietário ou explorador da aeronave, obriga-se, em nome próprio, a executar determinados serviços aéreos, mediante remuneração, aplicando-se o disposto nos artigos 222 a 245 quando se tratar de transporte aéreo regular.",
+        "title": "Title VI — Air Services",
+        "chapter": "Chapter I — Public Air Services",
+        "framework_code": "CBA",
+        "jurisdiction": "BR",
+        "_enrichment": "article_text verified against data/law/BR/json/CBA.json — verbatim match confirmed."
+      },
+      {
+        "node_id": "BR.CBA.T8.C3.Art.260",
+        "type": "LegalArticle",
+        "article_number": "260",
+        "article_reference": "CBA Title VIII, Chapter III, Article 260 — Liability Limits for Baggage Damage",
+        "article_text": "Art. 260. A responsabilidade do transportador por dano, conseqüente da destruição, perda ou avaria da bagagem despachada ou conservada em mãos do passageiro, ocorrida durante a execução do contrato de transporte aéreo, limita-se ao valor correspondente a 150 (cento e cinqüenta) Obrigações do Tesouro Nacional - OTN, por ocasião do pagamento, em relação a cada passageiro.",
+        "title": "Title VIII — Liability and Exemptions",
+        "chapter": "Chapter III — Liability for Damage",
+        "framework_code": "CBA",
+        "jurisdiction": "BR",
+        "_enrichment": "Art.260 confirmed loaded (CONTAINS_ARTICLE) but correctly NOT cited in VIOLATES_ARTICLE — baggage liability not applicable to this scenario."
+      }
+    ],
+    "llm_runs": [
+      {
+        "node_id": "RUN_llmr0001",
+        "type": "LLMRun",
+        "framework": "awareness-pipeline-v2.4",
+        "timestamp": "2026-03-03T12:06:00.000Z",
+        "model": "deepseek-chat",
+        "prompt_version": "legal-extraction-v2.4",
+        "pipeline_stage": "extraction"
+      }
+    ]
+  },
+  "relationships": [
+    {"type": "GENERATED_CASE", "from_node_id": "RUN_llmr0001", "to_node_id": "CASE_gc2026a1"},
+    {"type": "HAS_PROVENANCE", "from_node_id": "CASE_gc2026a1", "to_node_id": "PACK_src00001"},
+    {"type": "HAS_APPLICABILITY_BASIS", "from_node_id": "CASE_gc2026a1", "to_node_id": "APPL_intc0001"},
+    {"type": "SCOPES_VIOLATION", "from_node_id": "CASE_gc2026a1", "to_node_id": "VIOL_cbav0001"},
+    {"type": "GROUNDED_IN_ACTION", "from_node_id": "VIOL_cbav0001", "to_node_id": "ACTN_noasst01"},
+    {"type": "VIOLATES_ARTICLE", "from_node_id": "VIOL_cbav0001", "to_node_id": "BR.CBA.T6.C1.Art.175"},
+    {"type": "INVOLVES_ACTOR", "from_node_id": "VIOL_cbav0001", "to_node_id": "ROLE_carr0001"},
+    {"type": "INVOLVES_ACTOR", "from_node_id": "VIOL_cbav0001", "to_node_id": "ROLE_pass0001"},
+    {"type": "SUPPORTED_BY_EVIDENCE", "from_node_id": "VIOL_cbav0001", "to_node_id": "EVID_trscr001"},
+    {"type": "SUPPORTS_ACTION", "from_node_id": "EVID_trscr001", "to_node_id": "ACTN_noasst01"},
+    {"type": "CONTAINS_SEGMENT", "from_node_id": "EVID_trscr001", "to_node_id": "SEG_seg00003"},
+    {"type": "GENERATED_FROM", "from_node_id": "EVID_trscr001", "to_node_id": "TRNS_trs00001"},
+    {"type": "DERIVED_FROM", "from_node_id": "EVID_trscr001", "to_node_id": "MEDIA_aud00001"},
+    {"type": "TRANSCRIBES", "from_node_id": "TRNS_trs00001", "to_node_id": "MEDIA_aud00001"},
+    {"type": "PERFORMED_BY", "from_node_id": "ACTN_noasst01", "to_node_id": "ROLE_carr0001"},
+    {"type": "CONTAINS_FILE", "from_node_id": "PACK_src00001", "to_node_id": "FILE_vid00001"},
+    {"type": "CONTAINS_FILE", "from_node_id": "PACK_src00001", "to_node_id": "FILE_txt00001"},
+    {"type": "REPRESENTS_MEDIA", "from_node_id": "FILE_vid00001", "to_node_id": "MEDIA_aud00001"},
+    {"type": "CONTAINS_ARTICLE", "from_node_id": "BR.CBA", "to_node_id": "BR.CBA.T6.C1.Art.175"},
+    {"type": "CONTAINS_ARTICLE", "from_node_id": "BR.CBA", "to_node_id": "BR.CBA.T8.C3.Art.260"}
+  ],
+  "compliance": {
+    "ontology_valid": true,
+    "message": "v2.4 compliant",
+    "violations_found": 1,
+    "framework_code": "CBA"
+  }
+}

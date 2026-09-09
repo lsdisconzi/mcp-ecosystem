@@ -1,0 +1,1681 @@
+/**
+ * INTEGRATED LEGAL FRAMEWORK ANALYZER — GOLDEN REFERENCE
+ * Framework: Montreal Convention 1999
+ * Jurisdiction: INT
+ * Legal Style: mixed
+ * Generated: 2026-03-04T00:00:00.000000
+ * Version: Golden 2.4
+ *
+ * Golden Case Reference: case_aeropuerto_STG_7_segment_8_v24
+ *   VIOL_stg70003 — Carrier Liability for Airport Incident (MC99 Art. 17)
+ *   Evidence: "no como LATAM" [15:16:03] → institutional attribution to LATAM
+ *   Severity: medium | Confidence: 0.75 | ELI: INT.MC99.C3.Art.17
+ *
+ * This file is the CANONICAL REFERENCE for Project Argus analyzer generation.
+ * The ANALYSIS_TEMPLATE and SYSTEM_PROMPT below define the authoritative output
+ * format (ontology v2.4) that all generated analyzer packs must conform to.
+ */
+
+function injectMontrealConvention1999Analyzer(options) {
+    const { 
+        targetContainerId, 
+        getTranscriptText, 
+        onAnalyze,
+        analysisMode = 'standard',
+        language = 'auto'
+    } = options;
+
+    const LEGAL_CONFIG = {
+  "framework_name": "Montreal Convention 1999",
+  "jurisdiction": "INT",
+  "framework_code": "MC99",
+  "framework_type": "national_law",
+  "legal_style": "mixed",
+  "articles": [
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "0",
+      "hierarchy": {
+        "title": null,
+        "chapter": null,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Preamble",
+      "text": "THE STATES PARTIES TO THIS CONVENTION RECOGNIZING the significant contribution of the Convention for the Unification of Certain Rules Relating to International Carriage by Air signed in Warsaw on 12 October 1929, hereinafter referred to as the „Warsaw Convention“, and other related instruments to the harmonization of private international air law; RECOGNIZING the need to modernize and consolidate the Warsaw Convention and related instruments; RECOGNIZING the importance of ensuring protection of the interests of consumers in international carriage by air and the need for equitable compensation based on the principle of restitution; REAFFIRMING the desirability of an orderly development of international air transport operations and the smooth flow of passengers, baggage and cargo in accordance with the principles and objectives of the Convention on International Civil Aviation, done at Chicago on 7 December 1944; CONVINCED that collective State action for further harmonization and codification of certain rules governing international carriage by air through a new Convention is the most adequate means of achieving an equitable balance of interests; HAVE AGREED AS FOLLOWS:",
+      "theme": "Preamble",
+      "eli_id": "INT.MC99.Art.0"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "1",
+      "hierarchy": {
+        "title": null,
+        "chapter": 1,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter I - General Provisions, Article 1 — Scope of Application",
+      "text": "1. This Convention applies to all international carriage of persons, baggage or cargo performed by aircraft for reward. It applies equally to gratuitous carriage by aircraft performed by an air transport undertaking. 2. For the purposes of this Convention, the expression international carriage means any carriage in which, according to the agreement between the parties, the place of departure and the place of destination, whether or not there be a break in the carriage or a transhipment, are situated either within the territories of two States Parties, or within the territory of a single State Party if there is an agreed stopping place within the territory of another State, even if that State is not a State Party. Carriage between two points within the territory of a single State Party without an agreed stopping place within the territory of another State is not international carriage for the purposes of this Convention. 3. Carriage to be performed by several successive carriers is deemed, for the purposes of this Convention, to be one undivided carriage if it has been regarded by the parties as a single operation, whether it had been agreed upon under the form of a single contract or of a series of contracts, and it does not lose its international character merely because one contract or a series of contracts is to be performed entirely within the territory of the same State. 4. This Convention applies also to carriage as set out in Chapter V, subject to the terms contained therein.",
+      "theme": "General Provisions",
+      "eli_id": "INT.MC99.C1.Art.1"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "2",
+      "hierarchy": {
+        "title": null,
+        "chapter": 1,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter I - General Provisions, Article 2 — Carriage Performed by State and Carriage of Postal Items",
+      "text": "1. This Convention applies to carriage performed by the State or by legally constituted public bodies provided it falls within the conditions laid down in Article 1. 2. In the carriage of postal items, the carrier shall be liable only to the relevant postal administration in accordance with the rules applicable to the relationship between the carriers and the postal administrations. 3. Except as provided in paragraph 2 of this Article, the provisions of this Convention shall not apply to the carriage of postal items.",
+      "theme": "General Provisions",
+      "eli_id": "INT.MC99.C1.Art.2"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "3",
+      "hierarchy": {
+        "title": null,
+        "chapter": 2,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 3 — Passengers and Baggage",
+      "text": "1. In respect of carriage of passengers, an individual or collective document of carriage shall be delivered containing: (a) an indication of the places of departure and destination; (b) if the places of departure and destination are within the territory of a single State Party, one or more agreed stopping places being within the territory of another State, an indication of at least one such stopping place. 2. Any other means which preserves the information indicated in paragraph 1 may be substituted for the delivery of the document referred to in that paragraph. If any such other means is used, the carrier shall offer to deliver to the passenger a written statement of the information so preserved. 3. The carrier shall deliver to the passenger a baggage identification tag for each piece of checked baggage. 4. The passenger shall be given written notice to the effect that where this Convention is applicable it governs and may limit the liability of carriers in respect of death or injury and for destruction or loss of, or damage to, baggage, and for delay. 5. Non-compliance with the provisions of the foregoing paragraphs shall not affect the existence or the validity of the contract of carriage, which shall, nonetheless, be subject to the rules of this Convention including those relating to limitation of liability.",
+      "theme": "Documentation and Duties of the Parties",
+      "eli_id": "INT.MC99.C2.Art.3"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "4",
+      "hierarchy": {
+        "title": null,
+        "chapter": 2,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 4 — Cargo",
+      "text": "1. In respect of the carriage of cargo, an air waybill shall be delivered. 2. Any other means which preserves a record of the carriage to be performed may be substituted for the delivery of an air waybill. If such other means are used, the carrier shall, if so requested by the consignor, deliver to the consignor a cargo receipt permitting identification of the consignment and access to the information contained in the record preserved by such other means.",
+      "theme": "Documentation and Duties of the Parties",
+      "eli_id": "INT.MC99.C2.Art.4"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "5",
+      "hierarchy": {
+        "title": null,
+        "chapter": 2,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 5 — Contents of Air Waybill or Cargo Receipt",
+      "text": "The air waybill or the cargo receipt shall include: (a) an indication of the places of departure and destination; (b) if the places of departure and destination are within the territory of a single State Party, one or more agreed stopping places being within the territory of another State, an indication of at least one such stopping place; and (c) an indication of the weight of the consignment.",
+      "theme": "Documentation and Duties of the Parties",
+      "eli_id": "INT.MC99.C2.Art.5"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "6",
+      "hierarchy": {
+        "title": null,
+        "chapter": 2,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 6 — Document Relating to the Nature of the Cargo",
+      "text": "The consignor may be required, if necessary to meet the formalities of customs, police and similar public authorities, to deliver a document indicating the nature of the cargo. This provision creates for the carrier no duty, obligation or liability resulting therefrom.",
+      "theme": "Documentation and Duties of the Parties",
+      "eli_id": "INT.MC99.C2.Art.6"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "7",
+      "hierarchy": {
+        "title": null,
+        "chapter": 2,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 7 — Description of Air Waybill",
+      "text": "1. The air waybill shall be made out by the consignor in three original parts. 2. The first part shall be marked „for the carrier“; it shall be signed by the consignor. The second part shall be marked „for the consignee“; it shall be signed by the consignor and by the carrier. The third part shall be signed by the carrier who shall hand it to the consignor after the cargo has been accepted. 3. The signature of the carrier and that of the consignor may be printed or stamped. 4. If, at the request of the consignor, the carrier makes out the air waybill, the carrier shall be deemed, subject to proof to the contrary, to have done so on behalf of the consignor.",
+      "theme": "Documentation and Duties of the Parties",
+      "eli_id": "INT.MC99.C2.Art.7"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "8",
+      "hierarchy": {
+        "title": null,
+        "chapter": 2,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 8 — Documentation for Multiple Packages",
+      "text": "When there is more than one package: (a) the carrier of cargo has the right to require the consignor to make out separate air waybills; (b) the consignor has the right to require the carrier to deliver separate cargo receipts when the other means referred to in paragraph 2 of Article 4 are used.",
+      "theme": "Documentation and Duties of the Parties",
+      "eli_id": "INT.MC99.C2.Art.8"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "9",
+      "hierarchy": {
+        "title": null,
+        "chapter": 2,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 9 — Non-compliance with Documentary Requirements",
+      "text": "Non-compliance with the provisions of Articles 4 to 8 shall not affect the existence or the validity of the contract of carriage, which shall, nonetheless, be subject to the rules of this Convention including those relating to limitation of liability.",
+      "theme": "Documentation and Duties of the Parties",
+      "eli_id": "INT.MC99.C2.Art.9"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "10",
+      "hierarchy": {
+        "title": null,
+        "chapter": 2,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 10 — Responsibility for Particulars of Documentation",
+      "text": "1. The consignor is responsible for the correctness of the particulars and statements relating to the cargo inserted by it or on its behalf in the air waybill or furnished by it or on its behalf to the carrier for insertion in the cargo receipt or for insertion in the record preserved by the other means referred to in paragraph 2 of Article 4. The foregoing shall also apply where the person acting on behalf of the consignor is also the agent of the carrier. 2. The consignor shall indemnify the carrier against all damage suffered by it, or by any other person to whom the carrier is liable, by reason of the irregularity, incorrectness or incompleteness of the particulars and statements furnished by the consignor or on its behalf. 3. Subject to the provisions of paragraphs 1 and 2 of this Article, the carrier shall indemnify the consignor against all damage suffered by it, or by any other person to whom the consignor is liable, by reason of the irregularity, incorrectness or incompleteness of the particulars and statements inserted by the carrier or on its behalf in the cargo receipt or in the record preserved by the other means referred to in paragraph 2 of Article 4.",
+      "theme": "Documentation and Duties of the Parties",
+      "eli_id": "INT.MC99.C2.Art.10"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "11",
+      "hierarchy": {
+        "title": null,
+        "chapter": 2,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 11 — Evidentiary Value of Documentation",
+      "text": "1. The air waybill or the cargo receipt is prima facie evidence of the conclusion of the contract, of the acceptance of the cargo and of the conditions of carriage mentioned therein. 2. Any statements in the air waybill or the cargo receipt relating to the weight, dimensions and packing of the cargo, as well as those relating to the number of packages, are prima facie evidence of the facts stated; those relating to the quantity, volume and condition of the cargo do not constitute evidence against the carrier except so far as they both have been, and are stated in the air waybill or the cargo receipt to have been, checked by it in the presence of the consignor, or relate to the apparent condition of the cargo.",
+      "theme": "Documentation and Duties of the Parties",
+      "eli_id": "INT.MC99.C2.Art.11"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "12",
+      "hierarchy": {
+        "title": null,
+        "chapter": 2,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 12 — Right of Disposition of Cargo",
+      "text": "1. Subject to its liability to carry out all its obligations under the contract of carriage, the consignor has the right to dispose of the cargo by withdrawing it at the airport of departure or destination, or by stopping it in the course of the journey on any landing, or by calling for it to be delivered at the place of destination or in the course of the journey to a person other than the consignee originally designated, or by requiring it to be returned to the airport of departure. The consignor must not exercise this right of disposition in such a way as to prejudice the carrier or other consignors and must reimburse any expenses occasioned by the exercise of this right. 2. If it is impossible to carry out the instructions of the consignor, the carrier must so inform the consignor forthwith. 3. If the carrier carries out the instructions of the consignor for the disposition of the cargo without requiring the production of the part of the air waybill or the cargo receipt delivered to the latter, the carrier will be liable, without prejudice to its right of recovery from the consignor, for any damage which may be caused thereby to any person who is lawfully in possession of that part of the air waybill or the cargo receipt. 4. The right conferred on the consignor ceases at the moment when that of the consignee begins in accordance with Article 13. Nevertheless, if the consignee declines to accept the cargo, or cannot be communicated with, the consignor resumes its right of disposition.",
+      "theme": "Documentation and Duties of the Parties",
+      "eli_id": "INT.MC99.C2.Art.12"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "13",
+      "hierarchy": {
+        "title": null,
+        "chapter": 2,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 13 — Delivery of the Cargo",
+      "text": "1. Except when the consignor has exercised its right under Article 12, the consignee is entitled, on arrival of the cargo at the place of destination, to require the carrier to deliver the cargo to it, on payment of the charges due and on complying with the conditions of carriage. 2. Unless it is otherwise agreed, it is the duty of the carrier to give notice to the consignee as soon as the cargo arrives. 3. If the carrier admits the loss of the cargo, or if the cargo has not arrived at the expiration of seven days after the date on which it ought to have arrived, the consignee is entitled to enforce against the carrier the rights which flow from the contract of carriage.",
+      "theme": "Documentation and Duties of the Parties",
+      "eli_id": "INT.MC99.C2.Art.13"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "14",
+      "hierarchy": {
+        "title": null,
+        "chapter": 2,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 14 — Enforcement of the Rights of Consignor and Consignee",
+      "text": "The consignor and the consignee can respectively enforce all the rights given to them by Articles 12 and 13, each in its own name, whether it is acting in its own interest or in the interest of another, provided that it carries out the obligations imposed by the contract of carriage.",
+      "theme": "Documentation and Duties of the Parties",
+      "eli_id": "INT.MC99.C2.Art.14"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "15",
+      "hierarchy": {
+        "title": null,
+        "chapter": 2,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 15 — Relations of Consignor and Consignee or Mutual Relations of Third Parties",
+      "text": "1. Articles 12, 13 and 14 do not affect either the relations of the consignor and the consignee with each other or the mutual relations of third parties whose rights are derived either from the consignor or from the consignee. 2. The provisions of Articles 12, 13 and 14 can only be varied by express provision in the air waybill or the cargo receipt.",
+      "theme": "Documentation and Duties of the Parties",
+      "eli_id": "INT.MC99.C2.Art.15"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "16",
+      "hierarchy": {
+        "title": null,
+        "chapter": 2,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 16 — Formalities of Customs, Police or Other Public Authorities",
+      "text": "1. The consignor must furnish such information and such documents as are necessary to meet the formalities of customs, police and any other public authorities before the cargo can be delivered to the consignee. The consignor is liable to the carrier for any damage occasioned by the absence, insufficiency or irregularity of any such information or documents, unless the damage is due to the fault of the carrier, its servants or agents. 2. The carrier is under no obligation to enquire into the correctness or sufficiency of such information or documents.",
+      "theme": "Documentation and Duties of the Parties",
+      "eli_id": "INT.MC99.C2.Art.16"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "17",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 17 — Death and Injury of Passengers — Damage to Baggage",
+      "text": "1. The carrier is liable for damage sustained in case of death or bodily injury of a passenger upon condition only that the accident which caused the death or injury took place on board the aircraft or in the course of any of the operations of embarking or disembarking. 2. The carrier is liable for damage sustained in case of destruction or loss of, or of damage to, checked baggage upon condition only that the event which caused the destruction, loss or damage took place on board the aircraft or during any period within which the checked baggage was in the charge of the carrier. However, the carrier is not liable if and to the extent that the damage resulted from the inherent defect, quality or vice of the baggage. In the case of unchecked baggage, including personal items, the carrier is liable if the damage resulted from its fault or that of its servants or agents. 3. If the carrier admits the loss of the checked baggage, or if the checked baggage has not arrived at the expiration of twenty-one days after the date on which it ought to have arrived, the passenger is entitled to enforce against the carrier the rights which flow from the contract of carriage. 4. Unless otherwise specified, in this Convention the term „baggage“ means both checked baggage and unchecked baggage.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.17"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "18",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 18 — Damage to Cargo",
+      "text": "1. The carrier is liable for damage sustained in the event of the destruction or loss of, or damage to, cargo upon condition only that the event which caused the damage so sustained took place during the carriage by air. 2. However, the carrier is not liable if and to the extent it proves that the destruction, or loss of, or damage to, the cargo resulted from one or more of the following: (a) inherent defect, quality or vice of that cargo; (b) defective packing of that cargo performed by a person other than the carrier or its servants or agents; (c) an act of war or an armed conflict; (d) an act of public authority carried out in connection with the entry, exit or transit of the cargo. 3. The carriage by air within the meaning of paragraph 1 of this Article comprises the period during which the cargo is in the charge of the carrier. 4. The period of the carriage by air does not extend to any carriage by land, by sea or by inland waterway performed outside an airport. If, however, such carriage takes place in the performance of a contract for carriage by air, for the purpose of loading, delivery or transshipment, any damage is presumed, subject to proof to the contrary, to have been the result of an event which took place during the carriage by air. If a carrier, without the consent of the consignor, substitutes carriage by another mode of transport for the whole or part of a carriage intended by the agreement between the parties to be carriage by air, such carriage by another mode of transport is deemed to be within the period of carriage by air.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.18"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "19",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 19 — Delay",
+      "text": "The carrier is liable for damage occasioned by delay in the carriage by air of passengers, baggage or cargo. Nevertheless, the carrier shall not be liable for damage occasioned by delay if it proves that it and its servants and agents took all measures that could reasonably be required to avoid the damage or that it was impossible for it or them to take such measures.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.19"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "20",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 20 — Exoneration",
+      "text": "If the carrier proves that the damage was caused or contributed to by the negligence or other wrongful act or omission of the person claiming compensation, or the person from whom he or she derives his or her rights, the carrier shall be wholly or partly exonerated from its liability to the claimant to the extent that such negligence or wrongful act or omission caused or contributed to the damage. When by reason of death or injury of a passenger compensation is claimed by a person other than the passenger, the carrier shall likewise be wholly or partly exonerated from its liability to the extent that it proves that the damage was caused or contributed to by the negligence or other wrongful act or omission of that passenger. This Article applies to all the liability provisions in this Convention, including paragraph 1 of Article 21.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.20"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "21",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 21 — Compensation in Case of Death or Injury of Passengers",
+      "text": "1. For damages arising under paragraph 1 of Article 17 not exceeding 100 000 Special Drawing Rights for each passenger, the carrier shall not be able to exclude or limit its liability. 2. The carrier shall not be liable for damages arising under paragraph 1 of Article 17 to the extent that they exceed for each passenger 100 000 Special Drawing Rights if the carrier proves that: (a) such damage was not due to the negligence or other wrongful act or omission of the carrier or its servants or agents; or (b) such damage was solely due to the negligence or other wrongful act or omission of a third party.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.21"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "22",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 22 — Limits of Liability in Relation to Delay, Baggage and Cargo",
+      "text": "1. In the case of damage caused by delay as specified in Article 19 in the carriage of persons, the liability of the carrier for each passenger is limited to 4 150 Special Drawing Rights. 2. In the carriage of baggage, the liability of the carrier in the case of destruction, loss, damage or delay is limited to 1 000 Special Drawing Rights for each passenger unless the passenger has made, at the time when the checked baggage was handed over to the carrier, a special declaration of interest in delivery at destination and has paid a supplementary sum if the case so requires. In that case the carrier will be liable to pay a sum not exceeding the declared sum, unless it proves that the sum is greater than the passenger's actual interest in delivery at destination. 3. In the carriage of cargo, the liability of the carrier in the case of destruction, loss, damage or delay is limited to a sum of 17 Special Drawing Rights per kilogramme, unless the consignor has made, at the time when the package was handed over to the carrier, a special declaration of interest in delivery at destination and has paid a supplementary sum if the case so requires. In that case the carrier will be liable to pay a sum not exceeding the declared sum, unless it proves that the sum is greater than the consignor's actual interest in delivery at destination. 4. In the case of destruction, loss, damage or delay of part of the cargo, or of any object contained therein, the weight to be taken into consideration in determining the amount to which the carrier's liability is limited shall be only the total weight of the package or packages concerned. Nevertheless, when the destruction, loss, damage or delay of a part of the cargo, or of an object contained therein, affects the value of other packages covered by the same air waybill, or the same receipt or, if they were not issued, by the same record preserved by the other means referred to in paragraph 2 of Article 4, the total weight of such package or packages shall also be taken into consideration in determining the limit of liability. 5. The foregoing provisions of paragraphs 1 and 2 of this Article shall not apply if it is proved that the damage resulted from an act or omission of the carrier, its servants or agents, done with intent to cause damage or recklessly and with knowledge that damage would probably result; provided that, in the case of such act or omission of a servant or agent, it is also proved that such servant or agent was acting within the scope of its employment. 6. The limits prescribed in Article 21 and in this Article shall not prevent the court from awarding, in accordance with its own law, in addition, the whole or part of the court costs and of the other expenses of the litigation incurred by the plaintiff, including interest. The foregoing provision shall not apply if the amount of the damages awarded, excluding court costs and other expenses of the litigation, does not exceed the sum which the carrier has offered in writing to the plaintiff within a period of six months from the date of the occurrence causing the damage, or before the commencement of the action, if that is later.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.22"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "23",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 23 — Conversion of Monetary Units",
+      "text": "1. The sums mentioned in terms of Special Drawing Right in this Convention shall be deemed to refer to the Special Drawing Right as defined by the International Monetary Fund. Conversion of the sums into national currencies shall, in case of judicial proceedings, be made according to the value of such currencies in terms of the Special Drawing Right at the date of the judgement. The value of a national currency, in terms of the Special Drawing Right, of a State Party which is a Member of the International Monetary Fund, shall be calculated in accordance with the method of valuation applied by the International Monetary Fund, in effect at the date of the judgement, for its operations and transactions. The value of a national currency, in terms of the Special Drawing Right, of a State Party which is not a Member of the International Monetary Fund, shall be calculated in a manner determined by that State. 2. Nevertheless, those States which are not Members of the International Monetary Fund and whose law does not permit the application of the provisions of paragraph 1 of this Article may, at the time of ratification or accession or at any time thereafter, declare that the limit of liability of the carrier prescribed in Article 21 is fixed at a sum of 1 500 000 monetary units per passenger in judicial proceedings in their territories; 62 500 monetary units per passenger with respect to paragraph 1 of Article 22; 15 000 monetary units per passenger with respect to paragraph 2 of Article 22; and 250 monetary units per kilogramme with respect to paragraph 3 of Article 22. This monetary unit corresponds to sixty-five and a half milligrammes of gold of millesimal fineness nine hundred. These sums may be converted into the national currency concerned in round figures. The conversion of these sums into national currency shall be made according to the law of the State concerned. 3. The calculation mentioned in the last sentence of paragraph 1 of this Article and the conversion method mentioned in paragraph 2 of this Article shall be made in such manner as to express in the national currency of the State Party as far as possible the same real value for the amounts in Articles 21 and 22 as would result from the application of the first three sentences of paragraph 1 of this Article. States Parties shall communicate to the depositary the manner of calculation pursuant to paragraph 1 of this Article, or the result of the conversion in paragraph 2 of this Article as the case may be, when depositing an instrument of ratification, acceptance, approval of or accession to this Convention and whenever there is a change in either.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.23"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "24",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 24 — Review of Limits",
+      "text": "1. Without prejudice to the provisions of Article 25 of this Convention and subject to paragraph 2 below, the limits of liability prescribed in Articles 21, 22 and 23 shall be reviewed by the Depositary at five-year intervals, the first such review to take place at the end of the fifth year following the date of entry into force of this Convention, or if the Convention does not enter into force within five years of the date it is first open for signature, within the first year of its entry into force, by reference to an inflation factor which corresponds to the accumulated rate of inflation since the previous revision or in the first instance since the date of entry into force of the Convention. The measure of the rate of inflation to be used in determining the inflation factor shall be the weighted average of the annual rates of increase or decrease in the Consumer Price Indices of the States whose currencies comprise the Special Drawing Right mentioned in paragraph 1 of Article 23. 2. If the review referred to in the preceding paragraph concludes that the inflation factor has exceeded 10 per cent, the Depositary shall notify States Parties of a revision of the limits of liability. Any such revision shall become effective six months after its notification to the States Parties. If within three months after its notification to the States Parties a majority of the States Parties register their disapproval, the revision shall not become effective and the Depositary shall refer the matter to a meeting of the States Parties. The Depositary shall immediately notify all States Parties of the coming into force of any revision. 3. Notwithstanding paragraph 1 of this Article, the procedure referred to in paragraph 2 of this Article shall be applied at any time provided that one-third of the States Parties express a desire to that effect and upon condition that the inflation factor referred to in paragraph 1 has exceeded 30 per cent since the previous revision or since the date of entry into force of this Convention if there has been no previous revision. Subsequent reviews using the procedure described in paragraph 1 of this Article will take place at five-year intervals starting at the end of the fifth year following the date of the reviews under the present paragraph.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.24"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "25",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 25 — Stipulation on Limits",
+      "text": "A carrier may stipulate that the contract of carriage shall be subject to higher limits of liability than those provided for in this Convention or to no limits of liability whatsoever.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.25"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "26",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 26 — Invalidity of Contractual Provisions",
+      "text": "Any provision tending to relieve the carrier of liability or to fix a lower limit than that which is laid down in this Convention shall be null and void, but the nullity of any such provision does not involve the nullity of the whole contract, which shall remain subject to the provisions of this Convention.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.26"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "27",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 27 — Freedom to Contract",
+      "text": "Nothing contained in this Convention shall prevent the carrier from refusing to enter into any contract of carriage, from waiving any defences available under the Convention, or from laying down conditions which do not conflict with the provisions of this Convention.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.27"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "28",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 28 — Advance Payments",
+      "text": "In the case of aircraft accidents resulting in death or injury of passengers, the carrier shall, if required by its national law, make advance payments without delay to a natural person or persons who are entitled to claim compensation in order to meet the immediate economic needs of such persons. Such advance payments shall not constitute a recognition of liability and may be offset against any amounts subsequently paid as damages by the carrier.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.28"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "29",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 29 — Basis of Claims",
+      "text": "In the carriage of passengers, baggage and cargo, any action for damages, however founded, whether under this Convention or in contract or in tort or otherwise, can only be brought subject to the conditions and such limits of liability as are set out in this Convention without prejudice to the question as to who are the persons who have the right to bring suit and what are their respective rights. In any such action, punitive, exemplary or any other non-compensatory damages shall not be recoverable.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.29"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "30",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 30 — Servants, Agents — Aggregation of Claims",
+      "text": "1. If an action is brought against a servant or agent of the carrier arising out of damage to which the Convention relates, such servant or agent, if they prove that they acted within the scope of their employment, shall be entitled to avail themselves of the conditions and limits of liability which the carrier itself is entitled to invoke under this Convention. 2. The aggregate of the amounts recoverable from the carrier, its servants and agents, in that case, shall not exceed the said limits. 3. Save in respect of the carriage of cargo, the provisions of paragraphs 1 and 2 of this Article shall not apply if it is proved that the damage resulted from an act or omission of the servant or agent done with intent to cause damage or recklessly and with knowledge that damage would probably result.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.30"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "31",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 31 — Timely Notice of Complaints",
+      "text": "1. Receipt by the person entitled to delivery of checked baggage or cargo without complaint is prima facie evidence that the same has been delivered in good condition and in accordance with the document of carriage or with the record preserved by the other means referred to in paragraph 2 of Article 3 and paragraph 2 of Article 4. 2. In the case of damage, the person entitled to delivery must complain to the carrier forthwith after the discovery of the damage, and, at the latest, within seven days from the date of receipt in the case of checked baggage and fourteen days from the date of receipt in the case of cargo. In the case of delay, the complaint must be made at the latest within twenty-one days from the date on which the baggage or cargo have been placed at his or her disposal. 3. Every complaint must be made in writing and given or dispatched within the times aforesaid. 4. If no complaint is made within the times aforesaid, no action shall lie against the carrier, save in the case of fraud on its part.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.31"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "32",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 32 — Death of Person Liable",
+      "text": "In the case of the death of the person liable, an action for damages lies in accordance with the terms of this Convention against those legally representing his or her estate.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.32"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "33",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 33 — Jurisdiction",
+      "text": "1. An action for damages must be brought, at the option of the plaintiff, in the territory of one of the States Parties, either before the court of the domicile of the carrier or of its principal place of business, or where it has a place of business through which the contract has been made or before the court at the place of destination. 2. In respect of damage resulting from the death or injury of a passenger, an action may be brought before one of the courts mentioned in paragraph 1 of this Article, or in the territory of a State Party in which at the time of the accident the passenger has his or her principal and permanent residence and to or from which the carrier operates services for the carriage of passengers by air, either on its own aircraft, or on another carrier's aircraft pursuant to a commercial agreement, and in which that carrier conducts its business of carriage of passengers by air from premises leased or owned by the carrier itself or by another carrier with which it has a commercial agreement. 3. For the purposes of paragraph 2, (a) \"commercial agreement\" means an agreement, other than an agency agreement, made between carriers and relating to the provision of their joint services for carriage of passengers by air; (b) \"principal and permanent residence\" means the one fixed and permanent abode of the passenger at the time of the accident. The nationality of the passenger shall not be the determining factor in this regard. 4. Questions of procedure shall be governed by the law of the court seized of the case.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.33"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "34",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 34 — Arbitration",
+      "text": "1. Subject to the provisions of this Article, the parties to the contract of carriage for cargo may stipulate that any dispute relating to the liability of the carrier under this Convention shall be settled by arbitration. Such agreement shall be in writing. 2. The arbitration proceedings shall, at the option of the claimant, take place within one of the jurisdictions referred to in Article 33. 3. The arbitrator or arbitration tribunal shall apply the provisions of this Convention. 4. The provisions of paragraphs 2 and 3 of this Article shall be deemed to be part of every arbitration clause or agreement, and any term of such clause or agreement which is inconsistent therewith shall be null and void.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.34"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "35",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 35 — Limitation of Actions",
+      "text": "1. The right to damages shall be extinguished if an action is not brought within a period of two years, reckoned from the date of arrival at the destination, or from the date on which the aircraft ought to have arrived, or from the date on which the carriage stopped. 2. The method of calculating that period shall be determined by the law of the court seised of the case.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.35"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "36",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 36 — Successive Carriage",
+      "text": "1. In the case of carriage to be performed by various successive carriers and falling within the definition set out in paragraph 3 of Article 1, each carrier which accepts passengers, baggage or cargo is subject to the rules set out in this Convention and is deemed to be one of the parties to the contract of carriage in so far as the contract deals with that part of the carriage which is performed under its supervision. 2. In the case of carriage of this nature, the passenger or any person entitled to compensation in respect of him or her can take action only against the carrier which performed the carriage during which the accident or the delay occurred, save in the case where, by express agreement, the first carrier has assumed liability for the whole journey. 3. As regards baggage or cargo, the passenger or consignor will have a right of action against the first carrier, and the passenger or consignee who is entitled to delivery will have a right of action against the last carrier, and further, each may take action against the carrier which performed the carriage during which the destruction, loss, damage or delay took place. These carriers will be jointly and severally liable to the passenger or to the consignor or consignee.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.36"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "37",
+      "hierarchy": {
+        "title": null,
+        "chapter": 3,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 37 — Right of Recourse against Third Parties",
+      "text": "Nothing in this Convention shall prejudice the question whether a person liable for damage in accordance with its provisions has a right of recourse against any other person.",
+      "theme": "Liability of the Carrier and Extent of Compensation for Damage",
+      "eli_id": "INT.MC99.C3.Art.37"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "38",
+      "hierarchy": {
+        "title": null,
+        "chapter": 4,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter IV - Combined Carriage, Article 38 — Combined Carriage",
+      "text": "1. In the case of combined carriage performed partly by air and partly by any other mode of carriage, the provisions of this Convention shall, subject to paragraph 4 of Article 18, apply only to the carriage by air, provided that the carriage by air falls within the terms of Article 1. 2. Nothing in this Convention shall prevent the parties in the case of combined carriage from inserting in the document of air carriage conditions relating to other modes of carriage, provided that the provisions of this Convention are observed as regards the carriage by air.",
+      "theme": "Combined Carriage",
+      "eli_id": "INT.MC99.C4.Art.38"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "39",
+      "hierarchy": {
+        "title": null,
+        "chapter": 5,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 39 — Contracting Carrier — Actual Carrier",
+      "text": "The provisions of this Chapter apply when a person (hereinafter referred to as \"the contracting carrier\") as a principal makes a contract of carriage governed by this Convention with a passenger or consignor or with a person acting on behalf of the passenger or consignor, and another person (hereinafter referred to as \"the actual carrier\") performs, by virtue of authority from the contracting carrier, the whole or part of the carriage, but is not with respect to such part a successive carrier within the meaning of this Convention. Such authority shall be presumed in the absence of proof to the contrary.",
+      "theme": "Carriage by Air Performed by a Person other than the Contracting Carrier",
+      "eli_id": "INT.MC99.C5.Art.39"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "40",
+      "hierarchy": {
+        "title": null,
+        "chapter": 5,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 40 — Respective Liability of Contracting and Actual Carriers",
+      "text": "If an actual carrier performs the whole or part of carriage which, according to the contract referred to in Article 39, is governed by this Convention, both the contracting carrier and the actual carrier shall, except as otherwise provided in this Chapter, be subject to the rules of this Convention, the former for the whole of the carriage contemplated in the contract, the latter solely for the carriage which it performs.",
+      "theme": "Carriage by Air Performed by a Person other than the Contracting Carrier",
+      "eli_id": "INT.MC99.C5.Art.40"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "41",
+      "hierarchy": {
+        "title": null,
+        "chapter": 5,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 41 — Mutual Liability",
+      "text": "1. The acts and omissions of the actual carrier and of its servants and agents acting within the scope of their employment shall, in relation to the carriage performed by the actual carrier, be deemed to be also those of the contracting carrier. 2. The acts and omissions of the contracting carrier and of its servants and agents acting within the scope of their employment shall, in relation to the carriage performed by the actual carrier, be deemed to be also those of the actual carrier. Nevertheless, no such act or omission shall subject the actual carrier to liability exceeding the amounts referred to in Articles 21, 22, 23 and 24. Any special agreement under which the contracting carrier assumes obligations not imposed by this Convention or any waiver of rights or defences conferred by this Convention or any special declaration of interest in delivery at destination contemplated in Article 22 shall not affect the actual carrier unless agreed to by it.",
+      "theme": "Carriage by Air Performed by a Person other than the Contracting Carrier",
+      "eli_id": "INT.MC99.C5.Art.41"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "42",
+      "hierarchy": {
+        "title": null,
+        "chapter": 5,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 42 — Addressee of Complaints and Instructions",
+      "text": "Any complaint to be made or instruction to be given under this Convention to the carrier shall have the same effect whether addressed to the contracting carrier or to the actual carrier. Nevertheless, instructions referred to in Article 12 shall only be effective if addressed to the contracting carrier.",
+      "theme": "Carriage by Air Performed by a Person other than the Contracting Carrier",
+      "eli_id": "INT.MC99.C5.Art.42"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "43",
+      "hierarchy": {
+        "title": null,
+        "chapter": 5,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 43 — Servants and Agents",
+      "text": "In relation to the carriage performed by the actual carrier, any servant or agent of that carrier or of the contracting carrier shall, if they prove that they acted within the scope of their employment, be entitled to avail themselves of the conditions and limits of liability which are applicable under this Convention to the carrier whose servant or agent they are, unless it is proved that they acted in a manner that prevents the limits of liability from being invoked in accordance with this Convention.",
+      "theme": "Carriage by Air Performed by a Person other than the Contracting Carrier",
+      "eli_id": "INT.MC99.C5.Art.43"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "44",
+      "hierarchy": {
+        "title": null,
+        "chapter": 5,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 44 — Aggregation of Damages",
+      "text": "In relation to the carriage performed by the actual carrier, the aggregate of the amounts recoverable from that carrier and the contracting carrier, and from their servants and agents acting within the scope of their employment, shall not exceed the highest amount which could be awarded against either the contracting carrier or the actual carrier under this Convention, but none of the persons mentioned shall be liable for a sum in excess of the limit applicable to that person.",
+      "theme": "Carriage by Air Performed by a Person other than the Contracting Carrier",
+      "eli_id": "INT.MC99.C5.Art.44"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "45",
+      "hierarchy": {
+        "title": null,
+        "chapter": 5,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 45 — Addressee of Claims",
+      "text": "In relation to the carriage performed by the actual carrier, an action for damages may be brought, at the option of the plaintiff, against that carrier or the contracting carrier, or against both together or separately. If the action is brought against only one of those carriers, that carrier shall have the right to require the other carrier to be joined in the proceedings, the procedure and effects being governed by the law of the court seized of the case.",
+      "theme": "Carriage by Air Performed by a Person other than the Contracting Carrier",
+      "eli_id": "INT.MC99.C5.Art.45"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "46",
+      "hierarchy": {
+        "title": null,
+        "chapter": 5,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 46 — Additional Jurisdiction",
+      "text": "Any action for damages contemplated in Article 45 must be brought, at the option of the plaintiff, in the territory of one of the States Parties, either before a court in which an action may be brought against the contracting carrier, as provided in Article 33, or before the court having jurisdiction at the place where the actual carrier has its domicile or its principal place of business.",
+      "theme": "Carriage by Air Performed by a Person other than the Contracting Carrier",
+      "eli_id": "INT.MC99.C5.Art.46"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "47",
+      "hierarchy": {
+        "title": null,
+        "chapter": 5,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 47 — Invalidity of Contractual Provisions",
+      "text": "Any contractual provision tending to relieve the contracting carrier or the actual carrier of liability under this Chapter or to fix a lower limit than that which is applicable according to this Chapter shall be null and void, but the nullity of any such provision does not involve the nullity of the whole contract, which shall remain subject to the provisions of this Chapter.",
+      "theme": "Carriage by Air Performed by a Person other than the Contracting Carrier",
+      "eli_id": "INT.MC99.C5.Art.47"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "48",
+      "hierarchy": {
+        "title": null,
+        "chapter": 5,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 48 — Mutual Relations of Contracting and Actual Carriers",
+      "text": "Except as provided in Article 45, nothing in this Chapter shall affect the rights and obligations of the carriers between themselves, including any right of recourse or indemnification.",
+      "theme": "Carriage by Air Performed by a Person other than the Contracting Carrier",
+      "eli_id": "INT.MC99.C5.Art.48"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "49",
+      "hierarchy": {
+        "title": null,
+        "chapter": 6,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter VI - Other Provisions, Article 49 — Mandatory Application",
+      "text": "Any clause contained in the contract of carriage and all special agreements entered into before the damage occurred by which the parties purport to infringe the rules laid down by this Convention, whether by deciding the law to be applied, or by altering the rules as to jurisdiction, shall be null and void.",
+      "theme": "Other Provisions",
+      "eli_id": "INT.MC99.C6.Art.49"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "50",
+      "hierarchy": {
+        "title": null,
+        "chapter": 6,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter VI - Other Provisions, Article 50 — Insurance",
+      "text": "States Parties shall require their carriers to maintain adequate insurance covering their liability under this Convention. A carrier may be required by the State Party into which it operates to furnish evidence that it maintains adequate insurance covering its liability under this Convention.",
+      "theme": "Other Provisions",
+      "eli_id": "INT.MC99.C6.Art.50"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "51",
+      "hierarchy": {
+        "title": null,
+        "chapter": 6,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter VI - Other Provisions, Article 51 — Carriage Performed in Extraordinary Circumstances",
+      "text": "The provisions of Articles 3 to 5, 7 and 8 relating to the documentation of carriage shall not apply in the case of carriage performed in extraordinary circumstances outside the normal scope of a carrier's business.",
+      "theme": "Other Provisions",
+      "eli_id": "INT.MC99.C6.Art.51"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "52",
+      "hierarchy": {
+        "title": null,
+        "chapter": 6,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter VI - Other Provisions, Article 52 — Definition of Days",
+      "text": "The expression \"days\" when used in this Convention means calendar days, not working days.",
+      "theme": "Other Provisions",
+      "eli_id": "INT.MC99.C6.Art.52"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "53",
+      "hierarchy": {
+        "title": null,
+        "chapter": 7,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter VII - Final Clauses, Article 53 — Signature, Ratification and Entry into Force",
+      "text": "1. This Convention shall be open for signature in Montreal on 28 May 1999 by States participating in the International Conference on Air Law held at Montreal from 10 to 28 May 1999. After 28 May 1999, the Convention shall be open to all States for signature at the Headquarters of the International Civil Aviation Organization in Montreal until it enters into force in accordance with paragraph 6 of this Article. 2. This Convention shall similarly be open for signature by Regional Economic Integration Organisations. For the purpose of this Convention, a \"Regional Economic Integration Organisation\" means any organisation which is constituted by sovereign States of a given region which has competence in respect of certain matters governed by this Convention and has been duly authorized to sign and to ratify, accept, approve or accede to this Convention. A reference to a \"State Party\" or \"States Parties\" in this Convention, otherwise than in paragraph 2 of Article 1, paragraph 1(b) of Article 3, paragraph (b) of Article 5, Articles 23, 33, 46 and paragraph (b) of Article 57, applies equally to a Regional Economic Integration Organisation. For the purpose of Article 24, the references to \"a majority of the States Parties\" and \"one-third of the States Parties\" shall not apply to a Regional Economic Integration Organisation. 3. This Convention shall be subject to ratification by States and by Regional Economic Integration Organisations which have signed it. 4. Any State or Regional Economic Integration Organisation which does not sign this Convention may accept, approve or accede to it at any time. 5. Instruments of ratification, acceptance, approval or accession shall be deposited with the International Civil Aviation Organization, which is hereby designated the Depositary. 6. This Convention shall enter into force on the sixtieth day following the date of deposit of the thirtieth instrument of ratification, acceptance, approval or accession with the Depositary between the States which have deposited such instrument. An instrument deposited by a Regional Economic Integration Organisation shall not be counted for the purpose of this paragraph. 7. For other States and for other Regional Economic Integration Organisations, this Convention shall take effect sixty days following the date of deposit of the instrument of ratification, acceptance, approval or accession. 8. The Depositary shall promptly notify all signatories and States Parties of: (a) each signature of this Convention and date thereof; (b) each deposit of an instrument of ratification, acceptance, approval or accession and date thereof; (c) the date of entry into force of this Convention; (d) the date of the coming into force of any revision of the limits of liability established under this Convention; (e) any denunciation under Article 54.",
+      "theme": "Final Clauses",
+      "eli_id": "INT.MC99.C7.Art.53"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "54",
+      "hierarchy": {
+        "title": null,
+        "chapter": 7,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter VII - Final Clauses, Article 54 — Denunciation",
+      "text": "1. Any State Party may denounce this Convention by written notification to the Depositary. 2. Denunciation shall take effect one hundred and eighty days following the date on which notification is received by the Depositary.",
+      "theme": "Final Clauses",
+      "eli_id": "INT.MC99.C7.Art.54"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "55",
+      "hierarchy": {
+        "title": null,
+        "chapter": 7,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter VII - Final Clauses, Article 55 — Relationship with other Warsaw Convention Instruments",
+      "text": "This Convention shall prevail over any rules which apply to international carriage by air: 1. between States Parties to this Convention by virtue of those States commonly being Party to (a) the Convention for the Unification of Certain Rules Relating to International Carriage by Air Signed at Warsaw on 12 October 1929 (hereinafter called the Warsaw Convention); (b) the Protocol to Amend the Convention for the Unification of Certain Rules Relating to International Carriage by Air Signed at Warsaw on 12 October 1929, Done at The Hague on 28 September 1955 (hereinafter called The Hague Protocol); (c) the Convention, Supplementary to the Warsaw Convention, for the Unification of Certain Rules Relating to International Carriage by Air Performed by a Person Other than the Contracting Carrier, signed at Guadalajara on 18 September 1961 (hereinafter called the Guadalajara Convention); (d) the Protocol to Amend the Convention for the Unification of Certain Rules Relating to International Carriage by Air Signed at Warsaw on 12 October 1929 as Amended by the Protocol Done at The Hague on 28 September 1955 Signed at Guatemala City on 8 March 1971 (hereinafter called the Guatemala City Protocol); (e) Additional Protocol Nos. 1 to 3 and Montreal Protocol No. 4 to amend the Warsaw Convention as amended by The Hague Protocol or the Warsaw Convention as amended by both The Hague Protocol and the Guatemala City Protocol Signed at Montreal on 25 September 1975 (hereinafter called the Montreal Protocols); or 2. within the territory of any single State Party to this Convention by virtue of that State being Party to one or more of the instruments referred to in sub-paragraphs (a) to (e) above.",
+      "theme": "Final Clauses",
+      "eli_id": "INT.MC99.C7.Art.55"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "56",
+      "hierarchy": {
+        "title": null,
+        "chapter": 7,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter VII - Final Clauses, Article 56 — States with more than one System of Law",
+      "text": "1. If a State has two or more territorial units in which different systems of law are applicable in relation to matters dealt with in this Convention, it may at the time of signature, ratification, acceptance, approval or accession declare that this Convention shall extend to all its territorial units or only to one or more of them and may modify this declaration by submitting another declaration at any time. 2. Any such declaration shall be notified to the Depositary and shall state expressly the territorial units to which the Convention applies. 3. In relation to a State Party which has made such a declaration: (a) references in Article 23 to \"national currency\" shall be construed as referring to the currency of the relevant territorial unit of that State; and (b) the reference in Article 28 to \"national law\" shall be construed as referring to the law of the relevant territorial unit of that State.",
+      "theme": "Final Clauses",
+      "eli_id": "INT.MC99.C7.Art.56"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "57",
+      "hierarchy": {
+        "title": null,
+        "chapter": 7,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Chapter VII - Final Clauses, Article 57 — Reservations",
+      "text": "No reservation may be made to this Convention except that a State Party may at any time declare by a notification addressed to the Depositary that this Convention shall not apply to: (a) international carriage by air performed and operated directly by that State Party for non-commercial purposes in respect to its functions and duties as a sovereign State; and/or (b) the carriage of persons, cargo and baggage for its military authorities on aircraft registered in or leased by that State Party, the whole capacity of which has been reserved by or on behalf of such authorities.",
+      "theme": "Final Clauses",
+      "eli_id": "INT.MC99.C7.Art.57"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "58",
+      "hierarchy": {
+        "title": null,
+        "chapter": null,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Witness Clause",
+      "text": "IN WITNESS WHEREOF the undersigned Plenipotentiaries, having been duly authorized, have signed this Convention.",
+      "theme": "Final Clauses",
+      "eli_id": "INT.MC99.Art.58"
+    },
+    {
+      "jurisdiction": "INT",
+      "framework_code": "MC99",
+      "framework_name": "Montreal Convention 1999",
+      "article_number": "59",
+      "hierarchy": {
+        "title": null,
+        "chapter": null,
+        "section": null,
+        "paragraph": null
+      },
+      "reference": "Montreal Convention 1999, Execution Clause",
+      "text": "DONE at Montreal on the 28th day of May of the year one thousand nine hundred and ninety-nine in the English, Arabic, Chinese, French, Russian and Spanish languages, all texts being equally authentic. This Convention shall remain deposited in the archives of the International Civil Aviation Organization, and certified copies thereof shall be transmitted by the Depositary to all States Parties to this Convention, as well as to all States Parties to the Warsaw Convention, The Hague Protocol, the Guadalajara Convention, the Guatemala City Protocol, and the Montreal Protocols.",
+      "theme": "Final Clauses",
+      "eli_id": "INT.MC99.Art.59"
+    }
+  ],
+  "output_language": "en",
+  "ui_strings": {
+    "analyze_button": "Analyze",
+    "reset_button": "Reset",
+    "placeholder": "Paste your text here...",
+    "results_heading": "Analysis Results",
+    "copy_button": "Copy Results",
+    "no_violations": "No issues found.",
+    "violations_found": "Potential issues found:",
+    "see_details": "See details",
+    "violation_text": "The text may violate",
+    "references": "References",
+    "download_report": "Download Report"
+  }
+};
+
+    const ANALYSIS_TEMPLATE = `LEGAL COMPLIANCE ANALYSIS REQUEST
+
+FRAMEWORK: Montreal Convention 1999
+JURISDICTION: INT
+FRAMEWORK TYPE: National Law
+LEGAL STYLE: MIXED
+FRAMEWORK CODE: MC99
+
+## CRITICAL OUTPUT FORMATTING RULES
+
+⚠️ **VIOLATIONS SECTION - STRICT REQUIREMENTS:**
+
+1. **ONLY include actual violations** - Do NOT include:
+   - Metadata headers (Framework:, Jurisdiction:, Analysis Date:, etc.)
+   - Negative findings ("NO VIOLATIONS IDENTIFIED", "Not applicable")
+   - Recommendations for other frameworks to apply
+   - General legal context or background information
+   - Transcript evidence descriptions that are not violations
+   - Severity assessments as standalone entries
+   - Article explanations or definitions
+
+2. **Each violation MUST start with a clear label:**
+   - ✅ GOOD: "a) Violation of Right to Information"
+   - ✅ GOOD: "VIOLATION CATEGORY A: Improper Denial of Service"
+   - ✅ GOOD: "b) Breach of Due Process Requirements"
+   - ❌ BAD: "The crew's repeated demands..." (narrative)
+   - ❌ BAD: "Primary Rationale:" (metadata)
+   - ❌ BAD: "Legal Context:" (background)
+   - ❌ BAD: "This represents a failure..." (assessment)
+
+3. **Structure for EACH violation:**
+   \`\`\`
+   a) [VIOLATION NAME - Action-oriented, specific]
+   
+   Transcript Evidence: "[exact quote]" [timestamp]
+   
+   Legal Reference: Article X: "[exact article text]"
+   
+   Analysis: [How the provision was violated, why it matters. SEVERITY MUST BE INTEGRATED HERE, e.g., "This constitutes a HIGH severity violation because..." DO NOT create separate "Severity:" line]
+   \`\`\`
+
+4. **CANONICAL OUTPUT REQUIRED (v2.4)** – After Section 2, output a JSON code block with this exact v2.4 ontology structure:
+   \`\`\`json
+   {
+     "ontology_version": "2.4",
+     "framework": "INT.MC99",
+     "violations": [
+       {
+         "node_id": "VIOL_<8-char-sha256>",
+         "type": "Violation",
+         "category": "<snake_case_category>",
+         "description": "<specific description of the breach, citing article and conduct>",
+         "timestamp": "<ISO8601_timestamp_of_incident>",
+         "severity": "critical|high|medium|low",
+         "confidence": 0.80,
+         "framework": "INT.MC99",
+         "articles_violated": ["INT.MC99.C3.Art.17"],
+         "evidence_node_ids": ["EVID_<hash>"],
+         "supporting_segments": ["SEGM_<hash>"],
+         "applicability_basis": "APPL_<hash>"
+       }
+     ],
+     "actions": [
+       {
+         "node_id": "ACTN_<hash>",
+         "type": "Action",
+         "action_type": "<snake_case_action_type>",
+         "description": "<observable conduct description>",
+         "sequence_index": 1,
+         "timestamp": "<ISO8601>",
+         "actor_role": "ROLE_<hash>"
+       }
+     ],
+     "actor_roles": [
+       {
+         "node_id": "ROLE_<hash>",
+         "type": "ActorRole",
+         "function": "airline_staff|police_officer|regulator_agent|unknown_role",
+         "context": "<functional role description — NO personal names or identifiers>"
+       }
+     ],
+     "evidences": [
+       {
+         "node_id": "EVID_<hash>",
+         "type": "Evidence",
+         "evidence_type": "transcript",
+         "source": "<transcript reference>",
+         "timestamp": "<ISO8601_start_time>",
+         "description": "<what the evidence shows>",
+         "confidence": 0.9,
+         "transcript_node_id": "TRNS_<hash>"
+       }
+     ]
+   }
+   \`\`\`
+
+   **GOLDEN CASE EXAMPLE** (authoritative reference — case_aeropuerto_STG_7_segment_8_v24):
+   \`\`\`json
+   {
+     "ontology_version": "2.4",
+     "framework": "INT.MC99",
+     "violations": [
+       {
+         "node_id": "VIOL_stg70003",
+         "type": "Violation",
+         "category": "carrier_liability_in_airport_incident",
+         "description": "LATAM carrier bears responsibility for the conduct of its crew ('El Capitan') during airport operations. MC99 Art. 17 establishes carrier liability for accidents occurring 'in the course of any of the operations of embarking or disembarking'. The captain's behaviour during airport operations is attributable to the carrier under MC99 principles. The phrase 'no como LATAM' by the airline_staff participant acknowledges institutional attribution.",
+         "timestamp": "2024-07-05T15:16:03Z",
+         "severity": "medium",
+         "confidence": 0.75,
+         "framework": "INT.MC99",
+         "articles_violated": ["INT.MC99.C3.Art.17"],
+         "evidence_node_ids": ["EVID_stg70001"],
+         "supporting_segments": ["SEGM_5ba8989c"],
+         "applicability_basis": "APPL_stg70001"
+       }
+     ],
+     "actions": [
+       {
+         "node_id": "ACTN_stg70001",
+         "type": "Action",
+         "action_type": "failure_to_cooperate_with_security_authority",
+         "description": "Captain (airline_staff) failed to cooperate with the security procedure. Institutional attribution confirmed: 'no como LATAM'.",
+         "sequence_index": 1,
+         "timestamp": "2024-07-05T15:16:09Z",
+         "actor_role": "ROLE_stg70001"
+       }
+     ],
+     "actor_roles": [
+       {
+         "node_id": "ROLE_stg70001",
+         "type": "ActorRole",
+         "function": "airline_staff",
+         "context": "LATAM airline staff member (captain), party under investigation for security non-compliance"
+       }
+     ],
+     "evidences": [
+       {
+         "node_id": "EVID_stg70001",
+         "type": "Evidence",
+         "evidence_type": "transcript",
+         "source": "Audio recording aeropuerto_STG_7.m4a, segment 8",
+         "timestamp": "2024-07-05T15:16:00Z",
+         "description": "16-utterance post-incident exchange at Santiago Airport documenting the captain's failure to cooperate and institutional attribution to LATAM.",
+         "confidence": 0.9,
+         "transcript_node_id": "TRNS_5ba8989c"
+       }
+     ]
+   }
+   \`\`\`
+
+   **Node ID rules:** \`VIOL_\` = SHA256(case_id|framework|articles_violated|category)[:8]; \`EVID_\` = SHA256(case_id|source|timestamp|description)[:8]; \`ACTN_\` = SHA256(violation_id|action_type)[:8]; \`ROLE_\` = SHA256(case_id|function)[:8].  
+   **Severity MUST be lowercase:** \`critical\`, \`high\`, \`medium\`, \`low\` (map \`MODERATE\`→\`medium\`, \`HIGH\`→\`high\`, etc.).  
+   **Actor functions MUST be functional roles only** — never personal names or identifiers.  
+   **Article IDs MUST use full ELI format:** \`INT.MC99.C<chapter>.Art.<number>\`  
+   If no violations exist, output the block with an empty \`violations\` array.
+
+5. **Forbidden patterns - DO NOT generate:**
+   - Lines starting with: "Analyst:", "Framework:", "Note:", "Important:", "Context:", "Rationale:"
+   - **STANDALONE SEVERITY LINES:** "Severity: HIGH -", "Severity: CRITICAL -", "Severity: MODERATE -", "Severity: LOW -"
+   - Quoted article definitions: "Article 26 (general_provision):" followed by explanatory text
+   - Recommendations: "The Montreal Convention should be applied...", "Use ICAO Annex 9 instead..."
+   - Timestamp evidence as violations: [2.87-3.52] transcript excerpts
+   - Negative statements: "Does not constitute...", "Not applicable...", "Framework does not apply..."
+   - Introduction preambles: "Based on the analysis of the provided transcript, the following violations..."
+
+### A. VIOLATION IDENTIFICATION GUIDELINES
+
+**What constitutes a violation:**
+- A specific action that breaches a specific legal provision
+- Must have: (1) Observable conduct (2) Violated article (3) Legal harm
+
+**What is NOT a violation:**
+- Framework applicability assessments
+- Recommendations to use different frameworks
+- Legal background or context
+- Article definitions or explanations
+- Procedural notes or jurisdictional clarifications
+
+### B. SPECIFIC LEGAL PROVISIONS FOR REFERENCE:
+
+**Montreal Convention 1999, Preamble** (obligation | Preamble | MANDATORY):
+  "THE STATES PARTIES TO THIS CONVENTION RECOGNIZING the significant contribution of the Convention for the Unification of Certain Rules Relating to International Carriage by Air signed in Warsaw on 12 October 1929, hereinafter referred to as the „Warsaw Convention“, and other related instruments to th"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter I - General Provisions, Article 1 — Scope of Application** (definition | General Provisions | MANDATORY):
+  "1. This Convention applies to all international carriage of persons, baggage or cargo performed by aircraft for reward. It applies equally to gratuitous carriage by aircraft performed by an air transport undertaking. 2. For the purposes of this Convention, the expression international carriage means"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter I - General Provisions, Article 2 — Carriage Performed by State and Carriage of Postal Items** (prohibition | General Provisions | MANDATORY):
+  "1. This Convention applies to carriage performed by the State or by legally constituted public bodies provided it falls within the conditions laid down in Article 1. 2. In the carriage of postal items, the carrier shall be liable only to the relevant postal administration in accordance with the rule"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 3 — Passengers and Baggage** (prohibition | Documentation and Duties of the Parties | MANDATORY):
+  "1. In respect of carriage of passengers, an individual or collective document of carriage shall be delivered containing: (a) an indication of the places of departure and destination; (b) if the places of departure and destination are within the territory of a single State Party, one or more agreed s"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 4 — Cargo** (obligation | Documentation and Duties of the Parties | MANDATORY):
+  "1. In respect of the carriage of cargo, an air waybill shall be delivered. 2. Any other means which preserves a record of the carriage to be performed may be substituted for the delivery of an air waybill. If such other means are used, the carrier shall, if so requested by the consignor, deliver to"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 5 — Contents of Air Waybill or Cargo Receipt** (obligation | Documentation and Duties of the Parties | MANDATORY):
+  "The air waybill or the cargo receipt shall include: (a) an indication of the places of departure and destination; (b) if the places of departure and destination are within the territory of a single State Party, one or more agreed stopping places being within the territory of another State, an indica"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 6 — Document Relating to the Nature of the Cargo** (general_provision | Documentation and Duties of the Parties | MANDATORY):
+  "The consignor may be required, if necessary to meet the formalities of customs, police and similar public authorities, to deliver a document indicating the nature of the cargo. This provision creates for the carrier no duty, obligation or liability resulting therefrom."
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 7 — Description of Air Waybill** (obligation | Documentation and Duties of the Parties | MANDATORY):
+  "1. The air waybill shall be made out by the consignor in three original parts. 2. The first part shall be marked „for the carrier“; it shall be signed by the consignor. The second part shall be marked „for the consignee“; it shall be signed by the consignor and by the carrier. The third part shall b"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 8 — Documentation for Multiple Packages** (rights_provision | Documentation and Duties of the Parties | MANDATORY):
+  "When there is more than one package: (a) the carrier of cargo has the right to require the consignor to make out separate air waybills; (b) the consignor has the right to require the carrier to deliver separate cargo receipts when the other means referred to in paragraph 2 of Article 4 are used."
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 9 — Non-compliance with Documentary Requirements** (prohibition | Documentation and Duties of the Parties | MANDATORY):
+  "Non-compliance with the provisions of Articles 4 to 8 shall not affect the existence or the validity of the contract of carriage, which shall, nonetheless, be subject to the rules of this Convention including those relating to limitation of liability."
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 10 — Responsibility for Particulars of Documentation** (obligation | Documentation and Duties of the Parties | MANDATORY):
+  "1. The consignor is responsible for the correctness of the particulars and statements relating to the cargo inserted by it or on its behalf in the air waybill or furnished by it or on its behalf to the carrier for insertion in the cargo receipt or for insertion in the record preserved by the other m"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 11 — Evidentiary Value of Documentation** (general_provision | Documentation and Duties of the Parties | MANDATORY):
+  "1. The air waybill or the cargo receipt is prima facie evidence of the conclusion of the contract, of the acceptance of the cargo and of the conditions of carriage mentioned therein. 2. Any statements in the air waybill or the cargo receipt relating to the weight, dimensions and packing of the cargo"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 12 — Right of Disposition of Cargo** (obligation | Documentation and Duties of the Parties | MANDATORY):
+  "1. Subject to its liability to carry out all its obligations under the contract of carriage, the consignor has the right to dispose of the cargo by withdrawing it at the airport of departure or destination, or by stopping it in the course of the journey on any landing, or by calling for it to be del"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 13 — Delivery of the Cargo** (rights_provision | Documentation and Duties of the Parties | MANDATORY):
+  "1. Except when the consignor has exercised its right under Article 12, the consignee is entitled, on arrival of the cargo at the place of destination, to require the carrier to deliver the cargo to it, on payment of the charges due and on complying with the conditions of carriage. 2. Unless it is ot"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 14 — Enforcement of the Rights of Consignor and Consignee** (general_provision | Documentation and Duties of the Parties | MANDATORY):
+  "The consignor and the consignee can respectively enforce all the rights given to them by Articles 12 and 13, each in its own name, whether it is acting in its own interest or in the interest of another, provided that it carries out the obligations imposed by the contract of carriage."
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 15 — Relations of Consignor and Consignee or Mutual Relations of Third Parties** (general_provision | Documentation and Duties of the Parties | MANDATORY):
+  "1. Articles 12, 13 and 14 do not affect either the relations of the consignor and the consignee with each other or the mutual relations of third parties whose rights are derived either from the consignor or from the consignee. 2. The provisions of Articles 12, 13 and 14 can only be varied by express"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter II - Documentation and Duties of the Parties Relating to the Carriage of Passengers, Baggage and Cargo, Article 16 — Formalities of Customs, Police or Other Public Authorities** (obligation | Documentation and Duties of the Parties | MANDATORY):
+  "1. The consignor must furnish such information and such documents as are necessary to meet the formalities of customs, police and any other public authorities before the cargo can be delivered to the consignee. The consignor is liable to the carrier for any damage occasioned by the absence, insuffic"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 17 — Death and Injury of Passengers — Damage to Baggage** (rights_provision | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "1. The carrier is liable for damage sustained in case of death or bodily injury of a passenger upon condition only that the accident which caused the death or injury took place on board the aircraft or in the course of any of the operations of embarking or disembarking. 2. The carrier is liable for"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 18 — Damage to Cargo** (general_provision | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "1. The carrier is liable for damage sustained in the event of the destruction or loss of, or damage to, cargo upon condition only that the event which caused the damage so sustained took place during the carriage by air. 2. However, the carrier is not liable if and to the extent it proves that the d"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 19 — Delay** (prohibition | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "The carrier is liable for damage occasioned by delay in the carriage by air of passengers, baggage or cargo. Nevertheless, the carrier shall not be liable for damage occasioned by delay if it proves that it and its servants and agents took all measures that could reasonably be required to avoid the"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 20 — Exoneration** (obligation | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "If the carrier proves that the damage was caused or contributed to by the negligence or other wrongful act or omission of the person claiming compensation, or the person from whom he or she derives his or her rights, the carrier shall be wholly or partly exonerated from its liability to the claimant"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 21 — Compensation in Case of Death or Injury of Passengers** (prohibition | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "1. For damages arising under paragraph 1 of Article 17 not exceeding 100 000 Special Drawing Rights for each passenger, the carrier shall not be able to exclude or limit its liability. 2. The carrier shall not be liable for damages arising under paragraph 1 of Article 17 to the extent that they exce"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 22 — Limits of Liability in Relation to Delay, Baggage and Cargo** (prohibition | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "1. In the case of damage caused by delay as specified in Article 19 in the carriage of persons, the liability of the carrier for each passenger is limited to 4 150 Special Drawing Rights. 2. In the carriage of baggage, the liability of the carrier in the case of destruction, loss, damage or delay is"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 23 — Conversion of Monetary Units** (obligation | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "1. The sums mentioned in terms of Special Drawing Right in this Convention shall be deemed to refer to the Special Drawing Right as defined by the International Monetary Fund. Conversion of the sums into national currencies shall, in case of judicial proceedings, be made according to the value of su"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 24 — Review of Limits** (prohibition | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "1. Without prejudice to the provisions of Article 25 of this Convention and subject to paragraph 2 below, the limits of liability prescribed in Articles 21, 22 and 23 shall be reviewed by the Depositary at five-year intervals, the first such review to take place at the end of the fifth year followin"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 25 — Stipulation on Limits** (obligation | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "A carrier may stipulate that the contract of carriage shall be subject to higher limits of liability than those provided for in this Convention or to no limits of liability whatsoever."
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 26 — Invalidity of Contractual Provisions** (obligation | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "Any provision tending to relieve the carrier of liability or to fix a lower limit than that which is laid down in this Convention shall be null and void, but the nullity of any such provision does not involve the nullity of the whole contract, which shall remain subject to the provisions of this Con"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 27 — Freedom to Contract** (obligation | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "Nothing contained in this Convention shall prevent the carrier from refusing to enter into any contract of carriage, from waiving any defences available under the Convention, or from laying down conditions which do not conflict with the provisions of this Convention."
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 28 — Advance Payments** (prohibition | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "In the case of aircraft accidents resulting in death or injury of passengers, the carrier shall, if required by its national law, make advance payments without delay to a natural person or persons who are entitled to claim compensation in order to meet the immediate economic needs of such persons. S"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 29 — Basis of Claims** (prohibition | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "In the carriage of passengers, baggage and cargo, any action for damages, however founded, whether under this Convention or in contract or in tort or otherwise, can only be brought subject to the conditions and such limits of liability as are set out in this Convention without prejudice to the quest"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 30 — Servants, Agents — Aggregation of Claims** (prohibition | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "1. If an action is brought against a servant or agent of the carrier arising out of damage to which the Convention relates, such servant or agent, if they prove that they acted within the scope of their employment, shall be entitled to avail themselves of the conditions and limits of liability which"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 31 — Timely Notice of Complaints** (obligation | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "1. Receipt by the person entitled to delivery of checked baggage or cargo without complaint is prima facie evidence that the same has been delivered in good condition and in accordance with the document of carriage or with the record preserved by the other means referred to in paragraph 2 of Article"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 32 — Death of Person Liable** (general_provision | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "In the case of the death of the person liable, an action for damages lies in accordance with the terms of this Convention against those legally representing his or her estate."
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 33 — Jurisdiction** (prohibition | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "1. An action for damages must be brought, at the option of the plaintiff, in the territory of one of the States Parties, either before the court of the domicile of the carrier or of its principal place of business, or where it has a place of business through which the contract has been made or befor"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 34 — Arbitration** (obligation | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "1. Subject to the provisions of this Article, the parties to the contract of carriage for cargo may stipulate that any dispute relating to the liability of the carrier under this Convention shall be settled by arbitration. Such agreement shall be in writing. 2. The arbitration proceedings shall, at"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 35 — Limitation of Actions** (obligation | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "1. The right to damages shall be extinguished if an action is not brought within a period of two years, reckoned from the date of arrival at the destination, or from the date on which the aircraft ought to have arrived, or from the date on which the carriage stopped. 2. The method of calculating tha"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 36 — Successive Carriage** (rights_provision | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "1. In the case of carriage to be performed by various successive carriers and falling within the definition set out in paragraph 3 of Article 1, each carrier which accepts passengers, baggage or cargo is subject to the rules set out in this Convention and is deemed to be one of the parties to the co"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter III - Liability of the Carrier and Extent of Compensation for Damage, Article 37 — Right of Recourse against Third Parties** (obligation | Liability of the Carrier and Extent of Compensation for Damage | MANDATORY):
+  "Nothing in this Convention shall prejudice the question whether a person liable for damage in accordance with its provisions has a right of recourse against any other person."
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter IV - Combined Carriage, Article 38 — Combined Carriage** (obligation | Combined Carriage | MANDATORY):
+  "1. In the case of combined carriage performed partly by air and partly by any other mode of carriage, the provisions of this Convention shall, subject to paragraph 4 of Article 18, apply only to the carriage by air, provided that the carriage by air falls within the terms of Article 1. 2. Nothing in"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 39 — Contracting Carrier — Actual Carrier** (obligation | Carriage by Air Performed by a Person other than the Contracting Carrier | MANDATORY):
+  "The provisions of this Chapter apply when a person (hereinafter referred to as "the contracting carrier") as a principal makes a contract of carriage governed by this Convention with a passenger or consignor or with a person acting on behalf of the passenger or consignor, and another person (hereina"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 40 — Respective Liability of Contracting and Actual Carriers** (obligation | Carriage by Air Performed by a Person other than the Contracting Carrier | MANDATORY):
+  "If an actual carrier performs the whole or part of carriage which, according to the contract referred to in Article 39, is governed by this Convention, both the contracting carrier and the actual carrier shall, except as otherwise provided in this Chapter, be subject to the rules of this Convention,"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 41 — Mutual Liability** (prohibition | Carriage by Air Performed by a Person other than the Contracting Carrier | MANDATORY):
+  "1. The acts and omissions of the actual carrier and of its servants and agents acting within the scope of their employment shall, in relation to the carriage performed by the actual carrier, be deemed to be also those of the contracting carrier. 2. The acts and omissions of the contracting carrier a"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 42 — Addressee of Complaints and Instructions** (obligation | Carriage by Air Performed by a Person other than the Contracting Carrier | MANDATORY):
+  "Any complaint to be made or instruction to be given under this Convention to the carrier shall have the same effect whether addressed to the contracting carrier or to the actual carrier. Nevertheless, instructions referred to in Article 12 shall only be effective if addressed to the contracting carr"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 43 — Servants and Agents** (obligation | Carriage by Air Performed by a Person other than the Contracting Carrier | MANDATORY):
+  "In relation to the carriage performed by the actual carrier, any servant or agent of that carrier or of the contracting carrier shall, if they prove that they acted within the scope of their employment, be entitled to avail themselves of the conditions and limits of liability which are applicable un"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 44 — Aggregation of Damages** (prohibition | Carriage by Air Performed by a Person other than the Contracting Carrier | MANDATORY):
+  "In relation to the carriage performed by the actual carrier, the aggregate of the amounts recoverable from that carrier and the contracting carrier, and from their servants and agents acting within the scope of their employment, shall not exceed the highest amount which could be awarded against eith"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 45 — Addressee of Claims** (obligation | Carriage by Air Performed by a Person other than the Contracting Carrier | MANDATORY):
+  "In relation to the carriage performed by the actual carrier, an action for damages may be brought, at the option of the plaintiff, against that carrier or the contracting carrier, or against both together or separately. If the action is brought against only one of those carriers, that carrier shall"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 46 — Additional Jurisdiction** (obligation | Carriage by Air Performed by a Person other than the Contracting Carrier | MANDATORY):
+  "Any action for damages contemplated in Article 45 must be brought, at the option of the plaintiff, in the territory of one of the States Parties, either before a court in which an action may be brought against the contracting carrier, as provided in Article 33, or before the court having jurisdictio"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 47 — Invalidity of Contractual Provisions** (obligation | Carriage by Air Performed by a Person other than the Contracting Carrier | MANDATORY):
+  "Any contractual provision tending to relieve the contracting carrier or the actual carrier of liability under this Chapter or to fix a lower limit than that which is applicable according to this Chapter shall be null and void, but the nullity of any such provision does not involve the nullity of the"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter V - Carriage by Air Performed by a Person other than the Contracting Carrier, Article 48 — Mutual Relations of Contracting and Actual Carriers** (obligation | Carriage by Air Performed by a Person other than the Contracting Carrier | MANDATORY):
+  "Except as provided in Article 45, nothing in this Chapter shall affect the rights and obligations of the carriers between themselves, including any right of recourse or indemnification."
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter VI - Other Provisions, Article 49 — Mandatory Application** (obligation | Other Provisions | MANDATORY):
+  "Any clause contained in the contract of carriage and all special agreements entered into before the damage occurred by which the parties purport to infringe the rules laid down by this Convention, whether by deciding the law to be applied, or by altering the rules as to jurisdiction, shall be null a"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter VI - Other Provisions, Article 50 — Insurance** (obligation | Other Provisions | MANDATORY):
+  "States Parties shall require their carriers to maintain adequate insurance covering their liability under this Convention. A carrier may be required by the State Party into which it operates to furnish evidence that it maintains adequate insurance covering its liability under this Convention."
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter VI - Other Provisions, Article 51 — Carriage Performed in Extraordinary Circumstances** (prohibition | Other Provisions | MANDATORY):
+  "The provisions of Articles 3 to 5, 7 and 8 relating to the documentation of carriage shall not apply in the case of carriage performed in extraordinary circumstances outside the normal scope of a carrier's business."
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter VI - Other Provisions, Article 52 — Definition of Days** (definition | Other Provisions | MANDATORY):
+  "The expression "days" when used in this Convention means calendar days, not working days."
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter VII - Final Clauses, Article 53 — Signature, Ratification and Entry into Force** (prohibition | Final Clauses | MANDATORY):
+  "1. This Convention shall be open for signature in Montreal on 28 May 1999 by States participating in the International Conference on Air Law held at Montreal from 10 to 28 May 1999. After 28 May 1999, the Convention shall be open to all States for signature at the Headquarters of the International C"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter VII - Final Clauses, Article 54 — Denunciation** (obligation | Final Clauses | MANDATORY):
+  "1. Any State Party may denounce this Convention by written notification to the Depositary. 2. Denunciation shall take effect one hundred and eighty days following the date on which notification is received by the Depositary."
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter VII - Final Clauses, Article 55 — Relationship with other Warsaw Convention Instruments** (obligation | Final Clauses | MANDATORY):
+  "This Convention shall prevail over any rules which apply to international carriage by air: 1. between States Parties to this Convention by virtue of those States commonly being Party to (a) the Convention for the Unification of Certain Rules Relating to International Carriage by Air Signed at Warsaw"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter VII - Final Clauses, Article 56 — States with more than one System of Law** (obligation | Final Clauses | MANDATORY):
+  "1. If a State has two or more territorial units in which different systems of law are applicable in relation to matters dealt with in this Convention, it may at the time of signature, ratification, acceptance, approval or accession declare that this Convention shall extend to all its territorial uni"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Chapter VII - Final Clauses, Article 57 — Reservations** (prohibition | Final Clauses | MANDATORY):
+  "No reservation may be made to this Convention except that a State Party may at any time declare by a notification addressed to the Depositary that this Convention shall not apply to: (a) international carriage by air performed and operated directly by that State Party for non-commercial purposes in"
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Witness Clause** (general_provision | Final Clauses | MANDATORY):
+  "IN WITNESS WHEREOF the undersigned Plenipotentiaries, having been duly authorized, have signed this Convention."
+  [Interpretation weight: HIGH]
+
+**Montreal Convention 1999, Execution Clause** (obligation | Final Clauses | MANDATORY):
+  "DONE at Montreal on the 28th day of May of the year one thousand nine hundred and ninety-nine in the English, Arabic, Chinese, French, Russian and Spanish languages, all texts being equally authentic. This Convention shall remain deposited in the archives of the International Civil Aviation Organiza"
+  [Interpretation weight: HIGH]
+
+
+### C. JURISDICTIONAL CONSIDERATIONS:
+- Apply INT legal interpretation principles
+- Consider hierarchy of norms in INT
+- Account for mixed legal drafting style
+
+### D. REQUIRED ANALYSIS STRUCTURE:
+
+#### **SECTION 1: VIOLATIONS IDENTIFIED** (If any)
+
+**a) [Violation Name - e.g., Improper Denial of Carriage Without Justification]**
+
+Transcript Evidence: "[Exact quote showing the violating behavior]" [timestamp]
+
+Legal Reference: Article X: "[Exact article text that was violated]"
+
+Analysis: [Explain HOW this specific conduct violates this specific provision. Reference the juridical value and legal intent of the provision. INCLUDE SEVERITY ASSESSMENT HERE — integrate "This constitutes a [critical/high/medium/low] severity violation because [brief justification based on impact and legal hierarchy]" within this analysis paragraph, NOT as a separate line.]
+
+---
+
+**b) [Second Violation Name]**
+
+Transcript Evidence: "[Exact quote]" [timestamp]
+
+Legal Reference: Article Y: "[Exact article text]"
+
+Analysis: [Explain violation with severity integrated: "This represents a [critical/high/medium/low] violation as [justification]..." DO NOT create separate "Severity:" lines.]
+
+---
+
+[Continue for each discrete violation - aim for 3-8 violations maximum, only when genuinely applicable]
+
+⚠️ **CRITICAL**: Do NOT create standalone lines starting with "Severity:" - integrate severity assessment WITHIN the Analysis paragraph. Severity values are LOWERCASE in the canonical output (e.g., "medium", "high").
+
+#### **SECTION 2: OVERALL ASSESSMENT** (Separate from violations)
+
+**Systemic Patterns:**
+[Analysis of whether violations indicate systematic compliance failure vs. isolated incidents]
+
+**Legal Consequences:**
+[Potential remedies, penalties, or legal actions available under this framework]
+
+**Recommendations:**
+[Specific corrective actions - these go here, NOT in the violations section]
+
+#### **SECTION 3: CANONICAL BUNDLE** (machine-readable – required)
+
+Output the JSON block exactly as specified in Rule 4 above.
+Start with: \`\`\`json  — end with: \`\`\`  — no prose around it.
+
+### E. LEGAL PRECISION REQUIREMENTS:
+- Always quote EXACT article text, not just article numbers
+- Consider the hierarchy of legal norms
+- Reference specific legal principles (good faith, proportionality, due process)
+- Distinguish between procedural and substantive violations
+- Consider cumulative impact of multiple violations
+
+### F. QUALITY CONTROL CHECKLIST
+
+Before finalizing your analysis, verify:
+- [ ] Every violation has a clear category label (a, b, c...)
+- [ ] No metadata headers in violations section
+- [ ] No "NO VIOLATIONS" entries as violation items
+- [ ] No article explanations masquerading as violations
+- [ ] No framework recommendations in violations section
+- [ ] Each violation is a discrete, actionable breach
+- [ ] Severity uses critical/high/medium/low only (lowercase — map MODERATE→medium, HIGH→high, etc.)
+- [ ] Canonical JSON block is present after Section 2 (empty array if no violations)
+- [ ] All severity values in the JSON block are lowercase
+- [ ] actor_roles uses functional role names only (no personal names)
+- [ ] articles_violated uses full ELI IDs (INT.MC99.C<n>.Art.<n>)
+
+## FINAL OUTPUT MUST:
+1. Be in Portuguese for Brazilian frameworks, English for international
+2. Use precise legal terminology appropriate to jurisdiction
+3. Clearly separate violations from commentary/recommendations
+4. Only include actual violations - if none exist, state clearly in Section 2
+5. Reference specific remedies available under the framework
+6. End with the canonical JSON block (Rule 4 schema) — always required
+`;
+
+    const SYSTEM_PROMPT = `You are a specialized legal analyst for the Montreal Convention 1999 (MC99), operating under the Awareness Legal Intelligence Ontology v2.4.
+
+## GOLDEN REFERENCE
+
+The following is the authoritative example output for this framework. Use it as your exact structural and semantic guide:
+
+**Golden Case**: aeropuerto_STG_7_segment_8_v24  
+**Transcript excerpt**: "no como LATAM" [15:16:03] — airline_staff acknowledges institutional attribution to LATAM carrier.  
+**Correct violation found**:
+- category: carrier_liability_in_airport_incident  
+- article: INT.MC99.C3.Art.17 — "The carrier is liable for damage sustained in case of death or bodily injury of a passenger upon condition only that the accident... took place on board the aircraft or in the course of any of the operations of embarking or disembarking."
+- severity: medium (lowercase)  
+- confidence: 0.75  
+- reasoning: MC99 Art.17 applies to airport operations. The captain's conduct ("no contribuio con el procedimiento") is attributable to LATAM as contracting/actual carrier. Attribution is explicit: "no como LATAM" (institutional, not personal).
+
+## CRITICAL FORMATTING RULES
+
+1. **WHAT TO INCLUDE**: Only actual, discrete violations with:
+   - Clear violation label: a), b), c) OR "VIOLATION CATEGORY A:"
+   - Transcript evidence with timestamps
+   - Exact article reference and quote
+   - Analysis explaining HOW the provision was violated
+   - Severity INTEGRATED within analysis paragraph (LOWERCASE: critical/high/medium/low)
+
+2. **STRICTLY FORBIDDEN - DO NOT GENERATE**:
+   ❌ Metadata headers: "Framework:", "Jurisdiction:", "Analysis Date:", "Applicable Incident:"
+   ❌ Section headers: "LEGAL COMPLIANCE ANALYSIS", "VIOLATIONS", "LEGAL CONTEXT", "NEGATIVE FINDINGS"
+   ❌ Standalone severity lines: "Severity: HIGH -", "Severity: CRITICAL -", "Severity: MEDIUM -"
+   ❌ Introduction preambles: "Based on the analysis...", "The following violations..."
+   ❌ Negative findings as violations: "No Violation -", "Not applicable", "Lack of Evidence"
+   ❌ Applicability assessments as violations: "Applicability (Article 1):", "Jurisdiction (Article 3):"
+   ❌ Article explanations: "Article X defines...", "The Convention applies to..."
+   ❌ Recommendations as violations: "Should apply Montreal Convention instead..."
+   ❌ Personal names or identifiers in actor_roles — use only functional roles
+   ❌ UPPERCASE severity in canonical JSON — always lowercase
+
+3. **REQUIRED STRUCTURE** - Each violation MUST be:
+   a) [Violation Name]
+   
+   Transcript Evidence: "[exact quote]" [timestamp]
+   
+   Legal Reference: Article X: "[exact article text]"
+   
+   Analysis: [Explain violation. Include: "This constitutes a [severity] violation because..." WITHIN this paragraph. NO separate Severity: line]
+
+4. **v2.4 CANONICAL OUTPUT REQUIRED** — The JSON block MUST use:
+   - \`node_id\` prefixes: VIOL_, EVID_, ACTN_, ROLE_, SEGM_
+   - \`type\` field on every node
+   - \`articles_violated\` as array of full ELI IDs (e.g., "INT.MC99.C3.Art.17")
+   - \`actor_roles\` array with \`function\` field (NOT \`actors\` with \`actor_id\`)
+   - severity in lowercase: critical / high / medium / low
+   - No personal names in any field
+
+5. **LEGAL PRECISION**:
+   - Quote EXACT article text, not just numbers
+   - Apply INT legal interpretation principles (Vienna Convention on the Law of Treaties)
+   - Distinguish procedural (documentation) vs substantive (liability) violations
+   - Art. 17 is key for airport operations; Art. 19 for delay; Art. 26 for contract invalidity
+   - Consider carrier attribution: Art. 41 (actual vs contracting carrier dual liability)
+
+6. **OUTPUT**: 
+   - Language: ${language === 'auto' ? 'Portuguese for Brazilian frameworks, English otherwise' : language}
+   - Only list ACTUAL violations (target: 1-5 maximum for focused aviation incidents)
+   - If NO violations exist, state clearly in Section 2, do NOT create violation entries
+   - Always end with the canonical v2.4 JSON block (Rule 4 schema)`;
+
+    // Create integrated analysis panel
+    const createLegalPanel = () => {
+        const panel = document.createElement('div');
+        panel.className = 'integrated-legal-panel';
+        panel.innerHTML = `
+            <div class="panel-header legal-header">
+                <h3><span class="legal-icon">⚖️</span> Montreal Convention 1999 Analysis</h3>
+                <div class="legal-metadata">
+                    <span class="badge jurisdiction">INT</span>
+                    <span class="badge type">national law</span>
+                    <span class="badge style">mixed</span>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="legal-config-section">
+                    <h4>Legal Framework Configuration</h4>
+                    <pre class="legal-config">${JSON.stringify(LEGAL_CONFIG, null, 2)}</pre>
+                </div>
+                <div class="analysis-instructions">
+                    <h4>Legal Analysis Template</h4>
+                    <textarea class="legal-prompt" rows="15">${ANALYSIS_TEMPLATE}</textarea>
+                </div>
+                <div class="analysis-controls">
+                    <div class="control-group">
+                        <label>Analysis Mode:</label>
+                        <select class="mode-select">
+                            <option value="standard">Standard Legal Analysis</option>
+                            <option value="detailed">Detailed with Jurisprudence</option>
+                            <option value="remedial">Focus on Remedies</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Output Language:</label>
+                        <select class="language-select">
+                            <option value="auto">Auto (Framework-based)</option>
+                            <option value="pt">Português</option>
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                        </select>
+                    </div>
+                    <button class="execute-legal-analysis">
+                        <span class="icon">⚖️</span> Execute Legal Analysis
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Enhanced event handling
+        panel.querySelector('.execute-legal-analysis').addEventListener('click', () => {
+            const userPrompt = panel.querySelector('.legal-prompt').value;
+            const analysisMode = panel.querySelector('.mode-select').value;
+            const outputLanguage = panel.querySelector('.language-select').value;
+            const transcriptText = getTranscriptText();
+
+            const legalAnalysisPackage = {
+                system_prompt: SYSTEM_PROMPT,
+                user_prompt: userPrompt,
+                transcript: transcriptText,
+                framework: 'Montreal Convention 1999',
+                framework_metadata: LEGAL_CONFIG,
+                analysis_mode: analysisMode,
+                output_language: outputLanguage,
+                legal_parameters: {
+                    jurisdiction: 'INT',
+                    framework_type: 'national_law',
+                    legal_style: 'mixed',
+                    requires_exact_citations: true,
+                    requires_severity_assessment: true,
+                    requires_systemic_assessment: true
+                },
+                timestamp: new Date().toISOString(),
+                version: 'integrated_2.0'
+            };
+
+            if (typeof onAnalyze === 'function') {
+                onAnalyze(legalAnalysisPackage);
+            }
+        });
+
+        return panel;
+    };
+
+    // Injection logic
+    const container = document.getElementById(targetContainerId);
+    if (!container) {
+        console.error(`[Integrated Legal Analyzer] Container #${targetContainerId} not found`);
+        return;
+    }
+
+    const panel = createLegalPanel();
+    container.appendChild(panel);
+    
+    console.log(`[Integrated Legal] Montreal Convention 1999 analyzer injected successfully`);
+    console.log(`  Jurisdiction: INT`);
+    console.log(`  Legal Style: mixed`);
+    console.log(`  Framework Type: national_law`);
+}
+
+// Module export
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = injectMontrealConvention1999Analyzer;
+}

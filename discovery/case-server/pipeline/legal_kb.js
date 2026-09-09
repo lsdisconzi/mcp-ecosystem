@@ -12,8 +12,11 @@
  *
  * Configuration via environment variables:
  *   KB_ENABLED               — "true" to enable (default: false)
- *   KB_QDRANT_URL            — Qdrant Memory Service REST endpoint (default: http://72.60.143.139:8079)
- *   KB_QDRANT_LAW_COLLECTION — Law articles collection (default: la8159_grounding)
+ *   QDRANT_URL               — Qdrant Cloud REST base (direct mode, no Argus needed)
+ *   QDRANT_API_KEY           — Qdrant Cloud API key (direct mode)
+ *   KB_QDRANT_LAW_COLLECTION — Law articles collection, exact lookup (default: la8159_law)
+ *   KB_QDRANT_LAW_BM25_COLLECTION — Law articles BM25 search collection (default: la8159_law_bm25)
+ *   KB_QDRANT_URL            — Legacy Memory Service base (fallback when QDRANT_URL unset)
  *   KB_QDRANT_TRANSCRIPT_COLLECTION — Transcript segments collection (default: la8159_transcripts)
  *   KB_NEO4J_QUERY_URL       — Neo4j Query API v2 URL (default: https://1e0e6845.databases.neo4j.io/db/1e0e6845/query/v2)
  *   KB_NEO4J_USER            — Neo4j username
@@ -24,11 +27,32 @@
 
 // ─── Configuration ──────────────────────────────────────────────────────────
 
+/**
+ * When QDRANT_URL points at a Qdrant Cloud host, ensure REST port 6333 is used
+ * (the dashboard URLs omit it). Existing explicit ports are preserved.
+ */
+function normalizeDirectBase(base) {
+  let b = String(base || '').trim().replace(/\/+$/, '');
+  if (!b) return b;
+  if (b.startsWith('https://')) {
+    const host = b.slice('https://'.length).split('/')[0];
+    if (host && !host.includes(':')) b = `${b}:6333`;
+  }
+  return b;
+}
+
 function readConfig(overrides = {}) {
+  const hasDirectCreds = Boolean(process.env.QDRANT_URL && process.env.QDRANT_API_KEY);
+  const memoryBase = overrides.qdrantUrl || process.env.KB_QDRANT_URL || process.env.QDRANT_URL || 'http://72.60.143.139:8079';
   return {
     enabled:                coerceBool(overrides.enabled, process.env.KB_ENABLED, false),
-    qdrantUrl:              overrides.qdrantUrl || process.env.KB_QDRANT_URL || 'http://72.60.143.139:8079',
-    qdrantLawCollection:    overrides.qdrantCollection || process.env.KB_QDRANT_LAW_COLLECTION || 'la8159_grounding',
+    directQdrant:           hasDirectCreds,
+    qdrantBase:             hasDirectCreds ? normalizeDirectBase(process.env.QDRANT_URL) : memoryBase,
+    qdrantApiKey:           process.env.QDRANT_API_KEY || overrides.qdrantApiKey || null,
+    // qdrantUrl kept for legacy Memory Service endpoints (non-direct mode)
+    qdrantUrl:              memoryBase,
+    qdrantLawCollection:    overrides.qdrantCollection || process.env.KB_QDRANT_LAW_COLLECTION || 'la8159_law',
+    qdrantBm25Collection:   process.env.KB_QDRANT_LAW_BM25_COLLECTION || 'la8159_law_bm25',
     qdrantTranscriptCollection: overrides.qdrantTranscriptCollection || process.env.KB_QDRANT_TRANSCRIPT_COLLECTION || 'la8159_transcripts',
     neo4jQueryUrl:          overrides.neo4jQueryUrl || process.env.KB_NEO4J_QUERY_URL || 'https://1e0e6845.databases.neo4j.io/db/1e0e6845/query/v2',
     neo4jUser:              overrides.neo4jUser || process.env.KB_NEO4J_USER || '1e0e6845',
@@ -83,6 +107,106 @@ async function httpGet(url, timeout = 15000) {
   }
 }
 
+// ─── Direct Qdrant REST (cloud) ─────────────────────────────────────────────
+// Used when QDRANT_URL + QDRANT_API_KEY are set — Discovery talks to the
+// Qdrant collection (la8159_law) directly; no Argus/Memory Service needed.
+
+async function qdrantRequest(method, apiPath, config, body = null) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
+  try {
+    const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+    if (config.qdrantApiKey) headers['api-key'] = config.qdrantApiKey;
+    const init = { method, headers, signal: controller.signal };
+    if (body !== null) init.body = JSON.stringify(body);
+    const resp = await fetch(`${config.qdrantBase}${apiPath}`, init);
+    if (!resp.ok) return null;
+    return await resp.json();
+  } catch (_) {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function qdrantGet(apiPath, config) {
+  return qdrantRequest('GET', apiPath, config);
+}
+
+function qdrantPost(apiPath, body, config) {
+  return qdrantRequest('POST', apiPath, config, body);
+}
+
+/**
+ * Map a la8159_law payload (original_id/title/text/content) to a law ref.
+ */
+function qdrantLawPayloadToRef(pl) {
+  const originalId = pl.original_id || pl.eli_id || '';
+  const tokens = String(originalId).split('.').filter(Boolean);
+  const jurisdiction = (tokens[0] || '').toUpperCase();
+  const frameworkCode = tokens[1] ? tokens[1].toUpperCase() : null;
+  const artIdx = tokens.findIndex(t => /^art$/i.test(t));
+  const articleHint = artIdx >= 0 ? tokens.slice(artIdx + 1).join('.') : null;
+  return {
+    eli_id: originalId || null,
+    article_number: articleHint,
+    article_text: pl.content || pl.text || null,
+    article_reference: pl.title || null,
+    framework_code: frameworkCode || null,
+    framework_name: frameworkCode || null,
+    jurisdiction: jurisdiction || null,
+    hierarchy_label: null,
+    norm_type: pl.doc_type || null,
+    regulated_subject: pl.theme || null
+  };
+}
+
+/**
+ * Exact article lookup on Qdrant by payload filter (no vector needed).
+ * The la8159_law collection keys articles by `original_id`.
+ */
+async function qdrantLookupByELI(eliId, config) {
+  const body = {
+    filter: { must: [{ key: 'original_id', match: { value: eliId } }] },
+    limit: 1,
+    with_payload: true,
+    with_vector: false
+  };
+  const res = await qdrantPost(`/collections/${config.qdrantLawCollection}/points/scroll`, body, config);
+  if (!res || !res.result || !Array.isArray(res.result.points) || res.result.points.length === 0) return null;
+  return qdrantLawPayloadToRef(res.result.points[0].payload || {});
+}
+
+/**
+ * Real BM25 law search on the Qdrant Cloud search collection (la8159_law_bm25).
+ * The collection stores a server-computed sparse vector `text` (model
+ * qdrant/bm25) per point; the query is embedded server-side with the same model
+ * and ranked deterministically. Jurisdiction is filtered server-side via the
+ * payload keyword index. Returns [] gracefully on any failure.
+ */
+async function qdrantBm25SearchLaw(query, jurisdiction, topK, config) {
+  const q = String(query || '').slice(0, 2000);
+  if (!q) return [];
+
+  const body = {
+    query: { text: q, model: 'qdrant/bm25' },
+    using: 'text',
+    limit: Math.min(Math.max(topK || 5, 1), 20),
+    with_payload: true,
+    with_vector: false
+  };
+  if (jurisdiction) {
+    body.filter = { must: [{ key: 'jurisdiction', match: { value: jurisdiction } }] };
+  }
+
+  const res = await qdrantPost(`/collections/${config.qdrantBm25Collection}/points/query`, body, config);
+  if (!res || !res.result || !Array.isArray(res.result.points)) return [];
+
+  return res.result.points
+    .filter(p => p.payload)
+    .map(p => ({ ...qdrantLawPayloadToRef(p.payload), score: p.score || 0 }));
+}
+
 // ─── Qdrant Operations (via Memory Service REST API) ────────────────────────
 
 /**
@@ -99,6 +223,11 @@ async function httpGet(url, timeout = 15000) {
 async function searchLawArticles(query, jurisdiction = null, topK = 5, overrides = {}) {
   const config = readConfig(overrides);
   if (!config.enabled || !query) return [];
+
+  // Direct Qdrant Cloud mode (no Argus / Memory Service needed).
+  if (config.directQdrant) {
+    return qdrantBm25SearchLaw(query, jurisdiction, topK, config);
+  }
 
   // Fetch more than needed to allow for client-side jurisdiction filtering
   const fetchLimit = jurisdiction ? Math.min(topK * 4, 30) : Math.min(topK, 20);
@@ -179,6 +308,12 @@ async function searchTranscriptSegments(query, topK = 5, overrides = {}) {
  */
 async function lookupArticleByELI(eliId, overrides = {}) {
   if (!eliId) return null;
+
+  const config = readConfig(overrides);
+  // Direct Qdrant Cloud mode: exact payload filter (no vector / Neo4j needed).
+  if (config.directQdrant) {
+    return qdrantLookupByELI(eliId, config);
+  }
 
   const results = await neo4jRead(
     `MATCH (a:LawArticle {eli_id: $eliId})
@@ -576,6 +711,11 @@ async function isAvailable(overrides = {}) {
 }
 
 async function checkQdrant(config) {
+  if (config.directQdrant) {
+    // Qdrant Cloud REST: GET /collections/{name} returns { result: {...} }.
+    const info = await qdrantGet(`/collections/${config.qdrantLawCollection}`, config);
+    return !!(info && info.result);
+  }
   const result = await httpGet(`${config.qdrantUrl}/api/v1/qdrant/collections/${config.qdrantLawCollection}/info`);
   return !!(result && result.name);
 }

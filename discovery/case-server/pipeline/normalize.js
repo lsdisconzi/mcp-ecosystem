@@ -33,6 +33,7 @@ const {
   persistCaseGraph,
   isAvailable: kbIsAvailable
 } = require('./legal_kb');
+const { buildIndex, expandRefs } = require('./dossier_code_resolver');
 
 // ─── ELI Resolution ───────────────────────────────────────────────────────────
 
@@ -411,6 +412,8 @@ async function normalizeExtractionResults(extractionResults, allFiles, folderPat
   const profile = normalizeAnalysisProfile(options.analysisProfile || ANALYSIS_PROFILE_DEFAULT);
   const profileMeta = getAnalysisProfileMeta(profile);
   const kbConfig = options.kbConfig || getKbConfig(profile);
+  // Dossier code index (seed + runtime dossiers) → real legal provisions.
+  const dossierIndex = buildIndex(options.dossierCodeIndex);
 
   // Collect all nodes across files
   const allActions    = [];
@@ -434,10 +437,14 @@ async function normalizeExtractionResults(extractionResults, allFiles, folderPat
     if (n.llm_runs)   allLLMRuns.push(...n.llm_runs);
     if (n.contexts)   allContexts.push(...n.contexts);
 
-    // Collect raw law refs from violations
+    // Collect raw law refs from violations — expand bare dossier codes
+    // (CL-014, …) into resolved legal-provision references first.
     for (const viol of (n.violations || [])) {
+      if (Array.isArray(viol._law_references)) {
+        viol._law_references = expandRefs(viol._law_references, dossierIndex);
+      }
       for (const lawRef of (viol._law_references || [])) {
-        allLawRefs.push(resolveLocalLawRef(lawRef));
+        allLawRefs.push(lawRef && lawRef.resolved ? lawRef : resolveLocalLawRef(lawRef));
       }
     }
   }
@@ -505,8 +512,8 @@ async function normalizeExtractionResults(extractionResults, allFiles, folderPat
   // ── Violation → Article Linking ─────────────────────────────────────────────
   const violationNodes = allViolations.map(viol => {
     const articleIds = (viol._law_references || [])
-      .map(r => resolveLocalLawRef(r))
-      .filter(r => r.eli_id)
+      .map(r => (r && r.eli_id) ? r : resolveLocalLawRef(r))
+      .filter(r => r && r.eli_id)
       .map(r => r.eli_id);
 
     return {
