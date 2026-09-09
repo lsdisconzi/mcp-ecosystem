@@ -291,6 +291,49 @@ Generate the comprehensive corpus guide JSON.`;
 
 const { callLLM } = require('./llm_client');
 
+/**
+ * Best-effort repair for JSON that was truncated mid-string or mid-structure.
+ * Closes an open string, drops a dangling trailing comma, and closes any
+ * unclosed braces/brackets. Returns the parsed object, or null if unrecoverable.
+ */
+function repairTruncatedJson(text) {
+  const src = String(text || '').trim();
+  if (!src) return null;
+
+  const out = [];
+  let inString = false;
+  let escaped = false;
+  const closers = [];
+
+  for (const ch of src) {
+    out.push(ch);
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === '\\') escaped = true;
+      else if (ch === '"') inString = false;
+    } else {
+      if (ch === '"') inString = true;
+      else if (ch === '{' || ch === '[') closers.push(ch === '{' ? '}' : ']');
+      else if (ch === '}' || ch === ']') closers.pop();
+    }
+  }
+
+  // Trim dangling whitespace / trailing comma that sits outside a string.
+  if (!inString) {
+    while (out.length && /\s/.test(out[out.length - 1])) out.pop();
+    if (out.length && out[out.length - 1] === ',') out.pop();
+  }
+  if (inString) out.push('"'); // close the unterminated string value
+
+  for (let k = closers.length - 1; k >= 0; k -= 1) out.push(closers[k]);
+
+  try {
+    return JSON.parse(out.join(''));
+  } catch {
+    return null;
+  }
+}
+
 function parseJsonResponse(rawText) {
   const cleaned = String(rawText || '')
     .replace(/^```(?:json)?\s*/i, '')
@@ -361,6 +404,10 @@ function parseJsonResponse(rawText) {
 
   const relaxed = parseAttempt(noTrailingCommas);
   if (relaxed.ok) return relaxed;
+
+  // Fourth: repair truncated JSON (unterminated string / unclosed structures).
+  const repaired = repairTruncatedJson(cleaned);
+  if (repaired !== null) return { ok: true, data: repaired };
 
   try {
     return { ok: true, data: JSON.parse(cleaned) };
@@ -565,7 +612,12 @@ async function runComprehension(store, rootDir, options = {}) {
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
   // ── 1. Group files ──────────────────────────────────────────────────────────
-  const allFiles = Object.values(store.getAllFiles());
+  // Law-registry dossiers are reference material, not corpus content for
+  // comprehension. Exclude them so their legal summaries don't become "topics".
+  const isDossierRecord = (f) =>
+    f.layers?.L1?.structured_kind === 'legal_dossier' ||
+    f.layers?.L1?.structured?.kind === 'legal_dossier';
+  const allFiles = Object.values(store.getAllFiles()).filter(f => !isDossierRecord(f));
   const groups   = groupFiles(allFiles);
 
   const overallStats = {

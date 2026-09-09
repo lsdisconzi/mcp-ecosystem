@@ -30,6 +30,8 @@ const {
   isLegalProfile
 } = require('./analysis_profile');
 
+const { buildFromTranscript } = require('./structured_extract');
+
 // ─── Node ID Generation ───────────────────────────────────────────────────────
 
 const PREFIX = {
@@ -48,6 +50,15 @@ function makeNodeId(type) {
   const prefix = PREFIX[type] || 'NODE';
   const hex    = crypto.randomBytes(4).toString('hex');
   return `${prefix}_${hex}`;
+}
+
+// Normalize a source recording datetime ("2024-07-05T12:56:00" or with space)
+// into an ISO timestamp used to anchor evidence/actions on the incident date.
+function isoFromRecording(raw) {
+  const s = String(raw || '').trim().replace(' ', 'T');
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) return null;
+  const base = s.length >= 19 ? s.slice(0, 19) : `${s}:00`;
+  return `${base}.000Z`;
 }
 
 // ─── LLM Call (multi-provider) ──────────────────────────────────────────────
@@ -481,46 +492,12 @@ function buildFallbackFromMarkdown(fullText, fileRef, fileNodeId, fileType = 'un
     seq += 1;
   }
 
-  if (actions.length === 0 && /art\.?\s*\d+|violation|defamation|collusion|obstruction/i.test(fullText)) {
-    const actor = getActor('service_provider');
-    const segId = makeNodeId('segment');
-    segments.push({
-      node_id: segId,
-      type: 'Segment',
-      text: lines.find(l => l.trim()).slice(0, 500),
-      position: 1,
-      evidence_node_id: evidenceId,
-      speaker: 'service_provider'
-    });
-
-    const actionId = makeNodeId('action');
-    actions.push({
-      node_id: actionId,
-      type: 'Action',
-      action_type: 'policy_violation',
-      description: 'Legal report indicates policy or procedural violations requiring structured review.',
-      timestamp: now,
-      sequence_index: 1,
-      location: null,
-      _performed_by_role_id: actor.node_id,
-      _evidence_id: evidenceId,
-      _segment_ids: [segId]
-    });
-
-    violations.push({
-      node_id: makeNodeId('violation'),
-      type: 'Violation',
-      category: 'regulatory_non_compliance',
-      description: 'Report-level evidence indicates potential regulatory non-compliance pending detailed verification.',
-      timestamp: now,
-      severity: 'medium',
-      confidence: 0.51,
-      _law_references: extractLawReferences(fullText.slice(0, 4000)),
-      _grounded_in_action_ids: [actionId],
-      _supported_by_evidence_id: evidenceId,
-      _llm_run_id: null
-    });
-  }
+  // NOTE (honest fallback): if no candidate markdown findings were found we DO
+  // NOT fabricate a generic "policy violation". Fabricating per-file filler was
+  // the root cause of the "27 identical violations" defect. Instead we return an
+  // empty, explicitly-degraded result so the UI/summary can say "analysis
+  // unavailable" rather than presenting fake findings as real.
+  const empty = actions.length === 0 && violations.length === 0;
 
   return {
     evidence,
@@ -541,12 +518,14 @@ function buildFallbackFromMarkdown(fullText, fileRef, fileNodeId, fileType = 'un
       approximate_date: null,
       jurisdiction_hint: /brazil|br|cdc/i.test(fullText) ? 'BR' : /chile|cl/i.test(fullText) ? 'CL' : 'INT',
       subject_matter: legalMode
-        ? 'Legal findings and potential violation catalog extracted from markdown report.'
-        : `${meta.label} findings extracted from markdown report for operational review.`,
+        ? 'No structured findings extracted (LLM returned empty). Manual review advised.'
+        : 'No structured findings extracted. Manual review advised.',
       key_entities: Array.from(new Set((fullText.match(/LATAM|DGAC|PDI|ICAO|Montreal|CDC|Carabineros/gi) || []).slice(0, 8)))
     }],
     _fallback_used: true,
-    _fallback_reason: 'llm_empty_output_on_structured_markdown'
+    _fallback_reason: 'llm_empty_output_on_structured_markdown',
+    _heuristic: !empty,
+    _degraded: empty
   };
 }
 
@@ -567,7 +546,8 @@ async function extractFile(file, options = {}) {
     skipIfNoText = true,
     maxRetries = 2,
     retryBaseMs = 700,
-    timeoutMs = Number(process.env.LLM_TIMEOUT_MS || 120000)
+    timeoutMs = Number(process.env.LLM_TIMEOUT_MS || 120000),
+    rootDir = null
   } = options;
 
   const profile = normalizeAnalysisProfile(analysisProfile);
@@ -597,7 +577,8 @@ async function extractFile(file, options = {}) {
   const systemPrompt = buildSystemPrompt(profile);
   const allNodes     = [];
   const runIds       = [];
-  const errors       = [];
+  const errors       = [];   // real transport/provider errors
+  const empties      = [];   // LLM returned empty content (degraded, not fatal)
 
   // Process each chunk
   for (let i = 0; i < chunks.length; i++) {
@@ -629,8 +610,15 @@ async function extractFile(file, options = {}) {
         timeoutMs
       });
     } catch (err) {
-      errors.push({ chunk: i, error: err.message });
-      allNodes.push({ llm_run: llmRunNode, error: err.message });
+      const isEmptyResponse = /empty response/i.test(err && err.message ? err.message : '');
+      if (isEmptyResponse) {
+        // Model returned nothing — degraded (honest), not an infrastructure error.
+        empties.push({ chunk: i, error: err.message });
+        allNodes.push({ llm_run: llmRunNode, empty_response: true });
+      } else {
+        errors.push({ chunk: i, error: err.message });
+        allNodes.push({ llm_run: llmRunNode, error: err.message });
+      }
       continue;
     }
 
@@ -656,8 +644,53 @@ async function extractFile(file, options = {}) {
   let finalNodes = merged;
   if (errors.length === 0 && (merged.actions?.length || 0) === 0 && (merged.violations?.length || 0) === 0) {
     const fallbackNodes = buildFallbackFromMarkdown(fullText, fileRef, fileNodeId, fileType, profile);
-    if ((fallbackNodes.actions?.length || 0) > 0 || (fallbackNodes.violations?.length || 0) > 0) {
+    if (fallbackNodes && (
+      (fallbackNodes.actions?.length || 0) > 0 ||
+      (fallbackNodes.violations?.length || 0) > 0 ||
+      fallbackNodes._degraded
+    )) {
       finalNodes = fallbackNodes;
+    }
+  }
+
+  // Explicit degraded state: downstream consumers (summary/UI) can now say
+  // "analysis unavailable" instead of presenting fabrications as findings.
+  let hasFindings = (finalNodes.actions?.length || 0) > 0 || (finalNodes.violations?.length || 0) > 0;
+  let degraded = !hasFindings;
+  let degradedReason = degraded
+    ? (errors.length > 0
+        ? errors.map(e => e.error || String(e)).join('; ')
+        : empties.length > 0
+          ? 'llm_empty_response'
+          : finalNodes._fallback_reason || 'no_actions_or_violations_extracted')
+    : null;
+
+  // Deterministic grounded baseline: if the LLM yielded nothing and this is a
+  // narrative transcript, extract from its own curated metadata (segments,
+  // findings, cited codes) instead of degrading to empty. No fabrication —
+  // only what the document itself declares.
+  let extractionSource = 'llm';
+  if (degraded && rootDir) {
+    const seed = buildFromTranscript(file, rootDir);
+    if (seed && ((seed.actions?.length || 0) > 0 || (seed.violations?.length || 0) > 0)) {
+      finalNodes = seed;
+      hasFindings = true;
+      degraded = false;
+      degradedReason = null;
+      extractionSource = 'structured_transcript';
+    }
+  }
+
+  // Date discipline (P1): anchor evidence/actions/violations to the source
+  // recording datetime when the transcript declares one. This keeps timelines
+  // and events on the INCIDENT date (e.g. 2024-07-05) instead of the run date.
+  const structured = file.layers?.L1?.structured;
+  if (finalNodes && !degraded && structured && structured.kind === 'narrative_transcript' && structured.recording_datetime) {
+    const iso = isoFromRecording(structured.recording_datetime);
+    if (iso) {
+      if (finalNodes.evidence) finalNodes.evidence.timestamp = iso;
+      for (const a of finalNodes.actions || []) if (a) a.timestamp = iso;
+      for (const v of finalNodes.violations || []) if (v) v.timestamp = iso;
     }
   }
 
@@ -668,6 +701,10 @@ async function extractFile(file, options = {}) {
     chunk_count: chunks.length,
     run_ids:    runIds,
     errors,
+    empty_responses: empties.length,
+    degraded,
+    degraded_reason: degradedReason,
+    extraction_source: extractionSource,
     nodes:      finalNodes
   };
 }
@@ -741,7 +778,8 @@ async function extractBatch(files, options = {}) {
     onProgress   = null,  // callback(done, total, file_ref)
     maxRetries   = 2,
     retryBaseMs  = 700,
-    timeoutMs    = Number(process.env.LLM_TIMEOUT_MS || 120000)
+    timeoutMs    = Number(process.env.LLM_TIMEOUT_MS || 120000),
+    rootDir      = null
   } = options;
 
   const results = {};
@@ -751,7 +789,7 @@ async function extractBatch(files, options = {}) {
   for (let i = 0; i < files.length; i += concurrency) {
     const batch = files.slice(i, i + concurrency);
     const tracked = batch.map((file) =>
-      extractFile(file, { apiKey, model, analysisProfile, maxRetries, retryBaseMs, timeoutMs })
+      extractFile(file, { apiKey, model, analysisProfile, maxRetries, retryBaseMs, timeoutMs, rootDir })
         .then((value) => {
           results[value.file_ref] = value;
         })

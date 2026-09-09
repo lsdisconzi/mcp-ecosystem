@@ -9,6 +9,8 @@
 
 const fs = require("fs");
 
+const { decodeStructuredJson } = require("./document_decode");
+
 const TEXT_EXTENSIONS = new Set([
   ".txt", ".md", ".html", ".htm", ".css", ".js", ".ts", ".json",
   ".xml", ".yaml", ".yml", ".csv", ".tsv", ".py", ".java", ".c",
@@ -71,6 +73,20 @@ function extractTextStats(filePath, ext) {
 
     // Format-specific extraction
     if (ext === ".json") {
+      // Structured decode for narrative transcripts / legal dossiers:
+      // replaces the raw-JSON text (which previously corrupted downstream
+      // language detection, L5b extraction and law resolution) with clean,
+      // readable content plus typed metadata.
+      const decoded = decodeStructuredJson(text, filePath);
+      if (decoded && decoded.fullText) {
+        const decodedWords = decoded.fullText.split(/\s+/).filter(Boolean);
+        result.full_text = decoded.fullText;
+        result.preview = decoded.fullText.slice(0, PREVIEW_LENGTH);
+        result.word_count = decodedWords.length;
+        result.char_count = decoded.fullText.length;
+        result.structured_kind = decoded.kind;
+        result.structured = decoded.meta;
+      }
       Object.assign(result, extractJsonMeta(text));
     } else if (ext === ".csv" || ext === ".tsv") {
       Object.assign(result, extractCsvMeta(text, ext === ".tsv" ? "\t" : ","));

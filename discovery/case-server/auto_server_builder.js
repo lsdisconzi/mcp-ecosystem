@@ -22,6 +22,7 @@ const {
   isLegalProfile
 } = require("./pipeline/analysis_profile");
 const onboarding = require("./pipeline/onboarding");
+const { isExcludedBasename } = require("./pipeline/document_decode");
 
 // ********** CONFIG ************
 const PORT = process.env.PORT || 3010;
@@ -277,10 +278,12 @@ function walkDir(dir, files = []) {
   try { items = fs.readdirSync(dir, { withFileTypes: true }); } catch { return files; }
   for (const item of items) {
     if (item.name.startsWith(".")) continue; // skip hidden files/dirs
+    if (item.isDirectory() && item.name === "_intelligence") continue; // generated artifacts
     if (DISCOVERY_STRICT_ISOLATION && item.isDirectory() && item.name === "sessions" && !DISCOVERY_ALLOW_GLOBAL_ROOT) {
       // In strict mode, never traverse the shared sessions container.
       continue;
     }
+    if (!item.isDirectory() && isExcludedBasename(item.name)) continue; // .bak/.tmp/etc
     const fullPath = path.join(dir, item.name);
     item.isDirectory() ? walkDir(fullPath, files) : files.push(fullPath);
   }

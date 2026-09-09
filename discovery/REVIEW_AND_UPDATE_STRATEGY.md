@@ -171,6 +171,28 @@ When the full set has been ingested correctly, the pipeline should produce, **pe
 
 All six open questions were **confirmed on 2026-09-08** — see **§1b (Decisions)** at the top of this document. The strategy in §5 is now final and implementable as specified, with the confirmed consequences already applied to S2, S4, S5, and S6.
 
+## 8. Implementation status (2026-09-08)
+
+The gating, offline-verifiable parts of the strategy are **implemented and validated** in `case-server/pipeline/`:
+
+| Step | Change | Files | Verified |
+|---|---|---|---|
+| S3 · L1 decode | Structured decode of narrative transcripts & legal dossiers → clean readable text + typed metadata (`kind`, `case_id`, `language`, `jurisdiction`, `recording_datetime`, `reviewed_share`, `violations_cited`) | **new** `document_decode.js`; `extract.js` | ✔ transcripts decode to real word counts; language `es/pt`; case `I-001/I-002`; jurisdiction `CL/BR`; date `2024-07-05`/`2024-04-04` |
+| S3 · honest fallback | Removed the fabricated per-file generic "violation" filler; degraded files are empty + flagged (`degraded`, `degraded_reason`) | `llm_extract.js` | ✔ syntax + logic |
+| S3 · empty-output guard | `callLLM` retries and then throws on blank responses; narrative falls back to static template instead of writing a 0-byte file | `llm_client.js`, `narrate.js` | ✔ syntax |
+| S3 · comprehension repair | Truncated-JSON repair (closes open string/braces) so corpus synthesis survives LLM truncation; dossiers excluded from comprehension groups | `comprehend.js` | ✔ syntax |
+| S1/S6 · routing & hygiene | Evidence vs. law-registry lanes; `.bak`/temp/`_intelligence` excluded from walkers & endpoints | `auto_server_builder.js`, `document_decode.js` | ✔ |
+| S2 · multi-case awareness | Per-case breakdown in `pipeline_summary.json` (`cases`, `total_cases`) from decoded case ids | `index.js` | ✔ |
+| S4/S5 · dossier registry | Local registry index (`law_dossier_registry.json`) + coverage (`dossier_coverage.json`) with IN→INT normalization and trust tiers; dossiers never enter evidence extraction | **new** `dossier_registry.js`; `index.js` | ✔ 82 dossiers indexed (Tier A=32); 29/29 coded citations covered, 0 missing |
+| S3 · date discipline | Evidence/actions/violations anchored to source `recording_datetime` (not run date) | `llm_extract.js` | ✔ |
+
+**Not yet run:** the LLM stages (L5b/L7/L8, comprehension synthesis) require an API key and were validated structurally only (`node --check`, editor lint). The deterministic L0–L4 + registry/coverage paths were executed against the real corpus.
+
+**To execute the full pipeline** on this set (per decisions):
+1. Place the corpus under a session workspace (e.g. upload `transcripts/` + `violations/`), then `POST /api/rebuild` (runs L0–L4).
+2. `POST /api/intelligence/run` with an API key → dossiers are auto-routed to the registry lane; transcripts are extracted; `_intelligence/law_dossier_registry.json` + `dossier_coverage.json` are written; `pipeline_summary.json` reports honest counts (`total_violations` only real findings; `degraded_files`; `cases`).
+3. Re-run `GET /api/comprehend/run` for corpus understanding.
+
 ---
 
 *End of ingestion review & update strategy (final). Ontology v2.4 · Awareness-AI.*

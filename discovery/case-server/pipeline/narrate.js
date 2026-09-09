@@ -535,6 +535,15 @@ async function generateLLMNarrative(caseGraph, violationsSummary, options = {}) 
 
   try {
     const text = await callLLM(systemPrompt, userMessage, { apiKey, model, maxTokens: 4096 });
+    if (!text || !String(text).trim()) {
+      // Empty narrative is a failure — fall back to the static template rather
+      // than writing a 0-byte narrative.md while logging "LLM-synthesized".
+      return {
+        ok:       false,
+        fallback: true,
+        message:  'Empty narrative returned by LLM'
+      };
+    }
     return { ok: true, fallback: false, narrative: text };
   } catch (err) {
     return {

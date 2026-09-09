@@ -67,6 +67,14 @@ const {
 // Layer K — Knowledge Base Integration
 const { isAvailable: kbIsAvailable }   = require('./legal_kb');
 
+// Dossier registry (local law/violation KB from the violations/ library)
+const {
+  gatherDossierEntries,
+  buildRegistry,
+  buildDossierCoverage,
+  writeRegistryFiles
+} = require('./dossier_registry');
+
 // Layer L8 — Legal Verification
 const { verifyAllViolations, generateVerificationReport, renderVerificationMarkdown } = require('./verify');
 
@@ -154,6 +162,13 @@ function runPipeline(files, rootDir, options = {}) {
       // L2 — Classify
       const L2 = classifyFile(L0.file_ref, L0.extension, L1.preview || null);
 
+      // Language override: narrative transcripts declare their language in the
+      // source metadata (authoritative). Textual detection on decoded content is
+      // a fallback only — it previously misfired on raw JSON (en/mixed/unknown).
+      if (L1.structured_kind === 'narrative_transcript' && L1.structured?.language) {
+        L2.language = L1.structured.language;
+      }
+
       // L3 — Analyze content
       const L3 = analyzeContent(L1.preview || '', L0.file_ref);
 
@@ -231,6 +246,10 @@ function buildExtractionCacheByHash(existingExtraction = {}) {
     if (item?.error) continue;
     if (Array.isArray(item?.errors) && item.errors.length > 0) continue;
     if (!item?.nodes) continue;
+    // Never reuse legacy heuristic-fallback results: they predate the L1
+    // structured-decode fix and carry fabricated filler (no _degraded flag).
+    // Honest degraded results (_degraded: true) ARE cacheable.
+    if (item.nodes._fallback_used === true && item.nodes._degraded !== true) continue;
     byHash[hash] = item;
   }
   return byHash;
@@ -250,6 +269,10 @@ function buildExtractionStats(results) {
     extracted: 0,
     skipped: 0,
     errors: 0,
+    degraded: 0,
+    degraded_reasons: {},
+    empty_responses: 0,
+    structured_extracted: 0,
     files_with_errors: 0,
     auth_errors: 0,
     total_actions: 0,
@@ -271,6 +294,15 @@ function buildExtractionStats(results) {
   for (const r of Object.values(results || {})) {
     if (r?.skipped) stats.skipped += 1;
     if (r?._cached) stats.cached_reused += 1;
+
+    // Degraded = ran but produced no actions/violations (honest "no findings").
+    if (r?.degraded) {
+      stats.degraded += 1;
+      const reason = r.degraded_reason || 'unknown';
+      stats.degraded_reasons[reason] = (stats.degraded_reasons[reason] || 0) + 1;
+    }
+    if (r?.empty_responses) stats.empty_responses += r.empty_responses;
+    if (r?.extraction_source === 'structured_transcript') stats.structured_extracted += 1;
 
     const topLevelErrors = r?.error ? 1 : 0;
     const chunkErrors = Array.isArray(r?.errors) ? r.errors.length : 0;
@@ -415,12 +447,24 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
     ? allFiles
     : allFiles.filter(f => dedupResults[f.file_ref]?.canonical !== false);
 
+  // S1 routing: legal dossiers are the law-registry lane, never evidence
+  // extraction. They are indexed separately (S4) and excluded here.
+  const isDossierFile = (f) =>
+    f.layers?.L1?.structured_kind === 'legal_dossier' ||
+    f.layers?.L1?.structured?.kind === 'legal_dossier';
+  const dossierFiles = canonicalFiles.filter(isDossierFile);
+  const evidenceFiles = canonicalFiles.filter(f => !isDossierFile(f));
+
+  if (dossierFiles.length > 0) {
+    progress('S1', `Routed ${dossierFiles.length} legal dossier(s) to the registry lane (excluded from evidence extraction)`);
+  }
+
   const previousExtraction = store.getExtractionResults ? store.getExtractionResults() : {};
   const cachedByHash = useCache ? buildExtractionCacheByHash(previousExtraction) : {};
   const cachedResults = {};
   const filesToExtract = [];
 
-  for (const file of canonicalFiles) {
+  for (const file of evidenceFiles) {
     const hash = file.layers?.L0?.sha256 || null;
     if (hash && cachedByHash[hash]) {
       cachedResults[file.file_ref] = cloneCachedExtraction(cachedByHash[hash], file.file_ref, hash);
@@ -433,7 +477,7 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
 
   progress(
     'L5b',
-    `Extracting ${filesToExtract.length}/${canonicalFiles.length} canonical files ` +
+    `Extracting ${filesToExtract.length}/${evidenceFiles.length} evidence files ` +
     `(cached: ${Object.keys(cachedResults).length}, concurrency: ${effectiveConcurrency})`
   );
 
@@ -446,6 +490,7 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
       concurrency: effectiveConcurrency,
       maxRetries: 2,
       retryBaseMs: effectiveBulkFast ? 450 : 700,
+      rootDir,
       onProgress: (done, total, ref) => {
         progress('L5b', `${done}/${total} — ${ref}`);
       }
@@ -466,7 +511,35 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
 
   progress('L5b', `Extraction complete: ${extractionStats.total_actions} actions, ` +
     `${extractionStats.total_violations} ${findingsLabel}, ` +
-    `${extractionStats.errors} errors`);
+    `${extractionStats.errors} errors, ` +
+    `${extractionStats.degraded || 0} degraded` + (extractionStats.empty_responses ? ` (${extractionStats.empty_responses} empty LLM responses)` : ''));
+
+  // ── S4/S5: Dossier registry + coverage (law-registry lane) ──────────────────
+  // Index the violations/ dossiers (when present) into a local registry and
+  // compute how well the evidence transcripts' citations are covered. Writes:
+  //   _intelligence/law_dossier_registry.json
+  //   _intelligence/dossier_coverage.json
+  let dossierRegistry = { total: 0, byCode: {}, byCase: {}, byJurisdiction: {}, byTier: { A: 0, B: 0, C: 0 } };
+  let dossierCoverage = null;
+  if (dossierFiles.length > 0) {
+    try {
+      const dossierEntries = await gatherDossierEntries(dossierFiles, rootDir);
+      dossierRegistry = buildRegistry(dossierEntries);
+      if (evidenceFiles.length > 0) {
+        dossierCoverage = buildDossierCoverage(evidenceFiles, dossierRegistry);
+      }
+      const written = writeRegistryFiles(dossierRegistry, dossierCoverage, outputDir);
+      resultPaths.law_dossier_registry = written.registry;
+      resultPaths.dossier_coverage = written.coverage;
+      progress('S4', `Dossier registry: ${dossierRegistry.total} indexed ` +
+        `(${JSON.stringify(dossierRegistry.byTier || {})} tiers; ` +
+        `${dossierCoverage ? dossierCoverage.covered_by_dossier + '/' + dossierCoverage.cited_codes_total + ' transcript codes covered' : 'no evidence files'})`);
+    } catch (regErr) {
+      progress('S4', `Dossier registry error: ${regErr.message}`);
+    }
+  } else {
+    progress('S4', 'No legal dossier files in corpus — registry skipped');
+  }
 
   const firstExtractionError = Object.values(extractionResults)
     .flatMap((item) => {
@@ -616,6 +689,29 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
     `${caseState.findings.length} findings, ${caseState.next_steps.length} recommendations`);
 
   // ── Summary ───────────────────────────────────────────────────────────────────
+  // Per-case awareness (S2): derive case identity from decoded transcript
+  // metadata (canonical = file/folder I-00X prefix) and the dossier registry.
+  function caseIdFromFileRec(rec) {
+    const structured = rec.layers?.L1?.structured;
+    if (structured?.case_id) return structured.case_id;
+    const m = String(rec.file_ref || '').match(/(?:^|\/)(I-?0\d{2})/i);
+    if (m) return m[1].replace(/[-_\s]+/g, '-');
+    return 'uncategorized';
+  }
+  const caseBreakdown = {};
+  for (const rec of evidenceFiles) {
+    const cid = caseIdFromFileRec(rec);
+    if (!caseBreakdown[cid]) caseBreakdown[cid] = { evidence_files: 0, jurisdiction: null, languages: {} };
+    caseBreakdown[cid].evidence_files += 1;
+    const jur = rec.layers?.L1?.structured?.jurisdiction;
+    if (jur) caseBreakdown[cid].jurisdiction = jur;
+    const lang = rec.layers?.L2?.language;
+    if (lang) caseBreakdown[cid].languages[lang] = (caseBreakdown[cid].languages[lang] || 0) + 1;
+  }
+  for (const [cid, codes] of Object.entries(dossierRegistry.byCase || {})) {
+    if (!caseBreakdown[cid]) caseBreakdown[cid] = { evidence_files: 0, jurisdiction: null, languages: {} };
+    caseBreakdown[cid].dossier_codes = (codes || []).length;
+  }
   const summaryPath = path.join(outputDir, 'pipeline_summary.json');
   resultPaths.summary = summaryPath;
 
@@ -640,6 +736,21 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
       total_findings:       extractionStats.total_violations,
       resolved_law_refs:    normStats.resolved_law_refs,
       unresolved_law_refs:  normStats.unresolved_law_refs,
+      // Evidence vs. registry routing (S1) + honest extraction state (S3)
+      evidence_files:       evidenceFiles.length,
+      dossier_files:        dossierFiles.length,
+      degraded_files:       extractionStats.degraded || 0,
+      degraded_reasons:     extractionStats.degraded_reasons || {},
+      llm_empty_responses:  extractionStats.empty_responses || 0,
+      structured_extracted: extractionStats.structured_extracted || 0,
+      // Dossier registry (S4) + coverage (S5)
+      dossiers_indexed:     dossierRegistry.total || 0,
+      dossier_tiers:        dossierRegistry.byTier || { A: 0, B: 0, C: 0 },
+      dossier_codes_covered: dossierCoverage ? dossierCoverage.covered_by_dossier : 0,
+      dossier_codes_missing:  dossierCoverage ? dossierCoverage.missing_dossier : 0,
+      dossier_uncited:        dossierCoverage ? dossierCoverage.uncited_dossiers : 0,
+      cases:                caseBreakdown,
+      total_cases:          Object.keys(caseBreakdown).length,
       gap_count:            gap_report.total_gaps,
       high_priority_gaps:   gap_report.high_priority_gaps,
       // Event layer

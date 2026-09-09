@@ -142,7 +142,21 @@ async function callLLM(systemPrompt, userMessage, options = {}) {
     }
 
     const data = await response.json();
-    return data.content?.map(b => b.text || '').join('') || '';
+    const text = data.content?.map(b => b.text || '').join('') || '';
+
+    // Empty-output guard: a blank response is a failure, not a success.
+    // Retry within the budget, then surface an explicit error so callers never
+    // mistake an empty model response for a valid (e.g. parsed-empty) result.
+    if (!text.trim()) {
+      if (attempt < attempts) {
+        const waitMs = computeBackoffMs(attempt, null, retryBaseMs);
+        await sleep(waitMs);
+        continue;
+      }
+      throw new Error('LLM returned an empty response after retries');
+    }
+
+    return text;
   }
 
   throw new Error('LLM request failed after retries');
