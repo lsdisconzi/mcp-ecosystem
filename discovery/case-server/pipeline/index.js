@@ -619,6 +619,36 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
   resultPaths.timeline   = timelinePath;
   resultPaths.gap_report = gapReportPath;
 
+  // ── Archive a per-source narrative copy ──────────────────────────────────
+  // Each run (typically a single transcript) also persists its narrative under
+  // <rootDir>/narratives/<source>.narrative.md so prior runs are kept for
+  // reference/regression instead of being overwritten invisibly in _intelligence.
+  if (narrative_md && String(narrative_md).trim()) {
+    try {
+      const narrDir = path.join(rootDir, 'narratives');
+      fs.mkdirSync(narrDir, { recursive: true });
+      const isTranscript = (f) =>
+        f.layers?.L1?.structured_kind === 'narrative_transcript' ||
+        f.layers?.L1?.structured?.kind === 'narrative_transcript';
+      const stems = (evidenceFiles || [])
+        .filter(isTranscript)
+        .map(f => path.basename(f.file_ref || '', path.extname(f.file_ref || '')))
+        .filter(Boolean);
+      const unique = [...new Set(stems)];
+      const stem = unique.length === 1
+        ? unique[0]
+        : unique.length > 1
+          ? `${path.basename((evidenceFiles[0] && evidenceFiles[0].file_ref) || 'case', path.extname((evidenceFiles[0] && evidenceFiles[0].file_ref) || ''))}+${unique.length}`
+          : `narrative-${new Date().toISOString().slice(0, 10)}`;
+      const narrCopy = path.join(narrDir, `${stem}.narrative.md`);
+      fs.writeFileSync(narrCopy, narrative_md);
+      resultPaths.narrative_copy = narrCopy;
+      progress('L7', `Narrative archived: ${path.relative(rootDir, narrCopy)}`);
+    } catch (archErr) {
+      progress('L7', `Narrative archive error: ${archErr.message}`);
+    }
+  }
+
   progress('L7', `Narrative complete (${llm_used ? 'LLM-synthesized' : 'static template'}), ` +
     `${gap_report.total_gaps} gaps identified`);
 
@@ -788,6 +818,15 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
 function extendStore(store) {
   const rawData = typeof store.getRawData === 'function' ? store.getRawData() : null;
 
+  if (!store.removeFile) {
+    store.removeFile = function(hash) {
+      if (rawData && hash && rawData.files && rawData.files[hash]) {
+        delete rawData.files[hash];
+        return true;
+      }
+      return false;
+    };
+  }
   if (!store.setDedupResults) {
     store.setDedupResults = function(results) {
       if (rawData) rawData.dedup = results || {};

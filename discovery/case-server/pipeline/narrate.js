@@ -33,6 +33,17 @@ const {
 
 const NARRATE_PROMPT_VERSION = 'narrative-v2.0-profile-aware';
 
+// Format a local datetime for human-readable narrative rendering.
+// "2024-07-05T13:33:14.430" -> "2024-07-05 13:33:14"
+function formatLocalDisplay(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return null;
+  const full = s.match(/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2}:\d{2})/);
+  if (full) return `${full[1]} ${full[2]}`;
+  const day = s.match(/^\d{4}-\d{2}-\d{2}/);
+  return day ? day[0] : s;
+}
+
 // ─── Narrative LLM Prompt ────────────────────────────────────────────────────
 
 function buildNarrativeSystemPrompt(profile = ANALYSIS_PROFILE_DEFAULT) {
@@ -249,8 +260,11 @@ function generateStaticNarrative(caseGraph, violationsSummary, lawRegistry, prof
         ? `[${action._performed_by_role_id.replace(/ROLE_\w+/, action.actor_function || 'actor')}]`
         : '';
       const location = action.location ? ` at ${action.location}` : '';
+      const localDisp = formatLocalDisplay(action.local_datetime || action.timestamp);
 
-      lines.push(`- **[${action.action_type.replace(/_/g, ' ')}]** ${action.description}${location}`);
+      // Each observation carries its precise local datetime (segment_datetime
+      // when available) so the chronological timeline shows real incident time.
+      lines.push(`- **${localDisp || 'undated'}** **[${action.action_type.replace(/_/g, ' ')}]** ${action.description}${location}`);
     }
     lines.push('');
   }
@@ -414,6 +428,7 @@ function buildTimeline(caseGraph, violationsSummary) {
     action_type:    action.action_type,
     description:    action.description,
     timestamp:      action.timestamp || null,
+    local_datetime: action.local_datetime || null,
     location:       action.location || null,
     actor_role:     action._performed_by_role_id,
     violations:     violsByAction[action.node_id] || [],

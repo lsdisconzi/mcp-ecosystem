@@ -142,6 +142,8 @@ function extractEventsFromFile(fileRef, extractionResult) {
       description:     action.description,
       date,
       date_precision:  precision,
+      datetime:        action.timestamp || null,
+      local_datetime:  action.local_datetime || action.timestamp || null,
       location:        action.location || null,
       actor_function:  action._performed_by_role_id || null,
       sequence_index:  action.sequence_index,
@@ -244,6 +246,15 @@ function mergeEvents(rawEvents) {
       if (evt.date_precision === 'day' && target.date_precision !== 'day') {
         target.date           = evt.date;
         target.date_precision = 'day';
+      }
+
+      // Keep the earliest precise local datetime of the corroborating sources.
+      if (evt.datetime && (!target.datetime || String(evt.datetime) < String(target.datetime))) {
+        target.datetime       = evt.datetime;
+        target.local_datetime = evt.local_datetime || evt.datetime;
+      } else if (!target.datetime && evt.datetime) {
+        target.datetime       = evt.datetime;
+        target.local_datetime = evt.local_datetime || evt.datetime;
       }
 
       // Take location if missing

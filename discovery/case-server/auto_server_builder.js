@@ -278,7 +278,7 @@ function walkDir(dir, files = []) {
   try { items = fs.readdirSync(dir, { withFileTypes: true }); } catch { return files; }
   for (const item of items) {
     if (item.name.startsWith(".")) continue; // skip hidden files/dirs
-    if (item.isDirectory() && item.name === "_intelligence") continue; // generated artifacts
+    if (item.isDirectory() && (item.name === "_intelligence" || item.name === "narratives")) continue; // generated artifacts
     if (DISCOVERY_STRICT_ISOLATION && item.isDirectory() && item.name === "sessions" && !DISCOVERY_ALLOW_GLOBAL_ROOT) {
       // In strict mode, never traverse the shared sessions container.
       continue;
@@ -313,6 +313,7 @@ function isGeneratedWorkspaceArtifact(relativePath) {
   const rel = toPosixPath(relativePath);
   return (
     rel.startsWith("_intelligence/") ||
+    rel.startsWith("narratives/") ||
     rel.startsWith(`${WORKSPACE_META_DIR}/`) ||
     rel === "pipeline_store.json"
   );
@@ -562,6 +563,62 @@ function buildSafeRoute(rel, category, baseName) {
 // REBUILD ENGINE
 // ===================================================================
 
+function sha256Hex(buf) {
+  return crypto.createHash("sha256").update(buf).digest("hex");
+}
+
+/**
+ * Index every non-generated file under `root` by its content hash.
+ * Used by the incremental upload path to skip re-adding files that are already
+ * present (so previously reviewed/pipeline-processed content is never duplicated
+ * or wiped when a new batch is added).
+ * @returns {Map<string,string>} sha256 -> relative path
+ */
+function indexContentHashes(root) {
+  const map = new Map();
+  for (const abs of walkDirAll(root)) {
+    const rel = toPosixPath(path.relative(root, abs));
+    if (!rel) continue;
+    if (isGeneratedWorkspaceArtifact(rel)) continue;
+    if (isExcludedBasename(path.basename(abs))) continue;
+    try {
+      const hash = sha256Hex(fs.readFileSync(abs));
+      if (hash && !map.has(hash)) map.set(hash, rel);
+    } catch { /* skip unreadable */ }
+  }
+  return map;
+}
+
+/**
+ * Prune stale enrichment records after a rebuild.
+ * The pipeline store is keyed by content hash; when a file is replaced in place
+ * (new content, same path) or deleted, the record for the OLD hash would linger
+ * and later double-count the same path. Remove any record whose current file no
+ * longer exists or whose content no longer matches its stored sha256.
+ * @returns {number} number of stale records removed
+ */
+function syncStoreToDisk(store, rootDir) {
+  if (!store || typeof store.getAllFiles !== "function") return 0;
+  let removed = 0;
+  for (const [hash, rec] of Object.entries(store.getAllFiles())) {
+    const rel = rec && rec.file_ref;
+    const abs = rel ? path.resolve(rootDir, rel) : null;
+    let currentSha = null;
+    if (abs) {
+      try { currentSha = sha256Hex(fs.readFileSync(abs)); } catch { /* file missing */ }
+    }
+    const storedSha = rec?.layers?.L0?.sha256 || null;
+    if (!currentSha || (storedSha && currentSha !== storedSha)) {
+      try { store.removeFile(hash); } catch { /* ignore */ }
+      removed += 1;
+    }
+  }
+  if (removed > 0) {
+    try { store.save(); } catch { /* ignore */ }
+  }
+  return removed;
+}
+
 function rebuildFromDir(rootDir) {
   const resolvedRoot = path.resolve(rootDir);
   if (!fs.existsSync(resolvedRoot) || !fs.statSync(resolvedRoot).isDirectory()) {
@@ -623,6 +680,12 @@ function rebuildFromDir(rootDir) {
     });
     pipelineStore = extendStore(store);
     lastPipelineStats = stats;
+    // Drop stale enrichment records for replaced/deleted files so store &
+    // intelligence never double-count a path across incremental rebuilds.
+    const pruned = syncStoreToDisk(pipelineStore, resolvedRoot);
+    if (pruned > 0) {
+      console.log(`🧹 Pipeline: pruned ${pruned} stale store record(s)`);
+    }
     console.log(`📊 Pipeline: ${stats.processed} enriched, ${stats.skipped} cached, ${stats.failed} failed`);
   } catch (err) {
     console.error("Pipeline failed (server continues without enrichment):", err.message);
@@ -873,27 +936,84 @@ function createDiscoveryApp() {
       const { sessionId, workspaceRoot } = resolveUploadRoot(userId);
       fs.mkdirSync(workspaceRoot, { recursive: true });
 
+      // ── Incremental add / update ───────────────────────────────────────
+      // Existing (already reviewed / pipeline-processed) files are preserved.
+      //  - identical content at same path              → skipped (duplicate)
+      //  - same path, different content                → REPLACED in place (default)
+      //    (overwrite_existing=false → kept alongside as "<name>_2")
+      //  - new path, identical content elsewhere        → skipped (dedupe)
+      //  - new path + content                           → added
+      const overwrite = String(req.query && req.query.overwrite !== undefined ? req.query.overwrite : "true") !== "false";
+
+      const diskByHash = indexContentHashes(workspaceRoot); // hash -> relPath
+      const byPath = new Map();  // relPath -> hash
+      const byHash = new Map();  // hash -> relPath
+      for (const [hash, rel] of diskByHash) byPath.set(rel, hash);
+
       const savedFiles = [];
-      const reservedPaths = new Set();
+      const updatedFiles = [];
+      const skippedDuplicates = [];
+      const batchWrites = new Map(); // relPath -> hash written during this request
+
       for (const file of files) {
         const incomingName = file.originalname || file.filename || "unnamed-file";
+        const originalSafe = assertSafeRelativePath(incomingName);
+        const rawName = path.basename(originalSafe);
+        const hash = sha256Hex(file.buffer);
         const normalizedPath = normalizeRelativeUploadPath(incomingName);
-        const relativePath = ensureUniqueRelativePath(normalizedPath, workspaceRoot, reservedPaths);
-        const destination = path.resolve(workspaceRoot, relativePath);
+        const destination = path.resolve(workspaceRoot, normalizedPath);
         if (destination !== workspaceRoot && !destination.startsWith(`${workspaceRoot}${path.sep}`)) {
           return res.status(400).json({ error: `Invalid file path: ${incomingName}` });
         }
 
+        const pathHash = batchWrites.has(normalizedPath)
+          ? batchWrites.get(normalizedPath)
+          : byPath.get(normalizedPath);
+
+        // 1) Identical content at the same path → nothing to do.
+        if (pathHash === hash) {
+          skippedDuplicates.push({ name: rawName, original_relative_path: originalSafe, existing_path: normalizedPath, size: file.size });
+          continue;
+        }
+
+        // 2) Same path, different content.
+        if (pathHash !== undefined) {
+          if (!overwrite) {
+            // Add-mode: preserve the existing file, keep the new one alongside.
+            const alt = ensureUniqueRelativePath(normalizedPath, workspaceRoot, new Set([normalizedPath]));
+            const altDest = path.resolve(workspaceRoot, alt);
+            fs.mkdirSync(path.dirname(altDest), { recursive: true });
+            fs.writeFileSync(altDest, file.buffer);
+            batchWrites.set(alt, hash);
+            byPath.set(alt, hash);
+            byHash.set(hash, alt);
+            savedFiles.push({ name: path.basename(alt), original_name: rawName, original_relative_path: originalSafe, relative_path: alt, normalized: alt !== originalSafe, size: file.size });
+            continue;
+          }
+          // Overwrite mode (default): replace in place.
+          fs.mkdirSync(path.dirname(destination), { recursive: true });
+          fs.writeFileSync(destination, file.buffer);
+          batchWrites.set(normalizedPath, hash);
+          byPath.set(normalizedPath, hash);
+          if (byHash.get(pathHash) === normalizedPath) byHash.delete(pathHash);
+          byHash.set(hash, normalizedPath);
+          updatedFiles.push({ name: rawName, original_name: rawName, original_relative_path: originalSafe, relative_path: normalizedPath, replaced: true, size: file.size });
+          continue;
+        }
+
+        // 3) New path, but identical content already present elsewhere → dedupe.
+        if (byHash.has(hash)) {
+          skippedDuplicates.push({ name: rawName, original_relative_path: originalSafe, existing_path: byHash.get(hash), size: file.size });
+          continue;
+        }
+
+        // 4) Brand-new path + content.
         fs.mkdirSync(path.dirname(destination), { recursive: true });
         fs.writeFileSync(destination, file.buffer);
-        savedFiles.push({
-          name: path.basename(relativePath),
-          original_name: path.basename(assertSafeRelativePath(incomingName)),
-          original_relative_path: assertSafeRelativePath(incomingName),
-          relative_path: relativePath,
-          normalized: relativePath !== assertSafeRelativePath(incomingName),
-          size: file.size,
-        });
+        batchWrites.set(normalizedPath, hash);
+        byPath.set(normalizedPath, hash);
+        byHash.set(hash, normalizedPath);
+        savedFiles.push({ name: rawName, original_name: rawName, original_relative_path: originalSafe, relative_path: normalizedPath, normalized: false, size: file.size });
       }
 
       const rebuild = rebuildFromDir(workspaceRoot);
@@ -901,7 +1021,14 @@ function createDiscoveryApp() {
         ok: true,
         user_id: sessionId,
         root_dir: workspaceRoot,
+        incremental: {
+          added: savedFiles.length,
+          updated: updatedFiles.length,
+          skipped_duplicates: skippedDuplicates.length,
+        },
         files: savedFiles,
+        updated_files: updatedFiles,
+        skipped_duplicates: skippedDuplicates,
         rebuild: { ok: true, ...rebuild },
       });
     } catch (err) {

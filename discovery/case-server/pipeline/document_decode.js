@@ -409,6 +409,7 @@ function isExcludedRelativePath(relPath) {
   if (!rel) return true;
   if (isExcludedBasename(rel.split('/').pop())) return true;
   if (rel.startsWith('_intelligence/')) return true;
+  if (rel.startsWith('narratives/')) return true;
   if (rel.startsWith('.discovery/')) return true;
   if (rel === 'pipeline_store.json') return true;
   return false;

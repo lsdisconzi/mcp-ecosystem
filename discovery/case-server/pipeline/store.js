@@ -61,6 +61,14 @@ function createStore(storeFilePath) {
     return !!data.files[hash];
   }
 
+  function removeFile(hash) {
+    if (hash && data.files[hash]) {
+      delete data.files[hash];
+      return true;
+    }
+    return false;
+  }
+
   function setFile(hash, record) {
     data.files[hash] = record;
   }
@@ -145,6 +153,7 @@ function createStore(storeFilePath) {
     save,
     hasFile,
     getFile,
+    removeFile,
     setFile,
     setLayer,
     getLayer,

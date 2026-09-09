@@ -110,6 +110,7 @@ function buildFromTranscript(file, rootDir) {
     evidence_type: 'document',
     source:        file.file_ref,
     timestamp:     iso,
+    local_datetime: dec.recording_datetime || null,
     description:   dec.title || dec.subtitle || null,
     _source_file_id: file.layers?.L0?.file_node_id || null,
     _chunk_index:  0
@@ -125,40 +126,87 @@ function buildFromTranscript(file, rootDir) {
     }
   }
 
-  // Verbatim segments (skip ASR artifacts)
+  // Verbatim segments (skip ASR artifacts). We keep a map from the original
+  // segment index to its node + local segment_datetime so findings can point to
+  // exact evidence and resolve precise per-observation local datetimes.
   const segments = [];
   const rawSegments = Array.isArray(parsed.segments) ? parsed.segments : [];
+  const segByOrigIndex = {};       // originalIndex -> { node_id, datetime }
   for (const s of rawSegments) {
     const text = String((s && s.text) || '').trim();
     if (!text || /^\[[^\]]*\]$/.test(text)) continue;
-    segments.push({
+    const origIndex = (s && s.index != null) ? s.index : null;
+    const segNode = {
       node_id: makeNodeId('segment'),
       type: 'Segment',
       text: text.slice(0, 500),
-      position: (s.index != null ? s.index : segments.length) + 1,
+      position: (origIndex != null ? origIndex : segments.length) + 1,
       evidence_node_id: evidenceId,
-      speaker: mapActorFunction(s.speaker || s.speaker_label || '')
-    });
+      speaker: mapActorFunction(s.speaker || s.speaker_label || ''),
+      local_datetime: (s && s.segment_datetime) || null
+    };
+    segments.push(segNode);
+    if (origIndex != null) {
+      segByOrigIndex[origIndex] = {
+        node_id: segNode.node_id,
+        datetime: (s && s.segment_datetime) || null
+      };
+    }
   }
 
-  // Actions — grounded in the analyst's own key findings.
+  // Expand a finding/segment reference like "5" or "0-5" into concrete indices.
+  function expandSegRefs(refs) {
+    const out = [];
+    for (const ref of Array.isArray(refs) ? refs : []) {
+      const str = String(ref).trim();
+      const range = str.match(/^(\d+)\s*-\s*(\d+)$/);
+      if (range) {
+        const a = parseInt(range[1], 10); const b = parseInt(range[2], 10);
+        for (let x = Math.min(a, b); x <= Math.max(a, b); x++) out.push(x);
+      } else if (/^\d+$/.test(str)) {
+        out.push(parseInt(str, 10));
+      }
+    }
+    return out;
+  }
+
+  // Earliest local datetime referenced by a set of original segment indices.
+  function earliestSegDatetime(refs) {
+    let earliest = null;
+    for (const idx of expandSegRefs(refs)) {
+      const seg = segByOrigIndex[idx];
+      const dt = seg && seg.datetime;
+      if (!dt) continue;
+      if (!earliest || String(dt) < String(earliest)) earliest = String(dt);
+    }
+    return earliest;
+  }
+
+  // Actions — grounded in the analyst's own key findings, each carrying the
+  // precise local datetime of its earliest supporting segment.
   const actions = [];
   const findings = Array.isArray(parsed.key_evidentiary_findings) ? parsed.key_evidentiary_findings : [];
   findings.forEach((f, i) => {
     const desc = String((f && (f.finding || f.description)) || '').trim().slice(0, 200);
     if (!desc) return;
+    const refs = (f && f.segments) || [];
+    const segIds = expandSegRefs(refs)
+      .map(idx => (segByOrigIndex[idx] ? segByOrigIndex[idx].node_id : null))
+      .filter(Boolean);
+    const localDt = earliestSegDatetime(refs) || dec.recording_datetime || null;
     const actionId = makeNodeId('action');
     actions.push({
       node_id:            actionId,
       type:               'Action',
       action_type:        inferActionType(desc),
       description:        desc,
-      timestamp:          iso,
+      timestamp:          localDt || iso,
+      local_datetime:     localDt,
       sequence_index:     i + 1,
       location:           parsed.location || null,
       _performed_by_role_id: null,
       _evidence_id:       evidenceId,
-      _segment_ids:       []
+      _segment_ids:       segIds.slice(0, 10)
     });
   });
 
@@ -172,6 +220,7 @@ function buildFromTranscript(file, rootDir) {
       action_type:    'operational_update',
       description:    title || 'Transcript stage',
       timestamp:      iso,
+      local_datetime: dec.recording_datetime || null,
       sequence_index: 1,
       location:       parsed.location || null,
       _performed_by_role_id: null,
@@ -190,6 +239,7 @@ function buildFromTranscript(file, rootDir) {
       category:     inferViolationCategory(code),
       description:  `Cited in transcript: ${code}`.slice(0, 300),
       timestamp:    iso,
+      local_datetime: dec.recording_datetime || null,
       severity:     'medium',
       confidence:   null,  // unrated — not model-derived
       _law_references: [{

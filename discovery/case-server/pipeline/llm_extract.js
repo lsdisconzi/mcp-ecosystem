@@ -684,8 +684,11 @@ async function extractFile(file, options = {}) {
   // Date discipline (P1): anchor evidence/actions/violations to the source
   // recording datetime when the transcript declares one. This keeps timelines
   // and events on the INCIDENT date (e.g. 2024-07-05) instead of the run date.
+  // Structured-transcript nodes already carry per-observation local_datetime
+  // (from segment_datetime), so they are left untouched.
   const structured = file.layers?.L1?.structured;
-  if (finalNodes && !degraded && structured && structured.kind === 'narrative_transcript' && structured.recording_datetime) {
+  if (finalNodes && !degraded && finalNodes._extraction_source !== 'structured_transcript' &&
+      structured && structured.kind === 'narrative_transcript' && structured.recording_datetime) {
     const iso = isoFromRecording(structured.recording_datetime);
     if (iso) {
       if (finalNodes.evidence) finalNodes.evidence.timestamp = iso;

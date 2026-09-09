@@ -1576,23 +1576,11 @@ async function organize() {
 
   const btn = document.getElementById('organizeBtn');
   btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando…';
-  showAlert('info', '<i class="fas fa-spinner fa-spin"></i> Limpando sessão e organizando arquivos…');
+  showAlert('info', '<i class="fas fa-spinner fa-spin"></i> Adicionando arquivos à sessão (incremental)…');
   try {
-    // Keep Discovery UI runs deterministic: every new upload starts from a clean workspace.
-    const resetResp = await fetch(`${DISCOVERY_UI_API}/api/discovery/reset-session`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Discovery-User-Id': DISCOVERY_USER_ID,
-      },
-      body: JSON.stringify({ user_id: DISCOVERY_USER_ID, clear_files: true }),
-    });
-    if (!resetResp.ok) {
-      const err = await resetResp.text();
-      showAlert('error', `Falha ao limpar sessão: ${esc(err)}`);
-      return;
-    }
-
+    // Incremental session: files already present (same content) are skipped,
+    // previously processed/reviewed files are preserved, and only new files
+    // are added before the rebuild.
     const formData = new FormData();
     uploadableFiles.forEach(f => {
       const name = getUploadFilePath(f);
@@ -1606,8 +1594,21 @@ async function organize() {
     }
     const uploadData = await uploadResp.json();
     const rebuild = uploadData.rebuild;
-    const fileCount = uploadData.files ? uploadData.files.length : uploadableFiles.length;
-    showAlert('success', `<i class="fas fa-check-circle"></i> Organizados <strong>${rebuild ? rebuild.total_files : fileCount}</strong> arquivos em <strong>${rebuild ? Object.keys(rebuild.categories||{}).length : '?'}</strong> categorias`);
+    const added = (uploadData.incremental && uploadData.incremental.added != null)
+      ? uploadData.incremental.added
+      : (uploadData.files ? uploadData.files.length : uploadableFiles.length);
+    const duplicates = (uploadData.incremental && uploadData.incremental.skipped_duplicates) || 0;
+    const updated = (uploadData.incremental && uploadData.incremental.updated) || 0;
+    const totalFiles = rebuild ? rebuild.total_files : (uploadData.files ? uploadData.files.length : added);
+    const dupNote = duplicates > 0 ? ` · ${duplicates} já presente${duplicates !== 1 ? 's' : ''}` : '';
+    if (added === 0 && updated === 0) {
+      showAlert('info', `<i class="fas fa-check-circle"></i> Nenhum arquivo novo — ${duplicates > 0 ? `${duplicates} já estavam presentes` : 'nada a adicionar'}. Total na sessão: <strong>${totalFiles}</strong>`);
+    } else {
+      const addedNote = added > 0 ? `<strong>${added}</strong> adicionado${added !== 1 ? 's' : ''}` : '';
+      const updatedNote = updated > 0 ? `<strong>${updated}</strong> atualizado${updated !== 1 ? 's' : ''} (substituído no lugar)` : '';
+      const sep = addedNote && updatedNote ? ' · ' : '';
+      showAlert('success', `<i class="fas fa-check-circle"></i> ${addedNote}${sep}${updatedNote}${dupNote} — total na sessão: <strong>${totalFiles}</strong> em <strong>${rebuild ? Object.keys(rebuild.categories||{}).length : '?'}</strong> categorias`);
+    }
     uploadFiles = [];
     renderUploadFileList();
     document.getElementById('organizeBtn').style.display = 'none';
@@ -3059,8 +3060,8 @@ function renderEventCards(events) {
     const evidCount = (e.evidence || []).length;
     html += `<div class="evt-card">
       <span class="evt-type-badge">${esc(e.type || 'other')}</span>
-      ${e.date ? `<span style="font-size:11px;font-family:var(--mono);color:var(--amber)">${esc(e.date)}</span>` : ''}
-      ${e.confidence != null ? `<span style="font-size:10px;font-family:var(--mono);color:var(--gray);float:right">confiança: ${Math.round(e.confidence * 100)}%</span>` : ''}
+      ${(e.local_datetime || e.datetime || e.date) ? `<span style="font-size:11px;font-family:var(--mono);color:var(--amber)">&nbsp;${esc(String(e.local_datetime || e.datetime || e.date).replace('T', ' ').split('.')[0])}</span>` : ''}
+      ${e.confidence != null ? `<span style="font-size:10px;font-family:var(--mono);color:var(--gray);float:right">&nbsp;confiança: ${Math.round(e.confidence * 100)}%</span>` : ''}
       <div class="evt-desc">${esc(e.description || '')}</div>
       <div class="evt-meta">
         ${e.location ? `<span><i class="fas fa-map-marker-alt"></i> ${esc(e.location)}</span>` : ''}
