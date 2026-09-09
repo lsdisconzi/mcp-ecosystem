@@ -250,6 +250,17 @@ function buildExtractionCacheByHash(existingExtraction = {}) {
     // structured-decode fix and carry fabricated filler (no _degraded flag).
     // Honest degraded results (_degraded: true) ARE cacheable.
     if (item.nodes._fallback_used === true && item.nodes._degraded !== true) continue;
+    // Emails are now formalized deterministically (structured_email). Reusing an
+    // older LLM-derived email result would freeze the inconsistent, incomplete
+    // subset (only 6/29 emails) in place — so LLM email results are never
+    // reused; they are re-derived via structured_email on the next run.
+    if (/\/emails\//.test(item.file_ref || '') && item.extraction_source !== 'structured_email') continue;
+    // Never cache a result that produced nothing: empty results are recoverable
+    // deterministically on the next run (structured_transcript / structured_email),
+    // so keeping them would permanently hide those documents from the timeline.
+    if (item.degraded === true &&
+        !(item.nodes.actions?.length > 0) &&
+        !(item.nodes.violations?.length > 0)) continue;
     byHash[hash] = item;
   }
   return byHash;
@@ -273,6 +284,7 @@ function buildExtractionStats(results) {
     degraded_reasons: {},
     empty_responses: 0,
     structured_extracted: 0,
+    structured_email: 0,
     files_with_errors: 0,
     auth_errors: 0,
     total_actions: 0,
@@ -303,6 +315,7 @@ function buildExtractionStats(results) {
     }
     if (r?.empty_responses) stats.empty_responses += r.empty_responses;
     if (r?.extraction_source === 'structured_transcript') stats.structured_extracted += 1;
+    if (r?.extraction_source === 'structured_email') stats.structured_email += 1;
 
     const topLevelErrors = r?.error ? 1 : 0;
     const chunkErrors = Array.isArray(r?.errors) ? r.errors.length : 0;
@@ -360,6 +373,11 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
     // deterministicOnly: regenerate intelligence artifacts offline from
     // structured transcripts via buildFromTranscript — no LLM/API key needed.
     deterministicOnly = false,
+    // forceFiles: re-extract only these specific files (by file_ref) even when
+    // a cached result exists; everything else is reused from cache. Used by the
+    // UI's "process selected files" action so a handful of files can be pushed
+    // through the pipeline without reprocessing the whole corpus.
+    forceFiles     = [],
     // KB options
     kbConfig     = null,
     augmentExtraction,
@@ -465,13 +483,18 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
   }
 
   const previousExtraction = store.getExtractionResults ? store.getExtractionResults() : {};
-  const cachedByHash = (useCache && !deterministicOnly) ? buildExtractionCacheByHash(previousExtraction) : {};
+  const forceSet = new Set(Array.isArray(forceFiles) ? forceFiles.map(f => String(f)) : []);
+  // When specific files are forced we still reuse cache for the rest (incremental);
+  // otherwise cache is only consulted on normal (non-deterministic) runs.
+  const useCacheForOthers = forceSet.size > 0 ? true : (useCache && !deterministicOnly);
+  const cachedByHash = useCacheForOthers ? buildExtractionCacheByHash(previousExtraction) : {};
   const cachedResults = {};
   const filesToExtract = [];
 
   for (const file of evidenceFiles) {
     const hash = file.layers?.L0?.sha256 || null;
-    if (hash && cachedByHash[hash]) {
+    const forced = forceSet.has(file.file_ref);
+    if (!forced && hash && cachedByHash[hash]) {
       cachedResults[file.file_ref] = cloneCachedExtraction(cachedByHash[hash], file.file_ref, hash);
     } else {
       filesToExtract.push(file);
@@ -490,12 +513,26 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
   if (filesToExtract.length > 0) {
     if (deterministicOnly) {
       // Deterministic offline extraction: rebuild grounded nodes from the
-      // transcripts' own curated metadata — never fabricates.
+      // documents' own curated metadata (transcripts → findings/segments/cited
+      // codes; emails → date/subject/from/to/folder) — never fabricates.
       const { buildFromTranscript } = require('./structured_extract');
+      const { buildFromEmail } = require('./structured_email');
       for (const file of filesToExtract) {
         try {
-          const nodes = buildFromTranscript(file, rootDir);
-          if (nodes && (nodes.actions?.length || 0) > 0) {
+          let nodes = null;
+          let source = null;
+          const transcriptSeed = buildFromTranscript(file, rootDir);
+          if (transcriptSeed && (transcriptSeed.actions?.length || 0) > 0) {
+            nodes = transcriptSeed;
+            source = 'structured_transcript';
+          } else {
+            const emailSeed = buildFromEmail(file, rootDir);
+            if (emailSeed && (emailSeed.actions?.length || 0) > 0) {
+              nodes = emailSeed;
+              source = 'structured_email';
+            }
+          }
+          if (nodes) {
             freshResults[file.file_ref] = {
               file_ref: file.file_ref,
               _sha256: file.layers?.L0?.sha256 || null,
@@ -506,7 +543,7 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
               empty_responses: 0,
               degraded: false,
               degraded_reason: null,
-              extraction_source: 'structured_transcript',
+              extraction_source: source,
               nodes
             };
           } else {
@@ -514,7 +551,7 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
               file_ref: file.file_ref,
               _sha256: file.layers?.L0?.sha256 || null,
               skipped: true,
-              reason: 'deterministic_only: no structured transcript content',
+              reason: 'deterministic_only: no structured transcript/email content',
               nodes: null
             };
           }
@@ -825,6 +862,7 @@ async function runIntelligencePipeline(store, rootDir, options = {}) {
       degraded_reasons:     extractionStats.degraded_reasons || {},
       llm_empty_responses:  extractionStats.empty_responses || 0,
       structured_extracted: extractionStats.structured_extracted || 0,
+      structured_email:     extractionStats.structured_email || 0,
       // Dossier registry (S4) + coverage (S5)
       dossiers_indexed:     dossierRegistry.total || 0,
       dossier_tiers:        dossierRegistry.byTier || { A: 0, B: 0, C: 0 },

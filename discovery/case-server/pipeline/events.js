@@ -45,6 +45,8 @@ const ACTION_TO_EVENT_TYPE = {
   hr_issue:               'incident',
   it_incident:            'incident',
   decision_event:         'institutional_action',
+  email_correspondence:   'communication',
+  email_notification:     'communication',
   other:                  'other'
 };
 
@@ -174,6 +176,17 @@ function extractEventsFromFile(fileRef, extractionResult) {
 
       // From document context
       jurisdiction:    context.jurisdiction_hint || null,
+
+      // ── Email facets (from structured_email actions) — allow emails to be
+      // displayed distinctly and grouped (channel / folder / counterparty /
+      // direction / kind) in the UI instead of being indistinguishable events.
+      channel:          action.channel || null,
+      email_folder:     action.email_folder || null,
+      direction:        action.direction || null,
+      subject:          action.subject || null,
+      email_kind:       action.email_kind || null,
+      counterparty:     action.counterparty || null,
+      party_role:       action.party_role || null,
 
       // Violation linkage
       violations: linkedViols.map(v => ({

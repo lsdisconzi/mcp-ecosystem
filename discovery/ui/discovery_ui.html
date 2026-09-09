@@ -310,6 +310,23 @@ nav{position:fixed;top:0;left:0;right:0;height:56px;background:rgba(25,25,23,0.9
 .timeline-date{font-family:var(--mono);font-size:12px;color:var(--amber);font-weight:500}
 .timeline-file{font-family:var(--mono);font-size:11px;color:var(--gray-hi);margin-top:2px}
 .timeline-context{font-size:11px;color:var(--gray);margin-top:2px;font-style:italic}
+.timeline-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.timeline-controls label{font-size:10px;color:var(--gray);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em}
+.timeline-controls input,.timeline-controls select{background:var(--bg-input);border:1px solid var(--border);border-radius:5px;color:var(--gray-hi);font-family:var(--mono);font-size:11px;padding:6px 8px}
+.timeline-controls input:focus,.timeline-controls select:focus{outline:none;border-color:var(--amber)}
+.timeline-summary{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.timeline-summary span{font-family:var(--mono);font-size:10px;color:var(--gray-hi);border:1px solid var(--border);background:var(--bg);border-radius:12px;padding:4px 8px}
+.timeline-event{padding:12px 0 14px;border-bottom:1px solid rgba(42,42,40,.7)}
+.timeline-event:last-child{border-bottom:none}
+.timeline-event-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.timeline-event-kind{font-size:12px;color:var(--white);font-weight:600}
+.timeline-event-time{font-family:var(--mono);font-size:11px;color:var(--amber)}
+.timeline-event-description{font-size:12px;color:var(--gray-hi);line-height:1.55;margin-top:5px;max-width:900px}
+.timeline-event-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:7px;font-family:var(--mono);font-size:10px;color:var(--gray)}
+.timeline-event-meta span{display:inline-flex;align-items:center;gap:5px}
+.timeline-event-meta i{color:var(--amber);font-size:9px}
+.timeline-event-source{color:var(--gray-hi);cursor:pointer}
+.timeline-event-source:hover{color:var(--amber)}
 
 /* Pipeline search */
 .pipe-search-box{position:relative;margin-bottom:14px}
@@ -402,6 +419,19 @@ footer a{color:var(--amber);text-decoration:none}
 .modal-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0}
 .file-row-click{cursor:pointer}
 .file-row-click:hover td{background:rgba(196,98,45,.05)!important}
+.row-selected td{background:rgba(196,98,45,.10)!important}
+.file-chk{width:15px;height:15px;accent-color:var(--amber);cursor:pointer;vertical-align:middle}
+.file-sel-bar{display:flex;align-items:center;gap:12px;background:var(--bg-card);border:1px solid var(--border-hi);border-radius:6px;padding:8px 14px;margin-bottom:12px}
+.file-sel-count{font-size:12px;font-family:var(--mono);color:var(--amber);font-weight:600}
+.file-sel-hint{font-size:11px;color:var(--gray);font-style:italic;margin-left:auto}
+.status-chip{display:inline-block;font-size:10px;font-family:var(--mono);padding:2px 7px;border-radius:4px;white-space:nowrap}
+.status-chip.event{color:#6ea8fe;background:rgba(66,133,244,.12);border:1px solid rgba(66,133,244,.3)}
+.status-chip.ok{color:var(--green);background:rgba(74,158,112,.12);border:1px solid rgba(74,158,112,.3)}
+.status-chip.warn{color:var(--yellow);background:rgba(184,150,46,.12);border:1px solid rgba(184,150,46,.3)}
+.status-chip.no{color:var(--gray);background:rgba(255,255,255,.05);border:1px solid var(--border)}
+.status-src{display:block;font-size:9px;color:var(--gray);font-family:var(--mono);margin-top:2px}
+.sub-badge{display:inline-block;font-size:9px;font-family:var(--mono);text-transform:uppercase;margin-left:6px;padding:1px 5px;border-radius:3px;background:rgba(66,133,244,.12);color:#6ea8fe;border:1px solid rgba(66,133,244,.25);vertical-align:middle}
+.folder-tag{opacity:.9}
 
 /* PIPELINE THUMBNAIL HOVER */
 .pipeline-card{position:relative}
@@ -543,7 +573,35 @@ footer a{color:var(--amber);text-decoration:none}
 .evt-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:8px;transition:border-color .15s}
 .evt-card:hover{border-color:var(--border-hi)}
 .evt-type-badge{display:inline-block;font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:4px;background:var(--amber-lo);border:1px solid rgba(196,98,45,.2);color:var(--amber);margin-right:8px}
+.evt-email-badge{display:inline-block;font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:4px;background:rgba(66,133,244,.12);border:1px solid rgba(66,133,244,.28);color:#6ea8fe;margin-right:8px}
+.evt-cp-chip{display:inline-block;font-size:10px;font-family:var(--mono);color:#6ea8fe;margin-left:8px;opacity:.9}
+.evt-subject{font-size:11px;color:var(--gray);font-family:var(--mono);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .evt-desc{font-size:13px;color:var(--gray-hi);line-height:1.5;margin-top:6px}
+.evt-summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.evt-summary .evt-sum-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:6px 12px;font-size:12px;font-family:var(--mono);color:var(--gray-hi)}
+.evt-sum-item b{color:var(--amber);font-weight:600}
+.jur-chip{display:inline-block;font-size:9px;font-family:var(--mono);padding:1px 6px;border-radius:3px;background:rgba(196,98,45,.12);color:var(--amber);border:1px solid rgba(196,98,45,.3);margin-right:6px;vertical-align:middle}
+.evt-viol-chip{display:inline-block;font-size:9px;font-family:var(--mono);padding:1px 6px;border-radius:3px;margin:2px 4px 2px 0}
+.evt-viol-chip.high{background:var(--red-lo);color:var(--red);border:1px solid rgba(158,74,74,.35)}
+.evt-viol-chip.medium{background:var(--amber-lo);color:var(--amber);border:1px solid rgba(196,98,45,.3)}
+.evt-viol-chip.low{background:rgba(74,158,112,.12);color:var(--green);border:1px solid rgba(74,158,112,.3)}
+.evt-doc-chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-family:var(--mono);padding:1px 8px;border-radius:4px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--gray-hi);cursor:pointer;margin:2px 4px 2px 0;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.evt-doc-chip:hover{border-color:var(--amber);color:var(--amber)}
+/* Actors & Entities panel */
+.actor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.actor-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px}
+.actor-card .actor-role{font-size:14px;font-weight:600;color:var(--white)}
+.actor-card .actor-fn{font-size:10px;font-family:var(--mono);color:var(--gray);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.actor-card .actor-count{font-size:11px;font-family:var(--mono);color:var(--amber);margin-top:6px}
+.person-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:9px 14px;margin-bottom:8px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline}
+.person-name{font-size:13px;font-weight:600;color:var(--white)}
+.person-role{font-size:11px;color:var(--gray-hi)}
+.person-occur{font-size:10px;font-family:var(--mono);color:var(--gray);margin-left:auto}
+.org-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(66,133,244,.10);border:1px solid rgba(66,133,244,.25);color:#a8c8ff;border-radius:14px;padding:4px 11px;font-size:12px;margin:0 6px 6px 0}
+.org-tag b{font-family:var(--mono);font-size:10px;color:#6ea8fe;font-weight:600}
+.actor-section-title{font-size:13px;font-weight:600;color:var(--white);margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+.actor-section-title .actor-section-count{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--gray)}
+.actor-note{font-size:11px;color:var(--gray);font-style:italic;margin:-6px 0 10px}
 .evt-meta{font-size:11px;color:var(--gray);font-family:var(--mono);margin-top:4px;display:flex;gap:12px;flex-wrap:wrap}
 .case-phase-bar{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap}
 .phase-step{flex:1;min-width:100px;padding:10px 12px;text-align:center;border-radius:var(--r);font-size:11px;font-family:var(--mono);border:1px solid var(--border);color:var(--gray);background:var(--bg);transition:all .2s}
@@ -658,9 +716,9 @@ footer a{color:var(--amber);text-decoration:none}
             <button class="btn-browse" type="button" onclick="document.getElementById('filePicker').click()"><i class="fas fa-file"></i> Selecionar Arquivos</button>
             <button class="btn-browse" type="button" onclick="document.getElementById('folderPicker').click()"><i class="fas fa-folder-open"></i> Selecionar Pasta</button>
             <button class="btn btn-ai" id="organizeBtn" onclick="organize()" style="display:none"><i class="fas fa-wand-magic-sparkles"></i> Organizar</button>
-            <input type="file" id="filePicker" style="display:none" multiple
+            <input type="file" id="filePicker" aria-label="Selecionar arquivos para upload" style="display:none" multiple
                    onchange="handleUploadFiles(this.files)">
-            <input type="file" id="folderPicker" webkitdirectory style="display:none"
+            <input type="file" id="folderPicker" aria-label="Selecionar pasta para upload" webkitdirectory style="display:none"
                    onchange="handleUploadFiles(this.files)">
           </div>
           <div class="folder-browse-hint" id="browseHint" style="display:none"></div>
@@ -698,7 +756,7 @@ footer a{color:var(--amber);text-decoration:none}
         </select>
       </div>
       <button class="btn btn-sm" onclick="triggerImport()"><i class="fas fa-upload"></i> Importar Workspace</button>
-      <input type="file" id="importPicker" accept=".json" style="display:none">
+      <input type="file" id="importPicker" aria-label="Importar workspace (arquivo JSON)" accept=".json" style="display:none">
     </div>
 
     <!-- Diff panel (shown after import if changes detected) -->
@@ -754,9 +812,15 @@ footer a{color:var(--amber);text-decoration:none}
     <div class="tab-content" id="tab-files">
       <div class="search-box">
         <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="Buscar por nome, tipo, categoria, descrição…" oninput="filterFiles()">
+        <input type="text" id="searchInput" aria-label="Buscar arquivos" placeholder="Buscar por nome, tipo, categoria, descrição…" oninput="filterFiles()">
       </div>
       <div class="cat-tags" id="catTags"></div>
+      <div class="file-sel-bar" id="fileSelBar" style="display:none">
+        <span class="file-sel-count" id="fileSelCount"></span>
+        <button class="btn btn-sm" style="background:var(--amber);border-color:var(--amber);color:var(--bg);font-weight:600" onclick="processSelectedFiles()"><i class="fas fa-play"></i> Processar selecionados (pipeline)</button>
+        <button class="btn btn-sm" onclick="clearFileSelection()"><i class="fas fa-times"></i> Limpar</button>
+        <span class="file-sel-hint">Extração determinística offline — gera/atualiza os eventos dos arquivos escolhidos</span>
+      </div>
       <div id="fileTableArea"></div>
     </div>
 
@@ -858,7 +922,7 @@ footer a{color:var(--amber);text-decoration:none}
               <div class="pipe-section">
                 <div class="pipe-section-title"><i class="fas fa-sliders"></i> Força mínima</div>
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-                  <input type="range" id="relStrengthSlider" min="1" max="10" value="2" style="flex:1;accent-color:var(--amber)" oninput="loadRelationships()">
+                  <input type="range" id="relStrengthSlider" aria-label="Força mínima dos relacionamentos" min="1" max="10" value="2" style="flex:1;accent-color:var(--amber)" oninput="loadRelationships()">
                   <span id="relStrengthVal" style="font-family:var(--mono);font-size:12px;color:var(--amber);min-width:20px">2</span>
                 </div>
               </div>
@@ -872,9 +936,20 @@ footer a{color:var(--amber);text-decoration:none}
           <div class="card">
             <div class="card-header">
               <h2><i class="fas fa-timeline"></i> Linha do Tempo</h2>
-              <p style="font-size:12px;color:var(--gray)">Datas extraídas dos conteúdos</p>
+              <p style="font-size:12px;color:var(--gray)">Eventos formalizados e datas extraídas</p>
             </div>
             <div class="card-body">
+              <div class="timeline-controls">
+                <label for="timelineFrom">De</label>
+                <input type="date" id="timelineFrom" aria-label="Data inicial da timeline">
+                <label for="timelineTo">Até</label>
+                <input type="date" id="timelineTo" aria-label="Data final da timeline">
+                <select id="timelineKind" aria-label="Filtrar tipo de evento">
+                  <option value="">Todos os eventos</option>
+                </select>
+                <button class="btn btn-sm" type="button" onclick="renderTimeline()"><i class="fas fa-filter"></i> Filtrar</button>
+              </div>
+              <div class="timeline-summary" id="timelineSummary"></div>
               <div class="timeline-container" id="timelineContainer"></div>
             </div>
           </div>
@@ -889,7 +964,7 @@ footer a{color:var(--amber);text-decoration:none}
             <div class="card-body">
               <div class="pipe-search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" id="pipeSearchInput" placeholder="Buscar em entidades, tags, domínios, conteúdo…" onkeydown="if(event.key==='Enter')pipeSearch()">
+                <input type="text" id="pipeSearchInput" aria-label="Buscar em dados do pipeline" placeholder="Buscar em entidades, tags, domínios, conteúdo…" onkeydown="if(event.key==='Enter')pipeSearch()">
               </div>
               <div class="pipe-search-results" id="pipeSearchResults">
                 <div class="empty-state">
@@ -992,6 +1067,7 @@ footer a{color:var(--amber);text-decoration:none}
         <button class="intel-sub-btn active" onclick="switchIntelSub('narrative')"><i class="fas fa-scroll"></i> Narrativa</button>
         <button class="intel-sub-btn" id="intelSubFindingsBtn" onclick="switchIntelSub('violations')"><i class="fas fa-exclamation-triangle"></i> Achados</button>
         <button class="intel-sub-btn" onclick="switchIntelSub('events')"><i class="fas fa-timeline"></i> Eventos</button>
+        <button class="intel-sub-btn" onclick="switchIntelSub('actors')"><i class="fas fa-users"></i> Atores &amp; Entidades</button>
         <button class="intel-sub-btn" onclick="switchIntelSub('case-state')"><i class="fas fa-gavel"></i> Estado do Caso</button>
         <button class="intel-sub-btn" onclick="switchIntelSub('gaps')"><i class="fas fa-puzzle-piece"></i> Lacunas</button>
         <button class="intel-sub-btn" onclick="switchIntelSub('comprehension')"><i class="fas fa-book-open"></i> Compreensão</button>
@@ -1034,10 +1110,24 @@ footer a{color:var(--amber);text-decoration:none}
             <p>Acontecimentos extraídos e consolidados com evidências múltiplas</p>
           </div>
           <div class="card-body">
+            <div class="evt-summary" id="evtSummary"></div>
             <div class="intel-filters" id="evtFilters"></div>
             <div id="intelEventsBody">
               <div class="empty-state"><i class="fas fa-timeline"></i><h3>Nenhum evento</h3><p>Execute o pipeline de inteligência para formalizar eventos.</p></div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB: Actors & Entities -->
+      <div class="intel-sub-content" id="intelsub-actors">
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-users"></i> Atores &amp; Entidades</h2>
+            <p>Quem participa do caso: papéis funcionais, pessoas, organizações e locais</p>
+          </div>
+          <div class="card-body" id="intelActorsBody">
+            <div class="empty-state"><i class="fas fa-users"></i><h3>Sem dados de atores</h3><p>Execute o pipeline de inteligência para identificar os envolvidos no caso.</p></div>
           </div>
         </div>
       </div>
@@ -1189,7 +1279,7 @@ footer a{color:var(--amber);text-decoration:none}
     <span class="chat-suggestion" onclick="useSuggestion(this)">Como integrar com Node.js?</span>
   </div>
   <div class="chat-input-area">
-    <textarea class="chat-textarea" id="chatInput" placeholder="Pergunte sobre seus dados…" rows="1" onkeydown="chatKeyDown(event)" oninput="autoResize(this)"></textarea>
+    <textarea class="chat-textarea" id="chatInput" aria-label="Mensagem para o agente" placeholder="Pergunte sobre seus dados…" rows="1" onkeydown="chatKeyDown(event)" oninput="autoResize(this)"></textarea>
     <button class="chat-send-btn" id="chatSendBtn" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
   </div>
 </div>
@@ -1233,7 +1323,7 @@ footer a{color:var(--amber);text-decoration:none}
     </div>
     <div class="modal-body">
       <div class="modal-content-area">
-        <label style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);margin-bottom:6px">Nome da sessão</label>
+        <label for="sessionNewName" style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);margin-bottom:6px">Nome da sessão</label>
         <input type="text" id="sessionNewName" placeholder="Ex.: Caso LATAM I-002" maxlength="80"
                style="width:100%;padding:10px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--sans);font-size:13px"
                onkeydown="if(event.key==='Enter')createNewSession()">
@@ -1453,7 +1543,7 @@ function startRenameSession(id) {
   const nameEl = document.getElementById('sessName-' + id);
   if (!s || !nameEl) return;
   nameEl.innerHTML = `<span class="session-rename-row">
-    <input type="text" id="renameInput-${esc(id)}" value="${esc(s.name || '')}" maxlength="80"
+    <input type="text" id="renameInput-${esc(id)}" aria-label="Novo nome da sessão" value="${esc(s.name || '')}" maxlength="80"
       onkeydown="if(event.key==='Enter'){commitRenameSession('${esc(id)}');}else if(event.key==='Escape'){cancelRenameSession('${esc(id)}');}">
     <button class="btn btn-sm btn-primary" onclick="commitRenameSession('${esc(id)}')" title="Salvar"><i class="fas fa-check"></i></button>
     <button class="btn btn-sm" onclick="cancelRenameSession('${esc(id)}')" title="Cancelar"><i class="fas fa-xmark"></i></button>
@@ -1841,6 +1931,8 @@ let allFiles = [];
 let categoriesData = {};
 let uploadFiles = [];  // staged files waiting to be uploaded
 let activeCategory = null;
+let activeFolder = null;          // email subfolder filter (dgac/latam/…)
+const fileSelection = new Set();  // file paths chosen to (re)run through the pipeline
 let currentModalFile = null;
 let chatOpen = false;
 let chatHistory = [];
@@ -2088,55 +2180,155 @@ function renderOverview() {
   }
 }
 function jumpToCategory(cat){
-  activeCategory=cat; switchTab('files'); filterFiles();
+  activeCategory=cat; activeFolder=null;
+  switchTab('files'); filterFiles();
   document.querySelectorAll('.cat-tag').forEach(t=>t.classList.toggle('active',t.dataset.cat===cat));
 }
 
 // ============================================================================
-// FILES TABLE — with clickable rows for preview
+// FILES TABLE — with clickable rows, per-file pipeline status & selection
 // ============================================================================
+let renderedFiles = []; // last set of files passed to renderTable (for checkbox index)
+
 function renderCategoryTags(){
   const container=document.getElementById('catTags'); container.innerHTML='';
   let tags=`<span class="cat-tag active" data-cat="" onclick="setCategory(this,null)">Todos (${allFiles.length})</span>`;
   for(const [cat,info] of Object.entries(categoriesData))
     tags+=`<span class="cat-tag" data-cat="${esc(cat)}" onclick="setCategory(this,'${esc(cat)}')">${esc(info.label||cat)} (${info.count})</span>`;
+  // Email sub-folder tags (DGAC / LATAM) so correspondence is still separable.
+  const folders=[...new Set(allFiles.filter(f=>f.contentType==='email'&&f.emailFolder).map(f=>f.emailFolder))];
+  for(const folder of folders){
+    const c=allFiles.filter(f=>f.emailFolder===folder).length;
+    tags+=`<span class="cat-tag folder-tag ${activeFolder===folder?'active':''}" data-folder="${esc(folder)}" onclick="setFolderFilter(this,'${esc(folder)}')"><i class="fas fa-envelope"></i> ${esc(folder)} (${c})</span>`;
+  }
   container.innerHTML=tags;
 }
 function setCategory(el,cat){
-  activeCategory=cat;
-  document.querySelectorAll('.cat-tag').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active'); filterFiles();
+  activeCategory=cat; activeFolder=null;
+  document.querySelectorAll('#catTags .cat-tag').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active'); filterFiles();
+}
+function setFolderFilter(el,folder){
+  activeFolder=(activeFolder===folder)?null:folder;
+  if(activeFolder) activeCategory=null;
+  document.querySelectorAll('#catTags .cat-tag').forEach(t=>t.classList.remove('active'));
+  if(activeFolder){ if(el) el.classList.add('active'); }
+  else {
+    // fall back to highlight the "Todos" or the active category tag
+    if(activeCategory) document.querySelector(`#catTags .cat-tag[data-cat="${activeCategory}"]`)?.classList.add('active');
+    else document.querySelector('#catTags .cat-tag[data-cat=""]')?.classList.add('active');
+  }
+  filterFiles();
 }
 function filterFiles(){
   const q=(document.getElementById('searchInput').value||'').toLowerCase();
   let filtered=allFiles;
   if(activeCategory) filtered=filtered.filter(f=>f.category===activeCategory);
+  if(activeFolder) filtered=filtered.filter(f=>f.emailFolder===activeFolder);
   if(q) filtered=filtered.filter(f=>
     (f.displayName||'').toLowerCase().includes(q)||(f.description||'').toLowerCase().includes(q)||
     (f.file||'').toLowerCase().includes(q)||(f.kind||'').toLowerCase().includes(q)||
-    (f.category||'').toLowerCase().includes(q));
+    (f.category||'').toLowerCase().includes(q)||(f.emailFolder||'').toLowerCase().includes(q));
   renderTable(filtered);
+}
+function statusChipHtml(f){
+  if(!f) return '<span class="status-chip no">não processado</span>';
+  // Legal dossiers are the law-registry lane (not evidence extraction) — show a
+  // neutral label so they are not mistaken for "unprocessed evidence".
+  if(f.contentType==='legal_dossier') return '<span class="status-chip no"><i class="fas fa-scale-balanced"></i> dossiê (registro)</span>';
+  const st=f.status||EMPTY_STATUS;
+  if(st.has_event){
+    return `<span class="status-chip event"><i class="fas fa-timeline"></i> ${st.event_count||1} evento${(st.event_count||1)!==1?'s':''}</span>`;
+  }
+  if(st.extracted) return '<span class="status-chip ok"><i class="fas fa-check"></i> extraído (sem evento)</span>';
+  if(st.degraded) return '<span class="status-chip warn"><i class="fas fa-triangle-exclamation"></i> falhou/degradado</span>';
+  return '<span class="status-chip no"><i class="fas fa-hourglass-half"></i> não processado</span>';
+}
+function statusSourceHtml(f){
+  const st=(f&&f.status)||EMPTY_STATUS;
+  if(!st||!st.extraction_source) return '';
+  const m={structured_transcript:'transcrição',structured_email:'email',llm:'LLM'};
+  return `<span class="status-src">${esc(m[st.extraction_source]||st.extraction_source)}${st.actions?` · ${st.actions} ação(ões)`:''}</span>`;
+}
+const EMPTY_STATUS={ extracted:false, degraded:false, degraded_reason:null, extraction_source:null, actions:0, violations:0, has_event:false, event_count:0 };
+function categoryCellHtml(f){
+  const label=f.categoryLabel||f.category||'';
+  const sub=(f.contentType==='email'&&f.emailFolder)?`<span class="sub-badge">${esc(f.emailFolder)}</span>`:'';
+  return `<span style="font-size:12px">${esc(label)}${sub}</span>`;
+}
+function toggleFileSel(checkbox){
+  const idx=Number(checkbox.dataset.i);
+  const f=renderedFiles[idx];
+  if(!f) return;
+  if(checkbox.checked) fileSelection.add(f.file); else fileSelection.delete(f.file);
+  const row=checkbox.closest('tr');
+  if(row) row.classList.toggle('row-selected',checkbox.checked);
+  updateFileSelBar();
+}
+function updateFileSelBar(){
+  const bar=document.getElementById('fileSelBar');
+  if(!bar) return;
+  const n=fileSelection.size;
+  if(n>0){
+    bar.style.display='flex';
+    document.getElementById('fileSelCount').textContent=`${n} arquivo${n!==1?'s':''} selecionado${n!==1?'s':''}`;
+  } else bar.style.display='none';
+}
+function clearFileSelection(){
+  fileSelection.clear();
+  updateFileSelBar();
+  filterFiles();
+}
+async function processSelectedFiles(){
+  const files=[...fileSelection];
+  if(!files.length){ showAlert('warn','Selecione ao menos um arquivo'); return; }
+  const btn=document.querySelector('#fileSelBar button');
+  if(btn){ btn.disabled=true; const old=btn.innerHTML; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Processando…'; btn.dataset.old=old; }
+  try{
+    const resp=await fetch(`${CASE_SERVER}/api/intelligence/run-selected`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ files, mode:'deterministic', analysis_profile:getIntelProfileSetting() })
+    });
+    const data=await resp.json().catch(()=>({}));
+    if(!resp.ok){ showAlert('error',`Erro ao processar: ${data.error||resp.status}`); return; }
+    showAlert('success',`${files.length} arquivo(s) processado(s) — eventos atualizados.`);
+    await loadDashboard();
+    if(document.querySelector('#intelSubEventsBtn, .intel-sub-btn[onclick*="events"]')){
+      // refresh intelligence panel if it is currently visible
+      const visible=document.getElementById('tab-intelligence')?.classList.contains('active');
+      if(visible) loadIntelligence();
+    }
+  }catch(err){ showAlert('error','Falha ao processar: '+err.message); }
+  finally{
+    if(btn){ btn.disabled=false; btn.innerHTML=btn.dataset.old||'<i class="fas fa-play"></i> Processar selecionados (pipeline)'; }
+  }
 }
 function renderTable(files){
   const area=document.getElementById('fileTableArea');
+  renderedFiles=files;
   if(!files.length){
     area.innerHTML='<div class="empty-state"><i class="fas fa-search"></i><h3>Nenhum arquivo correspondente</h3><p>Tente uma busca diferente ou filtro de categoria</p></div>';
     return;
   }
   let html=`<table class="api-table"><thead><tr>
-    <th>Arquivo</th><th>Tipo</th><th>Categoria</th><th>Tamanho</th><th>Endpoint</th>
+    <th style="width:30px"></th><th>Arquivo</th><th>Tipo</th><th>Categoria</th><th>Status Pipeline</th><th>Tamanho</th><th>Endpoint</th>
   </tr></thead><tbody>`;
-  for(const f of files){
-    html+=`<tr class="file-row-click" onclick="openFileModal(${JSON.stringify(JSON.stringify(f))})">
+  files.forEach((f,idx)=>{
+    const checked=fileSelection.has(f.file);
+    html+=`<tr class="file-row-click ${checked?'row-selected':''}" onclick="openFileModal(${JSON.stringify(JSON.stringify(f))})">
+      <td onclick="event.stopPropagation()"><input type="checkbox" class="file-chk" data-i="${idx}" ${checked?'checked':''} onchange="toggleFileSel(this)" title="Marcar para processar no pipeline"></td>
       <td><span class="file-name">${esc(f.displayName||f.fileName)}</span><span class="file-desc">${esc(f.description||'')}</span></td>
       <td><span class="file-kind">${esc(f.kind||f.extension||'—')}</span></td>
-      <td style="font-size:12px">${esc(f.categoryLabel||f.category||'')}</td>
+      <td style="font-size:12px">${categoryCellHtml(f)}</td>
+      <td>${statusChipHtml(f)}${statusSourceHtml(f)}</td>
       <td style="font-size:12px;font-family:var(--mono);white-space:nowrap">${esc(f.size_human||'')}</td>
       <td><a class="file-url" href="${esc(f.url)}" target="_blank" onclick="event.stopPropagation()">${shortenUrl(f.url)}</a></td>
     </tr>`;
-  }
+  });
   html+='</tbody></table>';
   area.innerHTML=html;
+  updateFileSelBar();
 }
 
 // ============================================================================
@@ -2207,7 +2399,7 @@ function setGroupFilter(group){
   // jump to files tab and filter by group
   const q=document.getElementById('searchInput');
   q.value=groupTranslations[group]||group;
-  activeCategory=null;
+  activeCategory=null; activeFolder=null;
   document.querySelectorAll('.cat-tag').forEach(t=>t.classList.remove('active'));
   document.querySelector('[data-cat=""]')?.classList.add('active');
   filterFiles();
@@ -2828,6 +3020,7 @@ function updateChatSuggestions(){
 let pipelineStats = null;
 let pipelineEntities = null;
 let pipelineTimeline = null;
+let intelligenceTimeline = null;
 let currentEntityType = 'people';
 
 const ENTITY_ICONS = {
@@ -2848,14 +3041,16 @@ async function loadInsights(){
   content.style.display = 'none';
 
   try {
-    const [statsResp, entResp, tlResp] = await Promise.all([
+    const [statsResp, entResp, tlResp, intelTlResp] = await Promise.all([
       fetch(`${CASE_SERVER}/api/pipeline/stats`),
       fetch(`${CASE_SERVER}/api/pipeline/entities`),
-      fetch(`${CASE_SERVER}/api/pipeline/timeline`)
+      fetch(`${CASE_SERVER}/api/pipeline/timeline`),
+      fetch(`${CASE_SERVER}/api/intelligence/timeline`)
     ]);
     pipelineStats = await statsResp.json();
     pipelineEntities = await entResp.json();
     pipelineTimeline = await tlResp.json();
+    intelligenceTimeline = intelTlResp.ok ? await intelTlResp.json() : null;
 
     if (pipelineStats.error) {
       loading.innerHTML = '<div class="empty-state"><i class="fas fa-flask"></i><h3>Pipeline ainda não executado</h3><p>Organize uma pasta primeiro — o pipeline será executado automaticamente.</p></div>';
@@ -3073,37 +3268,100 @@ function shortenPath(p){
   return '…/' + parts.slice(-2).join('/');
 }
 
-function renderTimeline(){
-  const tl = pipelineTimeline?.timeline || [];
-  const container = document.getElementById('timelineContainer');
+const TIMELINE_ACTION_LABELS = {
+  physical_interaction: 'Interação presencial', delay: 'Atraso operacional',
+  operational_update: 'Atualização operacional', documentation_failure: 'Falha documental',
+  communication: 'Comunicação', email_correspondence: 'Correspondência por e-mail',
+  refusal: 'Recusa', escalation: 'Escalonamento', allegation: 'Alegação',
+  decision: 'Decisão', incident: 'Incidente'
+};
 
+function timelineActionLabel(type){
+  return TIMELINE_ACTION_LABELS[type] || String(type || 'Evento').replace(/[_-]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+}
+
+function timelineEventDate(event){
+  const value = event?.local_datetime || event?.datetime || event?.timestamp || event?.date;
+  if (!value) return 'Data desconhecida';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? String(value) : new Intl.DateTimeFormat('pt-BR',{dateStyle:'medium',timeStyle:'short'}).format(date);
+}
+
+function timelineEventDay(event){
+  return String(event?.local_datetime || event?.datetime || event?.timestamp || event?.date || '').slice(0,10);
+}
+
+function timelineEventSources(event){
+  const direct = Array.isArray(event?.source_documents) ? event.source_documents : [];
+  const segments = Array.isArray(event?.source_segments) ? event.source_segments.map(segment => segment.document).filter(Boolean) : [];
+  return [...new Set([...direct, ...segments])];
+}
+
+function renderTimeline(){
+  const container = document.getElementById('timelineContainer');
+  const events = intelligenceTimeline?.events || [];
+  const from = document.getElementById('timelineFrom')?.value || '';
+  const to = document.getElementById('timelineTo')?.value || '';
+  const kind = document.getElementById('timelineKind')?.value || '';
+
+  if (events.length) {
+    const kinds = [...new Set(events.map(event => event.action_type || event.type).filter(Boolean))].sort();
+    const kindSelect = document.getElementById('timelineKind');
+    if (kindSelect && kindSelect.options.length === 1) {
+      kinds.forEach(value => kindSelect.insertAdjacentHTML('beforeend', `<option value="${esc(value)}">${esc(timelineActionLabel(value))}</option>`));
+    }
+    const filtered = events.filter(event => {
+      const day = timelineEventDay(event);
+      return (!from || day >= from) && (!to || day <= to) && (!kind || (event.action_type || event.type) === kind);
+    }).sort((a,b) => new Date(a.local_datetime || a.datetime || a.timestamp || a.date) - new Date(b.local_datetime || b.datetime || b.timestamp || b.date));
+
+    const summary = document.getElementById('timelineSummary');
+    if (summary) summary.innerHTML = [
+      `${filtered.length} eventos`,
+      `${new Set(filtered.map(event => timelineEventDay(event)).filter(Boolean)).size} dias`,
+      `${new Set(filtered.flatMap(timelineEventSources)).size} fontes`
+    ].map(value => `<span>${esc(value)}</span>`).join('');
+
+    if (!filtered.length) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-filter-circle-xmark"></i><h3>Nenhum evento neste filtro</h3><p>Ajuste o intervalo ou o tipo de evento.</p></div>';
+      return;
+    }
+
+    container.innerHTML = filtered.slice(0,300).map(event => {
+      const title = event.channel === 'email' && event.subject ? `E-mail: ${event.subject}` : timelineActionLabel(event.action_type || event.type);
+      const source = timelineEventSources(event)[0] || event.source_document || '';
+      const sourceCall = source ? ` onclick="openPipelineFile('${String(source).replace(/'/g,"\\'")}')"` : '';
+      return `<div class="timeline-event">
+        <div class="timeline-event-head"><span class="timeline-event-kind">${esc(title)}</span><span class="timeline-event-time">${esc(timelineEventDate(event))}</span></div>
+        <div class="timeline-event-description">${esc(event.description || event.details || 'Sem descrição registrada.')}</div>
+        <div class="timeline-event-meta">
+          ${event.location ? `<span><i class="fas fa-location-dot"></i>${esc(event.location)}</span>` : ''}
+          ${event.direction ? `<span><i class="fas fa-arrow-right-arrow-left"></i>${esc(event.direction === 'outbound' ? 'Enviado' : 'Recebido')}</span>` : ''}
+          ${source ? `<span class="timeline-event-source"${sourceCall}><i class="fas fa-file-lines"></i>${esc(shortenPath(source))}</span>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+    return;
+  }
+
+  const tl = pipelineTimeline?.timeline || [];
+  const summary = document.getElementById('timelineSummary');
+  if (summary) summary.innerHTML = tl.length ? `<span>${tl.length} referências extraídas</span>` : '';
   if (!tl.length) {
     container.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-xmark"></i><h3>Nenhuma data</h3><p>Nenhuma referência temporal foi extraída dos arquivos.</p></div>';
     return;
   }
 
-  // Group by date
   const byDate = {};
   for (const entry of tl.slice(0, 300)) {
-    const d = entry.date || 'sem data';
-    if (!byDate[d]) byDate[d] = [];
-    byDate[d].push(entry);
+    const date = entry.date || 'sem data';
+    if (!byDate[date]) byDate[date] = [];
+    byDate[date].push(entry);
   }
-
-  const sortedDates = Object.keys(byDate).sort().reverse();
-  let html = '';
-  for (const date of sortedDates) {
+  container.innerHTML = Object.keys(byDate).sort().reverse().map(date => {
     const entries = byDate[date];
-    html += `<div class="timeline-entry">
-      <div class="timeline-date">${esc(date)}</div>`;
-    for (const e of entries.slice(0, 5)) {
-      html += `<div class="timeline-file" style="cursor:pointer" onclick="openPipelineFile('${(e.file_ref||'').replace(/'/g,"\\'")}')">${esc(shortenPath(e.file_ref||''))}</div>`;
-      if (e.context) html += `<div class="timeline-context">${esc(e.context)}</div>`;
-    }
-    if (entries.length > 5) html += `<div style="font-size:10px;color:var(--gray);margin-top:4px">... e mais ${entries.length-5} referência(s)</div>`;
-    html += `</div>`;
-  }
-  container.innerHTML = html;
+    return `<div class="timeline-entry"><div class="timeline-date">${esc(date)}</div>${entries.slice(0,5).map(entry => `<div class="timeline-file" style="cursor:pointer" onclick="openPipelineFile('${(entry.file_ref||'').replace(/'/g,"\\'")}')">${esc(shortenPath(entry.file_ref||''))}</div>${entry.context ? `<div class="timeline-context">${esc(entry.context)}</div>` : ''}`).join('')}${entries.length > 5 ? `<div style="font-size:10px;color:var(--gray);margin-top:4px">... e mais ${entries.length-5} referência(s)</div>` : ''}</div>`;
+  }).join('');
 }
 
 async function pipeSearch(){
@@ -3308,10 +3566,10 @@ function refreshDashboard(){
 // ============================================================================
 // INTELLIGENCE TAB — Fetch & Render Artifacts
 // ============================================================================
-let intelData = { narrative: null, violations: null, events: null, caseState: null, gaps: null, comprehension: null, summary: null };
+let intelData = { narrative: null, violations: null, events: null, actors: null, caseState: null, gaps: null, comprehension: null, summary: null };
 let intelAvailability = null;
 let activeViolSeverity = null;
-let activeEvtType = null;
+let evtFilter = { type: null, folder: null };
 
 async function loadIntelligence() {
   const statusRow = document.getElementById('intelStatusRow');
@@ -3337,6 +3595,7 @@ async function loadIntelligence() {
     { key: 'narrative', url: '/api/intelligence/narrative', label: 'Narrativa', enabled: !!intelAvailability.narrative },
     { key: 'violations', url: '/api/intelligence/violations', label: findingsLabel, enabled: !!intelAvailability.violations },
     { key: 'events', url: '/api/events', label: 'Eventos', enabled: !!intelAvailability.events },
+    { key: 'actors', url: '/api/intelligence/actors', label: 'Atores & Ent.', enabled: !!(intelAvailability.summary || intelAvailability.events) },
     { key: 'caseState', url: '/api/case-state', label: 'Estado', enabled: !!intelAvailability.caseState },
     { key: 'gaps', url: '/api/intelligence/gap-report', label: 'Lacunas', enabled: !!intelAvailability.gaps },
     { key: 'comprehension', url: '/api/comprehend/overview', label: 'Compreensão', enabled: !!intelAvailability.comprehension },
@@ -3347,7 +3606,7 @@ async function loadIntelligence() {
     activeChecks.map(c => fetch(`${CASE_SERVER}${c.url}`).then(r => r.ok ? r.json() : null).catch(() => null))
   );
 
-  intelData = { narrative: null, violations: null, events: null, caseState: null, gaps: null, comprehension: null, summary: null };
+  intelData = { narrative: null, violations: null, events: null, actors: null, caseState: null, gaps: null, comprehension: null, summary: null };
 
   let chips = '';
   checks.forEach((c) => {
@@ -3375,6 +3634,7 @@ async function loadIntelligence() {
 
   if (intelData.violations) renderIntelViolations(intelData.violations);
   if (intelData.events) renderIntelEvents(intelData.events);
+  if (intelData.actors) renderIntelActors(intelData.actors);
   if (intelData.caseState) renderIntelCaseState(intelData.caseState);
   if (intelData.gaps) renderIntelGaps(intelData.gaps);
   if (intelData.comprehension) renderIntelComprehension(intelData.comprehension);
@@ -3436,23 +3696,113 @@ function renderIntelEvents(data) {
   const events = data.events || [];
   if (!events.length) return;
 
+  const emails = events.filter(e => e.channel === 'email');
   const types = [...new Set(events.map(e => e.type).filter(Boolean))];
-  let filterHtml = `<button class="intel-filter-btn active" onclick="filterEvents(null, this)">Todos (${events.length})</button>`;
+  const folders = [...new Set(emails.map(e => e.email_folder).filter(Boolean))];
+
+  // ── Summary strip ──
+  const withViol = events.filter(e => e.violations && e.violations.length).length;
+  const dated = events.filter(e => e.date).map(e => e.date).sort();
+  const range = dated.length ? `${dated[0]} → ${dated[dated.length - 1]}` : 'sem datas';
+  const sumHtml = [
+    `<span class="evt-sum-item"><b>${events.length}</b> eventos</span>`,
+    `<span class="evt-sum-item">${range}</span>`,
+    `<span class="evt-sum-item">jurisdição: <b>${esc(data.jurisdiction || (events.find(e=>e.jurisdiction)?.jurisdiction) || '—')}</b></span>`,
+    `<span class="evt-sum-item"><b>${withViol}</b> com violações associadas</span>`
+  ];
+  types.forEach(t => {
+    const c = events.filter(e => e.type === t).length;
+    sumHtml.push(`<span class="evt-sum-item">${esc(t.replace(/_/g,' '))}: <b>${c}</b></span>`);
+  });
+  document.getElementById('evtSummary').innerHTML = sumHtml.join('');
+
+  // ── Filters ──
+  let filterHtml = `<button class="intel-filter-btn active" onclick="setEvtFilter('all', null, this)">Todos (${events.length})</button>`;
   types.forEach(t => {
     const count = events.filter(e => e.type === t).length;
-    filterHtml += `<button class="intel-filter-btn" onclick="filterEvents('${t}', this)">${t.replace(/_/g,' ')} (${count})</button>`;
+    filterHtml += `<button class="intel-filter-btn" onclick="setEvtFilter('type', '${t}', this)">${t.replace(/_/g,' ')} (${count})</button>`;
   });
+  // Emails get their own grouping so correspondence is easy to isolate and the
+  // DGAC ↔ LATAM folders are distinguishable from incident/transcript events.
+  if (emails.length) {
+    filterHtml += `<span style="opacity:.35;margin:0 2px">|</span>`;
+    filterHtml += `<button class="intel-filter-btn" onclick="setEvtFilter('scope', 'email', this)"><i class="fas fa-envelope"></i> E-mails (${emails.length})</button>`;
+    folders.forEach(f => {
+      const count = emails.filter(e => e.email_folder === f).length;
+      filterHtml += `<button class="intel-filter-btn" onclick="setEvtFilter('folder', '${f}', this)"><i class="fas fa-folder"></i> ${esc(f)} (${count})</button>`;
+    });
+  }
   document.getElementById('evtFilters').innerHTML = filterHtml;
   renderEventCards(events);
 }
 
-function filterEvents(type, btn) {
-  activeEvtType = type;
+function setEvtFilter(kind, val, btn) {
+  if (kind === 'all') evtFilter = { type: null, folder: null };
+  else if (kind === 'type') evtFilter = { type: val, folder: null };
+  else if (kind === 'scope') evtFilter = { type: '__email', folder: null };
+  else if (kind === 'folder') evtFilter = { type: '__email', folder: val };
   document.querySelectorAll('#evtFilters .intel-filter-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const all = (intelData.events?.events || []);
-  const filtered = type ? all.filter(e => e.type === type) : all;
-  renderEventCards(filtered);
+  renderEventCards(applyEvtFilter(all));
+}
+
+function applyEvtFilter(all) {
+  if (!evtFilter.type && !evtFilter.folder) return all;
+  let out = all;
+  if (evtFilter.type === '__email') out = out.filter(e => e.channel === 'email');
+  else if (evtFilter.type) out = out.filter(e => e.type === evtFilter.type);
+  if (evtFilter.folder) out = out.filter(e => e.email_folder === evtFilter.folder);
+  return out;
+}
+
+const EVENT_ACTION_LABELS = {
+  physical_interaction:'interação física', service_denial:'negação de serviço', communication_failure:'falha de comunicação',
+  documentation_failure:'falha documental', delay:'atraso', operational_update:'atualização operacional',
+  email_correspondence:'correspondência (e-mail)', safety_violation:'risco de segurança', procedure_violation:'violação processual',
+  policy_violation:'violação de política', process_breakdown:'quebra de processo', compliance_issue:'questão de compliance',
+  customer_escalation:'escalonamento de cliente', financial_irregularity:'irregularidade financeira', hr_issue:'questão de RH',
+  it_incident:'incidente de TI', decision_event:'decisão', other:'outro'
+};
+const ACTION_TO_EVT_LABEL = {
+  incident:'Incidente', communication:'Comunicação', complaint:'Reclamação', institutional_action:'Ação institucional',
+  legal_process:'Processo legal', violation_event:'Violação', documentation:'Documentação', other:'Outro'
+};
+
+function findFileByRel(rel){
+  if (!allFiles || !allFiles.length) return null;
+  return allFiles.find(f => f.file === rel) || null;
+}
+function openEvtDoc(el){
+  const rel = el && el.dataset && el.dataset.rel;
+  if (!rel) return;
+  const f = findFileByRel(rel);
+  if (f) { openFileModal(f); return; }
+  // No indexed file → open the workspace source via its safe URL when possible.
+  const encoded = rel.split('/').map(encodeURIComponent).join('/');
+  const target = `${CASE_SERVER}/api/file/${encoded}`;
+  window.open(target, '_blank');
+}
+function eventViolChips(violations){
+  if (!violations || !violations.length) return '';
+  const chips = violations.slice(0, 5).map(v => {
+    const sev = (v.severity || 'medium').toLowerCase();
+    const txt = v.category ? v.category.replace(/_/g,' ') : 'violação';
+    return `<span class="evt-viol-chip ${sev}" title="${esc(v.category || '')}${v.articles && v.articles.length ? ' · ' + esc(v.articles.slice(0,3).join(', ')) : ''}">${esc(txt)}</span>`;
+  }).join('');
+  return chips + (violations.length > 5 ? `<span class="evt-viol-chip">+${violations.length - 5}</span>` : '');
+}
+function eventDocChips(sourceDocs){
+  if (!sourceDocs || !sourceDocs.length) return '';
+  const chips = sourceDocs.slice(0, 5).map(d => {
+    const f = findFileByRel(d);
+    const base = f ? f.fileName : d.split('/').pop();
+    const title = 'Abrir evidência: ' + d;
+    return f
+      ? `<span class="evt-doc-chip" title="${esc(title)}" data-rel="${esc(d)}" onclick="event.stopPropagation();openEvtDoc(this)"><i class="fas fa-file"></i> ${esc(base)}</span>`
+      : `<span class="evt-doc-chip" title="${esc(d)}"><i class="fas fa-file-lines"></i> ${esc(base)}</span>`;
+  }).join('');
+  return chips + (sourceDocs.length > 5 ? `<span class="evt-doc-chip">+${sourceDocs.length - 5}</span>` : '');
 }
 
 function renderEventCards(events) {
@@ -3462,20 +3812,120 @@ function renderEventCards(events) {
   }
   let html = '';
   for (const e of events.slice(0, 200)) {
-    const evidCount = (e.evidence || []).length;
+    const srcDocs = Array.isArray(e.source_documents) ? e.source_documents : [];
+    const srcCount = srcDocs.length;
+    const isEmail = e.channel === 'email';
+    const dt = e.local_datetime || e.datetime || e.date;
+    const typeBadge = `<span class="evt-type-badge" title="${esc(ACTION_TO_EVT_LABEL[e.type] || e.type || '')}">${esc(e.type || 'other')}</span>`;
+    const emailBadge = isEmail
+      ? `<span class="evt-email-badge"><i class="fas fa-envelope"></i> ${esc(e.email_folder || 'EMAIL')}</span>`
+      : '';
+    const actionLabel = (EVENT_ACTION_LABELS[e.action_type] && e.action_type !== e.type)
+      ? `<span class="status-src" style="display:inline;margin-right:6px">${esc(EVENT_ACTION_LABELS[e.action_type])}</span>` : '';
+    const jur = e.jurisdiction ? `<span class="jur-chip">${esc(e.jurisdiction)}</span>` : '';
+    const cpChip = (isEmail && e.counterparty)
+      ? `<span class="evt-cp-chip">${esc(e.counterparty)}${e.direction ? ` · ${esc(e.direction)}` : ''}${e.email_kind ? ` · ${esc(String(e.email_kind).replace(/_/g, ' '))}` : ''}</span>`
+      : '';
     html += `<div class="evt-card">
-      <span class="evt-type-badge">${esc(e.type || 'other')}</span>
-      ${(e.local_datetime || e.datetime || e.date) ? `<span style="font-size:11px;font-family:var(--mono);color:var(--amber)">&nbsp;${esc(String(e.local_datetime || e.datetime || e.date).replace('T', ' ').split('.')[0])}</span>` : ''}
-      ${e.confidence != null ? `<span style="font-size:10px;font-family:var(--mono);color:var(--gray);float:right">&nbsp;confiança: ${Math.round(e.confidence * 100)}%</span>` : ''}
+      <div>
+        ${typeBadge}${emailBadge}${jur}${actionLabel}
+        ${dt ? `<span style="font-size:11px;font-family:var(--mono);color:var(--amber)">&nbsp;${esc(String(dt).replace('T', ' ').split('.')[0])}</span>` : ''}
+        ${cpChip}
+        ${e.confidence != null ? `<span style="font-size:10px;font-family:var(--mono);color:var(--gray);float:right">&nbsp;confiança: ${Math.round(e.confidence * 100)}%</span>` : ''}
+      </div>
       <div class="evt-desc">${esc(e.description || '')}</div>
+      ${isEmail && e.subject && e.subject !== e.description ? `<div class="evt-subject"><i class="fas fa-at"></i> ${esc(e.subject)}</div>` : ''}
       <div class="evt-meta">
         ${e.location ? `<span><i class="fas fa-map-marker-alt"></i> ${esc(e.location)}</span>` : ''}
-        ${evidCount ? `<span><i class="fas fa-file-lines"></i> ${evidCount} fonte${evidCount !== 1 ? 's' : ''}</span>` : ''}
+        ${srcCount ? `<span><i class="fas fa-file-lines"></i> ${srcCount} fonte${srcCount !== 1 ? 's' : ''}</span>` : ''}
+        ${(e.violations && e.violations.length) ? `<span><i class="fas fa-exclamation-triangle"></i> ${e.violations.length} violação${e.violations.length !== 1 ? 'ões' : ''}</span>` : ''}
       </div>
+      ${eventViolChips(e.violations)}
+      <div style="margin-top:6px">${eventDocChips(srcDocs)}</div>
     </div>`;
   }
-  if (events.length > 200) html += `<div style="text-align:center;padding:12px;color:var(--gray);font-size:12px">Mostrando 200 de ${events.length}</div>`;
+  if (events.length > 200) html += `<div style="text-align:center;padding:12px;color:var(--gray);font-size:12px">Mostrando 200 de ${events.length} — use os filtros acima para refinar</div>`;
   document.getElementById('intelEventsBody').innerHTML = html;
+}
+
+// ============================================================================
+// ACTORS & ENTITIES
+// ============================================================================
+const ROLE_ICONS = {
+  passenger:'fa-user', crew:'fa-user-tie', airline_staff:'fa-headset', regulator:'fa-scale-balanced',
+  police_officer:'fa-shield-halved', controller:'fa-passport', security_personnel:'fa-user-shield',
+  witness:'fa-eye', manager:'fa-briefcase', legal_counsel:'fa-gavel', mail_system:'fa-envelope-circle-check',
+  system_operator:'fa-robot', auditor:'fa-clipboard-check', service_provider:'fa-handshake', other:'fa-user'
+};
+function renderIntelActors(data) {
+  const body = document.getElementById('intelActorsBody');
+  const roles = (data && data.actor_roles) || [];
+  const persons = (data && data.persons) || [];
+  const orgs = (data && data.organizations) || [];
+  const locs = (data && data.locations) || [];
+  if (!roles.length && !persons.length && !orgs.length) {
+    body.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><h3>Sem dados de atores</h3><p>Execute o pipeline de inteligência para identificar os envolvidos no caso.</p></div>';
+    return;
+  }
+
+  let html = '';
+
+  // Roles
+  if (roles.length) {
+    html += `<div class="actor-section-title"><i class="fas fa-user-tag"></i> Papéis (atores funcionais)<span class="actor-section-count">${roles.length} papéis</span></div>
+      <div class="actor-grid">`;
+    for (const r of roles) {
+      const icon = ROLE_ICONS[r.function] || 'fa-user';
+      html += `<div class="actor-card">
+        <div class="actor-role"><i class="fas ${icon}"></i> ${esc(r.label || r.function)}</div>
+        <div class="actor-fn">${esc(r.function || '')}</div>
+        <div class="actor-count"><i class="fas fa-file-circle-check"></i> presente em ${r.occurrences || r.source_role_count || 0} registro(s) do corpus</div>
+      </div>`;
+    }
+    html += '</div>';
+  }
+
+  // Persons
+  html += `<div class="actor-section-title"><i class="fas fa-user"></i> Pessoas identificadas<span class="actor-section-count">${persons.length}</span></div>`;
+  if (persons.length) {
+    html += '<div class="actor-note">Nomes declarados nos metadados das transcrições (participantes). Nos nós ontológicos as identidades são mantidas como papéis funcionais (isolamento de identidade).</div>';
+    for (const p of persons.slice(0, 60)) {
+      const srcs = (p.sources || []).slice(0, 3);
+      const srcLabel = srcs.map(s => s.split('/').pop()).join(', ') + ((p.sources || []).length > 3 ? ` +${p.sources.length - 3}` : '');
+      html += `<div class="person-card">
+        <span class="person-name">${esc(p.name)}</span>
+        ${(p.roles || []).slice(0, 3).map(r => `<span class="person-role">${esc(r)}</span>`).join('')}
+        <span class="person-occur">${p.occurrences || 0} menção(ões) · ${esc(srcLabel)}</span>
+      </div>`;
+    }
+    if (persons.length > 60) html += `<div style="text-align:center;font-size:11px;color:var(--gray);padding:6px">… e mais ${persons.length - 60} pessoas</div>`;
+  } else {
+    html += '<div class="actor-note">Nenhuma pessoa declarada nos metadados — apenas papéis funcionais são emitidos (isolamento de identidade).</div>';
+  }
+
+  // Organizations
+  html += `<div class="actor-section-title"><i class="fas fa-building"></i> Organizações &amp; Instituições<span class="actor-section-count">${orgs.length}</span></div>`;
+  if (orgs.length) {
+    html += '<div style="margin-bottom:10px">';
+    for (const o of orgs.slice(0, 60)) {
+      html += `<span class="org-tag"><i class="fas fa-building"></i> ${esc(o.name)} <b>${o.occurrences || 0}</b></span>`;
+    }
+    html += '</div>';
+  } else {
+    html += '<div class="actor-note">Nenhuma organização detectada.</div>';
+  }
+
+  // Locations
+  if (locs.length) {
+    html += `<div class="actor-section-title"><i class="fas fa-location-dot"></i> Locais<span class="actor-section-count">${locs.length}</span></div>
+      <div>`;
+    for (const l of locs.slice(0, 25)) {
+      html += `<span class="org-tag"><i class="fas fa-location-dot"></i> ${esc(l.name)} <b>${l.occurrences || 0}</b></span>`;
+    }
+    html += '</div>';
+  }
+
+  body.innerHTML = html;
 }
 
 function renderIntelCaseState(data) {

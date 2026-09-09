@@ -31,6 +31,7 @@ const {
 } = require('./analysis_profile');
 
 const { buildFromTranscript } = require('./structured_extract');
+const { buildFromEmail } = require('./structured_email');
 
 // ─── Node ID Generation ───────────────────────────────────────────────────────
 
@@ -574,6 +575,31 @@ async function extractFile(file, options = {}) {
   const chunks   = chunkText(fullText);
   const fileSha256 = file.layers?.L0?.sha256 || null;
 
+  // ── Emails: deterministic first (no LLM call required) ────────────────────
+  // Structured email extraction is grounded in the message's own frontmatter
+  // (real date, subject, from/to, folder), so every dated email reliably yields
+  // a communication event — uniform, offline and complete, even when the model
+  // returns empty (a known failure mode that previously dropped 23 of 29
+  // emails, including the entire DGAC correspondence, from the timeline).
+  if (rootDir) {
+    const emailSeed = buildFromEmail(file, rootDir);
+    if (emailSeed && (emailSeed.actions?.length || 0) > 0) {
+      return {
+        file_ref:   fileRef,
+        _sha256:    fileSha256,
+        skipped:    false,
+        chunk_count: 1,
+        run_ids:    [],
+        errors:     [],
+        empty_responses: 0,
+        degraded:   false,
+        degraded_reason: null,
+        extraction_source: 'structured_email',
+        nodes:      emailSeed
+      };
+    }
+  }
+
   const systemPrompt = buildSystemPrompt(profile);
   const allNodes     = [];
   const runIds       = [];
@@ -666,9 +692,10 @@ async function extractFile(file, options = {}) {
     : null;
 
   // Deterministic grounded baseline: if the LLM yielded nothing and this is a
-  // narrative transcript, extract from its own curated metadata (segments,
-  // findings, cited codes) instead of degrading to empty. No fabrication —
-  // only what the document itself declares.
+  // narrative transcript (or an email), extract from the document's own curated
+  // metadata (segments/findings/cited codes for transcripts; date/subject/from/
+  // to/folder for emails) instead of degrading to empty. No fabrication — only
+  // what the document itself declares.
   let extractionSource = 'llm';
   if (degraded && rootDir) {
     const seed = buildFromTranscript(file, rootDir);
@@ -678,6 +705,15 @@ async function extractFile(file, options = {}) {
       degraded = false;
       degradedReason = null;
       extractionSource = 'structured_transcript';
+    } else {
+      const emailSeed = buildFromEmail(file, rootDir);
+      if (emailSeed && (emailSeed.actions?.length || 0) > 0) {
+        finalNodes = emailSeed;
+        hasFindings = true;
+        degraded = false;
+        degradedReason = null;
+        extractionSource = 'structured_email';
+      }
     }
   }
 

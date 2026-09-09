@@ -668,6 +668,109 @@ function formatCategoryLabel(cat) {
 }
 
 // ===================================================================
+// CONTENT-AWARE CATEGORY OVERRIDE
+// ===================================================================
+// The folder-based inference above is great for arbitrary workspaces, but for
+// evidence/case corpora the meaningful grouping is WHAT the file is, not which
+// folder it sits in. Override the folder category when the file is clearly a
+// recognized evidence type so the UI can label them:
+//   transcripts  → "Transcript"   (case narrative .json, e.g. I-002_…_NAR-…)
+//   emails       → "Email"        (anything under an emails/<folder>/ tree)
+//   dossiers     → "Violations"   (violations/ tree or BR-/CL-/INT-###### codes)
+// The folder still surfaces on the row via `emailFolder` / `location`.
+const CONTENT_CATEGORY_LABELS = {
+  transcript: "Transcript",
+  email: "Email",
+  violations: "Violations",
+  legal_dossier: "Violations",
+};
+const TRANSCRIPT_NAME_RE = /^I-\d{1,4}[_-].*(?:NAR|STG|board|gate|removal|counter|office|corridor|terminal|waiting|carabinero|dgac|pdi|self|latam)/i;
+const DOSSIER_NAME_RE = /^(?:BR|CL|INT)-\d{2,6}/i;
+
+function deriveContentCategory(rel, ext, baseName) {
+  const relPosix = String(rel || "").replace(/\\/g, "/").toLowerCase();
+  const segs = relPosix.split("/").filter(Boolean);
+  const base = String(baseName || "");
+
+  // Emails — anything under an emails/ directory (dgac/latam/… become sublabels).
+  const emailIdx = segs.indexOf("emails");
+  if (emailIdx >= 0) {
+    const folder = segs[emailIdx + 1] || null;
+    return { category: "email", categoryLabel: "Email", contentType: "email", emailFolder: folder };
+  }
+
+  // Narrative transcripts (case JSON) — folder is usually the workspace root.
+  if (ext === ".json" && TRANSCRIPT_NAME_RE.test(base)) {
+    return { category: "transcript", categoryLabel: "Transcript", contentType: "transcript", emailFolder: null };
+  }
+
+  // Legal dossiers.
+  if (segs.includes("violations") || (ext === ".json" && DOSSIER_NAME_RE.test(base))) {
+    return { category: "violations", categoryLabel: "Violations", contentType: "legal_dossier", emailFolder: null };
+  }
+
+  return null;
+}
+
+// ===================================================================
+// FILE PIPELINE STATUS (per-file extraction + event provenance)
+// ===================================================================
+// Lets the UI tell, for EVERY file, whether it has been extracted and whether
+// it produced any formalized event — and what extraction path produced it —
+// so files that never made it through the pipeline can be selected & re-run.
+function buildFileStatusMap() {
+  const out = {};
+  const extraction = (pipelineStore && typeof pipelineStore.getExtractionResults === "function")
+    ? (pipelineStore.getExtractionResults() || {})
+    : {};
+
+  for (const [ref, res] of Object.entries(extraction || {})) {
+    const actions = res?.nodes?.actions?.length || 0;
+    const violations = res?.nodes?.violations?.length || 0;
+    const hasFindings = actions > 0 || violations > 0;
+    out[ref] = {
+      extracted: !res?.degraded && hasFindings,
+      degraded: !!res?.degraded,
+      degraded_reason: res?.degraded_reason || null,
+      extraction_source: res?.extraction_source || (res?.degraded ? "llm" : null) || null,
+      actions,
+      violations,
+      has_event: false,
+      event_count: 0,
+    };
+  }
+
+  // Link formalized events back to their source files (events.json).
+  try {
+    const evPath = path.join(currentRootDir, "_intelligence", "events.json");
+    if (fs.existsSync(evPath)) {
+      const events = JSON.parse(fs.readFileSync(evPath, "utf8"));
+      for (const e of (events.events || [])) {
+        for (const src of (e.source_documents || [])) {
+          if (!out[src]) {
+            out[src] = { extracted: false, degraded: false, degraded_reason: null, extraction_source: null, actions: 0, violations: 0, has_event: false, event_count: 0 };
+          }
+          out[src].has_event = true;
+          out[src].event_count = (out[src].event_count || 0) + 1;
+        }
+      }
+    }
+  } catch (_) { /* events not generated yet */ }
+
+  return out;
+}
+
+const EMPTY_FILE_STATUS = { extracted: false, degraded: false, degraded_reason: null, extraction_source: null, actions: 0, violations: 0, has_event: false, event_count: 0 };
+
+function attachFileStatuses(endpointList) {
+  const statusMap = buildFileStatusMap();
+  return (endpointList || []).map((ep) => ({
+    ...ep,
+    status: statusMap[ep.file] || { ...EMPTY_FILE_STATUS },
+  }));
+}
+
+// ===================================================================
 // DESCRIPTION GENERATOR
 // ===================================================================
 
@@ -783,10 +886,18 @@ function rebuildFromDir(rootDir) {
     const rel = path.relative(resolvedRoot, filePath);
     const ext = path.extname(filePath);
     const baseName = path.basename(filePath, ext);
-    const category = inferCategory(filePath);
+    const folderCategory = inferCategory(filePath);
+    // Content-aware category (Transcript / Email / Violations …). The route
+    // keeps the folder-based category so existing file URLs stay stable.
+    const content = deriveContentCategory(rel, ext, baseName) || {
+      category: folderCategory,
+      categoryLabel: formatCategoryLabel(folderCategory),
+      contentType: null,
+      emailFolder: null,
+    };
     const displayName = cleanDisplayName(baseName);
     const kind = getFileKind(ext);
-    const safeRoute = buildSafeRoute(rel, category, path.basename(filePath));
+    const safeRoute = buildSafeRoute(rel, folderCategory, path.basename(filePath));
 
     const absPath = path.resolve(filePath);
     newRouter.get(safeRoute, (req, res, next) => {
@@ -799,13 +910,15 @@ function rebuildFromDir(rootDir) {
       fileName: path.basename(filePath),
       displayName,
       route: safeRoute,
-      category,
-      categoryLabel: formatCategoryLabel(category),
+      category: content.category,
+      categoryLabel: content.categoryLabel,
+      contentType: content.contentType,
+      emailFolder: content.emailFolder,
       kind,
       contentGroup: getContentGroup(ext),
       mimeType: getMimeType(ext),
       extension: ext || "(none)",
-      description: generateDescription(rel, category, kind, displayName),
+      description: generateDescription(rel, content.category, kind, displayName),
       location: path.dirname(rel) || ".",
       ...getFileStats(filePath),
     });
@@ -837,6 +950,10 @@ function rebuildFromDir(rootDir) {
     console.error("Pipeline failed (server continues without enrichment):", err.message);
   }
 
+  // Refine categories from the actual structured decode (L1) when available —
+  // authoritative over filename heuristics for transcripts / legal dossiers.
+  refineCategoriesFromStore();
+
   return {
     root_dir: resolvedRoot,
     total_files: endpoints.length,
@@ -846,12 +963,49 @@ function rebuildFromDir(rootDir) {
   };
 }
 
+/**
+ * After the store has decoded file kinds (L1), upgrade any endpoint whose
+ * content is authoritatively a narrative transcript or a legal dossier so the
+ * category tags and table match the real document type.
+ */
+function refineCategoriesFromStore() {
+  if (!pipelineStore || typeof pipelineStore.getAllFiles !== "function") return;
+  const byRef = new Map();
+  for (const rec of Object.values(pipelineStore.getAllFiles())) {
+    if (rec && rec.file_ref) byRef.set(rec.file_ref, rec);
+  }
+  let changed = 0;
+  for (const ep of endpoints) {
+    const rec = byRef.get(ep.file);
+    const kind = rec?.layers?.L1?.structured_kind || rec?.layers?.L1?.structured?.kind;
+    if (kind === "narrative_transcript" && ep.category !== "transcript") {
+      ep.category = "transcript";
+      ep.categoryLabel = CONTENT_CATEGORY_LABELS.transcript;
+      ep.contentType = "transcript";
+      changed++;
+    } else if (kind === "legal_dossier" && ep.category !== "violations") {
+      ep.category = "violations";
+      ep.categoryLabel = CONTENT_CATEGORY_LABELS.violations;
+      ep.contentType = "legal_dossier";
+      changed++;
+    }
+  }
+  if (changed > 0) {
+    try { fs.writeFileSync(INVENTORY_FILE, JSON.stringify(endpoints, null, 2)); } catch (_) {}
+    console.log(`🏷️  Content categories refined for ${changed} file(s)`);
+  }
+}
+
 function summarizeCategories() {
   const cats = {};
   for (const ep of endpoints) {
     if (!cats[ep.category]) cats[ep.category] = { label: ep.categoryLabel, count: 0, kinds: {} };
     cats[ep.category].count++;
     cats[ep.category].kinds[ep.kind] = (cats[ep.category].kinds[ep.kind] || 0) + 1;
+    if (ep.contentType === "email" && ep.emailFolder) {
+      if (!cats[ep.category].sub) cats[ep.category].sub = {};
+      cats[ep.category].sub[ep.emailFolder] = (cats[ep.category].sub[ep.emailFolder] || 0) + 1;
+    }
   }
   return cats;
 }
@@ -1948,7 +2102,7 @@ function createDiscoveryApp() {
   // ── Endpoints listing ───────────────────────────────────────────
   app.get("/api/endpoints", (req, res) => {
     const baseUrl = getBaseUrl(req);
-    res.json(endpoints.map((endpoint) => serializeEndpoint(endpoint, baseUrl)));
+    res.json(attachFileStatuses(endpoints.map((endpoint) => serializeEndpoint(endpoint, baseUrl))));
   });
 
   // ── Files (filterable) ──────────────────────────────────────────
@@ -1959,11 +2113,17 @@ function createDiscoveryApp() {
     if (req.query.ext) result = result.filter((e) => e.extension === req.query.ext);
     if (req.query.kind) result = result.filter((e) => e.kind.toLowerCase().includes(req.query.kind.toLowerCase()));
     if (req.query.group) result = result.filter((e) => e.contentGroup === req.query.group);
+    if (req.query.type) result = result.filter((e) => e.contentType === req.query.type);
     res.json({
       total: result.length,
       filters: req.query,
-      files: result.map((endpoint) => serializeEndpoint(endpoint, baseUrl)),
+      files: attachFileStatuses(result.map((endpoint) => serializeEndpoint(endpoint, baseUrl))),
     });
+  });
+
+  // ── Per-file pipeline status (extracted? degraded? produced events?) ──
+  app.get("/api/files/status", (req, res) => {
+    res.json({ files: buildFileStatusMap() });
   });
 
   // ── Categories ──────────────────────────────────────────────────
@@ -2290,6 +2450,62 @@ function createDiscoveryApp() {
     }
   });
 
+  // ── Intelligence: run SELECTED files through the pipeline ──────────
+  // Lets the user pick specific files (e.g. ones that never produced an event)
+  // and push exactly those through extraction + event formalization. Unselected
+  // files are reused from cache so the corpus is not reprocessed wholesale.
+  //   POST /api/intelligence/run-selected
+  //   body: { files: ["I-…json", "emails/dgac/…"], mode: "deterministic"|"llm",
+  //           api_key?, model?, analysis_profile?, kb_enabled? }
+  app.post("/api/intelligence/run-selected", async (req, res) => {
+    const {
+      files,
+      mode,
+      api_key,
+      model,
+      analysis_profile,
+      kb_enabled,
+      skip_verification,
+    } = req.body || {};
+
+    const list = Array.isArray(files) ? files.map((f) => String(f)).filter(Boolean) : [];
+    if (!list.length) {
+      return res.status(400).json({ error: "No files selected — send { files: [...] }" });
+    }
+
+    const deterministic = String(mode || "").toLowerCase() !== "llm";
+    const kbEnabled = kb_enabled === true || kb_enabled === "true";
+
+    // Default to the profile the workspace's last run used, so the selected-file
+    // run stays consistent with existing artifacts (legal ↔ violations, etc.).
+    let profile = typeof analysis_profile === "string" && analysis_profile ? analysis_profile : null;
+    if (!profile) {
+      try {
+        const summary = JSON.parse(fs.readFileSync(path.join(currentRootDir, "_intelligence", "pipeline_summary.json"), "utf8"));
+        profile = summary && summary.analysis_profile ? summary.analysis_profile : "legal";
+      } catch (_) {
+        profile = "legal";
+      }
+    }
+
+    try {
+      const store = ensurePipelineStore();
+      const result = await runIntelligencePipeline(store, currentRootDir, {
+        apiKey: deterministic ? undefined : (api_key || process.env.LLM_API_KEY || undefined),
+        model: typeof model === "string" && model ? model : undefined,
+        deterministicOnly: deterministic,
+        forceFiles: list,
+        analysisProfile: profile,
+        kbConfig: { enabled: kbEnabled, persist_graph: false, augment_extraction: false },
+        skipVerification: skip_verification === true || skip_verification === "true",
+        outputDir: path.join(currentRootDir, "_intelligence"),
+      });
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   app.get("/api/intelligence/run-stream", async (req, res) => {
     const {
       api_key,
@@ -2392,6 +2608,127 @@ function createDiscoveryApp() {
     const graph = readIntelligenceJson("case_graph.json");
     if (!graph) return res.status(404).json({ error: "Case graph not yet generated." });
     res.json(graph);
+  });
+
+  // ── Intelligence: Actors & Entities ─────────────────────────────
+  // Aggregates the WHO of the case from grounded sources only:
+  //   • actor_roles   — functional roles from the case graph (+ action counts)
+  //   • persons       — named participants declared in the narrative transcripts
+  //   • organizations — institutions from L4 store + email counterparties
+  //   • locations     — places from the L4 entity index
+  const ROLE_FUNCTION_LABELS = {
+    passenger: "Passageiro",
+    crew: "Tripulação / Piloto",
+    airline_staff: "Equipe da companhia (LATAM)",
+    regulator: "Órgão regulador (DGAC)",
+    police_officer: "Polícia (PDI / Carabineros)",
+    controller: "Controle / Imigração",
+    security_personnel: "Segurança aeroportuária",
+    witness: "Testemunha",
+    manager: "Gerência / Supervisor",
+    legal_counsel: "Consultoria jurídica",
+    mail_system: "Sistema de correio (bounce)",
+    customer: "Cliente / Passageiro",
+    system_operator: "Sistema / Automação",
+    auditor: "Auditoria",
+    service_provider: "Prestador de serviço",
+    other: "Outro"
+  };
+
+  function readActorsPayload() {
+    const payload = { actor_roles: [], persons: [], organizations: [], locations: [], meta: { generated_at: new Date().toISOString() } };
+
+    // 1) Functional roles + action counts from the ontology case graph.
+    let graph = null;
+    try {
+      graph = JSON.parse(fs.readFileSync(path.join(currentRootDir, "_intelligence", "case_graph.json"), "utf8"));
+    } catch (_) { /* not generated yet */ }
+    if (graph && Array.isArray(graph.nodes && graph.nodes.actor_roles)) {
+      const roles = graph.nodes.actor_roles;
+      const seen = new Set();
+      for (const r of roles) {
+        const fn = r.function || "other";
+        const sourceRoleIds = Array.isArray(r._source_node_ids) ? r._source_node_ids : [];
+        payload.actor_roles.push({
+          function: fn,
+          label: ROLE_FUNCTION_LABELS[fn] || fn,
+          // How many times this functional role appears across the corpus
+          // (each curated transcript/email contributes one underlying role node).
+          occurrences: sourceRoleIds.length || 1,
+          sources: []
+        });
+      }
+    }
+
+    // 2) Named persons — participants declared by the narrative transcripts.
+    const persons = new Map();
+    const store = (typeof ensurePipelineStore === "function") ? ensurePipelineStore() : null;
+    if (store && typeof store.getAllFiles === "function") {
+      for (const rec of Object.values(store.getAllFiles())) {
+        const kind = rec?.layers?.L1?.structured_kind || rec?.layers?.L1?.structured?.kind;
+        if (kind !== "narrative_transcript") continue;
+        let parsed = null;
+        try {
+          parsed = JSON.parse(fs.readFileSync(path.resolve(currentRootDir, rec.file_ref), "utf8"));
+        } catch (_) { continue; }
+        for (const p of (parsed && parsed.participants) || []) {
+          const name = String(p.canonical_name || p.speaker_label || "").trim();
+          if (!name) continue;
+          // Skip ASR placeholder labels that are not actual people.
+          if (/^unknown/i.test(name) || /^various/i.test(name) || /^(n\/a|none|\?|not specified|no name)$/i.test(name) || /^speaker[\s_#-]*\d*/i.test(name)) continue;
+          const key = name.toLowerCase();
+          if (!persons.has(key)) persons.set(key, { name, roles: [], occurrences: 0, sources: [] });
+          const entry = persons.get(key);
+          const role = String(p.role || p.speaker_label || "").trim();
+          if (role && !entry.roles.includes(role)) entry.roles.push(role);
+          entry.occurrences += 1;
+          if (rec.file_ref && !entry.sources.includes(rec.file_ref)) entry.sources.push(rec.file_ref);
+        }
+      }
+    }
+    payload.persons = [...persons.values()].sort((a, b) => b.occurrences - a.occurrences).slice(0, 200);
+
+    // 3) Organizations — L4 entity index unioned with email counterparties.
+    const orgMap = new Map();
+    const addOrg = (name, occurrences) => {
+      const clean = String(name || "").replace(/\s+/g, " ").trim();
+      if (!clean || clean.length < 2) return;
+      const key = clean.toLowerCase();
+      if (!orgMap.has(key)) orgMap.set(key, { name: clean, occurrences: 0 });
+      orgMap.get(key).occurrences += Number(occurrences) || 1;
+    };
+    if (store && typeof store.getEntities === "function") {
+      const orgs = store.getEntities().organizations || {};
+      for (const [name, files] of Object.entries(orgs)) {
+        addOrg(name, Array.isArray(files) ? files.length : 1);
+      }
+    }
+    try {
+      const events = JSON.parse(fs.readFileSync(path.join(currentRootDir, "_intelligence", "events.json"), "utf8"));
+      for (const e of (events.events || [])) {
+        if (e.channel === "email" && e.counterparty) addOrg(e.counterparty, e.event_count || 1);
+      }
+    } catch (_) { /* events not generated */ }
+    payload.organizations = [...orgMap.values()].sort((a, b) => b.occurrences - a.occurrences).slice(0, 80);
+
+    // 4) Locations.
+    if (store && typeof store.getEntities === "function") {
+      const locs = store.getEntities().locations || {};
+      payload.locations = Object.entries(locs)
+        .map(([name, files]) => ({ name: String(name).replace(/\s+/g, " "), occurrences: (Array.isArray(files) ? files.length : 1) }))
+        .sort((a, b) => b.occurrences - a.occurrences)
+        .slice(0, 25);
+    }
+
+    return payload;
+  }
+
+  app.get("/api/intelligence/actors", (req, res) => {
+    try {
+      res.json(readActorsPayload());
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
   const sendFindingsPayload = (req, res) => {

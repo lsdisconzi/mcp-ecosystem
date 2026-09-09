@@ -361,6 +361,49 @@ body::before {
   flex-shrink: 0;
 }
 
+/* ===== VIEW SWITCHING (FIX) ===== */
+.view-content {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.view-content.active {
+  display: flex;
+}
+
+.view-content .panel-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.center-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ===== CHAT WRAPPER (FIX) ===== */
+.chat-wrapper {
+  flex: 0 0 auto;
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.chat-log {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 80px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 /* ===== EXPANDABLE SECTIONS ===== */
 .expandable-section {
   border: 1px solid var(--line);
@@ -675,6 +718,23 @@ body::before {
   font-size: 11px;
   color: var(--ink-soft);
   margin-top: 4px;
+}
+
+.intel-summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.intel-summary-strip span {
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.65);
+  color: var(--ink-soft);
+  font-size: 10px;
+  font-family: var(--mono);
 }
 
 /* ===== GRAPH CONTAINER ===== */
@@ -1136,22 +1196,7 @@ body::before {
   line-height: 1.5;
 }
 
-/* ===== CHAT SECTION ===== */
-.chat-wrapper {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.chat-log {
-  flex: 1;
-  overflow-y: auto;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
+/* ===== CHAT SECTION (inherits from chat-wrapper) ===== */
 .msg {
   display: flex;
   gap: 10px;
@@ -1516,7 +1561,7 @@ body::before {
   border: 1px solid var(--line); background: rgba(255,255,255,0.5); color: var(--ink-fade);
 }
 
-/* ===== HIDDEN ===== */
+/* ===== HIDDEN (moved up) ===== */
 .hidden { display: none !important; }
 
 /* ===== ANIMATIONS ===== */
@@ -1581,29 +1626,29 @@ body::before {
       <div class="brand-title">Corpus Intelligence</div>
     </div>
     
-    <div class="topbar-center">
-      <button class="view-tab active" data-view="artifacts"><i class="fas fa-folder-tree"></i> Artefatos</button>
-      <button class="view-tab" data-view="graph"><i class="fas fa-diagram-project"></i> Grafo</button>
-      <button class="view-tab" data-view="timeline"><i class="fas fa-clock-rotate-left"></i> Timeline</button>
-      <button class="view-tab" data-view="violations"><i class="fas fa-exclamation-triangle"></i> Violações</button>
-      <button class="view-tab" data-view="shared"><i class="fas fa-database"></i> Dados Compartilhados</button>
-      <button class="view-tab" data-view="legislation"><i class="fas fa-scale-balanced"></i> Legislação</button>
-      <button class="view-tab" data-view="jurisprudence"><i class="fas fa-landmark"></i> Jurisprudência</button>
+    <div class="topbar-center" role="tablist" aria-label="Views principais">
+      <button class="view-tab active" data-view="artifacts" role="tab" aria-selected="true" aria-label="Ver Artefatos"><i class="fas fa-folder-tree" aria-hidden="true"></i> Artefatos</button>
+      <button class="view-tab" data-view="graph" role="tab" aria-selected="false" aria-label="Ver Grafo"><i class="fas fa-diagram-project" aria-hidden="true"></i> Grafo</button>
+      <button class="view-tab" data-view="timeline" role="tab" aria-selected="false" aria-label="Ver Timeline"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> Timeline</button>
+      <button class="view-tab" data-view="violations" role="tab" aria-selected="false" aria-label="Ver Violações"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Violações</button>
+      <button class="view-tab" data-view="shared" role="tab" aria-selected="false" aria-label="Ver Dados Compartilhados"><i class="fas fa-database" aria-hidden="true"></i> Dados Compartilhados</button>
+      <button class="view-tab" data-view="legislation" role="tab" aria-selected="false" aria-label="Ver Legislação"><i class="fas fa-scale-balanced" aria-hidden="true"></i> Legislação</button>
+      <button class="view-tab" data-view="jurisprudence" role="tab" aria-selected="false" aria-label="Ver Jurisprudência"><i class="fas fa-landmark" aria-hidden="true"></i> Jurisprudência</button>
     </div>
     
     <div class="topbar-actions">
       <span class="badge badge-green" id="statusBadge">carregando</span>
       <div class="import-mode-wrap" title="Define como tratar conflitos ao importar workspace exportado">
         <label for="importModeSelect" class="import-mode-label">Importação</label>
-        <select id="importModeSelect" class="import-mode-select">
+        <select id="importModeSelect" class="import-mode-select" aria-label="Modo de importação">
           <option value="add">Adicionar (renomear conflitos)</option>
           <option value="overwrite">Sobrescrever (substituir conflitos)</option>
         </select>
       </div>
-      <button class="ghost-btn" id="importWorkspaceBtn"><i class="fas fa-file-import"></i> Importar Workspace</button>
-      <button class="ghost-btn" id="addFolderBtn"><i class="fas fa-folder-plus"></i> Adicionar</button>
-      <button class="ghost-btn" id="refreshBtn"><i class="fas fa-rotate"></i></button>
-      <button class="btn" id="buildContextBtn"><i class="fas fa-wand-magic-sparkles"></i> Montar Contexto</button>
+      <button class="ghost-btn" id="importWorkspaceBtn" aria-label="Importar workspace"><i class="fas fa-file-import" aria-hidden="true"></i> Importar Workspace</button>
+      <button class="ghost-btn" id="addFolderBtn" aria-label="Adicionar pasta"><i class="fas fa-folder-plus" aria-hidden="true"></i> Adicionar</button>
+      <button class="ghost-btn" id="refreshBtn" aria-label="Atualizar"><i class="fas fa-rotate" aria-hidden="true"></i></button>
+      <button class="btn" id="buildContextBtn"><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i> Montar Contexto</button>
     </div>
   </header>
 
@@ -1617,8 +1662,8 @@ body::before {
           <span class="panel-title">Explorer</span>
         </div>
         <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" id="artifactSearchInput" placeholder="Buscar artefatos...">
+          <i class="fas fa-search" aria-hidden="true"></i>
+          <input type="text" id="artifactSearchInput" placeholder="Buscar artefatos..." aria-label="Buscar artefatos">
         </div>
       </div>
       
@@ -1627,13 +1672,13 @@ body::before {
         <div class="expandable-section open" data-section="categories">
           <div class="expandable-header">
             <div class="expandable-header-left">
-              <div class="expandable-icon green"><i class="fas fa-layer-group"></i></div>
+              <div class="expandable-icon green"><i class="fas fa-layer-group" aria-hidden="true"></i></div>
               <div class="expandable-title-wrap">
                 <span class="expandable-title">Categorias</span>
                 <span class="expandable-subtitle" id="categoriesCount">0 categorias</span>
               </div>
             </div>
-            <i class="fas fa-chevron-down expandable-chevron"></i>
+            <i class="fas fa-chevron-down expandable-chevron" aria-hidden="true"></i>
           </div>
           <div class="expandable-content">
             <div class="expandable-inner" id="categoriesList"></div>
@@ -1644,13 +1689,13 @@ body::before {
         <div class="expandable-section" data-section="files">
           <div class="expandable-header">
             <div class="expandable-header-left">
-              <div class="expandable-icon blue"><i class="fas fa-file-lines"></i></div>
+              <div class="expandable-icon blue"><i class="fas fa-file-lines" aria-hidden="true"></i></div>
               <div class="expandable-title-wrap">
                 <span class="expandable-title">Arquivos</span>
                 <span class="expandable-subtitle" id="filesCount">0 arquivos</span>
               </div>
             </div>
-            <i class="fas fa-chevron-down expandable-chevron"></i>
+            <i class="fas fa-chevron-down expandable-chevron" aria-hidden="true"></i>
           </div>
           <div class="expandable-content">
             <div class="expandable-inner" id="filesList"></div>
@@ -1661,13 +1706,13 @@ body::before {
         <div class="expandable-section" data-section="entities">
           <div class="expandable-header">
             <div class="expandable-header-left">
-              <div class="expandable-icon purple"><i class="fas fa-users"></i></div>
+              <div class="expandable-icon purple"><i class="fas fa-users" aria-hidden="true"></i></div>
               <div class="expandable-title-wrap">
                 <span class="expandable-title">Entidades</span>
                 <span class="expandable-subtitle" id="entitiesCount">0 entidades</span>
               </div>
             </div>
-            <i class="fas fa-chevron-down expandable-chevron"></i>
+            <i class="fas fa-chevron-down expandable-chevron" aria-hidden="true"></i>
           </div>
           <div class="expandable-content">
             <div class="expandable-inner" id="entitiesList"></div>
@@ -1678,13 +1723,13 @@ body::before {
         <div class="expandable-section" data-section="findings">
           <div class="expandable-header">
             <div class="expandable-header-left">
-              <div class="expandable-icon amber"><i class="fas fa-lightbulb"></i></div>
+              <div class="expandable-icon amber"><i class="fas fa-lightbulb" aria-hidden="true"></i></div>
               <div class="expandable-title-wrap">
                 <span class="expandable-title">Achados</span>
                 <span class="expandable-subtitle" id="findingsCount">0 achados</span>
               </div>
             </div>
-            <i class="fas fa-chevron-down expandable-chevron"></i>
+            <i class="fas fa-chevron-down expandable-chevron" aria-hidden="true"></i>
           </div>
           <div class="expandable-content">
             <div class="expandable-inner" id="findingsList"></div>
@@ -1695,13 +1740,13 @@ body::before {
         <div class="expandable-section" data-section="violations">
           <div class="expandable-header">
             <div class="expandable-header-left">
-              <div class="expandable-icon red"><i class="fas fa-gavel"></i></div>
+              <div class="expandable-icon red"><i class="fas fa-gavel" aria-hidden="true"></i></div>
               <div class="expandable-title-wrap">
                 <span class="expandable-title">Violações</span>
                 <span class="expandable-subtitle" id="violationsCount">0 violações</span>
               </div>
             </div>
-            <i class="fas fa-chevron-down expandable-chevron"></i>
+            <i class="fas fa-chevron-down expandable-chevron" aria-hidden="true"></i>
           </div>
           <div class="expandable-content">
             <div class="expandable-inner" id="violationsList"></div>
@@ -1712,13 +1757,13 @@ body::before {
         <div class="expandable-section" data-section="legislation">
           <div class="expandable-header">
             <div class="expandable-header-left">
-              <div class="expandable-icon green"><i class="fas fa-scale-balanced"></i></div>
+              <div class="expandable-icon green"><i class="fas fa-scale-balanced" aria-hidden="true"></i></div>
               <div class="expandable-title-wrap">
                 <span class="expandable-title">Artigos Selecionados</span>
                 <span class="expandable-subtitle" id="selectedArticlesCount">0 artigos</span>
               </div>
             </div>
-            <i class="fas fa-chevron-down expandable-chevron"></i>
+            <i class="fas fa-chevron-down expandable-chevron" aria-hidden="true"></i>
           </div>
           <div class="expandable-content">
             <div class="expandable-inner" id="selectedArticlesList">
@@ -1731,13 +1776,13 @@ body::before {
         <div class="expandable-section" data-section="jurisprudence">
           <div class="expandable-header">
             <div class="expandable-header-left">
-              <div class="expandable-icon blue"><i class="fas fa-landmark"></i></div>
+              <div class="expandable-icon blue"><i class="fas fa-landmark" aria-hidden="true"></i></div>
               <div class="expandable-title-wrap">
                 <span class="expandable-title">Jurisprudência</span>
                 <span class="expandable-subtitle" id="jurisResultsCount">0 resultados</span>
               </div>
             </div>
-            <i class="fas fa-chevron-down expandable-chevron"></i>
+            <i class="fas fa-chevron-down expandable-chevron" aria-hidden="true"></i>
           </div>
           <div class="expandable-content">
             <div class="expandable-inner" id="jurisResultsList">
@@ -1749,10 +1794,10 @@ body::before {
 
       <!-- WORKSPACE BUILDER -->
       <div class="panel-footer">
-        <div class="workspace-builder">
+        <div class="workspace-builder" id="workspaceBuilderDropZone">
           <div class="workspace-builder-header">
-            <span class="workspace-builder-title"><i class="fas fa-briefcase"></i> Contexto do Agente</span>
-            <button class="btn btn-sm btn-outline" id="clearContextBtn"><i class="fas fa-trash"></i></button>
+            <span class="workspace-builder-title"><i class="fas fa-briefcase" aria-hidden="true"></i> Contexto do Agente</span>
+            <button class="btn btn-sm btn-outline" id="clearContextBtn" aria-label="Limpar contexto"><i class="fas fa-trash" aria-hidden="true"></i></button>
           </div>
           <div class="context-items" id="contextItems">
             <div class="context-empty">Arraste itens aqui ou clique em "+" para adicionar ao contexto</div>
@@ -1771,8 +1816,8 @@ body::before {
             <span class="panel-title">Artefatos do Corpus</span>
           </div>
           <div class="topbar-actions">
-            <button class="ghost-btn" id="viewGridBtn"><i class="fas fa-th-large"></i></button>
-            <button class="ghost-btn" id="viewListBtn"><i class="fas fa-list"></i></button>
+            <button class="ghost-btn" id="viewGridBtn" aria-label="Vista em grade"><i class="fas fa-th-large" aria-hidden="true"></i></button>
+            <button class="ghost-btn" id="viewListBtn" aria-label="Vista em lista"><i class="fas fa-list" aria-hidden="true"></i></button>
           </div>
         </div>
         <div class="panel-body" id="artifactsGrid">
@@ -1788,25 +1833,27 @@ body::before {
             <span class="panel-title">Grafo de Entidades</span>
           </div>
           <div class="topbar-actions">
-            <select class="ghost-btn" id="graphTypeSelect">
-              <option value="entities">Entidades</option>
-              <option value="files">Arquivos</option>
-              <option value="timeline">Cronológico</option>
-              <option value="violations">Violações</option>
-              <option value="law-violations">Lei × Violações</option>
-              <option value="law-articles">Artigos × Relações</option>
+            <select class="ghost-btn" id="graphTypeSelect" aria-label="Tipo de grafo">
+              <option value="actors">Atores e fontes</option>
+              <option value="entities">Entidades e relações</option>
+              <option value="files">Fontes e categorias</option>
+              <option value="timeline">Eventos no tempo</option>
+              <option value="violations">Achados legais</option>
+              <option value="law-violations">Base legal × achados</option>
+              <option value="law-articles">Artigos e temas</option>
             </select>
-            <button class="ghost-btn" id="exportGraphBtn"><i class="fas fa-download"></i> Exportar</button>
+            <button class="ghost-btn" id="exportGraphBtn"><i class="fas fa-download" aria-hidden="true"></i> Exportar</button>
           </div>
         </div>
         <div class="panel-body">
+          <div class="intel-summary-strip" id="intelligenceSummaryStrip"></div>
           <div class="graph-container" id="graphContainer">
             <div class="graph-toolbar">
-              <button class="ghost-btn btn-sm" id="zoomInBtn" title="Zoom In"><i class="fas fa-plus"></i></button>
-              <button class="ghost-btn btn-sm" id="zoomOutBtn" title="Zoom Out"><i class="fas fa-minus"></i></button>
+              <button class="ghost-btn btn-sm" id="zoomInBtn" title="Zoom In" aria-label="Zoom In"><i class="fas fa-plus" aria-hidden="true"></i></button>
+              <button class="ghost-btn btn-sm" id="zoomOutBtn" title="Zoom Out" aria-label="Zoom Out"><i class="fas fa-minus" aria-hidden="true"></i></button>
               <span class="graph-zoom-label" id="zoomLabel">100%</span>
-              <button class="ghost-btn btn-sm" id="fitGraphBtn" title="Ajustar"><i class="fas fa-compress-arrows-alt"></i></button>
-              <button class="ghost-btn btn-sm" id="fullscreenGraphBtn" title="Tela cheia"><i class="fas fa-expand"></i></button>
+              <button class="ghost-btn btn-sm" id="fitGraphBtn" title="Ajustar" aria-label="Ajustar grafo"><i class="fas fa-compress-arrows-alt" aria-hidden="true"></i></button>
+              <button class="ghost-btn btn-sm" id="fullscreenGraphBtn" title="Tela cheia" aria-label="Tela cheia"><i class="fas fa-expand" aria-hidden="true"></i></button>
             </div>
             <div class="mermaid" id="mermaidDiagram"></div>
           </div>
@@ -1821,13 +1868,14 @@ body::before {
             <span class="panel-title">Linha do Tempo</span>
           </div>
           <div class="topbar-actions">
-            <input type="date" class="ghost-btn" id="timelineFrom">
+            <input type="date" class="ghost-btn" id="timelineFrom" aria-label="Data inicial">
             <span style="color: var(--ink-fade);">até</span>
-            <input type="date" class="ghost-btn" id="timelineTo">
+            <input type="date" class="ghost-btn" id="timelineTo" aria-label="Data final">
             <button class="btn btn-sm" id="filterTimelineBtn">Filtrar</button>
           </div>
         </div>
         <div class="panel-body">
+          <div class="intel-summary-strip" id="timelineSummaryStrip"></div>
           <div class="timeline-list" id="timelineList"></div>
         </div>
       </div>
@@ -1840,14 +1888,14 @@ body::before {
             <span class="panel-title">Violações Identificadas</span>
           </div>
           <div class="topbar-actions">
-            <select class="ghost-btn" id="violationSeverity">
+            <select class="ghost-btn" id="violationSeverity" aria-label="Filtrar por severidade">
               <option value="">Todas severidades</option>
               <option value="critical">Críticas</option>
               <option value="high">Altas</option>
               <option value="medium">Médias</option>
               <option value="low">Baixas</option>
             </select>
-            <button class="ghost-btn" id="exportViolationsBtn"><i class="fas fa-download"></i> Exportar</button>
+            <button class="ghost-btn" id="exportViolationsBtn"><i class="fas fa-download" aria-hidden="true"></i> Exportar</button>
           </div>
         </div>
         <div class="panel-body" id="violationsView"></div>
@@ -1862,12 +1910,12 @@ body::before {
           </div>
         </div>
         <div class="shared-data-tabs">
-          <button class="shared-data-tab active" data-tab="law"><i class="fas fa-scale-balanced"></i> Legislação</button>
-          <button class="shared-data-tab" data-tab="corpus"><i class="fas fa-book"></i> Corpus</button>
-          <button class="shared-data-tab" data-tab="ontology"><i class="fas fa-sitemap"></i> Ontologia</button>
-          <button class="shared-data-tab" data-tab="media"><i class="fas fa-photo-video"></i> Mídia</button>
-          <button class="shared-data-tab" data-tab="transcripts"><i class="fas fa-file-audio"></i> Transcrições</button>
-          <button class="shared-data-tab" data-tab="docs"><i class="fas fa-file-alt"></i> Documentos</button>
+          <button class="shared-data-tab active" data-tab="law"><i class="fas fa-scale-balanced" aria-hidden="true"></i> Legislação</button>
+          <button class="shared-data-tab" data-tab="corpus"><i class="fas fa-book" aria-hidden="true"></i> Corpus</button>
+          <button class="shared-data-tab" data-tab="ontology"><i class="fas fa-sitemap" aria-hidden="true"></i> Ontologia</button>
+          <button class="shared-data-tab" data-tab="media"><i class="fas fa-photo-video" aria-hidden="true"></i> Mídia</button>
+          <button class="shared-data-tab" data-tab="transcripts"><i class="fas fa-file-audio" aria-hidden="true"></i> Transcrições</button>
+          <button class="shared-data-tab" data-tab="docs"><i class="fas fa-file-alt" aria-hidden="true"></i> Documentos</button>
         </div>
         <div class="panel-body" id="sharedDataContent">
           <div class="shared-tree" id="sharedTree"></div>
@@ -1888,17 +1936,17 @@ body::before {
               <button class="granularity-btn" data-level="full" title="Lei + artigo + detalhes">Completo</button>
             </div>
             <div class="search-box" style="min-width: 180px;">
-              <i class="fas fa-search"></i>
-              <input type="text" id="lawSearchInput" placeholder="Buscar artigos...">
+              <i class="fas fa-search" aria-hidden="true"></i>
+              <input type="text" id="lawSearchInput" placeholder="Buscar artigos..." aria-label="Buscar artigos">
             </div>
-            <button class="ghost-btn" id="addSelectedArticlesBtn" style="display:none;"><i class="fas fa-plus-circle"></i> Adicionar seleção ao contexto</button>
+            <button class="ghost-btn" id="addSelectedArticlesBtn" style="display:none;"><i class="fas fa-plus-circle" aria-hidden="true"></i> Adicionar seleção ao contexto</button>
           </div>
         </div>
         <!-- Selected articles bar -->
         <div class="selected-articles-bar" id="selectedArticlesBar" style="display:none; margin: 8px 12px;">
-          <span style="font-size: 11px; font-weight: 600; color: var(--green); margin-right: 6px;"><i class="fas fa-check-circle"></i> Selecionados:</span>
+          <span style="font-size: 11px; font-weight: 600; color: var(--green); margin-right: 6px;"><i class="fas fa-check-circle" aria-hidden="true"></i> Selecionados:</span>
           <div id="selectedArticlesChips" style="display: flex; flex-wrap: wrap; gap: 4px; flex: 1;"></div>
-          <button class="ghost-btn btn-sm" id="clearSelectedArticlesBtn" style="margin-left: auto;"><i class="fas fa-times"></i> Limpar</button>
+          <button class="ghost-btn btn-sm" id="clearSelectedArticlesBtn" style="margin-left: auto;"><i class="fas fa-times" aria-hidden="true"></i> Limpar</button>
         </div>
         <div class="panel-body" id="lawCatalogueBody">
           <div class="law-tree" id="lawTree">
@@ -1922,22 +1970,22 @@ body::before {
           <!-- Scraper Configuration -->
           <div class="scraper-config">
             <div class="scraper-config-header" id="scraperConfigHeader">
-              <span class="scraper-title"><i class="fas fa-cog"></i> Configuração da Busca</span>
-              <i class="fas fa-chevron-down" style="font-size: 10px; color: var(--ink-fade);"></i>
+              <span class="scraper-title"><i class="fas fa-cog" aria-hidden="true"></i> Configuração da Busca</span>
+              <i class="fas fa-chevron-down" style="font-size: 10px; color: var(--ink-fade);" aria-hidden="true"></i>
             </div>
             <div class="scraper-config-body" id="scraperConfigBody">
               <div class="scraper-field">
                 <label for="scraperQuery">Texto de busca (semântica)</label>
-                <input type="text" id="scraperQuery" placeholder="ex: alienação parental, dano moral, pensão alimentícia..." value="">
+                <input type="text" id="scraperQuery" placeholder="ex: alienação parental, dano moral, pensão alimentícia..." value="" aria-label="Texto de busca">
               </div>
               <div class="scraper-row">
                 <div class="scraper-field">
                   <label for="scraperMaxResults">Máx. resultados</label>
-                  <input type="number" id="scraperMaxResults" value="100" min="1" max="500">
+                  <input type="number" id="scraperMaxResults" value="100" min="1" max="500" aria-label="Máximo de resultados">
                 </div>
                 <div class="scraper-field">
                   <label for="scraperSearchIndex">Índice de busca</label>
-                  <select id="scraperSearchIndex">
+                  <select id="scraperSearchIndex" aria-label="Índice de busca">
                     <option value="ementa">Ementa</option>
                     <option value="inteiro_teor_url">Inteiro Teor</option>
                   </select>
@@ -1946,7 +1994,7 @@ body::before {
               <div class="scraper-row">
                 <div class="scraper-field">
                   <label for="scraperTipoDecisao">Tipo de decisão</label>
-                  <select id="scraperTipoDecisao">
+                  <select id="scraperTipoDecisao" aria-label="Tipo de decisão">
                     <option value="">Todos</option>
                     <option value="Acórdão">Acórdão</option>
                     <option value="Monocrática">Monocrática</option>
@@ -1955,36 +2003,36 @@ body::before {
                 </div>
                 <div class="scraper-field">
                   <label for="scraperTipoProcesso">Tipo de processo</label>
-                  <input type="text" id="scraperTipoProcesso" placeholder="ex: Apelação Cível">
+                  <input type="text" id="scraperTipoProcesso" placeholder="ex: Apelação Cível" aria-label="Tipo de processo">
                 </div>
               </div>
               <div class="scraper-row">
                 <div class="scraper-field">
                   <label for="scraperDataInicio">Data julg. início</label>
-                  <input type="date" id="scraperDataInicio">
+                  <input type="date" id="scraperDataInicio" aria-label="Data inicial de julgamento">
                 </div>
                 <div class="scraper-field">
                   <label for="scraperDataFim">Data julg. fim</label>
-                  <input type="date" id="scraperDataFim">
+                  <input type="date" id="scraperDataFim" aria-label="Data final de julgamento">
                 </div>
               </div>
               <div class="scraper-row">
                 <div class="scraper-field">
                   <label for="scraperRelator">Relator</label>
-                  <input type="text" id="scraperRelator" placeholder="Nome do relator...">
+                  <input type="text" id="scraperRelator" placeholder="Nome do relator..." aria-label="Relator">
                 </div>
                 <div class="scraper-field">
                   <label for="scraperComarca">Comarca de origem</label>
-                  <input type="text" id="scraperComarca" placeholder="ex: Porto Alegre">
+                  <input type="text" id="scraperComarca" placeholder="ex: Porto Alegre" aria-label="Comarca de origem">
                 </div>
               </div>
               <div class="scraper-field">
                 <label for="scraperAssuntoCNJ">Assunto CNJ</label>
-                <input type="text" id="scraperAssuntoCNJ" placeholder="ex: Direito de Família">
+                <input type="text" id="scraperAssuntoCNJ" placeholder="ex: Direito de Família" aria-label="Assunto CNJ">
               </div>
               <div style="display: flex; gap: 8px; margin-top: 4px;">
-                <button class="btn" id="scraperSearchBtn"><i class="fas fa-search"></i> Buscar Jurisprudência</button>
-                <button class="ghost-btn" id="scraperResetBtn"><i class="fas fa-undo"></i> Limpar</button>
+                <button class="btn" id="scraperSearchBtn"><i class="fas fa-search" aria-hidden="true"></i> Buscar Jurisprudência</button>
+                <button class="ghost-btn" id="scraperResetBtn"><i class="fas fa-undo" aria-hidden="true"></i> Limpar</button>
               </div>
               <div class="context-empty" id="scraperStatus" style="display: none; padding: 10px;"></div>
             </div>
@@ -1994,8 +2042,8 @@ body::before {
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
               <span style="font-weight: 600; font-size: 12px; color: var(--ink);">Resultados</span>
               <div style="display: flex; gap: 6px;">
-                <button class="ghost-btn btn-sm" id="jurisAddAllContextBtn" style="display:none;"><i class="fas fa-plus"></i> Tudo ao Contexto</button>
-                <button class="ghost-btn btn-sm" id="jurisDownloadAllBtn" style="display:none;"><i class="fas fa-download"></i> Baixar Inteiro Teor</button>
+                <button class="ghost-btn btn-sm" id="jurisAddAllContextBtn" style="display:none;"><i class="fas fa-plus" aria-hidden="true"></i> Tudo ao Contexto</button>
+                <button class="ghost-btn btn-sm" id="jurisDownloadAllBtn" style="display:none;"><i class="fas fa-download" aria-hidden="true"></i> Baixar Inteiro Teor</button>
               </div>
             </div>
             <div class="juris-results" id="jurisResultsContainer">
@@ -2007,9 +2055,9 @@ body::before {
 
       <!-- CHAT / AGENT -->
       <div class="chat-wrapper">
-        <div class="chat-log" id="chatLog"></div>
+        <div class="chat-log" id="chatLog" role="log" aria-live="polite"></div>
         <div class="composer">
-          <textarea id="chatInput" placeholder="Pergunte ao agente sobre o corpus, legislação, jurisprudência, peça análises..."></textarea>
+          <textarea id="chatInput" placeholder="Pergunte ao agente sobre o corpus, legislação, jurisprudência, peça análises..." aria-label="Campo de mensagem"></textarea>
           <div class="composer-row">
             <div class="composer-hints">
               <button class="hint-chip" data-prompt="Faça um tour do meu acervo">Tour</button>
@@ -2020,7 +2068,7 @@ body::before {
               <button class="hint-chip" data-prompt="Quais artigos de lei se aplicam às violações encontradas?">Lei × Violações</button>
               <button class="hint-chip" data-prompt="Gere um grafo de relações entre artigos e violações">Grafo Legal</button>
             </div>
-            <button class="btn" id="sendBtn"><i class="fas fa-paper-plane"></i> Enviar</button>
+            <button class="btn" id="sendBtn" aria-label="Enviar mensagem"><i class="fas fa-paper-plane" aria-hidden="true"></i> Enviar</button>
           </div>
         </div>
       </div>
@@ -2028,10 +2076,10 @@ body::before {
 
     <!-- RIGHT PANEL: Detail & Memory -->
     <aside class="panel right-panel">
-      <div class="right-tabs">
-        <button class="right-tab active" data-tab="detail"><i class="fas fa-eye"></i> Detalhe</button>
-        <button class="right-tab" data-tab="viewer"><i class="fas fa-file"></i> Visualizador</button>
-        <button class="right-tab" data-tab="memory"><i class="fas fa-brain"></i> Memória</button>
+      <div class="right-tabs" role="tablist" aria-label="Painel direito">
+        <button class="right-tab active" data-tab="detail" role="tab" aria-selected="true"><i class="fas fa-eye" aria-hidden="true"></i> Detalhe</button>
+        <button class="right-tab" data-tab="viewer" role="tab" aria-selected="false"><i class="fas fa-file" aria-hidden="true"></i> Visualizador</button>
+        <button class="right-tab" data-tab="memory" role="tab" aria-selected="false"><i class="fas fa-brain" aria-hidden="true"></i> Memória</button>
       </div>
       
       <div class="right-content" id="rightContent">
@@ -2039,18 +2087,18 @@ body::before {
         <div class="active" id="tabDetail">
           <div class="file-viewer">
             <div class="file-viewer-empty" id="detailEmpty">
-              <i class="fas fa-mouse-pointer"></i>
+              <i class="fas fa-mouse-pointer" aria-hidden="true"></i>
               <p>Selecione um artefato para ver detalhes</p>
             </div>
             <div id="detailContent" class="hidden">
               <div class="file-viewer-header">
                 <span class="file-viewer-name" id="detailFileName">
-                  <i class="fas fa-file"></i>
+                  <i class="fas fa-file" aria-hidden="true"></i>
                   <span></span>
                 </span>
                 <div class="topbar-actions">
-                  <button class="ghost-btn btn-sm" id="addToContextBtn"><i class="fas fa-plus"></i> Contexto</button>
-                  <button class="ghost-btn btn-sm" id="openRawBtn"><i class="fas fa-external-link"></i></button>
+                  <button class="ghost-btn btn-sm" id="addToContextBtn"><i class="fas fa-plus" aria-hidden="true"></i> Contexto</button>
+                  <button class="ghost-btn btn-sm" id="openRawBtn"><i class="fas fa-external-link" aria-hidden="true"></i></button>
                 </div>
               </div>
               <div class="file-viewer-content" id="detailBody"></div>
@@ -2066,19 +2114,19 @@ body::before {
         <div id="tabViewer">
           <div class="file-viewer">
             <div class="file-viewer-empty" id="viewerEmpty">
-              <i class="fas fa-file-lines"></i>
+              <i class="fas fa-file-lines" aria-hidden="true"></i>
               <p>Arraste um arquivo aqui ou selecione para visualizar</p>
               <p style="font-size: 10px; margin-top: 8px;">Suporta: PDF, DOCX, MD, JSON, TXT, código</p>
             </div>
             <div id="viewerContent" class="hidden">
               <div class="file-viewer-header">
                 <span class="file-viewer-name" id="viewerFileName">
-                  <i class="fas fa-file"></i>
+                  <i class="fas fa-file" aria-hidden="true"></i>
                   <span></span>
                 </span>
                 <div class="topbar-actions">
-                  <button class="ghost-btn btn-sm" id="downloadFileBtn"><i class="fas fa-download"></i></button>
-                  <button class="ghost-btn btn-sm" id="closeViewerBtn"><i class="fas fa-times"></i></button>
+                  <button class="ghost-btn btn-sm" id="downloadFileBtn"><i class="fas fa-download" aria-hidden="true"></i></button>
+                  <button class="ghost-btn btn-sm" id="closeViewerBtn"><i class="fas fa-times" aria-hidden="true"></i></button>
                 </div>
               </div>
               <div class="file-viewer-content" id="viewerBody"></div>
@@ -2089,11 +2137,11 @@ body::before {
         <!-- MEMORY TAB -->
         <div id="tabMemory">
           <div style="margin-bottom: 12px;">
-            <input type="text" id="noteTitle" placeholder="Título da nota" style="width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius-xs); font-family: var(--sans); font-size: 12px; margin-bottom: 8px;">
-            <textarea id="noteBody" placeholder="Registre decisões, hipóteses, insights..." style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius-xs); font-family: var(--sans); font-size: 12px; resize: vertical;"></textarea>
+            <input type="text" id="noteTitle" placeholder="Título da nota" aria-label="Título da nota" style="width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius-xs); font-family: var(--sans); font-size: 12px; margin-bottom: 8px;">
+            <textarea id="noteBody" placeholder="Registre decisões, hipóteses, insights..." aria-label="Conteúdo da nota" style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius-xs); font-family: var(--sans); font-size: 12px; resize: vertical;"></textarea>
             <div style="display: flex; gap: 8px; margin-top: 8px;">
-              <button class="btn btn-sm" id="saveNoteBtn"><i class="fas fa-save"></i> Salvar</button>
-              <button class="ghost-btn btn-sm" id="newNoteBtn"><i class="fas fa-plus"></i> Nova</button>
+              <button class="btn btn-sm" id="saveNoteBtn"><i class="fas fa-save" aria-hidden="true"></i> Salvar</button>
+              <button class="ghost-btn btn-sm" id="newNoteBtn"><i class="fas fa-plus" aria-hidden="true"></i> Nova</button>
             </div>
           </div>
           <div id="notesList"></div>
@@ -2116,7 +2164,7 @@ body::before {
   <div class="modal-card">
     <div class="modal-header">
       <span class="modal-title">Adicionar ao Workspace</span>
-      <button class="modal-close" id="closeAddFolderModal"><i class="fas fa-times"></i></button>
+      <button class="modal-close" id="closeAddFolderModal"><i class="fas fa-times" aria-hidden="true"></i></button>
     </div>
     <div class="modal-body">
       <div style="margin-bottom: 16px;">
@@ -2158,7 +2206,7 @@ body::before {
     </div>
     <div class="modal-footer">
       <button class="ghost-btn" id="cancelAddFolder">Cancelar</button>
-      <button class="btn" id="confirmAddFolder"><i class="fas fa-folder-plus"></i> Adicionar</button>
+      <button class="btn" id="confirmAddFolder"><i class="fas fa-folder-plus" aria-hidden="true"></i> Adicionar</button>
     </div>
   </div>
 </div>
@@ -2168,7 +2216,7 @@ body::before {
   <div class="modal-card" style="max-width: 700px;">
     <div class="modal-header">
       <span class="modal-title">Montar Contexto para o Agente</span>
-      <button class="modal-close" id="closeContextModal"><i class="fas fa-times"></i></button>
+      <button class="modal-close" id="closeContextModal"><i class="fas fa-times" aria-hidden="true"></i></button>
     </div>
     <div class="modal-body">
       <p style="font-size: 13px; color: var(--ink-soft); margin-bottom: 16px;">
@@ -2183,12 +2231,12 @@ body::before {
         <div>
           <div style="font-weight: 600; font-size: 12px; margin-bottom: 8px;">Adicionar Rapidamente</div>
           <div style="display: flex; flex-direction: column; gap: 6px;">
-            <button class="ghost-btn" id="addAllViolationsBtn"><i class="fas fa-gavel"></i> Todas as violações</button>
-            <button class="ghost-btn" id="addAllEntitiesBtn"><i class="fas fa-users"></i> Todas as entidades</button>
-            <button class="ghost-btn" id="addTimelineBtn"><i class="fas fa-clock"></i> Timeline completa</button>
-            <button class="ghost-btn" id="addFindingsBtn"><i class="fas fa-lightbulb"></i> Todos os achados</button>
-            <button class="ghost-btn" id="addAllLawArticlesBtn"><i class="fas fa-scale-balanced"></i> Artigos selecionados</button>
-            <button class="ghost-btn" id="addAllJurisContextBtn"><i class="fas fa-landmark"></i> Jurisprudência encontrada</button>
+            <button class="ghost-btn" id="addAllViolationsBtn"><i class="fas fa-gavel" aria-hidden="true"></i> Todas as violações</button>
+            <button class="ghost-btn" id="addAllEntitiesBtn"><i class="fas fa-users" aria-hidden="true"></i> Todas as entidades</button>
+            <button class="ghost-btn" id="addTimelineBtn"><i class="fas fa-clock" aria-hidden="true"></i> Timeline completa</button>
+            <button class="ghost-btn" id="addFindingsBtn"><i class="fas fa-lightbulb" aria-hidden="true"></i> Todos os achados</button>
+            <button class="ghost-btn" id="addAllLawArticlesBtn"><i class="fas fa-scale-balanced" aria-hidden="true"></i> Artigos selecionados</button>
+            <button class="ghost-btn" id="addAllJurisContextBtn"><i class="fas fa-landmark" aria-hidden="true"></i> Jurisprudência encontrada</button>
           </div>
         </div>
       </div>
@@ -2200,7 +2248,7 @@ body::before {
     </div>
     <div class="modal-footer">
       <button class="ghost-btn" id="cancelContext">Cancelar</button>
-      <button class="btn" id="applyContext"><i class="fas fa-check"></i> Aplicar Contexto</button>
+      <button class="btn" id="applyContext"><i class="fas fa-check" aria-hidden="true"></i> Aplicar Contexto</button>
     </div>
   </div>
 </div>
@@ -2226,26 +2274,39 @@ if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 }
 
-// ===== CONFIGURATION =====
+// ===== CONFIGURATION (FIXED) =====
 const CURRENT_URL = (() => { try { return new URL(window.location.href); } catch { return null; } })();
 const CURRENT_HOST = CURRENT_URL?.hostname || window.location.hostname || 'localhost';
 const CURRENT_PROTOCOL = CURRENT_URL?.protocol || window.location.protocol || 'http:';
+
+// Session directory — configurável
+const SESSION_ID = 'f889c1cd-3efb-4f2f-b39a-1a5d708f041d';
+const SESSION_DIR = `documents_scanned/sessions/${SESSION_ID}`;
+
+// API Bases — inclui gateway (8080) e case server (3010)
 const API_BASES = (() => {
-  const detectedOrigin = window.location.origin || `${CURRENT_PROTOCOL}//${CURRENT_HOST}:3010`;
-  const candidates = [
-    detectedOrigin,
-    `${CURRENT_PROTOCOL}//${CURRENT_HOST}:3010`
-  ];
-  const unique = [];
-  for (const base of candidates) {
-    if (base && !unique.includes(base)) unique.push(base);
-  }
-  return unique;
+  const bases = [];
+  const origin = window.location.origin;
+  if (origin) bases.push(origin);
+  bases.push(`${CURRENT_PROTOCOL}//${CURRENT_HOST}:3010`);
+  bases.push(`${CURRENT_PROTOCOL}//${CURRENT_HOST}:8080`);
+  return [...new Set(bases)];
 })();
+
 const CASE_SERVER = API_BASES[0] || 'http://localhost:3010';
-const DISCOVERY_UI_API = API_BASES[1] || CASE_SERVER;
+const DISCOVERY_UI_API = CASE_SERVER;
 const IMPORT_MODE_KEY = 'discovery.agent.import.mode';
-const SHARED_PATH = '/_shared';
+
+// Shared paths — relativos, não hardcoded com home dir
+const SHARED_PATHS = {
+  law:         '_shared/cases/la8159/04-law',
+  corpus:      `${SESSION_DIR}/workspace`,
+  ontology:    '_shared/ontology',
+  media:       '_shared/cases/la8159/10.1-audio',
+  transcripts: '_shared/cases/la8159/02-transcripts',
+  docs:        '_shared/docs'
+};
+
 const LAW_API = {
   frameworks: '/api/law/frameworks',
   frameworkArticles: (code) => `/api/law/frameworks/${encodeURIComponent(code)}/articles`
@@ -2273,6 +2334,9 @@ const state = {
   pipelineStats: null,
   caseState: null,
   intelligenceSummary: null,
+  intelligenceEvents: [],
+  caseGraph: null,
+  actors: { actor_roles: [], persons: [], organizations: [], locations: [] },
   violations: [],
   timeline: [],
   entities: {},
@@ -2315,6 +2379,96 @@ function esc(val) {
   const div = document.createElement('div');
   div.textContent = val == null ? '' : String(val);
   return div.innerHTML;
+}
+
+const ACTION_TYPE_LABELS = {
+  physical_interaction: 'Interação presencial',
+  delay: 'Atraso operacional',
+  operational_update: 'Atualização operacional',
+  documentation_failure: 'Falha documental',
+  communication: 'Comunicação',
+  email_correspondence: 'Correspondência por e-mail',
+  refusal: 'Recusa',
+  escalation: 'Escalonamento',
+  allegation: 'Alegação',
+  decision: 'Decisão',
+  incident: 'Incidente'
+};
+
+const ROLE_LABELS = {
+  passenger: 'Passageiro',
+  crew: 'Tripulação / piloto',
+  airline_staff: 'Equipe da companhia',
+  regulator: 'Órgão regulador',
+  police_officer: 'Polícia',
+  controller: 'Controle / imigração',
+  security_personnel: 'Segurança aeroportuária',
+  witness: 'Testemunha',
+  manager: 'Gerência / supervisão',
+  legal_counsel: 'Consultoria jurídica',
+  mail_system: 'Sistema de correio',
+  customer: 'Cliente / passageiro',
+  system_operator: 'Sistema / automação',
+  auditor: 'Auditoria',
+  service_provider: 'Prestador de serviço',
+  other: 'Outro'
+};
+
+const CATEGORY_LABELS = {
+  regulatory_non_compliance: 'Possível não conformidade regulatória',
+  procedural_violation: 'Possível violação processual',
+  consumer_rights: 'Direitos do consumidor',
+  false_accusation: 'Possível acusação falsa',
+  documentation_failure: 'Falha documental'
+};
+
+const CONTENT_CATEGORY_LABELS = {
+  transcript: 'Transcrições',
+  email: 'E-mails',
+  violations: 'Dossiês legais',
+  legal_dossier: 'Dossiês legais'
+};
+
+function actionTypeLabel(type) {
+  return ACTION_TYPE_LABELS[type] || String(type || 'Evento').replace(/[_-]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function roleLabel(role) {
+  return ROLE_LABELS[role] || String(role || 'Outro').replace(/[_-]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function contentCategoryLabel(category, fallback) {
+  return CONTENT_CATEGORY_LABELS[category] || fallback || String(category || 'Sem categoria').replace(/[_-]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function relationshipNodeLabel(value, fallback) {
+  const raw = String(value || '').replace(/\\/g, '/');
+  if (!raw || /^[a-f0-9]{40,}$/i.test(raw)) return fallback || 'Fonte sem nome';
+  const base = raw.split('/').pop().replace(/\.[^.]+$/, '');
+  return base.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim() || fallback || 'Fonte sem nome';
+}
+
+function violationLabel(violation) {
+  const article = Array.isArray(violation?.articles) ? violation.articles[0] : null;
+  if (article?.article_name) return article.article_name;
+  if (article?.eli_id) return article.eli_id;
+  const code = String(violation?.description || '').match(/\b(?:BR|CL|INT)-\d{3}\b/i)?.[0];
+  return `${CATEGORY_LABELS[violation?.category] || violation?.category || 'Achado legal'}${code ? ` (${code.toUpperCase()})` : ''}`;
+}
+
+function eventTitle(event) {
+  if (event?.channel === 'email' || event?.action_type === 'email_correspondence') {
+    return event.subject ? `E-mail: ${event.subject}` : actionTypeLabel(event.action_type || 'email_correspondence');
+  }
+  return actionTypeLabel(event?.action_type || event?.type);
+}
+
+function formatEventDate(event) {
+  const value = event?.local_datetime || event?.datetime || event?.timestamp || event?.date;
+  if (!value) return 'Data desconhecida';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 }
 
 function renderMarkdown(markdown) {
@@ -2586,11 +2740,11 @@ function renderContextItems() {
   container.innerHTML = state.contextItems.map(item => `
     <div class="context-item">
       <div class="context-item-name">
-        <i class="fas ${getFileIcon(item.extension)}"></i>
+        <i class="fas ${getFileIcon(item.extension)}" aria-hidden="true"></i>
         <span>${esc(item.name || item.file || 'Item')}</span>
       </div>
       <span class="context-item-type">${esc(item.type || 'file')}</span>
-      <button class="context-item-remove" onclick="removeFromContext('${esc(item.id)}')"><i class="fas fa-times"></i></button>
+      <button class="context-item-remove" onclick="removeFromContext('${esc(item.id)}')" aria-label="Remover item"><i class="fas fa-times" aria-hidden="true"></i></button>
     </div>
   `).join('');
 }
@@ -2600,12 +2754,16 @@ async function refreshWorkspace(silent = false) {
   try {
     if (!silent) document.getElementById('statusBadge').textContent = 'carregando';
 
-    const [endpoints, categories, stats, intelligenceStatus, timeline, relationships] = await Promise.allSettled([
+    const [endpoints, categories, stats, intelligenceStatus, intelligenceSummary, timeline, events, caseGraph, actors, relationships] = await Promise.allSettled([
       safeFetchApi('/api/endpoints'),
       safeFetchApi('/api/categories'),
       safeFetchApi('/api/pipeline/stats').catch(() => null),
       safeFetchApi('/api/intelligence/status').catch(() => null),
-      safeFetchApi('/api/pipeline/timeline').catch(() => []),
+      safeFetchApi('/api/intelligence/summary').catch(() => null),
+      safeFetchApi('/api/intelligence/timeline').catch(() => ({ events: [] })),
+      safeFetchApi('/api/events').catch(() => ({ events: [] })),
+      safeFetchApi('/api/intelligence/case-graph').catch(() => null),
+      safeFetchApi('/api/intelligence/actors').catch(() => null),
       safeFetchApi('/api/pipeline/relationships').catch(() => [])
     ]);
 
@@ -2624,9 +2782,13 @@ async function refreshWorkspace(silent = false) {
     state.endpoints = endpoints.status === 'fulfilled' ? endpoints.value : [];
     state.categories = (categories.status === 'fulfilled' ? categories.value : {}).categories || {};
     state.pipelineStats = stats.status === 'fulfilled' ? stats.value : null;
+    state.intelligenceSummary = intelligenceSummary.status === 'fulfilled' ? intelligenceSummary.value : null;
     state.caseState = caseState.status === 'fulfilled' ? caseState.value : null;
     state.violations = Array.isArray(violations.value) ? violations.value : (violations.value?.violations || []);
     state.timeline = Array.isArray(timeline.value) ? timeline.value : (timeline.value?.events || []);
+    state.intelligenceEvents = Array.isArray(events.value) ? events.value : (events.value?.events || []);
+    state.caseGraph = caseGraph.status === 'fulfilled' ? caseGraph.value : null;
+    state.actors = actors.status === 'fulfilled' && actors.value ? actors.value : state.actors;
     state.relationships = Array.isArray(relationships.value) ? relationships.value : (relationships.value?.relationships || []);
     
     state.scanned = Array.isArray(state.endpoints) && state.endpoints.length > 0;
@@ -2656,6 +2818,7 @@ function renderAll() {
   renderViolationsSidebar();
   renderArtifactsGrid();
   renderTimeline();
+  renderIntelligenceSummary();
   renderViolationsView();
   renderGraph();
   updateCounts();
@@ -2679,7 +2842,7 @@ function renderCategories() {
   container.innerHTML = cats.map(([key, val]) => `
     <div class="artifact-item" data-category="${esc(key)}">
       <div class="artifact-item-header">
-        <span class="artifact-item-name">${esc(val.label || key)}</span>
+        <span class="artifact-item-name">${esc(contentCategoryLabel(key, val.label || key))}</span>
         <span class="badge">${val.count || 0}</span>
       </div>
       <div class="artifact-item-meta">${esc((val.types || []).slice(0, 3).join(', '))}</div>
@@ -2704,7 +2867,7 @@ function renderFiles() {
   container.innerHTML = files.slice(0, 50).map(f => `
     <div class="artifact-item ${state.selectedArtifact?.file === f.file ? 'selected' : ''}" data-file="${esc(f.file)}">
       <div class="artifact-item-header">
-        <span class="artifact-item-name"><i class="fas ${getFileIcon(f.extension)}"></i> ${esc(f.displayName || f.fileName || f.file)}</span>
+        <span class="artifact-item-name"><i class="fas ${getFileIcon(f.extension)}" aria-hidden="true"></i> ${esc(f.displayName || f.fileName || f.file)}</span>
       </div>
       <div class="artifact-item-meta">${esc(shortenPath(f.file))}</div>
       <div class="artifact-item-actions">
@@ -2764,11 +2927,11 @@ function renderViolationsSidebar() {
     return `
     <div class="violation-item">
       <div class="violation-header">
-        <span class="violation-title">${esc(v.title || v.violation_type || 'Violação')}</span>
+        <span class="violation-title">${esc(violationLabel(v))}</span>
         <span class="badge badge-${sevClass}">${esc(v.severity || 'N/A')}</span>
       </div>
       <div class="violation-desc">${esc((v.description || '').slice(0, 160))}</div>
-      ${v.law_reference ? `<div class="violation-law"><i class="fas fa-balance-scale" style="margin-right: 4px;"></i>${esc(v.law_reference)}</div>` : ''}
+      ${v.law_reference ? `<div class="violation-law"><i class="fas fa-balance-scale" aria-hidden="true" style="margin-right: 4px;"></i>${esc(v.law_reference)}</div>` : ''}
     </div>
   `;
   }).join('');
@@ -2788,13 +2951,13 @@ function renderArtifactsGrid() {
     <div class="artifact-item ${state.selectedArtifact?.file === f.file ? 'selected' : ''}" onclick="selectArtifact('${esc(f.file)}')">
       <div class="artifact-item-header">
         <span class="artifact-item-name">
-          <i class="fas ${getFileIcon(f.extension)}"></i>
+          <i class="fas ${getFileIcon(f.extension)}" aria-hidden="true"></i>
           ${esc(f.displayName || f.fileName || f.file)}
         </span>
         <span class="badge">${esc(f.kind || f.extension || 'file').toUpperCase()}</span>
       </div>
       <div class="artifact-item-meta">
-        ${esc(f.categoryLabel || f.category || 'Sem categoria')} · ${humanSize(f.size_bytes)}${entityCount ? ` · ${entityCount} entidades` : ''}
+        ${esc(contentCategoryLabel(f.category, f.categoryLabel))} · ${humanSize(f.size_bytes)}${entityCount ? ` · ${entityCount} entidades` : ''}
       </div>
       ${tags.length ? `<div style="display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap;">${tags.map(t => `<span style="font-size: 9px; background: rgba(23,18,15,0.06); padding: 1px 6px; border-radius: 8px; color: var(--ink-soft);">${esc(t)}</span>`).join('')}</div>` : ''}
       <div class="artifact-item-actions">
@@ -2807,18 +2970,43 @@ function renderArtifactsGrid() {
   }).join('');
 }
 
+function renderIntelligenceSummary() {
+  const summary = state.intelligenceSummary || {};
+  const stats = summary.stats || {};
+  const events = state.timeline.length || state.intelligenceEvents.length;
+  const roles = state.actors?.actor_roles?.length || 0;
+  const sources = stats.files_total || stats.files || state.endpoints.length;
+  const items = [
+    `${sources} fontes`,
+    `${events} eventos`,
+    `${state.violations.length} achados legais`,
+    `${roles} papéis identificados`
+  ];
+  ['intelligenceSummaryStrip', 'timelineSummaryStrip'].forEach(id => {
+    const container = document.getElementById(id);
+    if (container) container.innerHTML = items.map(item => `<span>${esc(item)}</span>`).join('');
+  });
+}
+
 function renderTimeline() {
   const container = document.getElementById('timelineList');
-  if (!state.timeline.length) {
+  const from = document.getElementById('timelineFrom')?.value || '';
+  const to = document.getElementById('timelineTo')?.value || '';
+  const filteredTimeline = state.timeline.filter(event => {
+    const date = String(event.local_datetime || event.timestamp || event.date || '').slice(0, 10);
+    return (!from || date >= from) && (!to || date <= to);
+  });
+  if (!filteredTimeline.length) {
     container.innerHTML = '<div class="context-empty">Nenhum evento na timeline</div>';
     return;
   }
-  const sorted = [...state.timeline].sort((a, b) => new Date(a.date || a.timestamp) - new Date(b.date || b.timestamp));
+  const sorted = [...filteredTimeline].sort((a, b) => new Date(a.local_datetime || a.timestamp || a.date) - new Date(b.local_datetime || b.timestamp || b.date));
   container.innerHTML = sorted.map(e => `
     <div class="timeline-item">
-      <div class="timeline-date">${esc(e.date || e.timestamp || 'Data desconhecida')}</div>
-      <div class="timeline-title">${esc(e.title || e.event || 'Evento')}</div>
+      <div class="timeline-date">${esc(formatEventDate(e))}</div>
+      <div class="timeline-title">${esc(eventTitle(e))}</div>
       <div class="timeline-desc">${esc(e.description || e.details || '')}</div>
+      <div class="artifact-item-meta">${esc(e.location || '')}${e.channel === 'email' ? ` · ${esc(e.direction === 'outbound' ? 'Enviado' : 'Recebido')}` : ''}${e.source_documents?.length ? ` · ${esc(shortenPath(e.source_documents[0], 42))}` : ''}</div>
     </div>
   `).join('');
 }
@@ -2855,13 +3043,13 @@ function renderViolationsView() {
     <div class="violation-item" style="margin-bottom: 12px;" id="violation-${idx}">
       <div class="violation-header" onclick="toggleViolationDetail(${idx})">
         <span class="violation-title">
-          <i class="fas fa-chevron-right" style="font-size: 9px; margin-right: 4px; transition: transform 0.15s;" id="violChevron-${idx}"></i>
-          ${esc(v.title || v.violation_type || 'Violação')}
+          <i class="fas fa-chevron-right" aria-hidden="true" style="font-size: 9px; margin-right: 4px; transition: transform 0.15s;" id="violChevron-${idx}"></i>
+          ${esc(violationLabel(v))}
         </span>
         <span class="badge badge-${sevClass}">${esc(v.severity || 'N/A')}</span>
       </div>
       <div class="violation-desc">${esc(v.description || '')}</div>
-      ${v.law_reference ? `<div class="violation-law"><i class="fas fa-balance-scale" style="margin-right: 4px;"></i>${esc(v.law_reference)}</div>` : ''}
+      ${v.law_reference ? `<div class="violation-law"><i class="fas fa-balance-scale" aria-hidden="true" style="margin-right: 4px;"></i>${esc(v.law_reference)}</div>` : ''}
       ${hasDetail ? `
       <div class="violation-detail-section hidden" id="violDetail-${idx}">
         ${v.evidence ? `
@@ -2926,17 +3114,48 @@ function renderGraph() {
   const type = document.getElementById('graphTypeSelect').value;
   let diagram = '';
   
-  if (type === 'entities' && state.relationships.length) {
+  if (type === 'actors') {
+    const roles = (state.actors?.actor_roles || []).slice(0, 10);
+    const organizations = (state.actors?.organizations || []).slice(0, 6);
+    if (!roles.length && !organizations.length) {
+      diagram = 'graph LR\n  A[Dados de atores ainda não disponíveis]';
+    } else {
+      diagram = 'graph LR\n';
+      diagram += '  subgraph Roles["Papéis funcionais"]\n';
+      roles.forEach((role, i) => {
+        diagram += `    role${i}["${esc(role.label || roleLabel(role.function))} · ${Number(role.occurrences || 0)} fontes"]\n`;
+      });
+      diagram += '  end\n';
+      diagram += '  subgraph Orgs["Organizações mencionadas"]\n';
+      organizations.forEach((org, i) => {
+        diagram += `    org${i}["${esc(org.name)} · ${Number(org.occurrences || 0)} ocorrências"]\n`;
+      });
+      diagram += '  end\n';
+    }
+  } else if (type === 'timeline') {
+    const events = [...state.timeline]
+      .sort((a, b) => new Date(a.local_datetime || a.timestamp || a.date) - new Date(b.local_datetime || b.timestamp || b.date))
+      .slice(0, 16);
+    diagram = events.length ? 'graph LR\n' : 'graph LR\n  A[Eventos ainda não disponíveis]';
+    events.forEach((event, i) => {
+      const date = String(event.local_datetime || event.timestamp || event.date || '').slice(0, 10);
+      const label = `${date} · ${eventTitle(event)}`.slice(0, 62);
+      diagram += `  e${i}["${esc(label)}"]${i ? ` --> e${i - 1}` : ''}\n`;
+    });
+  } else if (type === 'entities' && state.relationships.length) {
     diagram = 'graph LR\n';
     const nodes = new Set();
     state.relationships.slice(0, 30).forEach((r, i) => {
-      const from = r.from || r.source || `Node${i}`;
-      const to = r.to || r.target || `Node${i+1}`;
-      const fromId = from.replace(/[^a-zA-Z0-9]/g, '_');
-      const toId = to.replace(/[^a-zA-Z0-9]/g, '_');
-      if (!nodes.has(fromId)) { diagram += `  ${fromId}["${esc(from)}"]\n`; nodes.add(fromId); }
-      if (!nodes.has(toId)) { diagram += `  ${toId}["${esc(to)}"]\n`; nodes.add(toId); }
-      diagram += `  ${fromId} --> ${toId}\n`;
+      const fromKey = r.from || r.source || `Node${i}`;
+      const toKey = r.to || r.target || `Node${i + 1}`;
+      const from = relationshipNodeLabel(r.from_label || r.source_file || r.from || r.source, `Fonte ${i + 1}`);
+      const to = relationshipNodeLabel(r.to_label || r.target_file || r.to || r.target, `Fonte ${i + 2}`);
+      const fromId = `rel_from_${String(fromKey).replace(/[^a-zA-Z0-9]/g, '_')}`;
+      const toId = `rel_to_${String(toKey).replace(/[^a-zA-Z0-9]/g, '_')}`;
+      if (!nodes.has(fromId)) { diagram += `  ${fromId}["${esc(from.slice(0, 58))}"]\n`; nodes.add(fromId); }
+      if (!nodes.has(toId)) { diagram += `  ${toId}["${esc(to.slice(0, 58))}"]\n`; nodes.add(toId); }
+      const shared = Array.isArray(r.shared_entities) ? r.shared_entities.slice(0, 2).join(', ') : '';
+      diagram += `  ${fromId} -->${shared ? `|${esc(shared.slice(0, 36))}|` : ''} ${toId}\n`;
     });
   } else if (type === 'files') {
     diagram = 'graph TD\n';
@@ -2951,34 +3170,38 @@ function renderGraph() {
       });
     });
   } else if (type === 'violations') {
-    diagram = 'graph TB\n  V[Violações]\n';
+    diagram = `graph TB\n  V["Achados legais · ${state.violations.length}"]\n`;
     state.violations.slice(0, 10).forEach((v, i) => {
       const vId = `v${i}`;
-      diagram += `  V --> ${vId}["${esc((v.title || v.violation_type || 'Violação').slice(0, 30))}"]\n`;
+      diagram += `  V --> ${vId}["${esc(violationLabel(v).slice(0, 48))}"]\n`;
       if (v.law_reference) {
         diagram += `  ${vId} -.-> law${i}["${esc(v.law_reference.slice(0, 20))}"]\n`;
       }
     });
   } else if (type === 'law-violations') {
-    // Law × Violations cross-reference graph
     diagram = 'graph LR\n';
-    diagram += '  subgraph Violations\n';
+    diagram += '  subgraph Findings["Achados legais"]\n';
     state.violations.slice(0, 12).forEach((v, i) => {
-      diagram += `    v${i}["🔴 ${esc((v.title || v.violation_type || 'Violação').slice(0, 28))}"]\n`;
+      diagram += `    v${i}["${esc(violationLabel(v).slice(0, 42))}"]\n`;
     });
     diagram += '  end\n';
     
-    // Collect unique law refs from violations
     const lawRefs = new Map();
     state.violations.slice(0, 12).forEach((v, i) => {
       const ref = v.law_reference || v.legal_basis || '';
       if (ref) {
         const refId = ref.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30);
         if (!lawRefs.has(refId)) {
-          lawRefs.set(refId, { label: ref.slice(0, 25), violations: [] });
+          lawRefs.set(refId, { label: ref.slice(0, 25), violations: new Set() });
         }
-        lawRefs.get(refId).violations.push(i);
+        lawRefs.get(refId).violations.add(i);
       }
+      (v.articles || []).slice(0, 3).forEach(article => {
+        const refId = String(article.eli_id || article.article_name || '').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30);
+        if (!refId) return;
+        if (!lawRefs.has(refId)) lawRefs.set(refId, { label: article.article_name || article.eli_id, violations: new Set() });
+        lawRefs.get(refId).violations.add(i);
+      });
     });
     
     diagram += '  subgraph "Base Legal"\n';
@@ -2987,14 +3210,12 @@ function renderGraph() {
     });
     diagram += '  end\n';
     
-    // Connections
     lawRefs.forEach((data, refId) => {
       data.violations.forEach(vi => {
         diagram += `  ${refId} -.->|fundamenta| v${vi}\n`;
       });
     });
     
-    // Add selected articles if any
     if (state.selectedLawArticles.length) {
       diagram += '  subgraph "Artigos Selecionados"\n';
       state.selectedLawArticles.slice(0, 8).forEach((a, i) => {
@@ -3003,7 +3224,6 @@ function renderGraph() {
       });
       diagram += '  end\n';
       
-      // Try to match selected articles with law refs
       state.selectedLawArticles.slice(0, 8).forEach((a, i) => {
         lawRefs.forEach((data, refId) => {
           if (data.label.toLowerCase().includes((a.article_number || '').toLowerCase()) ||
@@ -3019,11 +3239,9 @@ function renderGraph() {
     }
     
   } else if (type === 'law-articles') {
-    // Selected articles relationship graph
     if (state.selectedLawArticles.length) {
       diagram = 'graph TD\n';
       
-      // Group by framework
       const byFramework = {};
       state.selectedLawArticles.forEach(a => {
         const code = a.framework_code || 'Unknown';
@@ -3036,13 +3254,12 @@ function renderGraph() {
         diagram += `  subgraph ${fid}["${esc(code)}"]${'\n'}`;
         articles.slice(0, 10).forEach((a, i) => {
           const aid = `${fid}_a${i}`;
-          const normStyle = a.norm_type === 'obligation' ? ':::obligation' : a.norm_type === 'prohibition' ? ':::prohibition' : a.norm_type === 'right' ? ':::right' : '';
-          diagram += `    ${aid}["${esc((a.article_number || a.eli_id).slice(0, 18))}\\n${esc((a.theme || '').slice(0, 22))}"]\n`;
+          const articleLabel = a.article_name || `${a.article_number || a.eli_id || 'Artigo'}${a.theme ? ` · ${a.theme}` : ''}`;
+          diagram += `    ${aid}["${esc(articleLabel.slice(0, 58))}"]\n`;
         });
         diagram += '  end\n';
       });
       
-      // Draw cross-framework links for articles with matching themes
       const allArts = state.selectedLawArticles;
       for (let i = 0; i < Math.min(allArts.length, 10); i++) {
         for (let j = i + 1; j < Math.min(allArts.length, 10); j++) {
@@ -3072,7 +3289,6 @@ function renderGraph() {
   
   try {
     mermaid.init(undefined, container);
-    // Reset zoom after new render
     graphZoom.scale = 1;
     graphZoom.panX = 0;
     graphZoom.panY = 0;
@@ -3109,7 +3325,7 @@ function toggleGraphFullscreen() {
   const container = document.getElementById('graphContainer');
   const btn = document.getElementById('fullscreenGraphBtn');
   const isFullscreen = container.classList.toggle('fullscreen');
-  btn.innerHTML = isFullscreen ? '<i class="fas fa-compress"></i>' : '<i class="fas fa-expand"></i>';
+  btn.innerHTML = isFullscreen ? '<i class="fas fa-compress" aria-hidden="true"></i>' : '<i class="fas fa-expand" aria-hidden="true"></i>';
   btn.title = isFullscreen ? 'Sair tela cheia' : 'Tela cheia';
   if (!isFullscreen) fitGraph();
 }
@@ -3200,7 +3416,6 @@ async function selectArtifact(fileRef) {
     renderArtifactsGrid();
     renderDetail();
     
-    // Switch to detail tab
     switchRightTab('detail');
   } catch (err) {
     console.error('Error loading artifact:', err);
@@ -3247,7 +3462,6 @@ function renderDetail() {
     body.innerHTML = '<div class="context-empty">Preview não disponível</div>';
   }
   
-  // Meta info
   const meta = document.getElementById('detailMeta');
   const entities = item.pipeline?.entities || item.entities || {};
   const entitySummary = Object.entries(entities).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.length : v}`).join(' · ');
@@ -3283,7 +3497,6 @@ async function viewFile(fileRef) {
   
   try {
     if (['pdf'].includes(ext)) {
-      // PDF rendering
       body.className = 'file-viewer-content pdf';
       if (!window.pdfjsLib || typeof pdfjsLib.getDocument !== 'function') {
         throw new Error('Biblioteca PDF.js indisponivel');
@@ -3301,7 +3514,6 @@ async function viewFile(fileRef) {
       body.innerHTML = '';
       body.appendChild(canvas);
     } else if (['docx', 'doc'].includes(ext)) {
-      // DOCX rendering
       body.className = 'file-viewer-content markdown';
       if (!window.mammoth || typeof mammoth.convertToHtml !== 'function') {
         throw new Error('Biblioteca Mammoth indisponivel');
@@ -3312,7 +3524,6 @@ async function viewFile(fileRef) {
       const result = await mammoth.convertToHtml({ arrayBuffer });
       body.innerHTML = result.value;
     } else {
-      // Text/code/markdown
       const raw = await safeFetch(`${CASE_SERVER}/api/raw?file=${encodeURIComponent(file.file)}`);
       if (['md', 'markdown'].includes(ext)) {
         body.className = 'file-viewer-content markdown';
@@ -3380,7 +3591,11 @@ function askAbout(name) {
 // ===== VIEW SWITCHING =====
 function switchView(view) {
   state.currentView = view;
-  document.querySelectorAll('.view-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+  document.querySelectorAll('.view-tab').forEach(t => {
+    const isActive = t.dataset.view === view;
+    t.classList.toggle('active', isActive);
+    t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
   document.querySelectorAll('.view-content').forEach(v => v.classList.toggle('active', v.id === `view${view.charAt(0).toUpperCase() + view.slice(1)}`));
   
   if (view === 'graph') renderGraph();
@@ -3390,13 +3605,16 @@ function switchView(view) {
     if (!state.lawFrameworks.length) loadLawCatalogue();
   }
   if (view === 'jurisprudence') {
-    // Focus search input
     setTimeout(() => document.getElementById('scraperQuery')?.focus(), 100);
   }
 }
 
 function switchRightTab(tab) {
-  document.querySelectorAll('.right-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.right-tab').forEach(t => {
+    const isActive = t.dataset.tab === tab;
+    t.classList.toggle('active', isActive);
+    t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
   document.querySelectorAll('#rightContent > div').forEach(d => d.classList.toggle('active', d.id === `tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`));
 }
 
@@ -3406,23 +3624,15 @@ function switchSharedTab(tab) {
   loadSharedData(tab);
 }
 
-// ===== SHARED DATA =====
+// ===== SHARED DATA (FIXED) =====
 async function loadSharedData(tab) {
   const container = document.getElementById('sharedTree');
   container.innerHTML = '<div class="loading-spinner"></div>';
   
-  const paths = {
-    law: '/_shared/law',
-    corpus: '/_shared/corpus',
-    ontology: '/_shared/ontology',
-    media: '/_shared/corpus/media',
-    transcripts: '/_shared/corpus/transcripts',
-    docs: '/_shared/docs'
-  };
+  const path = SHARED_PATHS[tab] || SHARED_PATHS.law;
   
   try {
-    // Try to fetch tree from backend
-    const tree = await safeFetch(`${CASE_SERVER}/api/tree?path=${encodeURIComponent(paths[tab] || paths.law)}`).catch(() => null);
+    const tree = await safeFetch(`${CASE_SERVER}/api/tree?path=${encodeURIComponent(path)}`).catch(() => null);
     
     if (tree && (tree.children || Array.isArray(tree))) {
       renderSharedTree(tree, container);
@@ -3430,7 +3640,8 @@ async function loadSharedData(tab) {
       container.innerHTML = `
         <div class="context-empty">
           <p>Dados compartilhados não disponíveis via API.</p>
-          <p style="font-size: 10px; margin-top: 8px;">Caminho esperado: ${paths[tab]}</p>
+          <p style="font-size: 10px; margin-top: 8px;">Caminho: ${esc(path)}</p>
+          <p style="font-size: 10px; margin-top: 4px;">Verifique se o backend está rodando e o diretório existe no servidor.</p>
         </div>
       `;
     }
@@ -3459,9 +3670,9 @@ function renderTreeNode(node, depth) {
   
   let html = `
     <div class="tree-node" style="padding-left: ${depth * 16 + 8}px" data-path="${esc(node.path || node.file || '')}" data-type="${isDir ? 'dir' : 'file'}">
-      <span class="tree-node-icon"><i class="fas ${icon}"></i></span>
+      <span class="tree-node-icon"><i class="fas ${icon}" aria-hidden="true"></i></span>
       <span class="tree-node-name">${esc(name)}</span>
-      ${!isDir ? `<button class="artifact-mini-btn" onclick="event.stopPropagation(); addSharedToContext('${esc(node.path || node.file || '')}', '${esc(name)}')">+</button>` : ''}
+      ${!isDir ? `<button class="artifact-mini-btn" onclick="event.stopPropagation(); addSharedToContext('${esc(node.path || node.file || '')}', '${esc(name)}')" aria-label="Adicionar ao contexto">+</button>` : ''}
     </div>
   `;
   
@@ -3490,7 +3701,6 @@ async function loadLawCatalogue() {
     const frameworks = Array.isArray(res) ? res : (res.frameworks || []);
     state.lawFrameworks = frameworks;
     
-    // Group by jurisdiction
     const groups = {};
     for (const f of frameworks) {
       const j = f.jurisdiction || 'Other';
@@ -3502,7 +3712,6 @@ async function loadLawCatalogue() {
     const allJurs = [...jurOrder, ...Object.keys(groups).filter(j => !jurOrder.includes(j))];
     
     tree.innerHTML = '';
-    let totalArticles = 0;
     
     for (const jur of allJurs) {
       if (!groups[jur]) continue;
@@ -3510,12 +3719,11 @@ async function loadLawCatalogue() {
       tree.appendChild(jurEl);
     }
     
-    // Update counts once frameworks loaded
     document.getElementById('selectedArticlesCount').textContent = `${state.selectedLawArticles.length} artigos`;
     
   } catch (err) {
     console.error('Failed to load law catalogue:', err);
-    tree.innerHTML = `<div class="context-empty"><i class="fas fa-exclamation-triangle"></i> Catálogo não disponível: ${esc(err.message)}</div>`;
+    tree.innerHTML = `<div class="context-empty"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Catálogo não disponível: ${esc(err.message)}</div>`;
   }
 }
 
@@ -3531,7 +3739,7 @@ function buildJurGroup(jur, frameworks) {
       <span class="jur-flag">${jurLabel(jur).split(' ')[0]}</span>
       <span style="flex:1; font-size: 12px;">${jurLabel(jur).split(' ').slice(1).join(' ') || jur}</span>
       <span class="jur-count">${frameworks.length} leis</span>
-      <span class="jur-chevron"><i class="fas fa-chevron-right"></i></span>
+      <span class="jur-chevron"><i class="fas fa-chevron-right" aria-hidden="true"></i></span>
     </div>
     <div class="jur-group-body"></div>
   `;
@@ -3557,7 +3765,7 @@ function buildLawItem(meta) {
       <span class="law-code">${esc(meta.framework_code)}</span>
       <span class="law-name">${esc(meta.framework_name || meta.framework_code)}</span>
       <span class="law-art-count" data-count-for="${esc(meta.framework_code)}">…</span>
-      <span class="law-chevron"><i class="fas fa-chevron-right"></i></span>
+      <span class="law-chevron"><i class="fas fa-chevron-right" aria-hidden="true"></i></span>
     </div>
     <div class="law-item-body" data-loaded="false"></div>
   `;
@@ -3581,10 +3789,8 @@ async function loadLawArticlesForWorkspace(meta, bodyEl) {
     const res = await safeFetchApi(LAW_API.frameworkArticles(meta.framework_code));
     const articles = Array.isArray(res) ? res : [];
     
-    // Cache
     state.lawCatalogue[meta.framework_code] = { meta, articles };
     
-    // Update count
     const countEl = bodyEl.closest('.law-item').querySelector('.law-art-count');
     if (countEl) countEl.textContent = `${articles.length} art.`;
     
@@ -3633,15 +3839,13 @@ function buildArticleRow(article, meta) {
     `;
   }
   
-  div.innerHTML = content + `<button class="art-add" title="Adicionar ao contexto" onclick="event.stopPropagation(); addArticleToContext('${esc(article.eli_id)}', '${esc(meta.framework_code)}')"><i class="fas fa-plus"></i></button>`;
+  div.innerHTML = content + `<button class="art-add" title="Adicionar ao contexto" onclick="event.stopPropagation(); addArticleToContext('${esc(article.eli_id)}', '${esc(meta.framework_code)}')" aria-label="Adicionar artigo ao contexto"><i class="fas fa-plus" aria-hidden="true"></i></button>`;
   
-  // Click to select/deselect
   div.addEventListener('click', (e) => {
     if (e.target.closest('.art-add')) return;
     toggleArticleSelection(article, meta, div);
   });
   
-  // Hover tooltip (full granularity shows inline, others show tooltip)
   if (granularity !== 'full') {
     div.addEventListener('mouseenter', (e) => showArticleTooltip(article, meta, e));
     div.addEventListener('mouseleave', hideArticleTooltip);
@@ -3715,7 +3919,7 @@ function renderSelectedArticlesUI() {
   chips.innerHTML = state.selectedLawArticles.map(a => `
     <span class="sel-chip">
       ${esc(a.article_number || a.eli_id)} · ${esc(a.framework_code)}
-      <span class="sel-remove" onclick="event.stopPropagation(); deselectArticleById('${esc(a.eli_id)}')">×</span>
+      <span class="sel-remove" onclick="event.stopPropagation(); deselectArticleById('${esc(a.eli_id)}')" aria-label="Remover artigo">×</span>
     </span>
   `).join('');
   
@@ -3724,7 +3928,6 @@ function renderSelectedArticlesUI() {
 
 function deselectArticleById(eliId) {
   state.selectedLawArticles = state.selectedLawArticles.filter(a => a.eli_id !== eliId);
-  // Update row if visible
   const row = document.querySelector(`.article-row[data-eli-id="${eliId}"]`);
   if (row) row.classList.remove('selected');
   renderSelectedArticlesUI();
@@ -3740,7 +3943,7 @@ function renderSelectedArticlesSidebar() {
     <div class="article-row selected" style="cursor: default;">
       <span class="art-num">${esc(a.article_number || a.eli_id)}</span>
       <span class="art-theme">${esc(a.theme || a.hierarchy_label || '—')}<br><span style="font-size:9px;color:var(--ink-fade);">${esc(a.framework_code)}</span></span>
-      <button class="art-add" style="opacity:1;" onclick="deselectArticleById('${esc(a.eli_id)}')" title="Remover"><i class="fas fa-times"></i></button>
+      <button class="art-add" style="opacity:1;" onclick="deselectArticleById('${esc(a.eli_id)}')" title="Remover" aria-label="Remover artigo"><i class="fas fa-times" aria-hidden="true"></i></button>
     </div>
   `).join('');
 }
@@ -3763,7 +3966,6 @@ function clearSelectedArticles() {
   renderSelectedArticlesUI();
 }
 
-// Article tooltip
 function showArticleTooltip(article, meta, e) {
   const tip = document.getElementById('articleTooltip');
   tip.querySelector('.att-code').textContent = `${article.article_number || article.eli_id} — ${meta.framework_code} · ${meta.jurisdiction || ''}`;
@@ -3793,11 +3995,9 @@ function moveArticleTooltip(e) {
   tip.style.top = Math.min(e.clientY + 12, window.innerHeight - 300) + 'px';
 }
 
-// Granularity
 function setLawGranularity(level) {
   state.lawGranularity = level;
   document.querySelectorAll('.granularity-btn').forEach(b => b.classList.toggle('active', b.dataset.level === level));
-  // Re-render all loaded article bodies
   Object.keys(state.lawCatalogue).forEach(code => {
     const bodyEl = document.querySelector(`.law-item[data-code="${code}"] .law-item-body`);
     if (bodyEl && bodyEl.dataset.loaded === 'true') {
@@ -3870,7 +4070,6 @@ async function searchJurisprudence() {
   appendMessage('trace', `[TJRS Scraper] Iniciando busca: "${config.query}" (max: ${config.maxResults})`);
   
   try {
-    // Try the backend scraper API endpoint
     const payload = {
       search_text: config.query,
       max_results: config.maxResults,
@@ -3930,6 +4129,7 @@ function renderJurisResults() {
     container.innerHTML = '<div class="context-empty">Nenhum resultado encontrado.</div>';
     addAllBtn.style.display = 'none';
     downloadBtn.style.display = 'none';
+    renderJurisResultsSidebar();
     return;
   }
   
@@ -3951,14 +4151,13 @@ function renderJurisResults() {
       ${r.result_description ? `<div style="font-size:10px;color:var(--ink-fade);margin-top:4px;line-height:1.45;">${esc(r.result_description)}</div>` : ''}
       ${r.ementa_trecho ? `<div style="font-size:10px;color:var(--ink-soft);margin-top:4px;line-height:1.4;max-height:40px;overflow:hidden;">${esc((r.ementa_trecho || '').slice(0, 200))}</div>` : ''}
       <div class="juris-item-actions">
-        <button class="artifact-mini-btn" onclick="addJurisToContext(${i})"><i class="fas fa-plus"></i> contexto</button>
-        ${r.inteiro_url ? `<button class="artifact-mini-btn" onclick="downloadInteiroTeor(${i})"><i class="fas fa-download"></i> inteiro teor</button>` : ''}
-        <button class="artifact-mini-btn" onclick="askAboutJuris(${i})"><i class="fas fa-comment"></i> perguntar</button>
+        <button class="artifact-mini-btn" onclick="addJurisToContext(${i})"><i class="fas fa-plus" aria-hidden="true"></i> contexto</button>
+        ${r.inteiro_url ? `<button class="artifact-mini-btn" onclick="downloadInteiroTeor(${i})"><i class="fas fa-download" aria-hidden="true"></i> inteiro teor</button>` : ''}
+        <button class="artifact-mini-btn" onclick="askAboutJuris(${i})"><i class="fas fa-comment" aria-hidden="true"></i> perguntar</button>
       </div>
     </div>
   `).join('');
   
-  // Render sidebar
   renderJurisResultsSidebar();
 }
 
@@ -4044,7 +4243,6 @@ function addAllLawArticlesToContext() {
   renderContextModalItems();
 }
 
-// ===== ENHANCED GRAPH WITH LAW RELATIONSHIPS =====
 function setupExpandables() {
   document.querySelectorAll('.expandable-header').forEach(header => {
     header.addEventListener('click', () => {
@@ -4084,7 +4282,6 @@ async function confirmAddFolder() {
   }
   
   try {
-    // Send to backend
     await safeFetch(`${CASE_SERVER}/api/rebuild`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -4123,7 +4320,7 @@ function renderContextModalItems() {
   container.innerHTML = state.contextItems.map(item => `
     <div class="context-item">
       <div class="context-item-name">
-        <i class="fas ${getFileIcon(item.extension)}"></i>
+        <i class="fas ${getFileIcon(item.extension)}" aria-hidden="true"></i>
         <span>${esc(item.name || item.file || 'Item')}</span>
       </div>
       <span class="context-item-type">${esc(item.type)}</span>
@@ -4135,7 +4332,7 @@ function addAllViolations() {
   state.violations.forEach((v, i) => {
     addToContext({
       id: `violation-${i}`,
-      name: v.title || v.violation_type || `Violação ${i+1}`,
+      name: violationLabel(v),
       type: 'violation',
       data: v
     });
@@ -4193,7 +4390,7 @@ function appendMessage(role, content) {
   const div = document.createElement('div');
   div.className = `msg ${role}`;
   
-  const avatar = role === 'user' ? '<i class="fas fa-user"></i>' : role === 'trace' ? '<i class="fas fa-cog"></i>' : '<i class="fas fa-robot"></i>';
+  const avatar = role === 'user' ? '<i class="fas fa-user" aria-hidden="true"></i>' : role === 'trace' ? '<i class="fas fa-cog" aria-hidden="true"></i>' : '<i class="fas fa-robot" aria-hidden="true"></i>';
   const bubbleContent = role === 'trace' ? esc(content) : renderMarkdown(content);
   
   div.innerHTML = `
@@ -4210,14 +4407,12 @@ function buildContextSummary() {
   
   let summary = '\n\n---\n**Contexto Montado:**\n';
   
-  // Group by type for cleaner output
   const byType = {};
   state.contextItems.forEach(item => {
     if (!byType[item.type]) byType[item.type] = [];
     byType[item.type].push(item);
   });
   
-  // Regular items
   Object.entries(byType).forEach(([type, items]) => {
     if (type === 'law-article') {
       summary += `\n**Artigos de Lei (${items.length}):**\n`;
@@ -4260,8 +4455,6 @@ async function sendMessage() {
   input.value = '';
   appendMessage('user', text);
   
-  // === AGENT COMMAND DETECTION ===
-  // Detect if user asks the agent to search jurisprudence
   const jurisPatterns = [
     /^busque?\s+jurisprud[eê]ncia\s+(?:sobre\s+)?(.+)/i,
     /^pesquis[ae]\s+(?:no\s+)?tjrs\s+(?:sobre\s+)?(.+)/i,
@@ -4286,7 +4479,6 @@ async function sendMessage() {
     }
   }
   
-  // Detect graph requests
   if (/gra(?:fo|ph)\s+(?:de\s+)?(?:lei|legal|artigo|viola)/i.test(text)) {
     switchView('graph');
     document.getElementById('graphTypeSelect').value = 'law-violations';
@@ -4338,7 +4530,6 @@ function buildSystemPrompt() {
   const selectedArticleCount = state.selectedLawArticles.length;
   const jurisResultCount = state.jurisResults.length;
   
-  // Build law summary
   let lawSummary = '';
   if (state.lawFrameworks.length) {
     const byJur = {};
@@ -4350,7 +4541,6 @@ function buildSystemPrompt() {
     lawSummary = Object.entries(byJur).map(([j, codes]) => `${j}: ${codes.join(', ')}`).join('; ');
   }
   
-  // Build selected articles detail
   let selectedDetail = '';
   if (state.selectedLawArticles.length) {
     const byCode = {};
@@ -4363,7 +4553,6 @@ function buildSystemPrompt() {
     }).join('');
   }
   
-  // Build jurisprudence context
   let jurisDetail = '';
   if (state.jurisResults.length) {
     jurisDetail = state.jurisResults.slice(0, 5).map(r =>
@@ -4416,22 +4605,18 @@ function buildSystemPrompt() {
 
 // ===== EVENT BINDINGS =====
 function bindEvents() {
-  // View tabs
   document.querySelectorAll('.view-tab').forEach(tab => {
     tab.addEventListener('click', () => switchView(tab.dataset.view));
   });
   
-  // Right panel tabs
   document.querySelectorAll('.right-tab').forEach(tab => {
     tab.addEventListener('click', () => switchRightTab(tab.dataset.tab));
   });
   
-  // Shared data tabs
   document.querySelectorAll('.shared-data-tab').forEach(tab => {
     tab.addEventListener('click', () => switchSharedTab(tab.dataset.tab));
   });
   
-  // Buttons
   document.getElementById('refreshBtn').addEventListener('click', () => refreshWorkspace());
   document.getElementById('importWorkspaceBtn').addEventListener('click', triggerWorkspaceImport);
   document.getElementById('workspaceImportInput').addEventListener('change', handleWorkspaceImportSelection);
@@ -4467,7 +4652,6 @@ function bindEvents() {
     }
   });
   
-  // Hint chips
   document.querySelectorAll('.hint-chip').forEach(chip => {
     chip.addEventListener('click', () => {
       document.getElementById('chatInput').value = chip.dataset.prompt;
@@ -4475,13 +4659,11 @@ function bindEvents() {
     });
   });
   
-  // Search
   document.getElementById('artifactSearchInput').addEventListener('input', () => {
     renderFiles();
     renderArtifactsGrid();
   });
   
-  // Notes
   document.getElementById('saveNoteBtn').addEventListener('click', () => {
     const title = document.getElementById('noteTitle').value.trim();
     const content = document.getElementById('noteBody').value.trim();
@@ -4491,10 +4673,9 @@ function bindEvents() {
   });
   document.getElementById('newNoteBtn').addEventListener('click', clearNoteEditor);
   
-  // Graph type
   document.getElementById('graphTypeSelect').addEventListener('change', renderGraph);
+  document.getElementById('filterTimelineBtn').addEventListener('click', renderTimeline);
   
-  // Graph controls
   document.getElementById('zoomInBtn').addEventListener('click', () => zoomGraph(0.2));
   document.getElementById('zoomOutBtn').addEventListener('click', () => zoomGraph(-0.2));
   document.getElementById('fitGraphBtn').addEventListener('click', fitGraph);
@@ -4502,41 +4683,31 @@ function bindEvents() {
   document.getElementById('exportGraphBtn').addEventListener('click', exportGraph);
   initGraphPan();
   
-  // Escape exits fullscreen
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && document.getElementById('graphContainer').classList.contains('fullscreen')) {
       toggleGraphFullscreen();
     }
   });
 
-  // Violations filter & export
   document.getElementById('violationSeverity').addEventListener('change', renderViolationsView);
   document.getElementById('exportViolationsBtn').addEventListener('click', exportViolations);
   
-  // Viewer
   document.getElementById('closeViewerBtn').addEventListener('click', closeViewer);
   document.getElementById('downloadFileBtn').addEventListener('click', downloadCurrentFile);
   
-  // Add to context from detail
   document.getElementById('addToContextBtn').addEventListener('click', () => {
     if (state.selectedArtifact) {
       addFileToContext(state.selectedArtifact.file);
     }
   });
 
-  // === LEGISLATION ===
-  // Granularity buttons
   document.querySelectorAll('.granularity-btn').forEach(btn => {
     btn.addEventListener('click', () => setLawGranularity(btn.dataset.level));
   });
-  // Law search
   document.getElementById('lawSearchInput').addEventListener('input', applyLawSearch);
-  // Add selected articles to context
   document.getElementById('addSelectedArticlesBtn').addEventListener('click', addAllSelectedArticlesToContext);
-  // Clear selected articles
   document.getElementById('clearSelectedArticlesBtn').addEventListener('click', clearSelectedArticles);
 
-  // === JURISPRUDENCE / SCRAPER ===
   document.getElementById('scraperSearchBtn').addEventListener('click', searchJurisprudence);
   document.getElementById('scraperResetBtn').addEventListener('click', resetScraperForm);
   document.getElementById('scraperConfigHeader').addEventListener('click', () => {
@@ -4545,9 +4716,47 @@ function bindEvents() {
   });
   document.getElementById('jurisAddAllContextBtn').addEventListener('click', addAllJurisToContext);
   document.getElementById('jurisDownloadAllBtn').addEventListener('click', downloadAllInteiroTeor);
-  // Enter key on search input triggers search
   document.getElementById('scraperQuery').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); searchJurisprudence(); }
+  });
+}
+
+// ===== SIMPLE DRAG-AND-DROP FOR CONTEXT =====
+function initDragAndDrop() {
+  const dropZone = document.getElementById('workspaceBuilderDropZone');
+  if (!dropZone) return;
+  
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.style.borderColor = 'var(--amber)';
+    dropZone.style.background = 'rgba(181, 94, 46, 0.08)';
+  });
+  
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.style.borderColor = '';
+    dropZone.style.background = '';
+  });
+  
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.style.borderColor = '';
+    dropZone.style.background = '';
+    
+    const data = e.dataTransfer?.getData('text/plain');
+    if (!data) {
+      appendMessage('assistant', 'Solte um caminho de arquivo ou pasta aqui para adicionar ao contexto.');
+      return;
+    }
+    
+    addToContext({
+      id: `dropped-${Date.now()}`,
+      name: data.split('/').pop() || data,
+      file: data,
+      type: 'dropped',
+      extension: data.split('.').pop()
+    });
+    
+    appendMessage('assistant', `Adicionado "${data.split('/').pop()}" ao contexto.`);
   });
 }
 
@@ -4561,23 +4770,44 @@ async function init() {
   setupExpandables();
   setupFolderTypeOptions();
   initImportModeControl();
+  initDragAndDrop();
   bindEvents();
   loadNotes();
   loadContext();
   renderNotes();
   renderContextItems();
 
+  appendMessage('assistant', 'Inicializando workspace...');
+
   await ensureDiscoverySession();
   
-  await refreshWorkspace();
+  try {
+    await refreshWorkspace();
+  } catch (err) {
+    console.error('Workspace refresh failed:', err);
+    appendMessage('assistant', `⚠️ **Falha ao carregar workspace:** ${esc(err.message || String(err))}`);
+  }
   
-  // Load law catalogue in background
   loadLawCatalogue().catch(err => console.warn('Law catalogue load deferred:', err.message));
   
   if (state.scanned) {
-    appendMessage('assistant', 'Workspace ativo! Explore os artefatos, visualize grafos de relacionamento, analise violações ou monte um contexto personalizado para suas perguntas.\n\n**Novas funcionalidades:**\n- 📚 **Legislação** — Navegue artigos com 3 níveis de granularidade (lei, compacto, completo) com tooltips detalhados\n- ⚖️ **Jurisprudência** — Pesquise a base do TJRS com busca semântica configurável\n- 🔗 **Grafos Lei × Violações** — Visualize relações entre artigos e violações no Grafo');
+    appendMessage('assistant', 
+      '**Workspace ativo!** Explore os artefatos, visualize grafos de relacionamento, ' +
+      'analise violações ou monte um contexto personalizado para suas perguntas.\n\n' +
+      '**Funcionalidades:**\n' +
+      '- 📚 **Legislação** — Navegue artigos com 3 níveis de granularidade\n' +
+      '- ⚖️ **Jurisprudência** — Pesquise a base do TJRS com busca semântica\n' +
+      '- 🔗 **Grafos Lei × Violações** — Visualize relações entre artigos e violações'
+    );
   } else {
-    appendMessage('assistant', 'Workspace vazio. Use o botão "Adicionar" para incluir pastas ou arquivos no corpus.\n\nVocê já pode explorar a **aba Legislação** para navegar artigos de lei e a **aba Jurisprudência** para pesquisar na base do TJRS.');
+    appendMessage('assistant', 
+      '**Workspace vazio.** Use o botão "Adicionar" para incluir pastas ou arquivos.\n\n' +
+      'Você já pode explorar a **aba Legislação** e a **aba Jurisprudência**.'
+    );
+  }
+
+  if (state.currentSharedTab) {
+    switchSharedTab(state.currentSharedTab);
   }
 }
 
@@ -4593,10 +4823,8 @@ window.editNote = editNote;
 window.deleteNote = deleteNote;
 window.removeFromContext = removeFromContext;
 window.toggleViolationDetail = toggleViolationDetail;
-// Legislation
 window.addArticleToContext = addArticleToContext;
 window.deselectArticleById = deselectArticleById;
-// Jurisprudence
 window.addJurisToContext = addJurisToContext;
 window.downloadInteiroTeor = downloadInteiroTeor;
 window.askAboutJuris = askAboutJuris;
