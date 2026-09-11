@@ -1,77 +1,18 @@
 """Tests for the bulk ingesters (jurisprudence, transcript, framework).
 
-Uses the same in-memory `_FakeQdrantClient` pattern as test_extensions.py
-so no network calls are made.
+Uses the shared in-memory `FakeQdrantClient` from tests/_fakes.py so no
+network calls are made.
 """
 from __future__ import annotations
 
 import json
-import math
 from pathlib import Path
 
 import pytest
 
 from violation_pack.embeddings import HashEmbedder
 
-
-# ---------------------------------------------------------------------------
-# Fake Qdrant (duplicated from test_extensions to keep this module self-
-# contained; small enough not to be worth a shared conftest fixture).
-# ---------------------------------------------------------------------------
-
-class _FakeCollections:
-    def __init__(self, names):
-        self.collections = [type("C", (), {"name": n})() for n in names]
-
-
-class _FakeQdrantClient:
-    def __init__(self):
-        self.points: dict[str, list[dict]] = {}
-
-    def get_collections(self):
-        return _FakeCollections(list(self.points.keys()))
-
-    def get_collection(self, name):
-        return type(
-            "Info",
-            (),
-            {
-                "config": type(
-                    "Cfg",
-                    (),
-                    {"params": type("P", (), {"vectors": type("V", (), {"size": 64})()})()},
-                )()
-            },
-        )()
-
-    def create_collection(self, collection_name, vectors_config):
-        self.points.setdefault(collection_name, [])
-
-    def upsert(self, collection_name, points, wait=False):
-        bucket = self.points.setdefault(collection_name, [])
-        for p in points:
-            bucket[:] = [x for x in bucket if x["id"] != p.id]
-            bucket.append({"id": p.id, "vector": p.vector, "payload": p.payload})
-
-    def search(self, collection_name, query_vector, limit, with_payload=True):
-        bucket = self.points.get(collection_name, [])
-
-        def cos(a, b):
-            num = sum(x * y for x, y in zip(a, b))
-            da = math.sqrt(sum(x * x for x in a)) or 1.0
-            db = math.sqrt(sum(x * x for x in b)) or 1.0
-            return num / (da * db)
-
-        scored = [
-            type(
-                "H",
-                (),
-                {"id": p["id"], "score": cos(query_vector, p["vector"]), "payload": p["payload"]},
-            )()
-            for p in bucket
-        ]
-        scored.sort(key=lambda h: h.score, reverse=True)
-        return scored[:limit]
+from _fakes import FakeQdrantClient
 
 
 def _idx():
@@ -82,7 +23,7 @@ def _idx():
         url="http://fake",
         api_key=None,
         embedder=HashEmbedder(dim=64),
-        client=_FakeQdrantClient(),
+        client=FakeQdrantClient(),
     )
 
 

@@ -10,7 +10,8 @@ Run:
     # or, after `pip install -e .[mcp]`:
     violation-pack-mcp
 
-Transport: stdio (--catalog) or streamable-http (MCP_TRANSPORT=streamable-http).
+Transport: stdio (default), sse, or streamable-http, selected via MCP_TRANSPORT.
+MCP_HOST (default 127.0.0.1) and MCP_PORT (default 8124) control the bind.
 """
 from __future__ import annotations
 
@@ -325,7 +326,7 @@ def build_server():
         contract: dict | None = None,
         known_violation_ids: list[str] | None = None,
     ) -> dict:
-        """Run V01-V10 validation. `transcripts` and `frameworks` are lists of
+        """Run V01-V11 validation. `transcripts` and `frameworks` are lists of
         {path, source_id|framework_code, bundle_uri} entries used to construct
         readers."""
         v = _v_load(violation)
@@ -388,7 +389,7 @@ def build_server():
     ) -> dict:
         """Run the batch refiner over a folder of CL-* bundles. Returns the
         summary dict written to refine_batch_summary.json."""
-        from violation_pack.refine_batch_core import run as batch_run
+        from .refine_batch_core import run as batch_run
 
         rc = batch_run(
             root=Path(input_root),

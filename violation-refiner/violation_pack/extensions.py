@@ -35,13 +35,11 @@ class JurisprudenceProvider(Protocol):
     can show. Implementations that LLM-fabricate any of these fields are in
     violation of the contract and must NOT set verified=True.
 
-    Today: not implemented in this package. Wire your own.
-
-    Tomorrow's implementations might include:
+    Today: implemented in-package by `QdrantJurisprudenceProvider`
+    (`jurisprudence.py`), which reads the Qdrant `jurisprudence` collection.
+    Other implementations you might add:
       * BCNJurisprudenceProvider — fetches from bcn.cl
       * PoderJudicialProvider    — fetches from pjud.cl
-      * QdrantJurisprudenceIndex — runs vector similarity over an indexed
-        corpus of cases, returns top-k with full provenance per hit.
     """
 
     def search(
@@ -71,7 +69,7 @@ class JurisprudenceProvider(Protocol):
 class VectorIndex(Protocol):
     """Index over the embeddable content in the bundle.
 
-    Today: not implemented in this package.
+    Today: implemented in-package by `QdrantVectorIndex` (`qdrant_index.py`).
 
     Why a separate Protocol from JurisprudenceProvider? Because a vector
     index is fundamentally a retrieval primitive — given an embedding,
@@ -105,7 +103,7 @@ class VectorIndex(Protocol):
 class KnowledgeGraph(Protocol):
     """Graph view over the bundle for chronological / implication walks.
 
-    Today: not implemented in this package.
+    Today: implemented in-package by `Neo4jKnowledgeGraph` (`neo4j_graph.py`).
 
     Suggested schema:
       Nodes

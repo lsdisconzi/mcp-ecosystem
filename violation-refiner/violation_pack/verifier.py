@@ -16,7 +16,7 @@ substantive invariants that an LLM-driven enrichment stage MUST preserve:
 
 The verifier is exposed as `verify_enrichment` (returns a structured
 VerificationReport) and as the V11 validation check (returns a
-CheckResult so it composes with V01-V10).
+CheckResult so it composes with V01-V10, which V11 extends to V01-V11).
 
 Why a separate module? The validation pipeline checks the WHOLE pipeline
 output. The verifier specifically guards the LLM seam, so it can be

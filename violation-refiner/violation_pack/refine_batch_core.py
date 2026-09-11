@@ -2,7 +2,7 @@
 
 Loads each violation bundle (legacy or canonical schema), anchors segments
 against the real transcript HTML, verifies article excerpts against the real
-framework cache, re-derives confidence, runs V01-V10 validation, and writes
+framework cache, re-derives confidence, runs V01-V11 validation, and writes
 normalized outputs in place.
 
 This module is the shared library; the CLI wrapper lives in

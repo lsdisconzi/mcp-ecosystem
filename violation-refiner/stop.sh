@@ -19,11 +19,30 @@ fail()  { printf "${R}✗${N} %s\n" "$*"; exit 1; }
 # ── Stop services ──
 info "Stopping ViolationRefiner services..."
 
+# Reap any ViolationRefiner server process that belongs to THIS checkout.
+#
+# `kill_port` below already frees the listener, so this only matters for
+# transports that bind no port. It is deliberately scoped by the process's
+# working directory: the previous `pkill -f violation_pack.mcp_server` was
+# system-wide and would kill servers started from any other checkout or
+# virtualenv on the machine.
+reap_local_server_processes() {
+  local pid cwd
+  for pid in $(pgrep -f 'violation_pack[._]mcp_server' 2>/dev/null || true); do
+    [[ "$pid" == "$$" || "$pid" == "$PPID" ]] && continue
+    cwd="$(lsof -a -p "$pid" -d cwd -Fn 2>/dev/null | sed -n 's/^n//p' | head -1)"
+    if [[ "$cwd" == "$SCRIPT_DIR" ]]; then
+      kill "$pid" 2>/dev/null || true
+      sleep 0.3
+      kill -0 "$pid" 2>/dev/null && kill -9 "$pid" 2>/dev/null || true
+    fi
+  done
+}
+
 stop_by_pid_file "violation-refiner" "mcp"
 
-# Belt-and-braces: kill anything on our ports
+# Belt-and-braces: reclaim our port, then sweep any straggler from this checkout
 kill_port "violation-refiner" "mcp" "$MCP_PORT"
-pkill -f "violation_pack.mcp_server" 2>/dev/null || true
-pkill -f "violation-pack-mcp" 2>/dev/null || true
+reap_local_server_processes
 
 [[ "$QUIET" == "--quiet" ]] || ok "ViolationRefiner stopped — logs preserved in .dev-logs/"

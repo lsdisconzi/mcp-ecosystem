@@ -19,6 +19,8 @@ from violation_pack.models import (
     Violation,
 )
 
+from _fakes import FakeQdrantClient
+
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -83,61 +85,15 @@ def test_hash_embedder_is_deterministic():
 
 
 # ---------------------------------------------------------------------------
-# Qdrant — in-memory fake
+# Qdrant — shared in-memory fake (see tests/_fakes.py)
 # ---------------------------------------------------------------------------
-
-class _FakeCollections:
-    def __init__(self, names):
-        self.collections = [type("C", (), {"name": n})() for n in names]
-
-
-class _FakeQdrantClient:
-    """Minimal Qdrant-shaped fake. Stores points per collection and does
-    a literal-text-match scoring for tests."""
-
-    def __init__(self):
-        self.points: dict[str, list[dict]] = {}
-
-    def get_collections(self):
-        return _FakeCollections(list(self.points.keys()))
-
-    def create_collection(self, collection_name, vectors_config):
-        self.points.setdefault(collection_name, [])
-
-    def upsert(self, collection_name, points, wait=False):
-        bucket = self.points.setdefault(collection_name, [])
-        for p in points:
-            bucket[:] = [x for x in bucket if x["id"] != p.id]
-            bucket.append({"id": p.id, "vector": p.vector, "payload": p.payload})
-
-    def search(self, collection_name, query_vector, limit, with_payload=True):
-        import math
-
-        bucket = self.points.get(collection_name, [])
-
-        def cos(a, b):
-            num = sum(x * y for x, y in zip(a, b))
-            da = math.sqrt(sum(x * x for x in a)) or 1.0
-            db = math.sqrt(sum(x * x for x in b)) or 1.0
-            return num / (da * db)
-
-        scored = [
-            type(
-                "H",
-                (),
-                {"id": p["id"], "score": cos(query_vector, p["vector"]), "payload": p["payload"]},
-            )()
-            for p in bucket
-        ]
-        scored.sort(key=lambda h: h.score, reverse=True)
-        return scored[:limit]
 
 
 def test_qdrant_vector_index_upserts_and_searches(minimal_violation):
     pytest.importorskip("qdrant_client")
     from violation_pack.qdrant_index import QdrantVectorIndex
 
-    fake = _FakeQdrantClient()
+    fake = FakeQdrantClient()
     idx = QdrantVectorIndex(
         url="http://fake",
         api_key=None,
@@ -160,7 +116,7 @@ def test_jurisprudence_provider_returns_unverified_stubs(minimal_violation):
     from violation_pack.jurisprudence import QdrantJurisprudenceProvider
     from violation_pack.qdrant_index import QdrantVectorIndex
 
-    fake = _FakeQdrantClient()
+    fake = FakeQdrantClient()
     idx = QdrantVectorIndex(
         url="http://fake",
         api_key=None,
@@ -197,7 +153,7 @@ def test_jurisprudence_verify_refuses_when_no_primary_source():
     from violation_pack.jurisprudence import QdrantJurisprudenceProvider
     from violation_pack.qdrant_index import QdrantVectorIndex
 
-    fake = _FakeQdrantClient()
+    fake = FakeQdrantClient()
     idx = QdrantVectorIndex(
         url="http://fake",
         api_key=None,

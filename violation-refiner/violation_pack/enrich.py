@@ -37,6 +37,7 @@ from .layers import (
 )
 from .llm import LLMClient, LLMError
 from .models import (
+    PROOF_WEIGHTS,
     ArticleElementGrid,
     CandidateArticle,
     CrossReference,
@@ -400,7 +401,6 @@ def propose_element_grid(
         scored = [e for e in elems if e.proof_status != "not_developed"]
         if not scored:
             return 0.0
-        from violation_pack.models import PROOF_WEIGHTS
         return sum(PROOF_WEIGHTS[e.proof_status] for e in scored) / len(scored)
 
     # Retry once if the grid is too sparse or too weak; sparse 3-4-element

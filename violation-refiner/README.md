@@ -5,16 +5,17 @@ verifiable, validatable artifacts — so the work I demoed on CL-005 becomes
 something you can run on every other violation file with one function call
 per layer.
 
-The library implements only what was demonstrated to work on CL-005. The
-seams for jurisprudence verification, vector indexing (Qdrant), and the
-chronological / implication graph (Neo4j) are present as Protocols in
-`violation_pack/extensions.py` — implementations live elsewhere.
+The core pipeline was demonstrated end-to-end on CL-005 and generalizes to
+every other violation file. The seams for jurisprudence verification, vector
+indexing (Qdrant), and the chronological / implication graph (Neo4j) are
+defined as Protocols in `violation_pack/extensions.py` and now ship with
+reference implementations in-package, behind optional extras.
 
 ## What it does today
 
-Five enrichment layers, ten validation checks, derived confidence, signed
-manifest, zipped bundle. Each layer is a pure function: takes a current
-`Violation` state, returns a new one with provenance appended.
+Five enrichment layers, eleven validation checks (V01–V11), derived
+confidence, signed manifest, zipped bundle. Each layer is a pure function:
+takes a current `Violation` state, returns a new one with provenance appended.
 
 | Layer | Function | What it produces |
 | --- | --- | --- |
@@ -27,36 +28,35 @@ manifest, zipped bundle. Each layer is a pure function: takes a current
 Confidence is then `derive_confidence(violation)` — formula visible, history
 appended each time it's re-derived. Validation is `run_pipeline(violation,
 transcripts=..., frameworks=...)` and returns a `ValidationReport` with V01
-through V10.
+through V11.
 
-## What's deferred — by design
+## Extension seams
 
-`violation_pack/extensions.py` defines three Protocols with no
-implementations:
+`violation_pack/extensions.py` defines three Protocols. Reference
+implementations ship in-package (see [Extensions](#extensions--qdrant--neo4j--jurisprudence)
+below); the Protocols remain the seam so alternative backends can be dropped
+in without touching the core:
 
 * **`JurisprudenceProvider`** — `search(query, supports, ...) -> Authority[]`
-  and `verify(authority) -> Authority`. An implementation must source rol /
-  decision_date / holding from a primary source it can point to. Today: nothing
-  satisfies this Protocol. Wire your own when you have the corpus.
+  and `verify(authority) -> Authority`. `search()` returns unverified stubs;
+  `verify()` only flips `verified=True` when the backing store can point to a
+  `primary_source_url`.
 
 * **`VectorIndex`** — Qdrant-shaped retrieval primitive over segments,
-  articles, elements, and indexed jurisprudence. Today: not implemented. The
-  natural consumer is a `JurisprudenceProvider` backed by a vector store, but
-  the index itself is also useful for "find segments across the corpus that
-  look like seg-55" or "find elements established elsewhere that match this
-  contested one".
+  articles, elements, and indexed jurisprudence. Useful for "find segments
+  across the corpus that look like seg-55" or "find elements established
+  elsewhere that match this contested one".
 
 * **`KnowledgeGraph`** — Neo4j-shaped view for the chronological / implication
-  walks. Today: not implemented. The schema is sketched in the docstring,
-  including the typed edges (`HAS_SEGMENT`, `CITES`, `SUPPORTS`,
-  `CROSS_REFERENCES`, `BLOCKS`) and the queries it should answer ("what other
-  violations cite Art. 193 with a contested documento_oficial?", "if
+  walks. The docstring sketches the typed edges (`HAS_SEGMENT`, `CITES`,
+  `SUPPORTS`, `CROSS_REFERENCES`, `BLOCKS`) and the queries it answers ("what
+  other violations cite Art. 193 with a contested documento_oficial?", "if
   OQ-CL005-PDI-PARTE flips to resolved, which elements upgrade and which
   sibling violations' confidence values move?").
 
 The core library never imports `qdrant_client` or `neo4j`. That keeps the
-install footprint to one dependency (Pydantic) and lets the extensions ship
-as separate packages on their own release cadence.
+install footprint to one dependency (Pydantic), with the stores pulled in
+only through the `[qdrant]` / `[neo4j]` extras.
 
 ## Layout
 
@@ -64,42 +64,86 @@ as separate packages on their own release cadence.
 violation-pack/
 ├── pyproject.toml
 ├── README.md
+├── .env.example              # every Settings.from_env() var + the MCP_* transport vars
+├── start.sh / stop.sh        # MCP server lifecycle (stdio or streamable-http)
+├── docs/
+│   ├── mcp_mapping.md        # MCP tool → library function → file:line → UI step
+│   └── ui_structural_skeleton.md  # front-end spec: steps S0–S14, every field
 ├── violation_pack/
-│   ├── __init__.py           # public API surface — kept small and explicit
+│   ├── __init__.py           # public API surface + get_* factory helpers
 │   ├── models.py             # Pydantic models for every layer
-│   ├── sources.py            # TranscriptSource & FrameworkSource Protocols + filesystem impls
+│   ├── sources.py            # TranscriptSource/FrameworkSource Protocols + filesystem impls
+│   ├── _utils.py             # shared helpers (sha256_text)
 │   ├── layers.py             # build_evidence_layer, build_norms_layer, ...
-│   ├── confidence.py         # derive_confidence; formula lives here so it's auditable
-│   ├── validation.py         # V01–V10 + run_pipeline
+│   ├── confidence.py         # derive_confidence; configurable verification floor
+│   ├── validation.py         # V01–V11 + run_pipeline
+│   ├── verifier.py           # V11 enrichment-integrity checks
+│   ├── authority_verification.py  # statute_in_bundle / statute_external_fetch / human_attested
 │   ├── pack.py               # MANIFEST, zip, canonical bundle layout
-│   └── extensions.py         # Protocols only: JurisprudenceProvider, VectorIndex, KnowledgeGraph
+│   ├── extensions.py         # Protocols: JurisprudenceProvider, VectorIndex, KnowledgeGraph
+│   ├── qdrant_index.py       # QdrantVectorIndex              [qdrant] extra
+│   ├── neo4j_graph.py        # Neo4jKnowledgeGraph            [neo4j]  extra
+│   ├── jurisprudence.py      # QdrantJurisprudenceProvider
+│   ├── embeddings.py         # Voyage / OpenAI / Cohere / Ollama / Hash
+│   ├── ingesters.py          # bulk corpus ingestion
+│   ├── enrich.py             # LLM-driven enrichment (8 stages)
+│   ├── llm.py                # multi-provider LLM client       [llm]   extra
+│   ├── config.py             # env-driven Settings
+│   ├── refine_batch_core.py  # importable batch-refiner core
+│   ├── mcp_server.py         # MCP server (39 tools)           [mcp]   extra
+│   └── mcp_catalog.py        # MCP catalog CLI + snippet generator
 ├── examples/
 │   ├── cl005_source/         # the real CL-005 source files as fixtures
-│   └── refine_cl005.py       # end-to-end demo — also the template MCP tools wrap on top of
-├── tests/
-│   ├── conftest.py
-│   ├── test_layers.py        # idempotence, fabrication rejection, etc.
-│   └── test_end_to_end.py    # rebuild CL-005, assert 0 fails
+│   ├── refine_cl005.py       # end-to-end demo
+│   ├── refine_batch.py       # thin CLI over refine_batch_core
+│   ├── wire_extensions.py    # Qdrant + Neo4j wiring demo
+│   └── ...                   # ingest / validate / triage helper scripts
+└── tests/
+    ├── conftest.py
+    ├── _fakes.py             # shared in-memory Qdrant fake (FakeQdrantClient)
+    ├── test_layers.py        # idempotence, fabrication rejection, etc.
+    ├── test_verifier.py      # V11 failure modes
+    ├── test_extensions.py    # Qdrant/Neo4j/jurisprudence contracts (in-memory fakes)
+    ├── test_ingesters.py     # bulk ingestion
+    ├── test_catalog_sync.py  # fails if mcp_catalog.py drifts from the server
+    └── test_end_to_end.py    # rebuild CL-005, assert 0 fails
 ```
 
 ## Quick start
 
 ```bash
-pip install -e .
+pip install -e '.[all,test]'
+cp .env.example .env            # optional; only needed for LLM/Qdrant/Neo4j work
 python examples/refine_cl005.py
 pytest
 ```
+
+> Use the `all` extra, not just `test`. Without `qdrant-client` and `neo4j` the
+> eight extension and ingester tests **skip silently** instead of failing, so a
+> `.[test]`-only install reports green while exercising less. Expected: `38
+> passed` in about two seconds.
 
 Expected end-to-end output (and what the tests assert):
 
 ```
 Bundle written to: build/CL-005
 Zip:               build/CL-005_refined_pack.zip
-Confidence:        0.74 (derived)
-Validation:        {'total': 10, 'pass': 7, 'warn': 3, 'fail': 0}
+Confidence:        0.74
+Validation:        {'total': 11, 'pass': 7, 'warn': 4, 'fail': 0}
+  ✓ V01 segment_resolution
+  ✓ V02 verbatim_quote_match
+  ! V03 article_text_hash
+  ✓ V04 article_exists_in_framework_cache
+  ! V05 cross_references_resolve
+  ✓ V06 element_coverage
+  ! V07 authorities_verification
+  ✓ V08 contract_consistency
+  ✓ V09 language_consistency
+  ✓ V10 confidence_derivation
+  ! V11 enrichment_integrity
 ```
 
-The three warnings are external-action items, not internal bugs:
+The four warnings are external-action items, not internal bugs:
 
 * **V03** — the framework cache's self-reported SHA in its metadata header
   doesn't match the file's actual content hash. Either re-hash or clarify the
@@ -107,7 +151,23 @@ The three warnings are external-action items, not internal bugs:
 * **V05** — cross-references can't be resolved from an isolated pack; needs
   the bundle-level violation index.
 * **V07** — authorities all `verified=False`. Correct behavior; flips
-  to `pass` when a `JurisprudenceProvider` is wired up.
+  to `pass` once a `JurisprudenceProvider` verifies them against a primary
+  source.
+* **V11** — one `W_AUTH_DANGLING_SUPPORT` warning: an authority's `supports`
+  entry references an article/element id that isn't present in the bundle.
+  Register the cited element or drop the support link.
+
+## Documentation
+
+| Document | Covers |
+| --- | --- |
+| [`docs/ui_structural_skeleton.md`](docs/ui_structural_skeleton.md) | Front-end specification for building a UI over the pipeline: the wizard steps S0–S14, every input field, every drop target, the global shell, and the state/persistence/concurrency model. |
+| [`docs/mcp_mapping.md`](docs/mcp_mapping.md) | Every MCP tool → library function → module → `file:line` → UI step, plus the stage functions, Protocol implementations, and class methods that no tool exposes. |
+| [`agent_violation_refiner.md`](agent_violation_refiner.md) | Agent-facing orientation: known issues with their resolution status, development conventions, and infrastructure notes. |
+| [`project_actual_report_and_proposal_improvements.md`](project_actual_report_and_proposal_improvements.md) | The full audit report; its top-of-file resolution ledger tracks every finding to FIXED or OPEN. |
+| [`.env.example`](.env.example) | Every `Settings.from_env()` variable plus the `MCP_*` transport variables, grouped by provider. |
+
+Run `violation-pack-catalog --format catalog` for the machine-readable tool list.
 
 ## Design principles
 
@@ -138,28 +198,26 @@ The three warnings are external-action items, not internal bugs:
 
 ## What's next (in suggested order)
 
-1. **Wire the library to the rest of your violation files.** Move
-   `examples/refine_cl005.py` into a `cases/` directory and write a sibling
-   `refine_<violation_id>.py` for each one. Most of the function-call shape
-   is shared; only the segment specs and article specs differ.
+1. **Run it over the rest of your violation files.** Use
+   `python examples/refine_batch.py --input /path/to/CL` (add `--enrich` to
+   run the LLM stages, `--zip` to emit bundles). For one-off cases, copy
+   `examples/refine_cl005.py` and change the segment/article specs.
 
-2. **Implement `JurisprudenceProvider`.** You said you already have plenty
-   of jurisprudence — write the adapter that exposes it through the Protocol.
-   Once `verify()` flips authorities to `verified=True`, V07 starts passing
-   automatically and confidence values rise accordingly.
+2. **Point the `JurisprudenceProvider` at your corpus.** Index your rulings
+   with `JurisprudenceIngester`, then `verify()` will flip authorities to
+   `verified=True` where a `primary_source_url` is present — V07 starts
+   passing and confidence rises accordingly.
 
-3. **Implement `VectorIndex` (Qdrant).** Index segments, articles, and
-   elements. Useful first query: cross-corpus segment similarity to help
-   build element grids for new violations by copying ones that already
-   exist for the same article.
+3. **Use `VectorIndex` for cross-corpus retrieval.** Index segments, articles,
+   and elements, then find similar segments across the corpus to help build
+   element grids for new violations from ones that already exist for the same
+   article.
 
-4. **Implement `KnowledgeGraph` (Neo4j).** Now the chronological and
-   implication walks work. Cross-reference propagation, open-question
-   blast radius, confidence re-derivation triggers.
+4. **Use `KnowledgeGraph` for graph walks.** Cross-reference propagation,
+   open-question blast radius, and confidence re-derivation triggers.
 
-5. **MCP-wrap each layer function.** The same pure functions are exposed —
-   the mapping is documented in the [MCP server](#mcp-server) section. At that
-   point the same enrichment pipeline is callable from agents in any project.
+5. **Supply the bundle-level violation index** so V05 can resolve
+   cross-references across violations instead of warning.
 
 ## MCP server
 
@@ -172,32 +230,49 @@ Install and run:
 
 ```bash
 pip install -e '.[mcp]'
-python -m violation_pack.mcp_server           # stdio transport
-# or, after install:
-violation-pack-mcp
+python -m violation_pack.mcp_server           # stdio (default)
+violation-pack-mcp                            # entry point, after install
+MCP_TRANSPORT=streamable-http MCP_PORT=8124 python -m violation_pack.mcp_server
 ```
 
-Registered tools:
+`MCP_TRANSPORT` accepts `stdio` (default), `sse`, or `streamable-http`;
+`MCP_HOST`/`MCP_PORT` configure the HTTP bind (default `127.0.0.1:8124`).
+When running over HTTP a `GET /health` endpoint returns
+`{"status": "ok"}`. `start.sh` sources `.env`, boots the server, and waits
+for `/health`; `stop.sh` shuts it down.
 
-| Tool | Wraps |
+**39 tools** are registered. They fall into these groups:
+
+| Group | Tools |
 | --- | --- |
-| `init_violation` | `Violation(...)` constructor |
-| `build_evidence_layer_tool` | `build_evidence_layer` (Layer 1) |
-| `build_norms_layer_tool` | `build_norms_layer` (Layer 2) |
-| `add_element_grid_tool` | `add_element_grid` (Layer 3) |
-| `build_nexus_layer_tool` | `build_nexus_layer` (Layer 4) |
-| `add_authority_stub_tool` | `add_authority_stub` (Layer 5) |
-| `derive_confidence_tool` | `derive_confidence` |
-| `attach_confidence_tool` | `attach_confidence` |
-| `run_pipeline_tool` | `run_pipeline` (V01-V10) |
-| `write_violation_json_tool` | `write_violation_json` |
-| `build_manifest_tool` | `build_manifest` |
-| `zip_bundle_tool` | `zip_bundle` |
-| `copy_source_into_bundle_tool` | `copy_source_into_bundle` |
-| `refine_batch_tool` | the batch refiner over a folder of CL-* bundles |
+| Startup | `init_violation` |
+| Layers 1–5 | `build_evidence_layer_tool`, `build_norms_layer_tool`, `add_element_grid_tool`, `build_nexus_layer_tool`, `add_authority_stub_tool` |
+| Confidence | `derive_confidence_tool`, `attach_confidence_tool` |
+| Validation | `run_pipeline_tool` (V01–V11), `verify_enrichment_tool` |
+| Authority verification | `verify_statute_in_bundle_tool`, `verify_statute_external_fetch_tool`, `verify_human_attested_tool` |
+| Packaging | `write_violation_json_tool`, `build_manifest_tool`, `zip_bundle_tool`, `copy_source_into_bundle_tool` |
+| Batch | `refine_batch_tool` |
+| LLM enrichment | `enrich_violation_tool`, `enrich_stage_tool`, `llm_provider_info_tool` |
+| Qdrant | `qdrant_index_violation_tool`, `qdrant_search_segments_tool`, `qdrant_search_articles_tool`, `qdrant_search_authorities_tool`, `qdrant_search_jurisprudence_tool`, `qdrant_upsert_jurisprudence_tool`, `qdrant_reset_collections_tool` |
+| Neo4j | `neo4j_upsert_violation_tool`, `neo4j_find_violations_citing_tool`, `neo4j_find_violations_with_contested_element_tool`, `neo4j_walk_implications_tool`, `neo4j_reset_database_tool` |
+| Jurisprudence | `jurisprudence_search_tool`, `jurisprudence_verify_tool` |
+| Bulk ingest | `jurisprudence_ingest_tool`, `transcript_ingest_tool`, `framework_ingest_tool` |
+| Introspection | `embedder_info_tool` |
 
-VS Code: the workspace ships a [`.vscode/mcp.json`](.vscode/mcp.json) so the
-server is discoverable as soon as the dependency is installed.
+The machine-readable list (with tags and env keys) is generated by
+`mcp_catalog.py`:
+
+```bash
+violation-pack-catalog --format catalog   # full catalog
+violation-pack-catalog --format vscode    # VS Code mcp.json snippet
+violation-pack-catalog --format claude    # Claude Desktop snippet
+```
+
+The catalog is declared by hand in `violation_pack/mcp_catalog.py`, but it can
+no longer silently drift: `tests/test_catalog_sync.py` parses `mcp_server.py`
+and `config.py` and fails if a registered tool is missing from the catalog, if
+the catalog advertises a tool that no longer exists, or if it advertises an env
+var no module reads.
 
 ## Extensions — Qdrant + Neo4j + Jurisprudence
 
@@ -207,7 +282,8 @@ the core library still installs with only Pydantic.
 
 ```bash
 pip install -e '.[qdrant,neo4j]'   # or .[all] for everything
-cp .env.example .env               # then fill in URLs / credentials
+cp .env.example .env               # then set QDRANT_URL, NEO4J_URI/USER/PASSWORD,
+                                   # and the LLM_* keys — see violation_pack/config.py
 ```
 
 | Module | Class | Wires |
@@ -243,19 +319,8 @@ unverified `Authority` stubs only; `verify()` refuses to flip `verified=True`
 unless the backing Qdrant record carries a `primary_source_url`. The
 fabrication safeguard from the original design holds.
 
-### New MCP tools (registered automatically)
+### Extension MCP tools
 
-```
-qdrant_index_violation_tool
-qdrant_search_segments_tool
-qdrant_search_articles_tool
-qdrant_search_authorities_tool
-qdrant_search_jurisprudence_tool
-qdrant_upsert_jurisprudence_tool
-neo4j_upsert_violation_tool
-neo4j_find_violations_citing_tool
-neo4j_find_violations_with_contested_element_tool
-neo4j_walk_implications_tool
-jurisprudence_search_tool
-jurisprudence_verify_tool
-```
+The Qdrant / Neo4j / jurisprudence tools are registered alongside the core
+tools when the corresponding optional dependency is installed — see the
+grouped list in the [MCP server](#mcp-server) section for the full set.

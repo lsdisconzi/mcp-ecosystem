@@ -57,14 +57,28 @@ def _violation_pack_server(python: str | None = None) -> ServerEntry:
             "LLM_API_KEY": "${LLM_API_KEY}",
         },
         optional_env=[
+            # LLM tuning
             "LLM_BASE_URL",
             "LLM_TEMPERATURE",
             "LLM_MAX_TOKENS",
             "LLM_TOKEN_BUDGET",
             "LLM_TIMEOUT_SECONDS",
+            # Provider-specific credentials (set the one you actually use)
+            "OPENROUTER_API_KEY", "OPENROUTER_MODEL",
+            "ANTHROPIC_API_KEY", "ANTHROPIC_MODEL",
+            "DEEPSEEK_API_KEY", "DEEPSEEK_MODEL",
+            "OPENAI_API_KEY", "OPENAI_MODEL",
+            # Local embeddings / local LLM
+            "OLLAMA_HOST", "OLLAMA_MODEL", "OLLAMA_EMBED_MODEL", "OLLAMA_API_KEY",
+            # Qdrant
             "QDRANT_URL", "QDRANT_API_KEY", "QDRANT_COLLECTION_PREFIX",
+            # Neo4j
             "NEO4J_URI", "NEO4J_USER", "NEO4J_PASSWORD", "NEO4J_DATABASE",
-            "EMBEDDING_MODEL", "EMBEDDING_DIM",
+            "NEO4J_LOCAL_URI", "NEO4J_LOCAL_USER", "NEO4J_LOCAL_PASS",
+            # Governance
+            "AUTHORITY_VERIFICATION_FLOOR",
+            # Transport (read by mcp_server.main, not by Settings)
+            "MCP_TRANSPORT", "MCP_HOST", "MCP_PORT",
         ],
         tools=[
             ToolEntry("init_violation", "Construct an empty Violation skeleton.", ["layer-0"]),
