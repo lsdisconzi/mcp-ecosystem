@@ -6,12 +6,14 @@ This file is the ONLY place where all layers know about each other.
 import asyncio
 import logging
 import time
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from .composition import build_runtime
 from .config import settings
+from .llm.router import router as llm_router
 from .logging_setup import setup_logging
 from .presentation.routers.diarization import init_diarization_router
 from .presentation.routers.diarization import router as diarization_router
@@ -84,6 +86,12 @@ app.include_router(transcripts_router)
 app.include_router(projects_router)
 app.include_router(references_router)
 app.include_router(pinocchio_router)
+app.include_router(llm_router)
+
+# Serve frontend assets (shared LLM provider UI)
+_STATIC_DIR = Path(__file__).resolve().parents[1] / "static"
+_STATIC_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
 
 # Serve static data directories
 app.mount("/audio", StaticFiles(directory=settings.AUDIO_DIR), name="audio")

@@ -508,14 +508,177 @@
     #reviewSegmentsTable {
       table-layout: auto;
       width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
     }
 
+    /* Column headers stay visible while the page scrolls, so the reviewer never
+       loses track of which field a cell belongs to (the table can be 25k px
+       tall on a long hearing). */
+    #reviewSegmentsTable thead th {
+      position: sticky;
+      top: 44px;
+      z-index: 5;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-strong);
+    }
+
+    /* An <input> has an intrinsic min-content width of ~20 characters, and in
+       table auto-layout that — not `width` — decides how narrow a column may
+       be. That is what forced the table wider than its container and pushed the
+       last columns out of view. Let the inputs shrink to the column. */
+    #reviewSegmentsTable td input[type="text"],
+    #reviewSegmentsTable td select {
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+    /* The review table is a page-scrolling surface: no fixed height, no resize
+       handle and no scroll container in the block axis, so no row can hide
+       behind an inner scrollbar and <thead> still sticks to the viewport. */
     #reviewSegmentsWrap {
       width: 100%;
-      min-width: 320px;
-      min-height: 200px;
-      overflow: auto;
-      resize: both;
+      max-width: 100%;
+      min-width: 0;
+      overflow: visible;
+      padding-bottom: 2px;
+    }
+
+    /* .card sets overflow:hidden, which would clip the table when it breaks
+       out of the reading column. The review panel must never clip its
+       content, and it needs a positioning context for the resize handle. */
+    #transcriptReviewPanel {
+      overflow: visible;
+      position: relative;
+    }
+
+    /* The segment table is the reason this page exists, so the review panel
+       breaks out of the 1180px reading column and uses the window instead of
+       leaving a third of the screen empty.
+       `--review-panel-gutter` is the space kept at each side; width and
+       margins are derived from it so the panel stays perfectly centred while
+       the reviewer drags the handle. The gutter is never smaller than 12px,
+       which also absorbs the vertical scrollbar measured into `100vw`. */
+    #transcriptReviewPanel {
+      width: calc(100vw - (2 * var(--review-panel-gutter, 32px)));
+      max-width: none;
+      margin-left: calc(50% - 50vw + var(--review-panel-gutter, 32px));
+      margin-right: calc(50% - 50vw + var(--review-panel-gutter, 32px));
+    }
+
+    /* Narrow mode: fall back to the normal reading column. */
+    #transcriptReviewPanel.review-narrow {
+      width: auto;
+      max-width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    /* ---- Drag-to-resize handle on the right edge of the review panel ---- */
+    /* Fica *dentro* da borda direita do painel. Centralizá-lo na borda com
+       translateX(50%) deixava-o vazar para fora da janela quando o painel era
+       arrastado quase até a largura total, criando uma barra de rolagem
+       horizontal na página. */
+    .review-resize-handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      width: 14px;
+      cursor: col-resize;
+      z-index: 20;
+      touch-action: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .review-resize-handle::after {
+      content: '';
+      width: 4px;
+      height: 54px;
+      border-radius: 999px;
+      background: var(--border-strong);
+      opacity: 0;
+      transition: opacity 0.15s, background 0.15s;
+    }
+
+    #transcriptReviewPanel:hover .review-resize-handle::after,
+    .review-resize-handle:hover::after,
+    .review-resize-handle.dragging::after {
+      opacity: 1;
+    }
+
+    .review-resize-handle.dragging::after {
+      background: var(--accent);
+    }
+
+    #transcriptReviewPanel.review-narrow .review-resize-handle {
+      display: none;
+    }
+
+    /* A barra de ações é deliberadamente filha direta do painel e não de
+       `.content`, para que recolher a área de revisão nunca deixe Salvar /
+       Exportar / Indexar fora de alcance. Por isso ela precisa do padding
+       horizontal que o `.content` fornecia. */
+    #reviewActionsRow {
+      /* Sem `border-top`: o <h3> do painel já desenha um separador, então
+         adicionar outro aqui deixaria uma linha dupla ao recolher. */
+      padding: 16px 22px 18px;
+    }
+
+    /* The wrap simply fills whatever width the review panel has; the panel
+       itself handles the breakout (see #transcriptReviewPanel). */
+    #reviewSegmentsWrap.full-bleed {
+      width: 100%;
+      max-width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    /* Action buttons live in an inner grid. Putting display:flex directly on a
+       <td> removes it from the table layout algorithm and lets the column
+       mis-measure, which is what squeezed and clipped neighbouring columns.
+       It has to be a grid, not flex-wrap: icon-only buttons have different
+       intrinsic widths (a play glyph is narrower than scissors), so wrapping
+       left the rows ragged and the block stranded in the top-left of the cell.
+       `auto-fit` makes the tracks share the whole column, and collapses the
+       empty ones, so two enabled actions split the width in half instead of
+       leaving a phantom third of the cell blank. */
+    .segment-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(30px, 1fr));
+      gap: 4px;
+      width: 100%;
+      align-content: flex-start;
+    }
+
+    .segment-actions .tag-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-width: 0;
+      padding: 4px 0;
+    }
+
+    /* O placeholder "nenhuma ação" ocupa todas as colunas em vez de ficar na
+       primeira célula de uma grade vazia. */
+    .actions-empty {
+      grid-column: 1 / -1;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      opacity: 0.6;
+    }
+
+    /* Column hidden when the reviewer disabled every action. */
+    #reviewSegmentsTable.hide-actions .review-actions-cell {
+      display: none;
+    }
+
+    .review-actions-cell {
+      vertical-align: top;
     }
 
     .review-textarea {
@@ -645,6 +808,130 @@
       flex-direction: column;
       gap: 14px;
       overflow-y: auto;
+      /* Um flex item assume `min-height: auto` e por isso não encolhe abaixo
+         do próprio conteúdo. Sem isto o corpo crescia além da sidebar (que é
+         `overflow: hidden`) e as últimas seções ficavam cortadas, sem como
+         alcançá-las. `min-height: 0` deixa o corpo encolher até o espaço
+         disponível para que `overflow-y: auto` realmente role. */
+      min-height: 0;
+      flex: 1 1 auto;
+      overscroll-behavior: contain;
+    }
+
+    /* As seções mantêm a altura natural para o corpo transbordar e rolar, em
+       vez de espremer todos os cartões para caber. */
+    .transcribe-sidebar-body>.cfg-section {
+      flex-shrink: 0;
+    }
+
+    /* ---- Sidebar sections ---- */
+    .cfg-section {
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      background: var(--bg-surface);
+      overflow: hidden;
+    }
+
+    .cfg-section>summary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      list-style: none;
+      padding: 10px 12px;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+      user-select: none;
+    }
+
+    .cfg-section>summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .cfg-section>summary::marker {
+      content: '';
+    }
+
+    .cfg-section>summary::before {
+      content: '▶';
+      font-size: 0.55rem;
+      color: var(--text-muted);
+      transition: transform 0.15s;
+    }
+
+    .cfg-section[open]>summary::before {
+      transform: rotate(90deg);
+    }
+
+    .cfg-section-body {
+      padding: 4px 12px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .cfg-hint {
+      font-size: 0.62rem;
+      line-height: 1.55;
+      color: var(--text-muted);
+      font-family: var(--mono);
+    }
+
+    /* One row per configurable action: checkbox + name + explanation. */
+    .action-row {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 3px 9px;
+      padding: 7px 8px;
+      border-radius: var(--r);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .action-row:hover {
+      background: var(--accent-dim);
+      border-color: var(--border);
+    }
+
+    .action-row input[type="checkbox"] {
+      margin-top: 1px;
+      cursor: pointer;
+    }
+
+    .action-row .action-name {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-family: var(--mono);
+    }
+
+    .action-row .action-name i {
+      width: 12px;
+      text-align: center;
+      color: var(--accent);
+      font-size: 0.65rem;
+    }
+
+    .action-row .action-desc {
+      grid-column: 2;
+      font-size: 0.62rem;
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+
+    .cfg-btn-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
     .transcribe-sidebar .field {
@@ -686,6 +973,23 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
+    .toast.success {
+      border-color: var(--status-note);
+      color: var(--status-note);
+    }
+
+    .toast.error {
+      border-color: var(--status-flag);
+      color: var(--status-flag);
+    }
+
+    .btn:disabled,
+    .btn[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
     /* ---- Responsive ---- */
     @media (max-width: 900px) {
       .split-2 {
@@ -714,6 +1018,16 @@
 
       .transcribe-sidebar {
         top: 40px;
+      }
+
+      /* Leave a smaller gutter for the review panel on phones; the drag
+         handle's inline gutter (if any) still wins. */
+      #transcriptReviewPanel {
+        --review-panel-gutter: 14px;
+      }
+
+      .review-resize-handle {
+        width: 22px;
       }
     }
 
@@ -824,7 +1138,8 @@
         <h3 style="display:flex;align-items:center;justify-content:space-between;">
           <span><i class="fas fa-clipboard-check" style="color:var(--accent);margin-right:8px;"></i> Revisão de
             Segmentos</span>
-          <button class="btn small ghost" id="reviewPanelToggleBtn">Recolher</button>
+          <button class="btn small ghost" id="reviewPanelToggleBtn"><i class="fas fa-chevron-up"></i>
+            Recolher</button>
         </h3>
         <div class="content" id="reviewPanelContent">
 
@@ -939,12 +1254,17 @@
 
           <!-- Segment review table -->
           <div id="reviewSegmentsWrap" class="subcard"
-            style="width:100%;height:60vh;overflow:auto;resize:both;min-width:320px;min-height:200px;margin-bottom:14px;display:none;">
+            style="display:none;margin-bottom:14px;">
             <div class="row" style="justify-content:space-between;margin-bottom:8px;">
               <span
                 style="font-size:.7rem;font-weight:600;font-family:var(--mono);letter-spacing:0.03em;color:var(--text-muted);text-transform:uppercase;">Segmentos
                 em Revisão</span>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                <button id="fullWidthToggleBtn" class="tag-btn"
+                  title="Alternar entre toda a largura da janela e a coluna de leitura"><i
+                    class="fas fa-compress"></i> Largura normal</button>
+                <button id="openActionsConfigBtn" class="tag-btn" title="Escolher quais ações aparecem em cada segmento"><i
+                    class="fas fa-sliders"></i> Ações</button>
                 <button id="selectAllUnreviewedBtn" class="tag-btn">Selecionar Não Revisados</button>
                 <button id="clearSelectionBtn" class="tag-btn">Limpar Seleção</button>
                 <button id="toggleTextRowsBtn" class="tag-btn">Expandir textos</button>
@@ -955,53 +1275,62 @@
             <table id="reviewSegmentsTable">
               <thead>
                 <tr>
-                  <th style="width:30px;">Rev.</th>
-                  <th style="width:30px;">Sel.</th>
-                  <th style="width:35px;">#</th>
-                  <th style="width:70px;">Local time</th>
-                  <th style="min-width:90px;">Falante</th>
-                  <th style="width:60px;">Início</th>
-                  <th style="width:60px;">Fim</th>
-                  <th style="min-width:180px;">Ações</th>
-                  <th style="min-width:220px;">Texto</th>
-                  <th style="min-width:100px;">Correção</th>
-                  <th style="min-width:80px;">Backchannel</th>
+                  <th style="width:32px;">Rev.</th>
+                  <th style="width:32px;">Sel.</th>
+                  <th style="width:34px;">#</th>
+                  <th style="width:64px;">Local time</th>
+                  <th style="min-width:96px;">Falante</th>
+                  <th style="width:64px;">Início</th>
+                  <th style="width:64px;">Fim</th>
+                  <th id="thActions" style="min-width:126px;">Ações</th>
+                  <th style="min-width:176px;">Texto</th>
+                  <th style="min-width:80px;">Correção</th>
+                  <th style="min-width:62px;">Backchannel</th>
                 </tr>
               </thead>
               <tbody id="reviewSegmentsBody"></tbody>
             </table>
           </div>
 
-          <!-- Action buttons -->
-          <div class="row" id="reviewActionsRow"
-            style="justify-content:space-between;display:none;flex-wrap:wrap;gap:12px;">
-            <div style="display:flex; gap:8px;flex-wrap:wrap;">
-              <button id="saveReviewBtn" class="btn primary small"><i class="fas fa-save"></i> Salvar
-                Revisão de Segmentos</button>
-              <button id="exportModifiedZipBtn" class="btn small"><i class="fas fa-download"></i> Export
-                Modified ZIP</button>
-              <button id="indexReviewedBtn" class="btn small" style="border-color:var(--accent);color:var(--accent);"><i
-                  class="fas fa-database"></i> Indexar no Qdrant</button>
-            </div>
-            <div class="field" style="margin:0;">
-              <label for="qdrantCollection">Qdrant Collection</label>
-              <div class="row" style="gap:6px;">
-                <input id="qdrantCollection" type="text" value="reviewed_transcripts" style="width:160px;">
-                <button id="createCollectionBtn" class="tag-btn">Criar</button>
-              </div>
-            </div>
-            <div style="display:flex; gap:8px;align-items:center;flex-wrap:wrap;">
-              <span style="font-size:11px;color:var(--text-muted);">Transcrever selecionados (não
-                revisados):</span>
-              <button id="runRetranscribeBtn" class="btn small" style="background:var(--accent);color:#fff;"><i
-                  class="fas fa-play"></i> Rodar
-                Transcrição</button>
-              <button id="toggleTranscribeConfigBtn" class="btn small" title="Configurar transcrição"><i
-                  class="fas fa-sliders"></i> Config</button>
+        </div>
+
+        <!-- Botões de ação — de propósito FORA de #reviewPanelContent para que
+             recolher a área de revisão nunca esconda Salvar / Exportar /
+             Indexar. O revisor pode fechar toda a tabela e ainda ter os
+             controles finais à frente. -->
+        <div class="row" id="reviewActionsRow"
+          style="justify-content:space-between;display:none;flex-wrap:wrap;gap:12px;">
+          <div style="display:flex; gap:8px;flex-wrap:wrap;">
+            <button id="saveReviewBtn" class="btn primary small"><i class="fas fa-save"></i> Salvar
+              Revisão de Segmentos</button>
+            <button id="exportModifiedZipBtn" class="btn small"><i class="fas fa-download"></i> Export
+              Modified ZIP</button>
+            <button id="indexReviewedBtn" class="btn small" style="border-color:var(--accent);color:var(--accent);"><i
+                class="fas fa-database"></i> Indexar no Qdrant</button>
+          </div>
+          <div class="field" style="margin:0;">
+            <label for="qdrantCollection">Qdrant Collection</label>
+            <div class="row" style="gap:6px;">
+              <input id="qdrantCollection" type="text" value="reviewed_transcripts" style="width:160px;">
+              <button id="createCollectionBtn" class="tag-btn">Criar</button>
             </div>
           </div>
-
+          <div style="display:flex; gap:8px;align-items:center;flex-wrap:wrap;">
+            <span style="font-size:11px;color:var(--text-muted);">Transcrever selecionados (não
+              revisados):</span>
+            <button id="runRetranscribeBtn" class="btn small" style="background:var(--accent);color:#fff;"><i
+                class="fas fa-play"></i> Rodar
+              Transcrição</button>
+            <button id="toggleTranscribeConfigBtn" class="btn small" title="Configurar transcrição"><i
+                class="fas fa-sliders"></i> Config</button>
+          </div>
         </div>
+
+        <!-- Arraste horizontalmente para mudar quanto da janela o painel usa.
+             Duplo clique restaura o padrão. -->
+        <div id="reviewResizeHandle" class="review-resize-handle" role="separator" aria-orientation="vertical"
+          aria-label="Redimensionar painel de revisão"
+          title="Arraste para redimensionar o painel · duplo clique para restaurar"></div>
       </section>
 
     </div>
@@ -1023,6 +1352,29 @@
       <button id="transcribeSidebarClose" class="tag-btn" title="Fechar">&times;</button>
     </div>
     <div class="transcribe-sidebar-body">
+      <!-- Which per-segment actions are rendered in the review table -->
+      <details class="cfg-section" id="actionsCfgSection" open>
+        <summary><i class="fas fa-hand-pointer" style="color:var(--accent);"></i> Ações dos Segmentos</summary>
+        <div class="cfg-section-body">
+          <p class="cfg-hint">Escolha quais botões aparecem na coluna <strong>Ações</strong> de cada segmento.
+            As preferências ficam salvas neste navegador.</p>
+          <div id="actionsConfigList"><!-- rendered by renderActionsConfig() --></div>
+          <div class="cfg-btn-row">
+            <button id="actionsAllBtn" class="tag-btn">Mostrar todas</button>
+            <button id="actionsNoneBtn" class="tag-btn">Ocultar todas</button>
+            <button id="actionsDefaultBtn" class="tag-btn">Restaurar padrão</button>
+          </div>
+          <details class="cfg-section" style="margin-top:2px;">
+            <summary><i class="fas fa-circle-info" style="color:var(--accent);"></i> O que cada ação faz</summary>
+            <div class="cfg-section-body" id="actionsHelpList"><!-- rendered by renderActionsHelp() --></div>
+          </details>
+        </div>
+      </details>
+
+      <!-- Whisper / transcription parameters -->
+      <details class="cfg-section" open>
+        <summary><i class="fas fa-microphone-lines" style="color:var(--accent);"></i> Parâmetros de Transcrição</summary>
+        <div class="cfg-section-body">
       <div class="field">
         <label for="tc_model">Modelo Whisper</label>
         <select id="tc_model">
@@ -1093,6 +1445,8 @@
         Configuração</button>
       <p style="font-size:0.6rem;color:var(--text-muted);margin-top:8px;font-family:var(--mono);">A configuração é
         salva no navegador e aplicada ao botão de transcrição por segmento e ao "Rodar Transcrição".</p>
+        </div>
+      </details>
     </div>
   </div>
 
@@ -1102,21 +1456,227 @@
     // ------------------------------------------------------------------
     const $ = sel => document.querySelector(sel);
 
-    function showToast(msg) {
+    function showToast(msg, type = 'success', duration = 2600) {
       let t = $('#toast');
       if (!t) {
         t = document.createElement('div');
         t.id = 'toast';
-        t.className = 'toast';
         document.body.appendChild(t);
       }
+      t.className = 'toast' + (type ? ' ' + type : '');
       t.textContent = msg;
       t.style.display = 'block';
-      setTimeout(() => t.style.display = 'none', 2600);
+      clearTimeout(t._hideTimer);
+      t._hideTimer = setTimeout(() => { t.style.display = 'none'; }, duration);
+    }
+
+    /** Read an error message from a Response without assuming a JSON body. */
+    async function readError(res) {
+      try {
+        const text = await res.text();
+        if (!text) return `HTTP ${res.status}`;
+        try {
+          const j = JSON.parse(text);
+          return j.detail || j.error || `HTTP ${res.status}`;
+        } catch {
+          return text.slice(0, 300) || `HTTP ${res.status}`;
+        }
+      } catch {
+        return `HTTP ${res.status}`;
+      }
+    }
+
+    /** Toggle a button into a disabled "busy" state, restoring its label later. */
+    function setButtonBusy(btn, busy, busyLabel) {
+      if (!btn) return;
+      if (busy) {
+        if (btn.dataset.idleHtml === undefined) btn.dataset.idleHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${busyLabel || 'Salvando…'}`;
+      } else {
+        btn.disabled = false;
+        if (btn.dataset.idleHtml !== undefined) {
+          btn.innerHTML = btn.dataset.idleHtml;
+          delete btn.dataset.idleHtml;
+        }
+      }
     }
 
     function escapeHtml(str) {
       return String(str ?? '').replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+    }
+
+    // ------------------------------------------------------------------
+    // Per-segment action registry
+    //
+    // Single source of truth for every button that can appear in the "Ações"
+    // column: what it looks like, where it is explained, and whether the
+    // reviewer has chosen to show it. `help` is surfaced in the sidebar so the
+    // reviewer can learn the actions without hovering every icon.
+    // ------------------------------------------------------------------
+    const SEGMENT_ACTIONS = [
+      {
+        id: 'play', icon: 'fa-play', label: 'Ouvir', group: 'Áudio',
+        desc: 'Reproduz o áudio recortado deste segmento.',
+        help: 'Toca apenas o trecho de áudio correspondente ao segmento, para conferência rápida do que foi dito.'
+      },
+      {
+        id: 'download', icon: 'fa-download', label: 'Baixar', group: 'Áudio',
+        desc: 'Baixa o áudio do segmento como arquivo.',
+        help: 'Salva localmente o recorte de áudio do segmento (WAV), útil para juntar provas ou enviar a terceiros.'
+      },
+      {
+        id: 'transcribe', icon: 'fa-microphone', label: 'Transcrever', group: 'Transcrição',
+        desc: 'Roda o Whisper só neste segmento.',
+        help: 'Executa a transcrição automática apenas neste segmento, usando os parâmetros de transcrição do painel, e substitui o texto atual.'
+      },
+      {
+        id: 'upload', icon: 'fa-upload', label: 'Enviar áudio', group: 'Áudio',
+        desc: 'Substitui o áudio por um arquivo local.',
+        help: 'Envie um arquivo de áudio próprio para o segmento. Use quando o recorte automático estiver incorreto ou o áudio tiver sido corrigido em outro programa.'
+      },
+      {
+        id: 'regenerate', icon: 'fa-refresh', label: 'Regenerar', group: 'Áudio',
+        desc: 'Recorta novamente o áudio do original.',
+        help: 'Refaz o recorte do áudio a partir do arquivo de origem usando os tempos "Início" e "Fim" atuais. Use depois de corrigir os tempos do segmento.'
+      },
+      {
+        id: 'delete', icon: 'fa-trash', label: 'Excluir', group: 'Estrutura',
+        desc: 'Remove o segmento.',
+        help: 'Marca o segmento para exclusão. A remoção só é aplicada ao backend quando você clicar em "Salvar Revisão de Segmentos".'
+      },
+      {
+        id: 'insert', icon: 'fa-plus', label: 'Inserir', group: 'Estrutura',
+        desc: 'Cria um novo segmento abaixo.',
+        help: 'Adiciona um novo segmento logo após este, para casos em que a fala foi omitida pela transcrição automática.'
+      },
+      {
+        id: 'merge', icon: 'fa-object-group', label: 'Mesclar', group: 'Estrutura',
+        desc: 'Junta com o segmento seguinte.',
+        help: 'Une este segmento ao próximo, combinando tempos e texto. Útil quando uma fala foi dividida em dois segmentos por engano.'
+      },
+      {
+        id: 'split', icon: 'fa-cut', label: 'Dividir', group: 'Estrutura',
+        desc: 'Parte o segmento em dois.',
+        help: 'Divide o segmento em dois a partir de um ponto de corte dentro do intervalo, para separar falas ou trechos distintos.'
+      },
+    ];
+
+    const ACTION_CONFIG_KEY = 'revision_segment_actions';
+
+    /** All actions visible by default, except destructive structural edits. */
+    const ACTION_DEFAULTS = Object.freeze({
+      play: true, download: true, transcribe: true, upload: true, regenerate: true,
+      delete: true, insert: true, merge: true, split: true,
+    });
+
+    function loadActionConfig() {
+      const cfg = { ...ACTION_DEFAULTS };
+      try {
+        const raw = localStorage.getItem(ACTION_CONFIG_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          for (const a of SEGMENT_ACTIONS) {
+            if (typeof parsed[a.id] === 'boolean') cfg[a.id] = parsed[a.id];
+          }
+        }
+      } catch (e) { console.warn('Failed to parse action config:', e); }
+      return cfg;
+    }
+
+    function saveActionConfig(cfg) {
+      try { localStorage.setItem(ACTION_CONFIG_KEY, JSON.stringify(cfg)); }
+      catch (e) { console.warn('Failed to persist action config:', e); }
+    }
+
+    let actionConfig = loadActionConfig();
+
+    function isActionVisible(id) {
+      return actionConfig[id] !== false;
+    }
+
+    /** Render the checkbox list in the sidebar. */
+    function renderActionsConfig() {
+      const host = document.getElementById('actionsConfigList');
+      if (!host) return;
+      host.innerHTML = '';
+      SEGMENT_ACTIONS.forEach(action => {
+        const row = document.createElement('label');
+        row.className = 'action-row';
+        row.title = action.desc;
+
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.checked = isActionVisible(action.id);
+        chk.dataset.actionId = action.id;
+        chk.addEventListener('change', () => {
+          actionConfig[action.id] = chk.checked;
+          saveActionConfig(actionConfig);
+          applyActionVisibility();
+        });
+
+        const name = document.createElement('span');
+        name.className = 'action-name';
+        name.innerHTML = `<i class="fas ${action.icon}"></i> ${escapeHtml(action.label)}`;
+
+        const desc = document.createElement('span');
+        desc.className = 'action-desc';
+        desc.textContent = action.desc;
+
+        row.append(chk, name, desc);
+        host.appendChild(row);
+      });
+    }
+
+    /** Render the reference list explaining what each action does. */
+    function renderActionsHelp() {
+      const host = document.getElementById('actionsHelpList');
+      if (!host) return;
+      host.innerHTML = '';
+      const groups = [...new Set(SEGMENT_ACTIONS.map(a => a.group))];
+      groups.forEach(groupName => {
+        const heading = document.createElement('div');
+        heading.className = 'cfg-hint';
+        heading.style.fontWeight = '600';
+        heading.style.color = 'var(--text-secondary)';
+        heading.style.textTransform = 'uppercase';
+        heading.style.letterSpacing = '0.05em';
+        heading.textContent = groupName;
+        host.appendChild(heading);
+
+        SEGMENT_ACTIONS.filter(a => a.group === groupName).forEach(action => {
+          const item = document.createElement('div');
+          item.className = 'cfg-hint';
+          item.style.paddingLeft = '2px';
+          item.innerHTML =
+            `<i class="fas ${action.icon}" style="color:var(--accent);width:12px;"></i> ` +
+            `<strong style="color:var(--text-secondary);">${escapeHtml(action.label)}</strong> — ${escapeHtml(action.help)}`;
+          host.appendChild(item);
+        });
+      });
+    }
+
+    function setActionVisibility(predicate) {
+      SEGMENT_ACTIONS.forEach(a => { actionConfig[a.id] = predicate(a); });
+      saveActionConfig(actionConfig);
+      renderActionsConfig();
+      applyActionVisibility();
+    }
+
+    /** Re-render the table and reflect the action column state in the sidebar. */
+    function applyActionVisibility() {
+      if (currentTranscript) renderReviewSegments();
+    }
+
+    /** Open the sidebar with the actions section expanded. */
+    function openActionsConfig() {
+      const sidebar = document.getElementById('transcribeSidebar');
+      if (sidebar) sidebar.style.display = 'flex';
+      const section = document.getElementById('actionsCfgSection');
+      if (section) {
+        section.open = true;
+        section.scrollIntoView({ block: 'nearest' });
+      }
     }
 
     function parseCSVLine(line) {
@@ -1156,6 +1716,9 @@
     let zipOriginalFilename = null;
     let currentAudioSource = 'backend';
     let pendingUploadDispIdx = null;
+    let reviewListCache = null;
+    let loadController = null;
+    let isSaving = false;
 
     // ---------- PATCH STATE ----------
     let originalSegments = [];
@@ -1316,52 +1879,79 @@
     }
 
     async function saveMetadata() {
-      if (!currentTranscript) { showToast('Nenhuma transcrição carregada'); return; }
+      if (!currentTranscript) { showToast('Nenhuma transcrição carregada', 'error'); return; }
       const tid = currentTranscript.transcript_id;
-      const payload = {
-        title: $('#meta_title').value,
-        subtitle: $('#meta_subtitle').value,
-        recording_datetime: $('#meta_recording_datetime').value,
-        location: $('#meta_location').value,
-        audio_id: $('#meta_audio_id').value,
-        case_id: $('#meta_case_id').value,
-        narrative_id: $('#meta_narrative_id').value,
-        chronological_order: parseInt($('#meta_chronological_order').value) || null,
-        prior_stage: $('#meta_prior_stage').value,
-        next_stage: $('#meta_next_stage').value,
-        classification: $('#meta_classification').value,
-        participants: JSON.parse($('#meta_participants').value || '[]'),
-        violations_cited: JSON.parse($('#meta_violations_cited').value || '[]'),
-        tags: JSON.parse($('#meta_tags').value || '[]'),
-        forensic_clusters: JSON.parse($('#meta_forensic_clusters').value || '{}'),
-        key_evidentiary_findings: JSON.parse($('#meta_key_evidentiary_findings').value || '[]'),
-        corrections_applied: JSON.parse($('#meta_corrections_applied').value || '[]')
-      };
+      const btn = document.getElementById('saveMetadataBtn');
+      setButtonBusy(btn, true, 'Salvando…');
       try {
+        // Build inside the try so a malformed JSON field surfaces as a toast
+        // instead of an uncaught exception.
+        const payload = {
+          title: $('#meta_title').value,
+          subtitle: $('#meta_subtitle').value,
+          recording_datetime: $('#meta_recording_datetime').value,
+          location: $('#meta_location').value,
+          audio_id: $('#meta_audio_id').value,
+          case_id: $('#meta_case_id').value,
+          narrative_id: $('#meta_narrative_id').value,
+          chronological_order: parseInt($('#meta_chronological_order').value) || null,
+          prior_stage: $('#meta_prior_stage').value,
+          next_stage: $('#meta_next_stage').value,
+          classification: $('#meta_classification').value,
+          participants: JSON.parse($('#meta_participants').value || '[]'),
+          violations_cited: JSON.parse($('#meta_violations_cited').value || '[]'),
+          tags: JSON.parse($('#meta_tags').value || '[]'),
+          forensic_clusters: JSON.parse($('#meta_forensic_clusters').value || '{}'),
+          key_evidentiary_findings: JSON.parse($('#meta_key_evidentiary_findings').value || '[]'),
+          corrections_applied: JSON.parse($('#meta_corrections_applied').value || '[]')
+        };
         const res = await fetch(`/api/transcripts/${encodeURIComponent(tid)}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        showToast('Metadados salvos no backend');
+        if (!res.ok) throw new Error(await readError(res));
+        showToast('Metadados salvos');
         await triggerTranscriptLoad();
-      } catch (e) { alert('Erro ao salvar metadados: ' + e.message); }
+      } catch (e) {
+        showToast('Erro ao salvar metadados: ' + e.message, 'error', 6000);
+      } finally {
+        setButtonBusy(btn, false);
+      }
     }
 
     // ---------- REVIEW LIST ----------
+    function formatTranscriptOption(t) {
+      const pct = ((t.completeness || 0) * 100).toFixed(1);
+      const qdrant = t.qdrant_indexed_segments ? ` [Qdrant: ${t.qdrant_indexed_segments}]` : '';
+      return `${t.transcript_id} (${pct}% completo, ${t.reviewed_segments}/${t.total_segments})${qdrant}`;
+    }
+
+    function findTranscriptInfo(tid) {
+      if (!reviewListCache || !Array.isArray(reviewListCache.transcripts)) return {};
+      return reviewListCache.transcripts.find(x => x.transcript_id === tid) || {};
+    }
+
+    function updateReviewListOption(tid, summary) {
+      const entry = findTranscriptInfo(tid);
+      if (!entry || !Object.keys(entry).length) return;
+      Object.assign(entry, summary);
+      const opt = Array.from($('#reviewTranscriptSelect').options).find(o => o.value === tid);
+      if (opt) opt.textContent = formatTranscriptOption(entry);
+    }
+
     async function loadReviewLists() {
       try {
         const res = await fetch('/api/transcripts/review/list');
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (!res.ok) throw new Error(await readError(res));
         const data = await res.json();
+        reviewListCache = data;
         const prev = $('#reviewTranscriptSelect').value;
         $('#reviewTranscriptSelect').innerHTML = '<option value="">— Selecione uma transcrição —</option>';
-        data.transcripts.forEach(t => {
+        (data.transcripts || []).forEach(t => {
           const opt = document.createElement('option');
           opt.value = t.transcript_id;
-          opt.textContent =
-            `${t.transcript_id} (${(t.completeness * 100).toFixed(1)}% completo, ${t.reviewed_segments}/${t.total_segments})${t.qdrant_indexed_segments ? ` [Qdrant: ${t.qdrant_indexed_segments}]` : ''}`;
+          opt.textContent = formatTranscriptOption(t);
           $('#reviewTranscriptSelect').appendChild(opt);
         });
         if (prev) $('#reviewTranscriptSelect').value = prev;
@@ -1455,7 +2045,22 @@
 
     function renderReviewSegments() {
       const tbody = $('#reviewSegmentsBody');
+      // Preserve scroll position and focus across the full rebuild so a reviewer
+      // is not thrown back to the top after every save/transcription.
+      const scrollWrap = $('#reviewSegmentsWrap');
+      const prevScrollTop = scrollWrap ? scrollWrap.scrollTop : 0;
+      const activeEl = document.activeElement;
+      const activeName = activeEl && tbody.contains(activeEl) && activeEl.name ? activeEl.name : null;
+      const activeSelStart = activeName && typeof activeEl.selectionStart === 'number'
+        ? activeEl.selectionStart : null;
       tbody.innerHTML = '';
+      // Hide the whole "Ações" column when every action is switched off, so the
+      // remaining columns get the full width instead of an empty strip.
+      const anyAction = SEGMENT_ACTIONS.some(a => isActionVisible(a.id));
+      const table = $('#reviewSegmentsTable');
+      if (table) table.classList.toggle('hide-actions', !anyAction);
+      const thActions = $('#thActions');
+      if (thActions) thActions.style.display = anyAction ? '' : 'none';
       displaySegments.forEach((dseg, dispIdx) => {
         const tr = document.createElement('tr');
         tr.className = dseg.reviewed ? 'segment-row reviewed' : 'segment-row';
@@ -1547,40 +2152,41 @@
         endInput.addEventListener('change', () => { dseg.end = parseFloat(endInput.value) || dseg.end; });
         tdEnd.appendChild(endInput);
 
-        // Actions
+        // Actions — the buttons live inside a wrapper div so the <td> can keep
+        // participating in the table layout (setting display:flex on a <td>
+        // removes it from the table algorithm and breaks column widths).
         const tdActions = document.createElement('td');
-        tdActions.style.whiteSpace = 'nowrap';
-        tdActions.style.display = 'flex';
-        tdActions.style.gap = '4px';
-        tdActions.style.flexWrap = 'wrap';
+        tdActions.className = 'review-actions-cell';
+        const actionBox = document.createElement('div');
+        actionBox.className = 'segment-actions';
+        actionBox.dataset.actions = '';
+
+        /** Add a button only when the reviewer has that action enabled. */
+        const addAction = (id, icon, title, onClick, opts = {}) => {
+          if (!isActionVisible(id)) return;
+          const btn = document.createElement('button');
+          btn.className = 'tag-btn';
+          btn.dataset.action = id;
+          btn.innerHTML = opts.html || `<i class="fas ${icon}"></i>`;
+          btn.title = title;
+          btn.disabled = !!opts.disabled;
+          btn.onclick = onClick;
+          actionBox.appendChild(btn);
+        };
 
         const hasAudio = dseg.origIndex !== undefined &&
           (segmentAudioBlobs[dseg.origIndex] || currentAudioSource === 'backend');
         if (hasAudio) {
-          const playBtn = document.createElement('button');
-          playBtn.className = 'tag-btn';
-          playBtn.innerHTML = '<i class="fas fa-play"></i>';
-          playBtn.title = 'Play segment audio';
-          playBtn.onclick = () => playSegmentAudio(dseg);
-          tdActions.appendChild(playBtn);
+          addAction('play', 'fa-play', 'Reproduzir o áudio deste segmento',
+            () => playSegmentAudio(dseg));
         }
-        const dlBtn = document.createElement('button');
-        dlBtn.className = 'tag-btn';
-        dlBtn.innerHTML = '<i class="fas fa-download"></i>';
-        dlBtn.title = 'Download segment audio';
-        dlBtn.onclick = () => downloadSegmentAudio(dseg);
-        tdActions.appendChild(dlBtn);
+        addAction('download', 'fa-download', 'Baixar o áudio deste segmento',
+          () => downloadSegmentAudio(dseg));
 
         if (dseg.origIndex !== undefined && currentAudioSource === 'backend') {
           const trIdx = dseg.origIndex;
           const trRunning = transcribingIndices.has(trIdx);
-          const trBtn = document.createElement('button');
-          trBtn.className = 'tag-btn';
-          trBtn.innerHTML = trRunning ? '<i class="fas fa-spinner fa-spin"></i>' :
-            '<i class="fas fa-microphone"></i>';
-          trBtn.title = 'Transcrever este segmento (Whisper)';
-          trBtn.disabled = trRunning;
-          trBtn.onclick = async () => {
+          addAction('transcribe', 'fa-microphone', 'Transcrever este segmento (Whisper)', async () => {
             if (transcribingIndices.has(trIdx)) return;
             transcribingIndices.add(trIdx);
             renderReviewSegments();
@@ -1593,56 +2199,40 @@
             } catch (e) {
               transcribingIndices.delete(trIdx);
               renderReviewSegments();
-              alert('Erro ao transcrever: ' + e.message);
+              showToast('Erro ao transcrever: ' + e.message, 'error');
             }
-          };
-          tdActions.appendChild(trBtn);
+          }, {
+            html: trRunning ? '<i class="fas fa-spinner fa-spin"></i>' : null,
+            disabled: trRunning,
+          });
         }
         if (dseg.origIndex !== undefined) {
-          const upBtn = document.createElement('button');
-          upBtn.className = 'tag-btn';
-          upBtn.innerHTML = '<i class="fas fa-upload"></i>';
-          upBtn.title = 'Upload replacement audio (ex.: transcrito em outro lugar)';
-          upBtn.onclick = () => {
-            pendingUploadDispIdx = dispIdx;
-            $('#segmentAudioFileInput').click();
-          };
-          tdActions.appendChild(upBtn);
+          addAction('upload', 'fa-upload',
+            'Enviar áudio substituto (ex.: transcrito em outro lugar)', () => {
+              pendingUploadDispIdx = dispIdx;
+              $('#segmentAudioFileInput').click();
+            });
         }
         if (dseg.origIndex !== undefined && currentAudioSource === 'backend') {
-          const regenBtn = document.createElement('button');
-          regenBtn.className = 'tag-btn';
-          regenBtn.innerHTML = '<i class="fas fa-refresh"></i>';
-          regenBtn.title = 'Regenerate audio from source';
-          regenBtn.onclick = () => regenerateSegmentAudio(dseg);
-          tdActions.appendChild(regenBtn);
+          addAction('regenerate', 'fa-refresh', 'Regenerar o áudio a partir do original',
+            () => regenerateSegmentAudio(dseg));
         }
-        const delBtn = document.createElement('button');
-        delBtn.className = 'tag-btn';
-        delBtn.innerHTML = '<i class="fas fa-trash"></i>';
-        delBtn.title = 'Delete this segment';
-        delBtn.onclick = () => deleteDisplaySegment(dispIdx);
-        tdActions.appendChild(delBtn);
-        const insBtn = document.createElement('button');
-        insBtn.className = 'tag-btn';
-        insBtn.innerHTML = '<i class="fas fa-plus"></i>';
-        insBtn.title = 'Insert new segment after';
-        insBtn.onclick = () => insertDisplaySegmentAfter(dispIdx);
-        tdActions.appendChild(insBtn);
+        addAction('delete', 'fa-trash', 'Excluir este segmento',
+          () => deleteDisplaySegment(dispIdx));
+        addAction('insert', 'fa-plus', 'Inserir novo segmento abaixo',
+          () => insertDisplaySegmentAfter(dispIdx));
         if (dispIdx < displaySegments.length - 1) {
-          const mergeBtn = document.createElement('button');
-          mergeBtn.className = 'tag-btn';
-          mergeBtn.innerHTML = '<i class="fas fa-object-group"></i>';
-          mergeBtn.title = 'Merge with next segment';
-          mergeBtn.onclick = () => mergeWithNext(dispIdx);
-          tdActions.appendChild(mergeBtn);
+          addAction('merge', 'fa-object-group', 'Mesclar com o segmento seguinte',
+            () => mergeWithNext(dispIdx));
         }
-        const splitBtn = document.createElement('button');
-        splitBtn.className = 'tag-btn';
-        splitBtn.innerHTML = '<i class="fas fa-cut"></i>';
-        splitBtn.title = 'Split this segment';
-        splitBtn.onclick = () => splitSegment(dispIdx);
-        tdActions.appendChild(splitBtn);
+        addAction('split', 'fa-cut', 'Dividir este segmento',
+          () => splitSegment(dispIdx));
+
+        // No actions enabled → render a subtle placeholder instead of an empty box.
+        if (!actionBox.children.length) {
+          actionBox.innerHTML = '<span class="actions-empty" title="Nenhuma ação habilitada">—</span>';
+        }
+        tdActions.appendChild(actionBox);
 
         // Textarea
         const tdText = document.createElement('td');
@@ -1687,6 +2277,16 @@
         tr.append(tdRev, tdSel, tdIdx, tdLocal, tdSpk, tdStart, tdEnd, tdActions, tdText, tdCorr, tdBack);
         tbody.appendChild(tr);
       });
+      if (scrollWrap) scrollWrap.scrollTop = prevScrollTop;
+      if (activeName) {
+        const restored = tbody.querySelector(`[name="${CSS.escape(activeName)}"]`);
+        if (restored && typeof restored.focus === 'function') {
+          restored.focus({ preventScroll: true });
+          if (activeSelStart !== null && typeof restored.setSelectionRange === 'function') {
+            try { restored.setSelectionRange(activeSelStart, activeSelStart); } catch { /* not a text field */ }
+          }
+        }
+      }
     }
 
     function deleteDisplaySegment(dispIdx) {
@@ -1867,9 +2467,14 @@
         currentAudioSource = 'backend';
         return;
       }
+      // Cancel any in-flight load so a slow earlier selection can't overwrite a
+      // newer one when the user switches transcripts quickly.
+      if (loadController) loadController.abort();
+      loadController = new AbortController();
+      const { signal } = loadController;
       try {
-        const res = await fetch('/api/transcripts/' + encodeURIComponent(tid));
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const res = await fetch('/api/transcripts/' + encodeURIComponent(tid), { signal });
+        if (!res.ok) throw new Error(await readError(res));
         const data = await res.json();
         currentTranscript = data;
         segmentAudioBlobs = {};
@@ -1877,9 +2482,8 @@
         resetPatchState();
         buildDisplaySegments(data);
 
-        const listRes = await fetch('/api/transcripts/review/list');
-        const listData = await listRes.json();
-        const info = listData.transcripts.find(x => x.transcript_id === tid) || {};
+        // Reuse the cached review list instead of re-fetching it on every load.
+        const info = findTranscriptInfo(tid);
         $('#reviewAudioName').textContent = data.source_file || '—';
         $('#reviewTotalSegs').textContent = data.segments.length;
         $('#reviewCheckedSegs').textContent = info.reviewed_segments || 0;
@@ -1894,7 +2498,25 @@
         renderReviewSegments();
         populateMetadataEditor(data);
         ensureExportButton();
-      } catch (e) { alert('Erro ao carregar: ' + e.message); }
+      } catch (e) {
+        if (e.name === 'AbortError') return;
+        showToast('Erro ao carregar: ' + e.message, 'error', 6000);
+      }
+    }
+
+    /**
+     * Adopt the canonical transcript returned by the save endpoint without a
+     * follow-up GET: rebuild derived state and re-render in place.
+     */
+    function applyServerTranscript(data) {
+      if (!data || !Array.isArray(data.segments)) return false;
+      currentTranscript = data;
+      resetPatchState();
+      buildDisplaySegments(data);
+      renderReviewSegments();
+      populateMetadataEditor(data);
+      ensureExportButton();
+      return true;
     }
 
     function ensureExportButton() {
@@ -1944,20 +2566,27 @@
     // ---------- Indexing ----------
     document.getElementById('indexReviewedBtn')?.addEventListener('click', async () => {
       if (!currentTranscript) return;
+      const btn = document.getElementById('indexReviewedBtn');
       const tid = currentTranscript.transcript_id;
+      setButtonBusy(btn, true, 'Indexando…');
       try {
         const res = await fetch(`/api/transcripts/${encodeURIComponent(tid)}/review/index`, { method: 'POST' });
+        if (!res.ok) throw new Error(await readError(res));
         const data = await res.json();
-        if (!res.ok) throw new Error(data.detail);
-        alert(`Indexado! ${data.segments_indexed} segmentos.`);
+        showToast(`Indexado: ${data.segments_indexed} segmento(s)`);
         await loadReviewLists();
         await triggerTranscriptLoad();
-      } catch (e) { alert('Erro: ' + e.message); }
+      } catch (e) {
+        showToast('Erro ao indexar: ' + e.message, 'error', 6000);
+      } finally {
+        setButtonBusy(btn, false);
+      }
     });
 
     // ---------- Save review ----------
     document.getElementById('saveReviewBtn')?.addEventListener('click', async () => {
-      if (!currentTranscript) return;
+      if (!currentTranscript || isSaving) return;
+      const btn = document.getElementById('saveReviewBtn');
       const tid = currentTranscript.transcript_id;
       const patches = buildPatchesFromDisplay();
       const reviewed_indices = displaySegments
@@ -1965,6 +2594,8 @@
         .map(s => s.origIndex);
       const { correction_notes, backchannel_events } = buildEditedColumns();
 
+      isSaving = true;
+      setButtonBusy(btn, true, 'Salvando…');
       try {
         const res = await fetch(`/api/transcripts/${encodeURIComponent(tid)}/review/save`, {
           method: 'POST',
@@ -1976,14 +2607,41 @@
             edited_backchannel_events: backchannel_events
           })
         });
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail || 'Save failed');
+        if (!res.ok) throw new Error(await readError(res));
+        const data = await res.json();
+
+        // Adopt the canonical persisted state in place — no follow-up GET, no
+        // re-list, and the table re-renders at the same scroll position.
+        applyServerTranscript(data.transcript);
+
+        // Keep the picker label in sync without another list round-trip.
+        const segs = data.transcript.segments || [];
+        const reviewedCount = segs.filter(s => s.reviewed).length;
+        updateReviewListOption(tid, {
+          reviewed_segments: reviewedCount,
+          completeness: segs.length ? reviewedCount / segs.length : 0
+        });
+        $('#reviewCheckedSegs').textContent = reviewedCount;
+
+        if (data.partial) {
+          const details = (data.skipped || [])
+            .slice(0, 3)
+            .map(s => `${s.op} [${(s.segment_indices || []).join(',')}]: ${s.reason}`)
+            .join(' · ');
+          showToast(
+            `Salvo, mas ${data.skipped.length} edição(ões) foram ignoradas — ${details}`,
+            'error',
+            8000
+          );
+        } else {
+          showToast(`Salvo (${data.applied_count} patch(es))`);
         }
-        showToast('Patches and reviews saved');
-        await loadReviewLists();
-        await triggerTranscriptLoad();
-      } catch (e) { alert('Erro: ' + e.message); }
+      } catch (e) {
+        showToast('Erro ao salvar: ' + e.message, 'error', 6000);
+      } finally {
+        isSaving = false;
+        setButtonBusy(btn, false);
+      }
     });
 
     // ---------- Event listeners ----------
@@ -1991,19 +2649,19 @@
     document.getElementById('reviewTranscriptSelect')?.addEventListener('change', triggerTranscriptLoad);
     document.getElementById('importCsvBtn')?.addEventListener('click', async () => {
       const csvName = $('#csvFileSelect').value;
-      if (!csvName) { alert('Selecione um CSV'); return; }
+      if (!csvName) { showToast('Selecione um CSV', 'error'); return; }
       try {
         const res = await fetch('/api/transcripts/csv/import', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ filename: csvName })
         });
+        if (!res.ok) throw new Error(await readError(res));
         const data = await res.json();
-        if (!res.ok) throw new Error(data.detail);
-        alert(`CSV importado: ${data.transcript_id}`);
+        showToast(`CSV importado: ${data.transcript_id}`);
         await loadReviewLists();
         $('#reviewTranscriptSelect').value = data.transcript_id;
         triggerTranscriptLoad();
-      } catch (e) { alert('Erro: ' + e.message); }
+      } catch (e) { showToast('Erro ao importar CSV: ' + e.message, 'error', 6000); }
     });
     document.getElementById('importZipBtn')?.addEventListener('click', () => document.getElementById('importZipInput')
       .click());
@@ -2044,26 +2702,22 @@
     });
     document.getElementById('exportReviewCsvBtn')?.addEventListener('click', exportReviewCSV);
 
-    // Select all reviewed checkboxes
-    document.addEventListener('change', function (e) {
-      if (e.target && e.target.id === 'selectAllRevChk') {
-        document.querySelectorAll('.segment-review-chk').forEach(chk => {
-          chk.checked = e.target.checked;
-          chk.dispatchEvent(new Event('change'));
-        });
-      }
-    });
-
-    // Panel collapse toggle
+    // Alternar recolhimento do painel. Isto fecha toda a área de revisão
+    // (seletores de transcrição, editor de metadados e a tabela de segmentos)
+    // para o revisor chegar direto à barra de ações abaixo. A própria barra
+    // fica fora de #reviewPanelContent e continua visível.
     document.getElementById('reviewPanelToggleBtn')?.addEventListener('click', () => {
       const content = document.getElementById('reviewPanelContent');
       const btn = document.getElementById('reviewPanelToggleBtn');
-      if (content.style.display === 'none') {
-        content.style.display = 'flex';
-        btn.textContent = 'Recolher';
-      } else {
-        content.style.display = 'none';
-        btn.textContent = 'Expandir';
+      const actions = document.getElementById('reviewActionsRow');
+      const collapsing = content.style.display !== 'none';
+      content.style.display = collapsing ? 'none' : 'flex';
+      btn.innerHTML = collapsing
+        ? '<i class="fas fa-chevron-down"></i> Expandir'
+        : '<i class="fas fa-chevron-up"></i> Recolher';
+      // Traz a barra de ações à vista, senão recolher só ganha espaço vazio.
+      if (collapsing && actions && actions.style.display !== 'none') {
+        actions.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       }
     });
 
@@ -2322,7 +2976,122 @@
       if (trig) trig.disabled = !e.target.checked;
     });
 
+    // ── Segment actions configuration ────────────────────────────────
+    document.getElementById('openActionsConfigBtn')?.addEventListener('click', openActionsConfig);
+    document.getElementById('actionsAllBtn')?.addEventListener('click', () =>
+      setActionVisibility(() => true));
+    document.getElementById('actionsNoneBtn')?.addEventListener('click', () =>
+      setActionVisibility(() => false));
+    document.getElementById('actionsDefaultBtn')?.addEventListener('click', () =>
+      setActionVisibility(a => ACTION_DEFAULTS[a.id] !== false));
+
+    // ── Largura do painel de revisão: alternância + arrastar ─────────
+    // O painel já abre na largura da janela (fora da coluna de leitura), então
+    // só vale persistir quando o revisor quer voltar à largura normal e a
+    // largura exata para a qual ele arrastou o painel.
+    const REVIEW_NARROW_KEY = 'revision_review_narrow';
+    const REVIEW_WIDTH_KEY = 'revision_review_width';
+    const fullWidthBtn = document.getElementById('fullWidthToggleBtn');
+    const reviewPanel = document.getElementById('transcriptReviewPanel');
+    const reviewHandle = document.getElementById('reviewResizeHandle');
+
+    const REVIEW_MIN_WIDTH = 420;
+    const REVIEW_MIN_GUTTER = 12;
+
+    function setReviewNarrow(narrow) {
+      if (reviewPanel) reviewPanel.classList.toggle('review-narrow', !!narrow);
+      if (fullWidthBtn) {
+        fullWidthBtn.setAttribute('aria-pressed', narrow ? 'false' : 'true');
+        fullWidthBtn.innerHTML = narrow
+          ? '<i class="fas fa-arrows-left-right"></i> Largura total'
+          : '<i class="fas fa-compress"></i> Largura normal';
+      }
+    }
+
+    /**
+     * Aplica a largura desejada do painel (px). O painel é centralizado, então
+     * a largura vira margens iguais nos dois lados; null restaura o padrão.
+     */
+    function applyReviewWidth(px) {
+      if (!reviewPanel) return;
+      if (px == null) {
+        reviewPanel.style.removeProperty('--review-panel-gutter');
+        return;
+      }
+      const vw = window.innerWidth;
+      const width = Math.min(Math.max(px, REVIEW_MIN_WIDTH), vw - 2 * REVIEW_MIN_GUTTER);
+      reviewPanel.style.setProperty('--review-panel-gutter', ((vw - width) / 2) + 'px');
+    }
+
+    function readStoredReviewWidth() {
+      try {
+        const raw = localStorage.getItem(REVIEW_WIDTH_KEY);
+        return raw ? parseInt(raw, 10) : null;
+      } catch (e) { return null; }
+    }
+
+    // Arraste: como o painel é centralizado, a borda direita acompanha o
+    // cursor quando a largura é o dobro da distância até o centro da janela.
+    let reviewDrag = null;
+
+    reviewHandle?.addEventListener('pointerdown', (e) => {
+      if (!reviewPanel || e.button !== 0) return;
+      reviewDrag = { pointerId: e.pointerId, center: window.innerWidth / 2 };
+      reviewHandle.classList.add('dragging');
+      try { reviewHandle.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+      e.preventDefault();
+    });
+
+    reviewHandle?.addEventListener('pointermove', (e) => {
+      if (!reviewDrag) return;
+      applyReviewWidth(2 * (e.clientX - reviewDrag.center));
+    });
+
+    function endReviewDrag() {
+      if (!reviewDrag) return;
+      reviewDrag = null;
+      reviewHandle.classList.remove('dragging');
+      try {
+        localStorage.setItem(REVIEW_WIDTH_KEY, String(Math.round(reviewPanel.getBoundingClientRect().width)));
+      } catch (e) { /* ignore */ }
+    }
+
+    reviewHandle?.addEventListener('pointerup', endReviewDrag);
+    reviewHandle?.addEventListener('pointercancel', endReviewDrag);
+
+    // Duplo clique no handle esquece a largura personalizada.
+    reviewHandle?.addEventListener('dblclick', () => {
+      applyReviewWidth(null);
+      try { localStorage.removeItem(REVIEW_WIDTH_KEY); } catch (e) { /* ignore */ }
+    });
+
+    fullWidthBtn?.addEventListener('click', () => {
+      const narrow = !(reviewPanel && reviewPanel.classList.contains('review-narrow'));
+      setReviewNarrow(narrow);
+      try { localStorage.setItem(REVIEW_NARROW_KEY, narrow ? '1' : '0'); } catch (e) { /* ignore */ }
+    });
+
+    // Mantém a largura arrastada coerente quando a janela muda de tamanho.
+    let reviewResizeRaf = null;
+    window.addEventListener('resize', () => {
+      if (reviewResizeRaf) cancelAnimationFrame(reviewResizeRaf);
+      reviewResizeRaf = requestAnimationFrame(() => {
+        if (reviewPanel && reviewPanel.classList.contains('review-narrow')) return;
+        const stored = readStoredReviewWidth();
+        if (stored) applyReviewWidth(stored);
+      });
+    });
+
     // Initialize
+    renderActionsConfig();
+    renderActionsHelp();
+    let savedNarrow = false;
+    try { savedNarrow = localStorage.getItem(REVIEW_NARROW_KEY) === '1'; } catch (e) { /* ignore */ }
+    setReviewNarrow(savedNarrow);
+    if (!savedNarrow) {
+      const savedWidth = readStoredReviewWidth();
+      if (savedWidth) applyReviewWidth(savedWidth);
+    }
     applyTranscribeConfig(loadTranscribeConfig());
     loadReviewLists();
   </script>

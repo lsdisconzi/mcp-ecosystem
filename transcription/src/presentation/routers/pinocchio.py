@@ -4,6 +4,10 @@ Serves the Pinocchio HTML UI at `/` and `/pinocchio`, and exposes
 `/api/pinocchio/*` aliases that 307-redirect to the canonical backend
 routes (`/api/diarization/*`, `/api/transcripts/*`). 307 preserves both
 HTTP method and request body, so multipart uploads work transparently.
+
+English (`-en`) variants of the two main UIs are served alongside the
+original templates; each falls back to its default counterpart when the
+translated file is not present.
 """
 from __future__ import annotations
 
@@ -23,6 +27,16 @@ _TEMPLATE_DIR = Path(__file__).resolve().parents[3] / "templates"
 _PINOCCIO_TEMPLATE = _TEMPLATE_DIR / "pinocchio.html"
 _REVISION_TEMPLATE = _TEMPLATE_DIR / "revision.html"
 _CURADORIA_TEMPLATE = _TEMPLATE_DIR / "curadoria.html"
+_PINOCCIO_EN_TEMPLATE = _TEMPLATE_DIR / "pinocchio-en.html"
+_REVISION_EN_TEMPLATE = _TEMPLATE_DIR / "revision-en.html"
+
+
+def _first_existing(*candidates: Path) -> Path:
+    """Return the first template that exists, or the first candidate."""
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[0]
 
 
 @router.get("/", include_in_schema=False)
@@ -40,6 +54,25 @@ async def serve_revision() -> FileResponse:
 @router.get("/curadoria", include_in_schema=False)
 async def serve_curadorias() -> FileResponse:
     path = _CURADORIA_TEMPLATE if _CURADORIA_TEMPLATE.exists() else _PINOCCIO_TEMPLATE
+    return FileResponse(str(path), media_type="text/html")
+
+
+# ── English UI variants ───────────────────────────────────────────────────
+
+
+@router.get("/pinocchio-en", include_in_schema=False)
+async def serve_pinocchio_ui_en() -> FileResponse:
+    """English Pinocchio UI, falling back to the default template."""
+    path = _first_existing(_PINOCCIO_EN_TEMPLATE, _PINOCCIO_TEMPLATE)
+    if not path.exists():
+        raise HTTPException(status_code=404, detail=f"UI template missing: {path}")
+    return FileResponse(str(path), media_type="text/html")
+
+
+@router.get("/revision-en", include_in_schema=False)
+async def serve_revision_en() -> FileResponse:
+    """English revision UI, falling back to the default template."""
+    path = _first_existing(_REVISION_EN_TEMPLATE, _REVISION_TEMPLATE, _PINOCCIO_TEMPLATE)
     return FileResponse(str(path), media_type="text/html")
 
 

@@ -836,29 +836,35 @@ function sanitizeJsonResponse(response) {
         }
 
         function handleAssistantSelection() {
-            const modelSelect = document.getElementById('chat-model-select');
-            const endpointInput = document.getElementById('chat-endpoint-input');
             const assistantSelect = document.getElementById('chat-assistant-select');
-            const selectedAssistantId = assistantSelect.value;
-            const assistant = availableAssistants.find(a => a.id === selectedAssistantId);
+            const assistant = availableAssistants.find(a => a.id === assistantSelect.value);
 
-            if (assistant) { // An assistant IS selected
-                modelSelect.disabled = true;
-                endpointInput.disabled = false; // Endpoint is now determined automatically
-                
-                // NEW: Show the user which endpoint will be used
-                if (isExternalAssistant(assistant)) {
-                    endpointInput.value = 'External API (auto-selected)';
-                } else {
-                    endpointInput.value = 'Local API (auto-selected)';
-                }
-                showNotification('Assistant selected. Endpoint is now managed automatically.', 'info');
-            } else { // No assistant (Manual RAG mode)
-                modelSelect.disabled = false;
-                endpointInput.disabled = false;
-                endpointInput.value = '/v1/assistants/${assistant_id}/chat'; // Restore default for manual mode
-                showNotification('Switched to Manual RAG mode.', 'info');
+            // There is no user-editable API endpoint any more: providers and base
+            // URLs are resolved server-side from the stored credentials, and the
+            // model list comes from the selected provider (llm-providers.js).
+            if (!assistant) {
+                showNotification('Manual RAG mode — using the selected provider and model.', 'info');
+                return;
             }
+
+            if (isExternalAssistant(assistant)) {
+                showNotification(`"${assistant.name}" selected — requests go to the provider selected in Provider & Model.`, 'info');
+            } else {
+                showNotification(`"${assistant.name}" selected — served by the local runtime.`, 'info');
+            }
+        }
+
+        /**
+         * Pick the model for an external assistant request.
+         * The provider selection wins; the assistant's own model is only used
+         * when the selected provider actually offers it.
+         */
+        function resolveAssistantModel(selection, assistant) {
+            const models = (window.LLMProviders?.modelsOf(selection.provider) || []);
+            const assistantModel = assistant?.model || '';
+            return (assistantModel && models.some(m => m.id === assistantModel))
+                ? assistantModel
+                : selection.model;
         }
 
         // ...existing code...
@@ -908,19 +914,19 @@ function sanitizeJsonResponse(response) {
                     availableAssistants = data.data || [];
                     const selects = document.querySelectorAll('#chat-assistant-select, #step-ai-assistant-select');
                     selects.forEach(select => {
-                        select.innerHTML = '<option value="">Manual RAG (No Assistant)</option>';
+                        const current = select.value;
+                        select.innerHTML = '<option value="">Manual RAG (Use Provider &amp; Model below)</option>';
                         availableAssistants.forEach(a => select.innerHTML += `<option value="${a.id}">${a.name} (${a.model})</option>`);
+                        if (current) select.value = current;
                     });
                 }
 
                 if (modelsRes.ok) {
                     const data = await modelsRes.json();
                     availableModels = data.data || [];
-                    const selects = document.querySelectorAll('#chat-model-select, #step-ai-model-select');
-                    selects.forEach(select => {
-                        select.innerHTML = '<option value="">Select a model...</option>';
-                        availableModels.forEach(m => select.innerHTML += `<option value="${m.id}">${m.id}</option>`);
-                    });
+                    // NOTE: #chat-model-select / #step-ai-model-select are owned by
+                    // llm-providers.js: they list only the models of the selected
+                    // provider rather than every model the server knows about.
                 }
                 return { assistants: availableAssistants, models: availableModels };
             } catch (error) {
@@ -2160,46 +2166,53 @@ async function createCollectionFromModal() {
                 messages.unshift({ role: "system", content: systemPrompt });
             }
             
-            // --- NEW: Dynamic Endpoint Routing for Assistants ---
-            let endpoint = '';
-            if (isExternalAssistant(assistant)) {
-                // This is an external assistant like DeepSeek
-                endpoint = `/v1/assistants/deepseek-stream-proxy`;
-            } else {
-                // This is a local assistant
-                endpoint = `/v1/assistants/${assistantId}/chat`;
-            }
-            // --- END NEW ROUTING LOGIC ---
-
             const streamRequested = document.getElementById('stream-responses').checked;
+
+            // Local assistants are served by this app; external ones are routed
+            // through /v1/llm/chat/completions using the provider the user picked
+            // (keys and base URLs live server-side — nothing to configure here).
+            if (!isExternalAssistant(assistant)) {
+                const payload = {
+                    model: assistant.model,
+                    messages: messages,
+                    stream: streamRequested
+                };
+                document.getElementById('chat-payload-preview').textContent = JSON.stringify(payload, null, 2);
+
+                const response = await fetch(`/v1/assistants/${assistantId}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                return await parseChatResponse(response, streamRequested);
+            }
+
+            const selection = LLMProviders.requireSelection('chat');
             const payload = {
-                model: assistant.model,
+                model: resolveAssistantModel(selection, assistant),
                 messages: messages,
                 stream: streamRequested
             };
-            document.getElementById('chat-payload-preview').textContent = JSON.stringify(payload, null, 2);
+            document.getElementById('chat-payload-preview').textContent = JSON.stringify(
+                { endpoint: '/v1/llm/chat/completions', provider: selection.provider, ...payload },
+                null, 2
+            );
 
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
+            const response = await LLMProviders.chatCompletions(selection, payload);
             return await parseChatResponse(response, streamRequested);
         }
 
         async function sendManualRagChatMessage() {
             const collectionName = document.getElementById('chat-collection-select').value;
-            const model = document.getElementById('chat-model-select').value;
             const userMessage = chatHistory[chatHistory.length - 1].content;
         
             // Validation
             if (!collectionName) {
                 throw new Error("Please select a collection for Manual RAG chat.");
             }
-            if (!model) {
-                throw new Error("Please select a Model for Manual RAG chat.");
-            }
+            // Throws a friendly error when no provider/model is usable yet.
+            const selection = LLMProviders.requireSelection('chat');
         
             // Build context from search (if enabled)
             let context = "No relevant context found.";
@@ -2250,29 +2263,20 @@ async function createCollectionFromModal() {
         
             const streamRequested = document.getElementById('stream-responses').checked || false;
             const payload = {
-                model: model,
+                model: selection.model,
                 messages: messages,
                 stream: streamRequested
             };
             
-            document.getElementById('chat-payload-preview').textContent = JSON.stringify(payload, null, 2);
+            document.getElementById('chat-payload-preview').textContent = JSON.stringify(
+                { endpoint: '/v1/llm/chat/completions', provider: selection.provider, ...payload },
+                null, 2
+            );
         
             console.log('Chat payload:', payload); // Debug log
-        
-            // FIX: Correct endpoint routing
-            let endpoint = '/v1/chat/completions'; // Standard OpenAI-compatible endpoint
-            
-            // If model is DeepSeek, use specialized endpoint
-            if (model && (model.includes('deepseek') || model.includes('reasoner'))) {
-                endpoint = '/v1/chat/completions'; // DeepSeek also uses standard endpoint
-            }
-        
+
             try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                const response = await LLMProviders.chatCompletions(selection, payload);
         
                 return await parseChatResponse(response, streamRequested);
                 
@@ -2467,9 +2471,18 @@ async function createCollectionFromModal() {
                 const value = context[key].replace(/^"|"$/g, '');
                 prompt = prompt.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
             }
-        
+
+            // Provider + model come from the Workflow tab's provider picker when
+            // configured; a saved step model is only used as a last resort.
+            let selection = null;
+            try {
+                selection = LLMProviders.requireSelection('workflow');
+            } catch (err) {
+                console.warn('Workflow AI step: no provider selected —', err.message);
+            }
+
             const payload = {
-                model: stepConfig.ai_config.model || 'lfm2.5:8b:8b',
+                model: selection?.model || stepConfig.ai_config.model || 'lfm2.5:8b:8b',
                 messages: [{ role: 'user', content: prompt }],
                 ...stepConfig.parameters
             };
@@ -2485,16 +2498,18 @@ async function createCollectionFromModal() {
             while (attempts < maxAttempts) {
                 attempts++;
                 try {
-                    const response = await fetch("/v1/assistants/deepseek-stream-proxy", {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
+                    const response = selection
+                        ? await LLMProviders.chatCompletions(selection, payload)
+                        : await fetch(`/v1/assistants/${stepConfig.ai_config.assistant_id || 'default'}/chat`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
                     
                     const result = await response.json();
                     if (!response.ok) {
                         const errorMessage = result.detail || (result.error ? result.error.message : 'AI step failed');
-                        throw new Error(`DeepSeek API error ${response.status}: ${errorMessage}`);
+                        throw new Error(`AI step failed (${response.status}): ${errorMessage}`);
                     }
                     
                     // Extract content from the response

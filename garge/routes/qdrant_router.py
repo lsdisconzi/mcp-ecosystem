@@ -20,7 +20,7 @@ from pydantic import Field
 
 
 # Add these imports to your base router
-import fitz  # PyMuPDF
+import pymupdf  # PyMuPDF
 import email
 from email import policy
 from email.parser import BytesParser
@@ -671,22 +671,92 @@ async def connect_to_qdrant(client: QdrantClient = Depends(get_qdrant_client)):
     """Verifies the connection to the Qdrant instance."""
     return {"status": "connected", "url": os.getenv("QDRANT_URL")}
 
+def extract_vector_config(params: Any) -> Dict[str, Any]:
+    """
+    Safely extract vector configuration from a Qdrant collection's params.
+
+    Qdrant exposes several shapes for ``config.params``:
+      * single unnamed dense vector  -> ``VectorParams`` (has ``.size`` / ``.distance``)
+      * named dense vectors          -> ``dict[name, VectorParams]``
+      * sparse-only collections      -> ``vectors == {}`` and ``sparse_vectors`` set
+        (e.g. BM25 collections created via ``sparse_vectors``)
+
+    Accessing ``.size`` unconditionally raises ``'dict' object has no attribute 'size'``
+    for the last two cases, which previously broke ``GET /v1/qdrant/collections``.
+    """
+    vectors = getattr(params, "vectors", None)
+    sparse = getattr(params, "sparse_vectors", None)
+
+    vector_size: Optional[int] = None
+    distance: Any = None
+    named_vectors: Optional[List[str]] = None
+
+    if isinstance(vectors, dict):
+        if "size" in vectors:
+            # Defensive: plain-dict serialization of a single vector.
+            vector_size = vectors.get("size")
+            distance = vectors.get("distance")
+        elif vectors:
+            # Named dense vectors: take the first entry's configuration.
+            named_vectors = list(vectors.keys())
+            first = next(iter(vectors.values()))
+            if isinstance(first, dict):
+                vector_size = first.get("size")
+                distance = first.get("distance")
+            else:
+                vector_size = getattr(first, "size", None)
+                distance = getattr(first, "distance", None)
+        # else: empty dict -> sparse-only collection, no dense vectors.
+    elif vectors is not None:
+        vector_size = getattr(vectors, "size", None)
+        distance = getattr(vectors, "distance", None)
+
+    sparse_names = list(sparse.keys()) if isinstance(sparse, dict) else None
+
+    return {
+        "vector_size": vector_size,
+        "distance_metric": getattr(distance, "value", distance) if distance is not None else None,
+        "named_vectors": named_vectors,
+        "sparse_vectors": sparse_names,
+        "is_sparse": bool(sparse_names) and vector_size is None,
+    }
+
+
 @router.get("/collections", summary="List All Collections")
 async def list_collections(client: QdrantClient = Depends(get_qdrant_client)):
     """Retrieves a list of all collections in the Qdrant database."""
     try:
         collections_response = client.get_collections()
-        collections_list = []
-        for collection in collections_response.collections:
-            collection_info = client.get_collection(collection_name=collection.name)
-            collections_list.append({
-                "name": collection.name,
-                "vectors_count": collection_info.points_count,  # Changed from vectors_count to points_count
-                "vector_size": collection_info.config.params.vectors.size,
-            })
-        return {"collections": collections_list}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+    collections_list = []
+    for collection in collections_response.collections:
+        try:
+            collection_info = client.get_collection(collection_name=collection.name)
+        except Exception as e:
+            # Never let a single unreadable collection break the whole listing.
+            logger.warning(f"Could not read collection '{collection.name}': {e}")
+            collections_list.append({
+                "name": collection.name,
+                "points_count": None,
+                "vectors_count": None,
+                "vector_size": None,
+                "distance_metric": None,
+                "error": str(e),
+            })
+            continue
+
+        points_count = collection_info.points_count
+        collections_list.append({
+            "name": collection.name,
+            "points_count": points_count,
+            "vectors_count": points_count,  # kept for backward compatibility
+            **extract_vector_config(collection_info.config.params),
+            "status": getattr(collection_info.status, "value", collection_info.status),
+        })
+
+    return {"collections": collections_list}
 
 @router.get("/collections/{collection_name}/summary", summary="Get Collection Statistics")
 async def get_collection_summary(

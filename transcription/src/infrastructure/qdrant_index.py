@@ -91,6 +91,46 @@ class QdrantTranscriptIndex:
         raw = f"{transcript_id}:{segment_index}"
         return hashlib.md5(raw.encode()).hexdigest()  # noqa: S324
 
+    async def counts_by_transcript(
+        self, collection_name: str = COLLECTION, *, timeout: float = 15.0
+    ) -> dict[str, int]:
+        """Return ``{transcript_id: point_count}`` for a collection.
+
+        Replaces the old N+1 pattern (one synchronous ``count()`` per transcript
+        on the event loop) with a single paginated ``scroll`` executed off the
+        event loop. Returns an empty mapping when the collection is missing or
+        unreachable, so listing transcripts never fails because of the vector
+        store.
+        """
+
+        def _scan() -> dict[str, int]:
+            collections = [c.name for c in self._client.get_collections().collections]
+            if collection_name not in collections:
+                return {}
+            counts: dict[str, int] = {}
+            next_offset = None
+            while True:
+                points, next_offset = self._client.scroll(
+                    collection_name=collection_name,
+                    with_payload=["transcript_id"],
+                    with_vectors=False,
+                    limit=1000,
+                    offset=next_offset,
+                )
+                for point in points:
+                    tid = (point.payload or {}).get("transcript_id")
+                    if tid:
+                        counts[tid] = counts.get(tid, 0) + 1
+                if next_offset is None:
+                    break
+            return counts
+
+        try:
+            return await asyncio.wait_for(asyncio.to_thread(_scan), timeout=timeout)
+        except Exception as e:  # noqa: BLE001 - never fail the listing on vector-store trouble
+            logger.warning("[qdrant] counts_by_transcript failed for %s: %s", collection_name, e)
+            return {}
+
     async def index(self, transcript: Transcript, collection_name: str = COLLECTION) -> int:
         """Index all segments of a transcript. Returns number of points upserted."""
         if not transcript.segments:

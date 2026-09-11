@@ -546,36 +546,129 @@
     }
 
     /* .card sets overflow:hidden, which would clip the table when it breaks
-       out of the reading column in full-width mode. The review panel must
-       never clip its content. */
+       out of the reading column. The review panel must never clip its
+       content, and it needs a positioning context for the resize handle. */
     #transcriptReviewPanel {
       overflow: visible;
+      position: relative;
     }
 
-    /* Full-width mode: the table breaks out of the reading column so all
-       columns fit without a horizontal scrollbar cutting them off.
-       The margin/width pair keeps the card centred with a 32px gutter at any
-       viewport width, and never overflows (100vw includes the scrollbar). */
-    #reviewSegmentsWrap.full-bleed {
-      width: calc(100vw - 64px);
+    /* The segment table is the reason this page exists, so the review panel
+       breaks out of the 1180px reading column and uses the window instead of
+       leaving a third of the screen empty.
+       `--review-panel-gutter` is the space kept at each side; width and
+       margins are derived from it so the panel stays perfectly centred while
+       the reviewer drags the handle. The gutter is never smaller than 12px,
+       which also absorbs the vertical scrollbar measured into `100vw`. */
+    #transcriptReviewPanel {
+      width: calc(100vw - (2 * var(--review-panel-gutter, 32px)));
       max-width: none;
-      margin-left: calc(50% - 50vw + 32px);
-      margin-right: calc(50% - 50vw + 32px);
+      margin-left: calc(50% - 50vw + var(--review-panel-gutter, 32px));
+      margin-right: calc(50% - 50vw + var(--review-panel-gutter, 32px));
     }
 
-    /* Action buttons live in an inner flex box. Putting display:flex directly
-       on a <td> removes it from the table layout algorithm and lets the column
-       mis-measure, which is what squeezed and clipped neighbouring columns. */
-    .segment-actions {
+    /* Narrow mode: fall back to the normal reading column. */
+    #transcriptReviewPanel.review-narrow {
+      width: auto;
+      max-width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    /* ---- Drag-to-resize handle on the right edge of the review panel ---- */
+    /* Sits *inside* the panel's right border. Centring it on the border with
+       translateX(50%) let it poke past the viewport when the panel was dragged
+       nearly full width, which produced a horizontal scrollbar on the page. */
+    .review-resize-handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      width: 14px;
+      cursor: col-resize;
+      z-index: 20;
+      touch-action: none;
       display: flex;
-      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .review-resize-handle::after {
+      content: '';
+      width: 4px;
+      height: 54px;
+      border-radius: 999px;
+      background: var(--border-strong);
+      opacity: 0;
+      transition: opacity 0.15s, background 0.15s;
+    }
+
+    #transcriptReviewPanel:hover .review-resize-handle::after,
+    .review-resize-handle:hover::after,
+    .review-resize-handle.dragging::after {
+      opacity: 1;
+    }
+
+    .review-resize-handle.dragging::after {
+      background: var(--accent);
+    }
+
+    #transcriptReviewPanel.review-narrow .review-resize-handle {
+      display: none;
+    }
+
+    /* The action bar is intentionally a direct child of the panel rather than
+       of `.content`, so collapsing the review workspace can never take Save /
+       Export / Index out of reach. It therefore needs the horizontal padding
+       that `.content` used to provide. */
+    #reviewActionsRow {
+      /* No `border-top`: the panel <h3> already draws a divider, so adding one
+         here would render a doubled line when the workspace is collapsed. */
+      padding: 16px 22px 18px;
+    }
+
+    /* The wrap simply fills whatever width the review panel has; the panel
+       itself handles the breakout (see #transcriptReviewPanel). */
+    #reviewSegmentsWrap.full-bleed {
+      width: 100%;
+      max-width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    /* Action buttons live in an inner grid. Putting display:flex directly on a
+       <td> removes it from the table layout algorithm and lets the column
+       mis-measure, which is what squeezed and clipped neighbouring columns.
+       It has to be a grid, not flex-wrap: icon-only buttons have different
+       intrinsic widths (a play glyph is narrower than scissors), so wrapping
+       left the rows ragged and the block stranded in the top-left of the cell.
+       `auto-fit` makes the tracks share the whole column, and collapses the
+       empty ones, so two enabled actions split the width in half instead of
+       leaving a phantom third of the cell blank. */
+    .segment-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(30px, 1fr));
       gap: 4px;
+      width: 100%;
       align-content: flex-start;
-      max-width: 126px;
     }
 
     .segment-actions .tag-btn {
-      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-width: 0;
+      padding: 4px 0;
+    }
+
+    /* The "no actions" placeholder spans every track instead of sitting in
+       the first cell of an otherwise empty grid. */
+    .actions-empty {
+      grid-column: 1 / -1;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      opacity: 0.6;
     }
 
     /* Column hidden when the reviewer disabled every action. */
@@ -585,12 +678,6 @@
 
     .review-actions-cell {
       vertical-align: top;
-    }
-
-    .actions-empty {
-      color: var(--text-muted);
-      font-size: 0.7rem;
-      opacity: 0.6;
     }
 
     .review-textarea {
@@ -720,6 +807,20 @@
       flex-direction: column;
       gap: 14px;
       overflow-y: auto;
+      /* A flex item defaults to `min-height: auto`, which refuses to shrink
+         below its content. Without this the body grew past the sidebar (which
+         is `overflow: hidden`) and the last sections were simply cut off with
+         no way to reach them. `min-height: 0` lets the body shrink to the
+         available space so `overflow-y: auto` actually scrolls. */
+      min-height: 0;
+      flex: 1 1 auto;
+      overscroll-behavior: contain;
+    }
+
+    /* Sections keep their natural height so the body overflows and scrolls
+       instead of squashing every card to fit. */
+    .transcribe-sidebar-body>.cfg-section {
+      flex-shrink: 0;
     }
 
     /* ---- Sidebar sections ---- */
@@ -917,6 +1018,16 @@
       .transcribe-sidebar {
         top: 40px;
       }
+
+      /* Leave a smaller gutter for the review panel on phones; the drag
+         handle's inline gutter (if any) still wins. */
+      #transcriptReviewPanel {
+        --review-panel-gutter: 14px;
+      }
+
+      .review-resize-handle {
+        width: 22px;
+      }
     }
 
     /* Additional clean styling for segment action buttons */
@@ -1026,7 +1137,8 @@
         <h3 style="display:flex;align-items:center;justify-content:space-between;">
           <span><i class="fas fa-clipboard-check" style="color:var(--accent);margin-right:8px;"></i> Segment
             Review</span>
-          <button class="btn small ghost" id="reviewPanelToggleBtn">Collapse</button>
+          <button class="btn small ghost" id="reviewPanelToggleBtn"><i class="fas fa-chevron-up"></i>
+            Collapse</button>
         </h3>
         <div class="content" id="reviewPanelContent">
 
@@ -1147,8 +1259,9 @@
                 style="font-size:.7rem;font-weight:600;font-family:var(--mono);letter-spacing:0.03em;color:var(--text-muted);text-transform:uppercase;">Segments
                 Under Review</span>
               <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                <button id="fullWidthToggleBtn" class="tag-btn" title="Expand the table to the full window width"><i
-                    class="fas fa-arrows-left-right"></i> Full width</button>
+                <button id="fullWidthToggleBtn" class="tag-btn"
+                  title="Toggle between the full window width and the reading column"><i
+                    class="fas fa-compress"></i> Normal width</button>
                 <button id="openActionsConfigBtn" class="tag-btn" title="Choose which actions appear on each segment"><i
                     class="fas fa-sliders"></i> Actions</button>
                 <button id="selectAllUnreviewedBtn" class="tag-btn">Select Unreviewed</button>
@@ -1178,35 +1291,43 @@
             </table>
           </div>
 
-          <!-- Action buttons -->
-          <div class="row" id="reviewActionsRow"
-            style="justify-content:space-between;display:none;flex-wrap:wrap;gap:12px;">
-            <div style="display:flex; gap:8px;flex-wrap:wrap;">
-              <button id="saveReviewBtn" class="btn primary small"><i class="fas fa-save"></i> Save
-                Segment Review</button>
-              <button id="exportModifiedZipBtn" class="btn small"><i class="fas fa-download"></i> Export
-                Modified ZIP</button>
-              <button id="indexReviewedBtn" class="btn small" style="border-color:var(--accent);color:var(--accent);"><i
-                  class="fas fa-database"></i> Index in Qdrant</button>
-            </div>
-            <div class="field" style="margin:0;">
-              <label for="qdrantCollection">Qdrant Collection</label>
-              <div class="row" style="gap:6px;">
-                <input id="qdrantCollection" type="text" value="reviewed_transcripts" style="width:160px;">
-                <button id="createCollectionBtn" class="tag-btn">Create</button>
-              </div>
-            </div>
-            <div style="display:flex; gap:8px;align-items:center;flex-wrap:wrap;">
-              <span style="font-size:11px;color:var(--text-muted);">Transcribe selected (unreviewed):</span>
-              <button id="runRetranscribeBtn" class="btn small" style="background:var(--accent);color:#fff;"><i
-                  class="fas fa-play"></i> Run
-                Transcription</button>
-              <button id="toggleTranscribeConfigBtn" class="btn small" title="Configure transcription"><i
-                  class="fas fa-sliders"></i> Config</button>
+        </div>
+
+        <!-- Action buttons — deliberately OUTSIDE #reviewPanelContent so that
+             collapsing the review workspace never hides Save / Export / Index.
+             The reviewer can fold the whole segment table away and still have
+             the finish-line controls in front of them. -->
+        <div class="row" id="reviewActionsRow"
+          style="justify-content:space-between;display:none;flex-wrap:wrap;gap:12px;">
+          <div style="display:flex; gap:8px;flex-wrap:wrap;">
+            <button id="saveReviewBtn" class="btn primary small"><i class="fas fa-save"></i> Save
+              Segment Review</button>
+            <button id="exportModifiedZipBtn" class="btn small"><i class="fas fa-download"></i> Export
+              Modified ZIP</button>
+            <button id="indexReviewedBtn" class="btn small" style="border-color:var(--accent);color:var(--accent);"><i
+                class="fas fa-database"></i> Index in Qdrant</button>
+          </div>
+          <div class="field" style="margin:0;">
+            <label for="qdrantCollection">Qdrant Collection</label>
+            <div class="row" style="gap:6px;">
+              <input id="qdrantCollection" type="text" value="reviewed_transcripts" style="width:160px;">
+              <button id="createCollectionBtn" class="tag-btn">Create</button>
             </div>
           </div>
-
+          <div style="display:flex; gap:8px;align-items:center;flex-wrap:wrap;">
+            <span style="font-size:11px;color:var(--text-muted);">Transcribe selected (unreviewed):</span>
+            <button id="runRetranscribeBtn" class="btn small" style="background:var(--accent);color:#fff;"><i
+                class="fas fa-play"></i> Run
+              Transcription</button>
+            <button id="toggleTranscribeConfigBtn" class="btn small" title="Configure transcription"><i
+                class="fas fa-sliders"></i> Config</button>
+          </div>
         </div>
+
+        <!-- Drag horizontally to change how much of the window the panel uses.
+             Double-click to reset. -->
+        <div id="reviewResizeHandle" class="review-resize-handle" role="separator" aria-orientation="vertical"
+          aria-label="Resize review panel" title="Drag to resize the review panel · double-click to reset"></div>
       </section>
 
     </div>
@@ -2578,16 +2699,22 @@
     });
     document.getElementById('exportReviewCsvBtn')?.addEventListener('click', exportReviewCSV);
 
-    // Panel collapse toggle
+    // Panel collapse toggle. This folds the whole review workspace away
+    // (transcript selectors, metadata editor and the segment table) so the
+    // reviewer can jump straight to the action bar below it. The action bar
+    // itself lives outside #reviewPanelContent and therefore stays visible.
     document.getElementById('reviewPanelToggleBtn')?.addEventListener('click', () => {
       const content = document.getElementById('reviewPanelContent');
       const btn = document.getElementById('reviewPanelToggleBtn');
-      if (content.style.display === 'none') {
-        content.style.display = 'flex';
-        btn.textContent = 'Collapse';
-      } else {
-        content.style.display = 'none';
-        btn.textContent = 'Expand';
+      const actions = document.getElementById('reviewActionsRow');
+      const collapsing = content.style.display !== 'none';
+      content.style.display = collapsing ? 'none' : 'flex';
+      btn.innerHTML = collapsing
+        ? '<i class="fas fa-chevron-down"></i> Expand'
+        : '<i class="fas fa-chevron-up"></i> Collapse';
+      // Surface the action row, otherwise collapsing only buys empty space.
+      if (collapsing && actions && actions.style.display !== 'none') {
+        actions.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       }
     });
 
@@ -2855,37 +2982,114 @@
     document.getElementById('actionsDefaultBtn')?.addEventListener('click', () =>
       setActionVisibility(a => ACTION_DEFAULTS[a.id] !== false));
 
-    // ── Full-width toggle for the segment table ──────────────────────
-    const FULL_WIDTH_KEY = 'revision_segments_full_width';
+    // ── Review panel width: wide/narrow toggle + drag-to-resize ──────
+    // The panel is wide by default (it breaks out of the reading column), so
+    // the only thing worth persisting is when the reviewer wants it narrow
+    // again, and the explicit width they dragged it to.
+    const REVIEW_NARROW_KEY = 'revision_review_narrow';
+    const REVIEW_WIDTH_KEY = 'revision_review_width';
     const fullWidthBtn = document.getElementById('fullWidthToggleBtn');
+    const reviewPanel = document.getElementById('transcriptReviewPanel');
+    const reviewHandle = document.getElementById('reviewResizeHandle');
 
-    function applyFullWidth(on) {
-      const wrap = $('#reviewSegmentsWrap');
-      if (wrap) wrap.classList.toggle('full-bleed', !!on);
+    const REVIEW_MIN_WIDTH = 420;
+    const REVIEW_MIN_GUTTER = 12;
+
+    function setReviewNarrow(narrow) {
+      if (reviewPanel) reviewPanel.classList.toggle('review-narrow', !!narrow);
       if (fullWidthBtn) {
-        fullWidthBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-        fullWidthBtn.innerHTML = on
-          ? '<i class="fas fa-compress"></i> Normal width'
-          : '<i class="fas fa-arrows-left-right"></i> Full width';
+        fullWidthBtn.setAttribute('aria-pressed', narrow ? 'false' : 'true');
+        fullWidthBtn.innerHTML = narrow
+          ? '<i class="fas fa-arrows-left-right"></i> Full width'
+          : '<i class="fas fa-compress"></i> Normal width';
       }
     }
 
+    /**
+     * Apply a desired panel width in px. The panel is centred, so the width is
+     * converted into equal gutters on each side; passing null restores the
+     * default layout.
+     */
+    function applyReviewWidth(px) {
+      if (!reviewPanel) return;
+      if (px == null) {
+        reviewPanel.style.removeProperty('--review-panel-gutter');
+        return;
+      }
+      const vw = window.innerWidth;
+      const width = Math.min(Math.max(px, REVIEW_MIN_WIDTH), vw - 2 * REVIEW_MIN_GUTTER);
+      reviewPanel.style.setProperty('--review-panel-gutter', ((vw - width) / 2) + 'px');
+    }
+
+    function readStoredReviewWidth() {
+      try {
+        const raw = localStorage.getItem(REVIEW_WIDTH_KEY);
+        return raw ? parseInt(raw, 10) : null;
+      } catch (e) { return null; }
+    }
+
+    // Pointer drag: the panel is centred, so the right edge tracks the cursor
+    // when the width is twice the cursor's distance from the window middle.
+    let reviewDrag = null;
+
+    reviewHandle?.addEventListener('pointerdown', (e) => {
+      if (!reviewPanel || e.button !== 0) return;
+      reviewDrag = { pointerId: e.pointerId, center: window.innerWidth / 2 };
+      reviewHandle.classList.add('dragging');
+      try { reviewHandle.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+      e.preventDefault();
+    });
+
+    reviewHandle?.addEventListener('pointermove', (e) => {
+      if (!reviewDrag) return;
+      applyReviewWidth(2 * (e.clientX - reviewDrag.center));
+    });
+
+    function endReviewDrag() {
+      if (!reviewDrag) return;
+      reviewDrag = null;
+      reviewHandle.classList.remove('dragging');
+      try {
+        localStorage.setItem(REVIEW_WIDTH_KEY, String(Math.round(reviewPanel.getBoundingClientRect().width)));
+      } catch (e) { /* ignore */ }
+    }
+
+    reviewHandle?.addEventListener('pointerup', endReviewDrag);
+    reviewHandle?.addEventListener('pointercancel', endReviewDrag);
+
+    // Double-click the handle to forget the custom width.
+    reviewHandle?.addEventListener('dblclick', () => {
+      applyReviewWidth(null);
+      try { localStorage.removeItem(REVIEW_WIDTH_KEY); } catch (e) { /* ignore */ }
+    });
+
     fullWidthBtn?.addEventListener('click', () => {
-      const wrap = $('#reviewSegmentsWrap');
-      // Anchor the horizontal scroll on the left edge so the widened table
-      // does not appear to jump sideways.
-      if (wrap) wrap.scrollLeft = 0;
-      const on = !(wrap && wrap.classList.contains('full-bleed'));
-      applyFullWidth(on);
-      try { localStorage.setItem(FULL_WIDTH_KEY, on ? '1' : '0'); } catch (e) { /* ignore */ }
+      const narrow = !(reviewPanel && reviewPanel.classList.contains('review-narrow'));
+      setReviewNarrow(narrow);
+      try { localStorage.setItem(REVIEW_NARROW_KEY, narrow ? '1' : '0'); } catch (e) { /* ignore */ }
+    });
+
+    // Keep a dragged width sane when the window changes size.
+    let reviewResizeRaf = null;
+    window.addEventListener('resize', () => {
+      if (reviewResizeRaf) cancelAnimationFrame(reviewResizeRaf);
+      reviewResizeRaf = requestAnimationFrame(() => {
+        if (reviewPanel && reviewPanel.classList.contains('review-narrow')) return;
+        const stored = readStoredReviewWidth();
+        if (stored) applyReviewWidth(stored);
+      });
     });
 
     // Initialize
     renderActionsConfig();
     renderActionsHelp();
-    let savedFullWidth = false;
-    try { savedFullWidth = localStorage.getItem(FULL_WIDTH_KEY) === '1'; } catch (e) { /* ignore */ }
-    applyFullWidth(savedFullWidth);
+    let savedNarrow = false;
+    try { savedNarrow = localStorage.getItem(REVIEW_NARROW_KEY) === '1'; } catch (e) { /* ignore */ }
+    setReviewNarrow(savedNarrow);
+    if (!savedNarrow) {
+      const savedWidth = readStoredReviewWidth();
+      if (savedWidth) applyReviewWidth(savedWidth);
+    }
     applyTranscribeConfig(loadTranscribeConfig());
     loadReviewLists();
   </script>

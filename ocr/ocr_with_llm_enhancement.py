@@ -30,15 +30,117 @@ from typing import Dict, List, Optional, Any
 import time
 from datetime import datetime
 
+def _resolve_tesseract_cmd() -> Optional[str]:
+    """Locate the tesseract binary across common install layouts."""
+    import shutil
+
+    candidates = [
+        os.getenv("OCR_TESSERACT_CMD"),
+        shutil.which("tesseract"),
+        "/opt/homebrew/bin/tesseract",
+        "/usr/local/bin/tesseract",
+        "/usr/bin/tesseract",
+    ]
+    for candidate in candidates:
+        if candidate and os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+            return candidate
+    return None
+
+
+def _fallback_extract_structure(image_path: str) -> Dict[str, Any]:
+    """Tesseract/Pillow OCR used when ``extract_webalmoxarife`` is unavailable.
+
+    Returns the same structured contract consumed by
+    :func:`process_image_with_ocr`: a mapping with at least ``raw_text``.
+    """
+    from collections import defaultdict
+
+    import pytesseract
+    from PIL import Image
+
+    tesseract_cmd = _resolve_tesseract_cmd()
+    if tesseract_cmd:
+        pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
+
+    language = os.getenv("OCR_LANG", "spa+eng")
+
+    with Image.open(image_path) as handle:
+        image = handle.convert("L")
+        width, height = image.size
+        # Tesseract degrades below ~1000px on the long edge; upscale small crops.
+        long_edge = max(width, height, 1)
+        if long_edge < 1000:
+            scale = min(4.0, 1000 / long_edge)
+            image = image.resize(
+                (int(width * scale), int(height * scale)), Image.LANCZOS
+            )
+
+    data = pytesseract.image_to_data(
+        image, lang=language, output_type=pytesseract.Output.DICT
+    )
+
+    grouped: Dict[Any, List[int]] = defaultdict(list)
+    for index, word in enumerate(data["text"]):
+        if word.strip():
+            key = (
+                data["block_num"][index],
+                data["par_num"][index],
+                data["line_num"][index],
+            )
+            grouped[key].append(index)
+
+    lines: List[Dict[str, Any]] = []
+    for key in sorted(grouped):
+        indices = grouped[key]
+        lefts = [data["left"][i] for i in indices]
+        tops = [data["top"][i] for i in indices]
+        rights = [data["left"][i] + data["width"][i] for i in indices]
+        bottoms = [data["top"][i] + data["height"][i] for i in indices]
+
+        confidences: List[float] = []
+        for i in indices:
+            try:
+                value = float(data["conf"][i])
+            except (TypeError, ValueError):
+                continue
+            if value >= 0:
+                confidences.append(value)
+
+        lines.append(
+            {
+                "text": " ".join(data["text"][i] for i in indices).strip(),
+                "bbox": [min(lefts), min(tops), max(rights), max(bottoms)],
+                "word_count": len(indices),
+                "confidence": (
+                    round(sum(confidences) / len(confidences), 1)
+                    if confidences
+                    else None
+                ),
+            }
+        )
+
+    scored = [line["confidence"] for line in lines if line["confidence"] is not None]
+
+    return {
+        "raw_text": "\n".join(line["text"] for line in lines),
+        "lines": lines,
+        "sections": [],
+        "tables": [],
+        "image": {"width": width, "height": height},
+        "word_count": sum(line["word_count"] for line in lines),
+        "line_count": len(lines),
+        "mean_confidence": round(sum(scored) / len(scored), 1) if scored else None,
+        "language": language,
+        "engine": "tesseract-fallback",
+    }
+
+
 # Import existing OCR functionality
 try:
     from extract_webalmoxarife import extract_structure
 except ImportError:
-    # Fallback: copy essential functions
-    import cv2
-    import numpy as np
-    import pytesseract
-    from collections import defaultdict
+    # Fallback: Tesseract/Pillow implementation defined above.
+    extract_structure = _fallback_extract_structure
 
 # LLM integration
 try:

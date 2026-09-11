@@ -2006,7 +2006,7 @@ import json
 from typing import Optional, Dict, Any
 import logging
 import pypdf
-import fitz  # PyMuPDF
+import pymupdf  # PyMuPDF
 
 logger = logging.getLogger(__name__)
 

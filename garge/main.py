@@ -70,6 +70,7 @@ from api.schemas import (
 from api.files import router as files_router
 from api.assistants import router as assistants_router, get_assistant_from_file, save_assistant_to_file
 from api.chat import router as chat_router
+from api.llm_router import router as llm_router
 from routes.qdrant_router import router as qdrant_router
 from api.knowledge_router import router as knowledge_router
 from api.prompt_engineer import router as prompt_engineer_router
@@ -318,6 +319,7 @@ app.state.assistant = assistant
 
 # Include core routers
 app.include_router(chat_router)
+app.include_router(llm_router)
 app.include_router(files_router)
 app.include_router(assistants_router)
 app.include_router(qdrant_router)

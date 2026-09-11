@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import tempfile
 
 from src.domain.entities.transcript import Segment, Speaker, Transcript
 
@@ -60,8 +61,26 @@ class JSONTranscriptStore:
             "corrections_applied": transcript.corrections_applied or [],
             "segments": segments,
         }
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        # Atomic write: dump to a temp file in the same directory, fsync, then
+        # os.replace() (atomic on POSIX). A crash mid-write can therefore never
+        # leave a truncated/corrupt transcript behind, and readers always see
+        # either the old or the new complete file.
+        fd, tmp_path = tempfile.mkstemp(
+            prefix=f".{transcript.transcript_id}.", suffix=".tmp", dir=self._dir
+        )
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp_path, path)
+        except BaseException:
+            try:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+            except OSError:
+                logger.warning("[store] could not remove temp file %s", tmp_path)
+            raise
         logger.info(f"[store] saved {path} segments={len(segments)}")
         return path
 

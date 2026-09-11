@@ -136,6 +136,7 @@
       state.assistants = list;
       const sel = $('advisor-assistant-select');
       if (!sel) return;
+      sel.innerHTML = '<option value="">Manual (Use Provider &amp; Model below)</option>';
       list.forEach(a => {
         const opt = document.createElement('option');
         opt.value = a.id || a.name;
@@ -341,8 +342,19 @@
 
     const assistantId = $('advisor-assistant-select')?.value || '';
     const assistant = state.assistants.find(a => (a.id || a.name) === assistantId);
-    const model = $('advisor-model-select')?.value || 'deepseek-chat';
     const stream = $('advisor-stream')?.checked !== false;
+
+    // No user-editable endpoint any more: providers, models and API keys come
+    // from the Provider & Model picker backed by /v1/llm/*.
+    let selection = null;
+    try {
+      selection = window.LLMProviders
+        ? LLMProviders.requireSelection('advisor')
+        : { provider: null, model: $('advisor-model-select')?.value || '' };
+    } catch (err) {
+      appendMessage('assistant', `_${err.message}_`);
+      return;
+    }
 
     const userBlocks = [];
     if (intent) userBlocks.push('## User intent\n' + intent);
@@ -363,28 +375,35 @@
 
     let endpoint;
     let payload;
+    let doFetch;
+
     if (assistant && !isExternalAssistant(assistant)) {
+      // Local runtime assistant — served directly by this app.
       endpoint = `/v1/assistants/${assistant.id || assistantId}/chat`;
-      payload = { model: assistant.model || model, messages, stream };
+      payload = { model: assistant.model || selection.model, messages, stream };
+      doFetch = () => fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': stream ? 'text/event-stream' : 'application/json' },
+        body: JSON.stringify(payload),
+      });
     } else {
-      endpoint = '/v1/assistants/deepseek-stream-proxy';
-      payload = { model: assistant?.model || model, messages, stream };
+      // Everything else is routed through the selected provider; planning
+      // answers are long, so give them room beyond the API default.
+      endpoint = '/v1/llm/chat/completions';
+      payload = { model: selection.model, messages, stream, max_tokens: 4000 };
+      doFetch = () => LLMProviders.chatCompletions(selection, payload);
     }
 
     const previewEl = $('advisor-payload-preview');
     if (previewEl) {
-      previewEl.textContent = JSON.stringify({ endpoint, ...payload }, null, 2);
+      previewEl.textContent = JSON.stringify({ endpoint, provider: selection.provider, ...payload }, null, 2);
     }
 
     const sendBtn = $('advisor-send-btn');
     if (sendBtn) sendBtn.disabled = true;
 
     try {
-      const resp = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': stream ? 'text/event-stream' : 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const resp = await doFetch();
 
       if (!resp.ok) {
         const errTxt = await resp.text().catch(() => '');

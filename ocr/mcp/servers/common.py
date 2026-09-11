@@ -14,6 +14,26 @@ PROJECT_ROOT = Path(
 ).resolve()
 
 
+def _parse_allowed_roots() -> tuple:
+    """Roots the MCP servers may read/write.
+
+    ``PROJECT_ROOT`` is always allowed. Additional roots can be granted through
+    ``OCR_ALLOWED_ROOTS`` (``os.pathsep``-separated) so that the servers can
+    operate on workspace directories without relocating the project root.
+    """
+    roots = [PROJECT_ROOT]
+    for raw in os.getenv("OCR_ALLOWED_ROOTS", "").split(os.pathsep):
+        candidate = raw.strip()
+        if candidate:
+            resolved = Path(candidate).expanduser().resolve()
+            if resolved not in roots:
+                roots.append(resolved)
+    return tuple(roots)
+
+
+ALLOWED_ROOTS = _parse_allowed_roots()
+
+
 def add_project_root_to_path() -> None:
     """Ensure project scripts are importable by server wrappers."""
     root = str(PROJECT_ROOT)
@@ -22,30 +42,35 @@ def add_project_root_to_path() -> None:
 
 
 def resolve_project_path(path_value: str) -> Path:
-    """Resolve relative/absolute path and ensure it stays inside project root."""
-    candidate = Path(path_value)
+    """Resolve relative/absolute path and ensure it stays inside an allowed root."""
+    candidate = Path(path_value).expanduser()
     if not candidate.is_absolute():
         candidate = PROJECT_ROOT / candidate
 
     resolved = candidate.resolve()
 
-    try:
-        resolved.relative_to(PROJECT_ROOT)
-    except ValueError as exc:
-        raise ValueError(
-            f"Path must be inside project root: {PROJECT_ROOT}. Got: {resolved}"
-        ) from exc
+    for root in ALLOWED_ROOTS:
+        try:
+            resolved.relative_to(root)
+            return resolved
+        except ValueError:
+            continue
 
-    return resolved
+    raise ValueError(
+        "Path must be inside an allowed root: "
+        f"{[str(root) for root in ALLOWED_ROOTS]}. Got: {resolved}"
+    )
 
 
 def to_relative(path_value: Union[str, Path]) -> str:
-    """Convert a path to project-relative format when possible."""
+    """Convert a path to the shortest allowed-root-relative format possible."""
     path = Path(path_value).resolve()
-    try:
-        return str(path.relative_to(PROJECT_ROOT))
-    except ValueError:
-        return str(path)
+    for root in ALLOWED_ROOTS:
+        try:
+            return str(path.relative_to(root))
+        except ValueError:
+            continue
+    return str(path)
 
 
 def load_json(path_value: Union[str, Path]) -> Dict[str, Any]:

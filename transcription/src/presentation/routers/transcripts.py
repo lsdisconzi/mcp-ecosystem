@@ -368,11 +368,12 @@ async def list_transcripts():
     return {"transcripts": sorted(ids, reverse=True)}
 
 
-@router.get("/{transcript_id}")
-async def get_transcript(transcript_id: str):
-    transcript = _store.load(transcript_id)
-    if transcript is None:
-        raise HTTPException(status_code=404, detail=f"Transcript not found: {transcript_id}")
+def _transcript_to_dict(transcript) -> dict:
+    """Serialize a Transcript to the canonical API shape.
+
+    Shared by ``GET /{transcript_id}`` and the review-save response so the
+    frontend can apply the saved state without a follow-up round-trip.
+    """
     return {
         "transcript_id": transcript.transcript_id,
         "source_file": transcript.source_file,
@@ -413,6 +414,14 @@ async def get_transcript(transcript_id: str):
             for s in transcript.segments
         ],
     }
+
+
+@router.get("/{transcript_id}")
+async def get_transcript(transcript_id: str):
+    transcript = await asyncio.to_thread(_store.load, transcript_id)
+    if transcript is None:
+        raise HTTPException(status_code=404, detail=f"Transcript not found: {transcript_id}")
+    return _transcript_to_dict(transcript)
 
 
 @router.post("/import")
@@ -940,51 +949,71 @@ async def import_csv(payload: CSVImportPayload):
 # ------------------------------------------------------------------
 @router.get("/review/list")
 async def list_transcripts_review(collection: str = Query("reviewed_transcripts")):
-    ids = _store.list_ids()
-    out = []
-    qdrant_client = None
-    if _index is not None:
-        qdrant_client = _index._client
+    """List transcripts with review progress.
 
-    qdrant_counts = {}
-    if qdrant_client is not None:
+    Vector-store counts come from a single non-blocking scan
+    (:meth:`counts_by_transcript`) instead of one synchronous ``count()`` per
+    transcript on the event loop, and transcript files are read off-loop too.
+    """
+    ids = await asyncio.to_thread(_store.list_ids)
+
+    qdrant_counts: dict[str, int] = {}
+    if _index is not None:
+        counter = getattr(_index, "counts_by_transcript", None)
         try:
-            from qdrant_client.models import FieldCondition, Filter, MatchValue
-            collections = [c.name for c in qdrant_client.get_collections().collections]
-            if collection in collections:
-                for tid in ids:
-                    res = qdrant_client.count(
-                        collection_name=collection,
-                        count_filter=Filter(must=[FieldCondition(key="transcript_id", match=MatchValue(value=tid))])
-                    )
-                    qdrant_counts[tid] = res.count
+            if counter is not None:
+                qdrant_counts = await counter(collection_name=collection)
+            else:  # defensive fallback for custom index adapters
+                qdrant_counts = await asyncio.to_thread(_legacy_counts, ids, collection)
         except Exception as e:
             logger.warning("[qdrant] failed to query reviewed counts: %s", e)
 
+    def _build() -> list[dict]:
+        out = []
+        for tid in ids:
+            t = _store.load(tid)
+            if not t:
+                continue
+            total_segs = len(t.segments)
+            reviewed_segs = sum(1 for s in t.segments if getattr(s, "reviewed", False))
+            completeness = round(reviewed_segs / total_segs, 4) if total_segs > 0 else 0.0
+            out.append({
+                "transcript_id": tid,
+                "source_file": t.source_file,
+                "total_segments": total_segs,
+                "reviewed_segments": reviewed_segs,
+                "completeness": completeness,
+                "qdrant_indexed_segments": qdrant_counts.get(tid, 0),
+                "timestamp": t.timestamp,
+            })
+        out.sort(key=lambda x: (x["completeness"], x["transcript_id"]), reverse=True)
+        return out
+
+    return {"transcripts": await asyncio.to_thread(_build)}
+
+
+def _legacy_counts(ids: list[str], collection: str) -> dict[str, int]:
+    """Fallback per-transcript count for index adapters lacking the batch call."""
+    from qdrant_client.models import FieldCondition, Filter, MatchValue
+
+    client = _index._client
+    collections = [c.name for c in client.get_collections().collections]
+    if collection not in collections:
+        return {}
+    counts: dict[str, int] = {}
     for tid in ids:
-        t = _store.load(tid)
-        if not t:
-            continue
-        total_segs = len(t.segments)
-        reviewed_segs = sum(1 for s in t.segments if getattr(s, "reviewed", False))
-        completeness = round(reviewed_segs / total_segs, 4) if total_segs > 0 else 0.0
-        out.append({
-            "transcript_id": tid,
-            "source_file": t.source_file,
-            "total_segments": total_segs,
-            "reviewed_segments": reviewed_segs,
-            "completeness": completeness,
-            "qdrant_indexed_segments": qdrant_counts.get(tid, 0),
-            "timestamp": t.timestamp,
-        })
-    out.sort(key=lambda x: (x["completeness"], x["transcript_id"]), reverse=True)
-    return {"transcripts": out}
+        res = client.count(
+            collection_name=collection,
+            count_filter=Filter(must=[FieldCondition(key="transcript_id", match=MatchValue(value=tid))]),
+        )
+        counts[tid] = res.count
+    return counts
 
 
 @router.put("/{transcript_id}")
 async def update_transcript_metadata(transcript_id: str, update: MetadataUpdate):
     """Update metadata fields of a transcript. Preserves segments unless `segments` is provided."""
-    transcript = _store.load(transcript_id)
+    transcript = await asyncio.to_thread(_store.load, transcript_id)
     if transcript is None:
         raise HTTPException(status_code=404, detail=f"Transcript not found: {transcript_id}")
 
@@ -1012,13 +1041,13 @@ async def update_transcript_metadata(transcript_id: str, update: MetadataUpdate)
             )
         transcript.segments = new_segments
 
-    _store.save(transcript)
+    await asyncio.to_thread(_store.save, transcript)
     return {"status": "ok", "transcript_id": transcript_id, "updated_fields": list(update_dict.keys())}
 
 
 @router.post("/{transcript_id}/review/save")
 async def save_review(transcript_id: str, payload: SegmentUpdate):
-    base = _store.load(transcript_id)
+    base = await asyncio.to_thread(_store.load, transcript_id)
     if not base:
         raise HTTPException(status_code=404, detail="Transcript not found")
 
@@ -1033,7 +1062,33 @@ async def save_review(transcript_id: str, payload: SegmentUpdate):
             "timestamp": now,
         })
 
-    # Apply patches if patcher is available
+    # Sync reviewed state and curation columns FIRST, in the original index space
+    # (the same space the patches reference). Applying them after patching would
+    # map the indices onto post-insert/post-delete positions and flag the wrong
+    # segments. Missing keys keep their stored value; an explicit "" clears it.
+    reviewed_set = {int(i) for i in payload.reviewed_indices}
+    base = _replace(
+        base,
+        segments=[
+            _replace(
+                seg,
+                reviewed=(seg.index in reviewed_set),
+                correction_note=payload.edited_correction_notes.get(
+                    seg.index, getattr(seg, "correction_note", "")
+                ),
+                backchannel_events=payload.edited_backchannel_events.get(
+                    seg.index, getattr(seg, "backchannel_events", "")
+                ),
+            )
+            for seg in base.segments
+        ],
+    )
+
+    applied: list[Patch] = []
+    skipped: list[dict] = []
+    patched = base
+
+    # Apply structural/text patches if patcher is available
     if payload.patches and _patcher is not None:
         parsed = []
         for raw in payload.patches:
@@ -1053,17 +1108,27 @@ async def save_review(transcript_id: str, payload: SegmentUpdate):
                     note=raw.note or "",
                 )
             )
-        patched, applied = _patcher.apply(base, parsed)
-    else:
-        patched = base
+        patched, applied, skipped_pairs = _patcher.apply_with_report(base, parsed)
+        skipped = [
+            {
+                "op": p.op.value,
+                "segment_indices": list(p.segment_indices),
+                "reason": reason,
+            }
+            for p, reason in skipped_pairs
+        ]
+    elif payload.patches:
+        # Patches requested but no patch engine wired up: report them rather than
+        # silently dropping the user's structural edits.
+        skipped = [
+            {
+                "op": raw.op,
+                "segment_indices": list(raw.segment_indices),
+                "reason": "patch engine not configured",
+            }
+            for raw in payload.patches
+        ]
 
-    # Sync reviewed state: listed indices are reviewed, everything else is cleared so
-    # un-checking a previously reviewed segment is persisted on save.
-    reviewed_set = {int(i) for i in payload.reviewed_indices}
-    patched.segments = [
-        _replace(seg, reviewed=(i in reviewed_set))
-        for i, seg in enumerate(patched.segments)
-    ]
     for idx in payload.reviewed_indices:
         if 0 <= idx < len(patched.segments):
             emit(idx, "segment_reviewed", {})
@@ -1077,27 +1142,31 @@ async def save_review(transcript_id: str, payload: SegmentUpdate):
     for idx, end in payload.edited_ends.items():
         emit(idx, "segment_time_edited", {"end": end})
 
-    # Persist the curation columns (correction note / backchannel events).
+    # Curation columns were already applied to the base above; record the events.
     for idx, note in payload.edited_correction_notes.items():
-        if 0 <= idx < len(patched.segments):
-            seg = patched.segments[idx]
-            patched.segments[idx] = _replace(seg, correction_note=note)
-            emit(idx, "segment_correction_note_edited", {"correction_note": note})
+        emit(idx, "segment_correction_note_edited", {"correction_note": note})
     for idx, events in payload.edited_backchannel_events.items():
-        if 0 <= idx < len(patched.segments):
-            seg = patched.segments[idx]
-            patched.segments[idx] = _replace(seg, backchannel_events=events)
-            emit(idx, "segment_backchannel_events_edited", {"backchannel_events": events})
+        emit(idx, "segment_backchannel_events_edited", {"backchannel_events": events})
 
-    _store.save(patched)
+    # Off-load the synchronous, atomic disk write so it never blocks the loop.
+    await asyncio.to_thread(_store.save, patched)
 
-    return {"status": "ok", "events_written": len(payload.reviewed_indices)
-            + len(payload.edited_texts)
-            + len(payload.edited_speakers)
-            + len(payload.edited_starts)
-            + len(payload.edited_ends)
-            + len(payload.edited_correction_notes)
-            + len(payload.edited_backchannel_events)}
+    return {
+        "status": "ok",
+        "partial": bool(skipped),
+        "applied_count": len(applied),
+        "skipped": skipped,
+        # Canonical post-save state so the client updates in place instead of
+        # re-fetching the transcript and re-listing afterwards.
+        "transcript": _transcript_to_dict(patched),
+        "events_written": len(payload.reviewed_indices)
+        + len(payload.edited_texts)
+        + len(payload.edited_speakers)
+        + len(payload.edited_starts)
+        + len(payload.edited_ends)
+        + len(payload.edited_correction_notes)
+        + len(payload.edited_backchannel_events),
+    }
             
 @router.post("/{transcript_id}/review/index")
 async def index_reviewed_segments(transcript_id: str, payload: ReviewIndexPayload = ReviewIndexPayload()):

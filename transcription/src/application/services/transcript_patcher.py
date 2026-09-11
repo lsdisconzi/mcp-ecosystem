@@ -19,19 +19,34 @@ class TranscriptPatcher:
     def apply(
         self, transcript: Transcript, patches: Sequence[Patch]
     ) -> tuple[Transcript, list[Patch]]:
+        new_transcript, applied, _skipped = self.apply_with_report(transcript, patches)
+        return new_transcript, applied
+
+    def apply_with_report(
+        self, transcript: Transcript, patches: Sequence[Patch]
+    ) -> tuple[Transcript, list[Patch], list[tuple[Patch, str]]]:
+        """Apply patches and also report the ones that were skipped and why.
+
+        ``applied`` keeps the legacy semantics: it lists every patch in request
+        order, with failed ones annotated in their ``note`` field. ``skipped``
+        is the new structured view ``[(patch, reason), ...]`` so callers can
+        surface a partial-failure warning instead of silently dropping edits.
+        """
         segments: list[Segment] = list(transcript.segments)
         applied: list[Patch] = []
+        skipped: list[tuple[Patch, str]] = []
         for patch in patches:
             try:
                 segments = self._apply_one(segments, patch)
             except _PatchError as exc:
+                skipped.append((patch, str(exc)))
                 applied.append(self._note(patch, f"skipped: {exc}"))
                 continue
             applied.append(patch)
         # Reindex by position.
         reindexed = [dc_replace(seg, index=i) for i, seg in enumerate(segments)]
         new_transcript = dc_replace(transcript, segments=reindexed)
-        return new_transcript, applied
+        return new_transcript, applied, skipped
 
     # ------------------------------------------------------------------ ops
     def _apply_one(self, segments: list[Segment], patch: Patch) -> list[Segment]:
