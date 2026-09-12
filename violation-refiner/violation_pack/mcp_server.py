@@ -91,7 +91,14 @@ def _framework(path: str, framework_code: str, bundle_uri: str) -> MarkdownFrame
 # Server construction
 # ---------------------------------------------------------------------------
 
-def build_server():
+def build_server(include_ui: bool = True):
+    """Build the FastMCP server and register every tool.
+
+    With `include_ui` (the default) the browser bridge from `ui_server` is
+    mounted as well, so `GET /` serves `ui/violation_refiner.html` and the
+    `/api/*` JSON endpoints drive it — same origin, one port. Pass
+    `include_ui=False` for a pure MCP protocol surface.
+    """
     mcp = _get_mcp()
 
     @mcp.custom_route("/health", methods=["GET"])
@@ -741,6 +748,20 @@ def build_server():
             "supported_providers": sorted(PROVIDER_DEFAULTS.keys()),
         }
 
+    if include_ui:
+        # Browser bridge (UI + JSON API) on the same app/port. Imported lazily
+        # and defensively: a missing optional dep must never stop the MCP
+        # server from starting.
+        try:
+            from .ui_server import build_ui_routes
+            build_ui_routes(mcp)
+        except Exception as exc:  # noqa: BLE001 - degrade to MCP-only
+            import sys as _sys
+            print(
+                f"[violation-pack] UI bridge disabled: {type(exc).__name__}: {exc}",
+                file=_sys.stderr,
+            )
+
     return mcp
 
 
@@ -767,7 +788,8 @@ def main() -> None:
     host = os.getenv("MCP_HOST", "127.0.0.1")
     port = int(os.getenv("MCP_PORT", "8124"))
 
-    server = build_server()
+    # The UI bridge is only reachable over HTTP, so skip it for stdio.
+    server = build_server(include_ui=transport != "stdio")
 
     if transport == "stdio":
         server.run()
@@ -783,6 +805,12 @@ def main() -> None:
             server.settings.host = host
         if hasattr(server.settings, "port"):
             server.settings.port = port
+
+    from .ui_server import find_ui_path
+    ui_path = find_ui_path()
+    if ui_path is not None:
+        print(f"ViolationRefiner UI  →  http://{host}:{port}/")
+    print(f"MCP endpoint         →  http://{host}:{port}/mcp")
 
     server.run(transport=transport)
 

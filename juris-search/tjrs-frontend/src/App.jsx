@@ -3,6 +3,7 @@ import MasterIndexBrowseView from "./MasterIndexView";
 import MasterIndexDetailView from "./MasterIndexDetailView";
 import AdminView from "./AdminView";
 import JurisprudenceView from "./JurisprudenceView";
+import SearchView from "./SearchView";
 
 const ENV_API_BASE = (import.meta.env.VITE_API_BASE || "")
   .trim()
@@ -419,7 +420,7 @@ function makeResultKey(result, index) {
 // ═════════════════════════════════════════════════════════════════════════════
 // MAIN APP
 // ═════════════════════════════════════════════════════════════════════════════
-export default function App() {
+function WorkspaceApp() {
   const isMobile = useIsMobile();
   const [selectedCourts, setSelectedCourts] = useState([DEFAULT_TRIBUNAL]);
   const [showSourceMenu, setShowSourceMenu] = useState(false);
@@ -1964,4 +1965,10 @@ export default function App() {
       )}
     </div>
   );
+}
+
+export default function App() {
+  const isSearchRoute = window.location.pathname === "/search" || window.location.pathname.startsWith("/search/");
+  if (isSearchRoute) return <SearchView apiBase={API_BASE} />;
+  return <WorkspaceApp />;
 }

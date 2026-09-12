@@ -1,0 +1,2234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ViolationRefiner — CL-005</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   1. BASE DESIGN SYSTEM — as supplied
+   ============================================================ */
+:root {
+  --bg-primary: #f8f7f4;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f2f0ea;
+  --bg-surface: #f1efe8;
+  --border: #e1ddd1;
+  --border-strong: #c7c1b0;
+  --text-primary: #1b1c1e;
+  --text-secondary: #52555c;
+  --text-muted: #8a8b87;
+  --accent: #24405f;
+  --accent-dim: rgba(36, 64, 95, 0.07);
+  --status-flag: #7a3733;
+  --status-flag-dim: rgba(122, 55, 51, 0.08);
+  --status-analysis: #8a6a2c;
+  --status-analysis-dim: rgba(138, 106, 44, 0.09);
+  --status-note: #3f6b4f;
+  --status-note-dim: rgba(63, 107, 79, 0.08);
+  --mono: 'JetBrains Mono', monospace;
+  --serif: 'Source Serif 4', Georgia, serif;
+  --sans: 'Inter', -apple-system, sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+code {
+  font-family: var(--mono);
+  font-size: 0.85em;
+  color: var(--accent);
+  background: var(--bg-surface);
+  padding: 1px 6px;
+  border-radius: 2px;
+}
+
+/* modal (as supplied, reused for record detail / matched-quote viewer) */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(20, 20, 18, 0.55); z-index: 1000;
+  justify-content: center; align-items: flex-start;
+  padding: 40px 20px; overflow-y: auto;
+}
+.modal-overlay.active { display: flex; }
+.modal { background: var(--bg-primary); border: 1px solid var(--border-strong); border-radius: 6px; max-width: 720px; width: 100%; margin: auto 0; }
+.modal-header { padding: 20px 26px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 16px; }
+.modal-header-body { flex: 1; }
+.modal-type-badge { font-family: var(--mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 10px; border-radius: 2px; display: inline-block; margin-bottom: 10px; background: var(--accent-dim); color: var(--accent); }
+.modal-title { font-family: var(--serif); font-size: 1.2rem; font-weight: 600; line-height: 1.3; }
+.modal-audio-ref { font-family: var(--mono); font-size: 0.7rem; color: var(--text-muted); margin-top: 6px; }
+.modal-close { background: transparent; border: 1px solid var(--border-strong); color: var(--text-muted); width: 30px; height: 30px; border-radius: 3px; cursor: pointer; font-size: 1.05rem; }
+.modal-close:hover { color: var(--text-primary); border-color: var(--text-primary); }
+.modal-body { padding: 20px 26px; }
+.modal-section { margin-bottom: 20px; }
+.modal-section-label { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.modal-section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.modal-footer { padding: 14px 26px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.modal-footer-note { font-family: var(--mono); font-size: 0.66rem; color: var(--text-muted); flex: 1; }
+
+/* note-card (as supplied, reused for provenance timeline) */
+.note-card { background: var(--bg-surface); border: 1px solid var(--border); border-left: 3px solid var(--border-strong); border-radius: 3px; padding: 12px 16px; }
+.note-meta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 6px; }
+.note-type { font-family: var(--mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 2px; background: var(--bg-card); border: 1px solid var(--border-strong); color: var(--text-muted); }
+.note-author { font-size: 0.84rem; font-weight: 600; color: var(--text-primary); }
+.note-seg { font-family: var(--mono); font-size: 0.66rem; color: var(--text-muted); margin-left: auto; }
+.note-body { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+
+/* transcript segment (as supplied, reused verbatim for the S2 segment browser) */
+.transcript-list { display: flex; flex-direction: column; gap: 6px; }
+.transcript-segment { background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--border-strong); border-radius: 3px; padding: 12px 16px; }
+.transcript-segment.seg-passenger { border-left-color: var(--accent); }
+.transcript-segment.seg-other { border-left-style: dashed; border-left-color: var(--status-analysis); }
+.transcript-segment.is-marked { background: var(--accent-dim); border-left-color: var(--accent); }
+.transcript-segment .seg-time { font-family: var(--mono); font-size: 0.68rem; color: var(--text-muted); margin-bottom: 4px; }
+.transcript-segment .seg-speaker { font-size: 0.78rem; font-weight: 600; color: var(--text-primary); margin-bottom: 5px; }
+.transcript-segment .seg-text { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; font-style: italic; font-family: var(--serif); }
+.transcript-segment .seg-actions { margin-top: 9px; display: flex; gap: 8px; }
+.transcript-segment .seg-mark-btn { font-family: var(--mono); font-size: 0.63rem; padding: 4px 10px; border-radius: 2px; background: transparent; color: var(--text-muted); border: 1px solid var(--border-strong); cursor: pointer; }
+.transcript-segment .seg-mark-btn:hover, .transcript-segment .seg-mark-btn.is-marked { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
+
+/* ============================================================
+   2. APP SHELL — extends the system above for the wizard
+   ============================================================ */
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+
+*:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* header */
+.app-header { border-bottom: 1px solid var(--border); background: var(--bg-primary); }
+.app-header-inner { max-width: 1560px; margin: 0 auto; padding: 18px 32px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand-title { font-family: var(--serif); font-size: 1.32rem; font-weight: 600; }
+.brand-sub { font-family: var(--mono); font-size: 0.66rem; color: var(--text-muted); letter-spacing: 0.02em; }
+.context-switchers { display: flex; gap: 10px; margin-left: 32px; }
+.switcher { border: 1px solid var(--border-strong); background: var(--bg-card); border-radius: 3px; padding: 5px 10px 6px; display: flex; flex-direction: column; min-width: 128px; }
+.switcher label { font-family: var(--mono); font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+.switcher select { border: none; background: transparent; font-family: var(--sans); font-size: 0.82rem; font-weight: 500; color: var(--text-primary); padding: 2px 0 0; cursor: pointer; }
+.header-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.health-pill { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 0.68rem; color: var(--text-secondary); border: 1px solid var(--border-strong); border-radius: 3px; padding: 7px 12px; background: var(--bg-card); cursor: pointer; }
+.health-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--status-note); flex-shrink: 0; }
+.health-dot.warn { background: var(--status-analysis); }
+.health-dot.err { background: var(--status-flag); }
+.icon-btn { width: 34px; height: 34px; border: 1px solid var(--border-strong); border-radius: 3px; background: var(--bg-card); color: var(--text-secondary); cursor: pointer; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; }
+.icon-btn:hover { color: var(--accent); border-color: var(--accent); }
+.icon-btn.active { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
+
+/* stats bar */
+.stats-bar { background: var(--bg-card); border-bottom: 1px solid var(--border); }
+.stats-inner { max-width: 1560px; margin: 0 auto; padding: 0 32px; display: flex; flex-wrap: wrap; }
+.stat-item { flex: 1 1 150px; padding: 14px 18px; border-right: 1px solid var(--border); }
+.stat-item:last-child { border-right: none; }
+.stat-val { font-family: var(--mono); font-size: 0.88rem; font-weight: 600; color: var(--text-primary); }
+.stat-val.accent { color: var(--accent); }
+.stat-label { font-size: 0.66rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+
+/* workspace grid */
+.workspace { flex: 1; display: grid; grid-template-columns: 236px 1fr 380px; max-width: 1560px; margin: 0 auto; width: 100%; border-left: 1px solid var(--border); border-right: 1px solid var(--border); min-height: 0; }
+.workspace.drawer-closed { grid-template-columns: 236px 1fr 0; }
+
+/* sidebar */
+.sidebar { border-right: 1px solid var(--border); background: var(--bg-card); overflow-y: auto; padding: 14px 0 24px; }
+.sidebar-group-label { font-family: var(--mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); padding: 16px 20px 8px; }
+.step-item { display: flex; align-items: center; gap: 11px; padding: 8px 20px; cursor: pointer; border-left: 3px solid transparent; font-size: 0.84rem; color: var(--text-secondary); }
+.step-item:hover { background: var(--bg-card-hover); }
+.step-item.active { border-left-color: var(--accent); background: var(--accent-dim); color: var(--text-primary); font-weight: 600; }
+.step-num { font-family: var(--mono); font-size: 0.62rem; width: 21px; height: 21px; border-radius: 50%; border: 1px solid var(--border-strong); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--text-muted); background: var(--bg-card); }
+.step-item.done .step-num { background: var(--status-note-dim); border-color: var(--status-note); color: var(--status-note); }
+.step-item.active .step-num { background: var(--accent); border-color: var(--accent); color: #fff; }
+.step-label { line-height: 1.25; }
+
+/* canvas */
+.canvas { padding: 30px 40px 60px; overflow-y: auto; background: var(--bg-primary); }
+.canvas-eyebrow { font-family: var(--mono); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 8px; }
+.canvas-header { border-bottom: 1px solid var(--border); padding-bottom: 18px; margin-bottom: 26px; }
+.canvas-title { font-family: var(--serif); font-size: 1.5rem; font-weight: 600; margin-bottom: 8px; }
+.canvas-desc { color: var(--text-secondary); font-size: 0.9rem; max-width: 640px; margin-bottom: 14px; }
+.gate-banner { display: inline-flex; gap: 8px; align-items: center; font-family: var(--mono); font-size: 0.68rem; padding: 6px 12px; border-radius: 3px; background: var(--status-note-dim); color: var(--status-note); border: 1px solid var(--status-note); }
+.gate-banner.pending { background: var(--status-analysis-dim); color: var(--status-analysis); border-color: var(--status-analysis); }
+.gate-banner.advisory { background: var(--bg-surface); color: var(--text-muted); border-color: var(--border-strong); }
+
+.block { margin-bottom: 30px; }
+.block-title { font-family: var(--serif); font-size: 1.02rem; font-weight: 600; margin-bottom: 4px; }
+.block-sub { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px; }
+
+/* forms */
+.field-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
+.field-row.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-family: var(--mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+.field .req { color: var(--status-flag); margin-left: 2px; }
+.field input, .field select, .field textarea {
+  font-family: var(--sans); font-size: 0.86rem; padding: 9px 11px;
+  border: 1px solid var(--border-strong); border-radius: 3px;
+  background: var(--bg-card); color: var(--text-primary);
+}
+.field textarea.quote { font-family: var(--serif); font-style: italic; line-height: 1.6; min-height: 76px; resize: vertical; }
+.field textarea { min-height: 64px; resize: vertical; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.field-hint { font-size: 0.74rem; color: var(--text-muted); }
+.field.readonly input { background: var(--bg-surface); color: var(--text-secondary); }
+
+.hash-chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 0.7rem; background: var(--bg-surface); border: 1px solid var(--border); padding: 3px 8px; border-radius: 3px; color: var(--text-secondary); }
+.hash-chip::before { content: 'sha256'; color: var(--text-muted); font-size: 0.6rem; }
+
+/* badges */
+.badge { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 3px 9px; border-radius: 2px; border: 1px solid transparent; white-space: nowrap; }
+.badge-pass { background: var(--status-note-dim); color: var(--status-note); border-color: var(--status-note); }
+.badge-warn { background: var(--status-analysis-dim); color: var(--status-analysis); border-color: var(--status-analysis); }
+.badge-fail { background: var(--status-flag-dim); color: var(--status-flag); border-color: var(--status-flag); }
+.badge-neutral { background: var(--bg-surface); color: var(--text-muted); border-color: var(--border-strong); }
+.badge-accent { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+
+/* tabs */
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 18px; flex-wrap: wrap; }
+.tab { font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.03em; padding: 9px 16px; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; }
+.tab:hover { color: var(--text-primary); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* buttons */
+.btn { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 9px 16px; border-radius: 3px; border: 1px solid var(--border-strong); background: var(--bg-card); color: var(--text-secondary); cursor: pointer; }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover { opacity: 0.92; color: #fff; }
+.btn-danger { border-color: var(--status-flag); color: var(--status-flag); background: var(--bg-card); }
+.btn-danger:hover { background: var(--status-flag-dim); }
+.btn[disabled] { opacity: 0.4; cursor: not-allowed; }
+.btn-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; align-items: center; }
+
+/* drop zone */
+.drop-zone { border: 1.5px dashed var(--border-strong); border-radius: 4px; padding: 26px; text-align: center; color: var(--text-muted); font-size: 0.84rem; background: var(--bg-card); }
+.drop-zone strong { color: var(--accent); }
+
+/* record rows (repeatable items) */
+.record-list { display: flex; flex-direction: column; gap: 8px; }
+.record-row { display: flex; align-items: flex-start; gap: 14px; background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--border-strong); border-radius: 3px; padding: 12px 16px; }
+.record-row.legacy { border-left-color: var(--status-flag); background: var(--status-flag-dim); }
+.record-row.verified { border-left-color: var(--status-note); }
+.rr-main { flex: 1; min-width: 0; }
+.rr-id { font-family: var(--mono); font-size: 0.78rem; color: var(--text-primary); font-weight: 600; }
+.rr-detail { font-size: 0.82rem; color: var(--text-secondary); margin-top: 3px; }
+.rr-detail.quote { font-family: var(--serif); font-style: italic; }
+.rr-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-left: auto; flex-shrink: 0; }
+.rr-remove { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.95rem; line-height: 1; }
+.rr-remove:hover { color: var(--status-flag); }
+
+/* matrix */
+.matrix-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 4px; }
+.matrix { border-collapse: collapse; width: 100%; font-size: 0.8rem; min-width: 560px; }
+.matrix th, .matrix td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; }
+.matrix th { background: var(--bg-surface); font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
+.matrix td.link-cell { text-align: center; cursor: pointer; color: var(--border-strong); }
+.matrix td.link-cell.linked { background: var(--accent-dim); color: var(--accent); font-weight: 700; }
+
+/* score bar */
+.score-bar-wrap { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+.score-bar { flex: 1; height: 7px; background: var(--bg-surface); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+.score-bar-fill { height: 100%; background: var(--accent); }
+.score-val { font-family: var(--mono); font-weight: 700; color: var(--text-primary); font-size: 0.86rem; }
+
+/* formula box */
+.formula-box { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 4px; padding: 16px 18px; font-family: var(--mono); font-size: 0.8rem; line-height: 1.85; color: var(--text-secondary); }
+.formula-box b { color: var(--text-primary); }
+
+/* toggle switch */
+.toggle { position: relative; display: inline-block; width: 34px; height: 19px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle .slider { position: absolute; inset: 0; background: var(--border-strong); border-radius: 20px; transition: .15s; cursor: pointer; }
+.toggle .slider::before { content: ''; position: absolute; width: 13px; height: 13px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .15s; }
+.toggle input:checked + .slider { background: var(--accent); }
+.toggle input:checked + .slider::before { transform: translateX(15px); }
+.toggle-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; }
+.toggle-row-label { font-size: 0.84rem; color: var(--text-secondary); }
+.toggle-row-sub { font-family: var(--mono); font-size: 0.66rem; color: var(--text-muted); }
+
+/* advanced disclosure */
+.advanced-toggle { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); background: none; border: none; cursor: pointer; padding: 4px 0; display: inline-flex; align-items: center; gap: 6px; }
+.advanced-block { display: none; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); }
+.advanced-block.open { display: block; }
+
+/* callout */
+.callout { border: 1px solid var(--border); border-left: 3px solid var(--status-analysis); background: var(--status-analysis-dim); border-radius: 3px; padding: 12px 15px; font-size: 0.83rem; color: var(--text-secondary); margin-bottom: 16px; }
+.callout.warning-field { border-left-color: var(--status-flag); background: var(--status-flag-dim); }
+.callout strong { color: var(--text-primary); }
+
+/* drawer (right inspector) */
+.drawer { border-left: 1px solid var(--border); background: var(--bg-card); overflow: hidden; display: flex; flex-direction: column; }
+.workspace.drawer-closed .drawer { border-left: none; }
+.drawer-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
+.drawer-tab { flex: 1; font-family: var(--mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.03em; padding: 12px 4px; text-align: center; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; white-space: nowrap; }
+.drawer-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--accent-dim); }
+.drawer-body { padding: 18px 20px; overflow-y: auto; flex: 1; font-size: 0.84rem; }
+.drawer-body-title { font-family: var(--serif); font-size: 1.02rem; margin-bottom: 4px; }
+.drawer-body-sub { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 16px; }
+
+.json-view { font-family: var(--mono); font-size: 0.74rem; line-height: 1.7; color: var(--text-secondary); white-space: pre-wrap; background: var(--bg-surface); padding: 14px; border-radius: 4px; border: 1px solid var(--border); overflow-x: auto; }
+.json-view .jk { color: var(--accent); }
+.json-view .jv { color: var(--status-note); }
+.json-view .jc { color: var(--text-muted); }
+
+.file-tree { font-family: var(--mono); font-size: 0.76rem; line-height: 2; color: var(--text-secondary); }
+.file-tree .dir { color: var(--accent); font-weight: 600; }
+.file-tree .indent { padding-left: 18px; }
+.file-tree .fmeta { color: var(--text-muted); margin-left: 8px; font-size: 0.68rem; }
+
+/* activity log */
+.log-strip { border-top: 1px solid var(--border); background: var(--bg-card); flex-shrink: 0; }
+.log-header { display: flex; align-items: center; gap: 12px; padding: 9px 32px; cursor: pointer; max-width: 1560px; margin: 0 auto; }
+.log-title { font-family: var(--mono); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); }
+.log-count { font-family: var(--mono); font-size: 0.62rem; color: var(--text-muted); border: 1px solid var(--border-strong); border-radius: 2px; padding: 1px 7px; }
+.log-caret { margin-left: auto; color: var(--text-muted); font-size: 0.7rem; transition: transform .15s; }
+.log-caret.collapsed { transform: rotate(-90deg); }
+.log-body { max-width: 1560px; margin: 0 auto; max-height: 140px; overflow-y: auto; padding: 0 32px 12px; font-family: var(--mono); font-size: 0.73rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 5px; }
+.log-body.collapsed { display: none; }
+.log-line .lt { color: var(--text-muted); margin-right: 10px; }
+.log-line .ls { color: var(--accent); margin-right: 8px; }
+
+/* settings overlay */
+.overlay { position: fixed; inset: 0; background: rgba(20, 20, 18, 0.5); display: none; z-index: 900; justify-content: flex-end; }
+.overlay.active { display: flex; }
+.settings-panel { width: 500px; max-width: 92vw; background: var(--bg-primary); height: 100%; overflow-y: auto; border-left: 1px solid var(--border-strong); padding: 26px 30px 60px; }
+.settings-panel-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.settings-panel-header h2 { font-family: var(--serif); font-size: 1.25rem; }
+.settings-panel-header p { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; max-width: 380px; }
+.settings-section { margin-bottom: 26px; }
+.settings-section h3 { font-family: var(--serif); font-size: 0.98rem; margin-bottom: 3px; }
+.settings-section .sec-desc { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.settings-row:last-child { border-bottom: none; }
+.settings-row-label { font-size: 0.82rem; color: var(--text-secondary); }
+.settings-row-sub { font-family: var(--mono); font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+.settings-row input, .settings-row select { max-width: 220px; padding: 7px 9px; border: 1px solid var(--border-strong); border-radius: 3px; font-family: var(--sans); font-size: 0.82rem; background: var(--bg-card); }
+.settings-row .mono-val { max-width: 220px; }
+.health-check-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 0.82rem; }
+.health-check-row .hc-label { flex: 1; color: var(--text-secondary); }
+.health-check-row .hc-fix { font-family: var(--mono); font-size: 0.66rem; color: var(--text-muted); }
+
+.danger-box { border: 1px solid var(--status-flag); background: var(--status-flag-dim); border-radius: 4px; padding: 15px 17px; margin-top: 8px; }
+.danger-box p { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px; }
+.danger-box input { width: 100%; margin-bottom: 10px; padding: 8px 10px; border: 1px solid var(--status-flag); border-radius: 3px; font-family: var(--mono); font-size: 0.82rem; }
+
+.pw-row { display: flex; gap: 6px; align-items: center; }
+.pw-row input { flex: 1; }
+
+.chip { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 0.68rem; background: var(--bg-surface); border: 1px solid var(--border-strong); padding: 4px 9px; border-radius: 12px; color: var(--text-secondary); }
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* stepper for ingest / progress */
+.progress-track { height: 6px; background: var(--bg-surface); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); margin: 8px 0; }
+.progress-fill { height: 100%; background: var(--status-note); }
+
+/* responsive */
+@media (max-width: 1150px) {
+  .workspace { grid-template-columns: 210px 1fr; }
+  .drawer { position: fixed; right: 0; top: 0; bottom: 0; width: 360px; z-index: 800; box-shadow: -6px 0 18px rgba(0,0,0,.12); }
+  .workspace.drawer-closed .drawer { display: none; }
+}
+@media (max-width: 760px) {
+  .workspace { grid-template-columns: 1fr; }
+  .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 240px; z-index: 850; transform: translateX(-100%); transition: transform .18s; }
+  .sidebar.open { transform: translateX(0); }
+  .canvas { padding: 22px 18px 80px; }
+  .field-row, .field-row.cols-3 { grid-template-columns: 1fr; }
+  .context-switchers { margin-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+
+.fade-in { animation: fadeIn .18s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ============================================================
+   BRIDGE — styles for the live layer (tool strip, arg editor,
+   result viewer, log severities, health pill states).
+   ============================================================ */
+.health-pill[data-health="ok"]   { border-color: var(--status-note); }
+.health-pill[data-health="warn"] { border-color: var(--status-analysis); color: var(--status-analysis); }
+.health-pill[data-health="err"]  { border-color: var(--status-flag); color: var(--status-flag); }
+.health-pill[data-health="warn"] .health-dot { background: var(--status-analysis); }
+.health-pill[data-health="err"]  .health-dot { background: var(--status-flag); }
+
+/* per-step tool strip */
+.tool-strip {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 12px 16px; margin-bottom: 20px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 3px solid var(--accent); border-radius: 4px;
+}
+.ts-label {
+  font-family: var(--mono); font-size: 0.6rem; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-muted); padding-top: 9px; white-space: nowrap;
+}
+.ts-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn-sm { padding: 6px 11px; font-size: 0.66rem; }
+
+/* schema-driven argument editor */
+.arg-form { display: flex; flex-direction: column; gap: 14px; }
+.arg-row { display: flex; flex-direction: column; gap: 5px; }
+.arg-row label { font-family: var(--mono); font-size: 0.68rem; color: var(--text-secondary); }
+.arg-req { color: var(--status-flag); font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.arg-desc { font-size: 0.72rem; color: var(--text-muted); }
+.arg-row input, .arg-row select, .arg-row textarea {
+  font-family: var(--mono); font-size: 0.76rem; color: var(--text-primary);
+  background: var(--bg-surface); border: 1px solid var(--border-strong);
+  border-radius: 3px; padding: 8px 10px; width: 100%;
+}
+.arg-row textarea { resize: vertical; }
+.arg-row input:focus, .arg-row select:focus, .arg-row textarea:focus {
+  outline: none; border-color: var(--accent);
+}
+
+/* result viewer */
+.result-json {
+  font-family: var(--mono); font-size: 0.7rem; line-height: 1.55;
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: 3px; padding: 14px; max-height: 46vh; overflow: auto;
+  white-space: pre-wrap; word-break: break-word; color: var(--text-secondary);
+}
+.live-json { margin-bottom: 16px; }
+.lj-head {
+  font-family: var(--mono); font-size: 0.6rem; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--status-note); margin-bottom: 6px;
+}
+
+/* log severities */
+.log-line.log-ok   { color: var(--status-note); }
+.log-line.log-warn { color: var(--status-analysis); }
+.log-line.log-err  { color: var(--status-flag); }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="app-header">
+    <div class="app-header-inner">
+      <button class="icon-btn" id="sidebarToggle" title="Toggle steps" style="display:none;">☰</button>
+      <div class="brand">
+        <span class="brand-title">ViolationRefiner</span>
+        <span class="brand-sub">violation pack builder</span>
+      </div>
+      <div class="context-switchers">
+        <div class="switcher">
+          <label>Project</label>
+          <select><option>violation-pack</option></select>
+        </div>
+        <div class="switcher">
+          <label>Bundle</label>
+          <select id="bundleSelect">
+            <option>CL-005</option>
+            <option>CL-007</option>
+            <option>CL-011</option>
+          </select>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="health-pill" id="healthPill" data-action="open-settings" title="Runtime health">
+          <span class="health-dot"></span> all systems ready
+        </div>
+        <button class="icon-btn" data-action="toggle-drawer" title="Toggle inspector">▤</button>
+        <button class="icon-btn" data-action="open-settings" title="Settings">⚙</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== STATS BAR ===================== -->
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat-item"><div class="stat-val" id="statBundle">CL-005</div><div class="stat-label">Active bundle</div></div>
+      <div class="stat-item"><div class="stat-val" id="statStage">S2 · Evidence</div><div class="stat-label">Current step</div></div>
+      <div class="stat-item"><div class="stat-val accent" id="statConfidence">—</div><div class="stat-label">Confidence</div></div>
+      <div class="stat-item"><div class="stat-val" id="statValidation">not run</div><div class="stat-label">Validation (V01–V11)</div></div>
+      <div class="stat-item"><div class="stat-val" id="statSegments">0</div><div class="stat-label">Anchored segments</div></div>
+      <div class="stat-item"><div class="stat-val" id="statAuthorities">0</div><div class="stat-label">Authorities</div></div>
+    </div>
+  </div>
+
+  <!-- ===================== WORKSPACE ===================== -->
+  <div class="workspace" id="workspace">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar"></nav>
+
+    <!-- CANVAS -->
+    <main class="canvas fade-in" id="canvas"></main>
+
+    <!-- DRAWER -->
+    <aside class="drawer" id="drawer">
+      <div class="drawer-tabs">
+        <div class="drawer-tab active" data-drawer-tab="json">JSON</div>
+        <div class="drawer-tab" data-drawer-tab="validation">Checks</div>
+        <div class="drawer-tab" data-drawer-tab="confidence">Score</div>
+        <div class="drawer-tab" data-drawer-tab="provenance">History</div>
+        <div class="drawer-tab" data-drawer-tab="files">Files</div>
+      </div>
+      <div class="drawer-body" id="drawerBody"></div>
+    </aside>
+  </div>
+
+  <!-- ===================== ACTIVITY LOG ===================== -->
+  <footer class="log-strip">
+    <div class="log-header" data-action="toggle-log">
+      <span class="log-title">Activity</span>
+      <span class="log-count" id="logCount">6 events</span>
+      <span class="log-caret" id="logCaret">▾</span>
+    </div>
+    <div class="log-body" id="logBody"></div>
+  </footer>
+</div>
+
+<!-- ===================== SETTINGS OVERLAY ===================== -->
+<div class="overlay" id="settingsOverlay">
+  <div class="settings-panel">
+    <div class="settings-panel-header">
+      <div>
+        <h2>Settings</h2>
+        <p>Paths, environment, and runtime health for this project.</p>
+      </div>
+      <button class="icon-btn" data-action="close-settings">✕</button>
+    </div>
+
+    <div class="settings-section">
+      <h3>Project &amp; paths</h3>
+      <p class="sec-desc">Resolved once here; every step derives its file pickers from these.</p>
+      <div class="settings-row"><div><div class="settings-row-label">Project root</div><div class="settings-row-sub">workspace/violation-refiner</div></div><button class="btn">Browse</button></div>
+      <div class="settings-row"><div><div class="settings-row-label">Bundles root</div><div class="settings-row-sub">build/</div></div><button class="btn">Browse</button></div>
+      <div class="settings-row"><div><div class="settings-row-label">Active bundle</div><div class="settings-row-sub">build/CL-005</div></div><button class="btn">Browse</button></div>
+      <div class="settings-row"><div><div class="settings-row-label">Output / build root</div><div class="settings-row-sub">build/</div></div><button class="btn">Browse</button></div>
+      <div class="settings-row"><div><div class="settings-row-label">Transcripts source dir</div><div class="settings-row-sub">data/transcripts/ (structured JSON)</div></div><button class="btn">Browse</button></div>
+      <div class="settings-row"><div><div class="settings-row-label">Legal framework source dir</div><div class="settings-row-sub">data/law/CL/</div></div><button class="btn">Browse</button></div>
+      <button class="advanced-toggle" data-action="toggle-advanced" data-target="#adv-paths">Show interpreter &amp; log paths ▾</button>
+      <div class="advanced-block" id="adv-paths">
+        <div class="settings-row"><div><div class="settings-row-label">.env file</div><div class="settings-row-sub">project-root/.env</div></div><button class="btn">Browse</button></div>
+        <div class="settings-row"><div><div class="settings-row-label">Python interpreter</div><div class="settings-row-sub">.venv/bin/python</div></div><button class="btn">Browse</button></div>
+        <div class="settings-row"><div><div class="settings-row-label">Log directory</div><div class="settings-row-sub">.dev-logs/violation-refiner/</div></div><button class="btn">Browse</button></div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Environment</h3>
+      <p class="sec-desc">Read from <code>.env</code>. Secrets are masked after saving.</p>
+
+      <div class="settings-row-sub" style="margin:10px 0 2px;">QDRANT</div>
+      <div class="settings-row"><div class="settings-row-label">QDRANT_URL</div><input placeholder="not set"></div>
+      <div class="settings-row"><div class="settings-row-label">QDRANT_API_KEY</div>
+        <div class="pw-row"><input type="password" value="••••••••"><button class="icon-btn" style="width:30px;height:30px;" data-action="toggle-pw">👁</button></div>
+      </div>
+      <div class="settings-row"><div class="settings-row-label">QDRANT_COLLECTION_PREFIX</div><input value="violationrefiner_v1"></div>
+
+      <div class="settings-row-sub" style="margin:14px 0 2px;">NEO4J</div>
+      <div class="settings-row"><div class="settings-row-label">NEO4J_URI</div><input placeholder="not set"></div>
+      <div class="settings-row"><div class="settings-row-label">NEO4J_DATABASE</div><input value="agent.violation.refiner"></div>
+
+      <div class="settings-row-sub" style="margin:14px 0 2px;">LLM (generic)</div>
+      <div class="settings-row"><div class="settings-row-label">LLM_PROVIDER</div>
+        <select><option>anthropic</option><option>openrouter</option><option>deepseek</option><option>openai</option><option>ollama</option></select>
+      </div>
+      <div class="settings-row"><div class="settings-row-label">LLM_MODEL</div><input placeholder="not set"></div>
+      <div class="settings-row"><div class="settings-row-label">LLM_TEMPERATURE</div><input type="number" step="0.1" value="0.1"></div>
+
+      <button class="advanced-toggle" data-action="toggle-advanced" data-target="#adv-env">Show 20 more variables (Ollama, provider keys, governance) ▾</button>
+      <div class="advanced-block" id="adv-env">
+        <div class="settings-row"><div class="settings-row-label">OLLAMA_HOST</div><input placeholder="http://localhost:11434"></div>
+        <div class="settings-row"><div class="settings-row-label">OLLAMA_EMBED_MODEL</div><input value="bge-m3"></div>
+        <div class="settings-row"><div class="settings-row-label">LLM_MAX_TOKENS</div><input value="8000"></div>
+        <div class="settings-row"><div class="settings-row-label">LLM_TOKEN_BUDGET</div><input value="250000"></div>
+        <div class="settings-row"><div class="settings-row-label">LLM_TIMEOUT_SECONDS</div><input value="90.0"></div>
+        <div class="settings-row"><div class="settings-row-label">ANTHROPIC_API_KEY</div><input type="password" value="••••••••"></div>
+        <div class="settings-row"><div class="settings-row-label">AUTHORITY_VERIFICATION_FLOOR</div><input type="number" step="0.01" min="0" max="1" value="0.85"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" data-action="run" data-tool="llm_provider_info_tool" data-step="S14">Test connections</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Runtime health</h3>
+      <p class="sec-desc">Checked on launch. Amber items disable their panel rather than failing the app.</p>
+      <div class="health-check-row" data-health="python"><span class="health-dot"></span><span class="hc-label">Python ≥ 3.10</span></div>
+      <div class="health-check-row" data-health="pydantic"><span class="health-dot"></span><span class="hc-label">pydantic ≥ 2.5</span></div>
+      <div class="health-check-row" data-health="mcp"><span class="health-dot"></span><span class="hc-label">mcp extra</span></div>
+      <div class="health-check-row" data-health="httpx"><span class="health-dot"></span><span class="hc-label">httpx extra (LLM enrichment)</span></div>
+      <div class="health-check-row" data-health="qdrant_client"><span class="health-dot"></span><span class="hc-label">qdrant-client extra</span><span class="hc-fix">pip install -e '.[qdrant]'</span></div>
+      <div class="health-check-row" data-health="neo4j"><span class="health-dot"></span><span class="hc-label">neo4j extra</span><span class="hc-fix">pip install -e '.[neo4j]'</span></div>
+      <div class="health-check-row" data-health="server"><span class="health-dot"></span><span class="hc-label" id="hcServerLabel">MCP server — 127.0.0.1:8124</span><span class="hc-fix" id="hcServerFix" style="display:none;">./start.sh</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== GENERIC MODAL ===================== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-body">
+        <span class="modal-type-badge" id="modalBadge">Verification</span>
+        <div class="modal-title" id="modalTitle">Matched quote</div>
+        <div class="modal-audio-ref" id="modalSub">statute_in_bundle_v1</div>
+      </div>
+      <button class="modal-close" data-action="close-modal">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <span class="modal-footer-note">Read-only — provenance is computed, not entered.</span>
+      <button class="btn" data-action="close-modal">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     STEP TEMPLATES
+     ============================================================ -->
+
+<template id="tpl-s0">
+  <div class="canvas-eyebrow">Step S0 · Core pipeline</div>
+  <div class="canvas-header">
+    <h2 class="canvas-title">Stage source artifacts</h2>
+    <p class="canvas-desc">Drop the real transcript and framework files into the bundle first — every later hash and quote check is anchored against exactly these bytes.</p>
+    <span class="gate-banner">✓ Gate met — 1 transcript and 1 framework staged</span>
+  </div>
+
+  <div class="block">
+    <div class="drop-zone">Drag files here, or <strong>browse</strong> to add them to the bundle</div>
+    <div class="field-row" style="margin-top:16px;">
+      <div class="field">
+        <label>Destination <span class="req">*</span></label>
+        <select>
+          <option>transcripts_dir → Transcripts/</option>
+          <option>framework_dir → Legal framework/</option>
+          <option>violation_main → {violation_id}.json</option>
+          <option>contract → contract.json</option>
+          <option>manifest → MANIFEST.txt</option>
+          <option>readme → Violation bundle/README.md</option>
+          <option>validation_report → Validation/validation_report.md</option>
+          <option>validation_checks → Validation/checks.json</option>
+          <option>element_grid → Schema/element_grid_{id}.json</option>
+        </select>
+      </div>
+      <div class="field readonly">
+        <label>Bundle root</label>
+        <input value="build/CL-005" readonly>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Staged files</div>
+    <div class="block-sub">The hash shown here is what S2/S3 and V02/V03 will compare against later.</div>
+    <div class="record-list">
+      <div class="record-row verified">
+        <div class="rr-main">
+          <div class="rr-id">timeline_aeropuerto_STG_7.html</div>
+          <div class="rr-detail">→ Transcripts/timeline_aeropuerto_STG_7.html</div>
+        </div>
+        <div class="rr-meta"><span class="hash-chip">e91a…7fd2</span><button class="rr-remove">✕</button></div>
+      </div>
+      <div class="record-row verified">
+        <div class="rr-main">
+          <div class="rr-id">CHIPENCOD_CP.md</div>
+          <div class="rr-detail">→ Legal framework/CHIPENCOD_CP.md</div>
+        </div>
+        <div class="rr-meta"><span class="hash-chip">4b02…c91e</span><button class="rr-remove">✕</button></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-s1">
+  <div class="canvas-eyebrow">Step S1 · Core pipeline</div>
+  <div class="canvas-header">
+    <h2 class="canvas-title">Initialize the violation</h2>
+    <p class="canvas-desc">Identity and incident details that every downstream layer hangs off. This runs once per bundle.</p>
+    <span class="gate-banner">✓ Gate met</span>
+  </div>
+
+  <div class="block">
+    <div class="field-row cols-3">
+      <div class="field readonly"><label>Violation ID</label><input value="CL-005" readonly></div>
+      <div class="field"><label>Title <span class="req">*</span></label><input value="Detención irregular en pista, Aeropuerto Arturo Merino Benítez"></div>
+      <div class="field">
+        <label>Severity <span class="req">*</span></label>
+        <select><option>LOW</option><option selected>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select>
+      </div>
+    </div>
+    <div class="field-row cols-3">
+      <div class="field"><label>Incident date <span class="req">*</span></label><input value="2025-11-02"></div>
+      <div class="field"><label>Incident location <span class="req">*</span></label><input value="Aeropuerto Arturo Merino Benítez, pista 17L"></div>
+      <div class="field"><label>Flight</label><input value="LA-1234"></div>
+    </div>
+    <div class="field-row cols-3">
+      <div class="field"><label>Operator</label><input value="LATAM Airlines"></div>
+      <div class="field"><label>Clock time estimate</label><input value="15:16"></div>
+      <div class="field">
+        <label>Clock time confidence</label>
+        <select><option>unknown</option><option selected>estimated_from_audio_offset</option><option>verified</option></select>
+      </div>
+    </div>
+  </div>
+
+  <button class="advanced-toggle" data-action="toggle-advanced" data-target="#adv-s1">Cross-references &amp; open questions ▾</button>
+  <div class="advanced-block" id="adv-s1">
+    <div class="block">
+      <div class="block-title">Open questions</div>
+      <div class="record-list" id="oq-list">
+        <div class="record-row">
+          <div class="rr-main">
+            <div class="rr-id">OQ-CL005-PDI-PARTE</div>
+            <div class="rr-detail">Request the PDI parte policial via Ley 20.285 · blocks art193.documento_oficial</div>
+          </div>
+          <div class="rr-meta"><span class="badge badge-warn">high</span><button class="rr-remove">✕</button></div>
+        </div>
+      </div>
+      <div class="btn-row"><button class="btn" data-action="log" data-msg="Added open question row" data-step="S1">+ Add open question</button></div>
+    </div>
+  </div>
+
+  <div class="btn-row"><button class="btn btn-primary" data-action="run" data-tool="init_violation" data-from="s1" data-step="S1">Save &amp; continue</button></div>
+</template>
+
+<template id="tpl-s2">
+  <div class="canvas-eyebrow">Step S2 · Core pipeline · Layer 1</div>
+  <div class="canvas-header">
+    <h2 class="canvas-title">Evidence — transcript segments</h2>
+    <p class="canvas-desc">Anchor verbatim quotes to the source transcript. Tick segments below rather than typing IDs — offsets, speaker, and hashes are parsed, never hand-entered.</p>
+    <span class="gate-banner">✓ Gate met — 3 anchored segments, 1 legacy</span>
+  </div>
+
+  <div class="field-row">
+    <div class="field"><label>Transcript <span class="req">*</span></label><select id="s2TranscriptSelect"><option>Loading rendered transcripts…</option></select><div class="field-hint" id="s2TranscriptMeta">Source files are discovered from data/transcripts/html/.</div></div>
+    <div class="field"><label>Source ID <span class="req">*</span></label><input id="s2SourceId" value="STG-7"></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Segment browser</div>
+    <div class="block-sub">Parsed from the HTML. Mark the segments this violation should cite.</div>
+    <div class="transcript-list" id="s2TranscriptList"><div class="field-hint">Loading segments…</div></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Selected segment specs</div>
+    <div class="block-sub">Everything below is derived, not typed — this is what will be written to the Violation.</div>
+    <div class="record-list" id="s2SelectedSegments"><div class="field-hint">No segments selected.</div></div>
+  </div>
+</template>
+
+<template id="tpl-s3">
+  <div class="canvas-eyebrow">Step S3 · Core pipeline · Layer 2</div>
+  <div class="canvas-header">
+    <h2 class="canvas-title">Norms — cached articles</h2>
+    <p class="canvas-desc">Attach the articles this violation invokes, with an excerpt that must be a byte-exact substring of the cached framework text.</p>
+    <span class="gate-banner">✓ Gate met — 1 article verified in-bundle</span>
+  </div>
+
+  <div class="field-row">
+    <div class="field"><label>Framework file <span class="req">*</span></label><select><option>build/CL-005/Legal framework/CHIPENCOD_CP.md</option></select></div>
+    <div class="field"><label>Framework code <span class="req">*</span></label><input value="CHIPENCOD"></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Article picker</div>
+    <div class="block-sub">Parsed <code>### Art.</code> headers from the cache. Select an article, then select its text to fill the excerpt below — this guarantees the substring match.</div>
+    <div class="chip-row">
+      <span class="chip badge-accent" style="border-color:var(--accent);">Art. 193</span>
+      <span class="chip">Art. 194</span>
+      <span class="chip">Art. 133 A</span>
+      <span class="chip">Art. 260</span>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="field-row">
+      <div class="field"><label>Article ID</label><input value="CHIPENCOD.Art.193"></div>
+      <div class="field">
+        <label>Norm type</label>
+        <select><option>definition</option><option selected>prohibition</option><option>penalty</option><option>right</option><option>liability</option><option>exemption</option></select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Verbatim excerpt <span class="req">*</span></label>
+      <textarea class="quote">"Comete falsificación de instrumento público el funcionario que, en ejercicio de sus funciones, faltare a la verdad en la narración de hechos sustanciales."</textarea>
+      <div class="field-hint">✅ bundled copy from data/law/CL/CHIPENCOD_CP.md</div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Established articles</div>
+    <div class="record-list">
+      <div class="record-row verified">
+        <div class="rr-main"><div class="rr-id">CHIPENCOD.Art.193</div><div class="rr-detail">Falsificación de instrumento público</div></div>
+        <div class="rr-meta"><span class="badge badge-pass">verified_in_bundle</span><span class="badge badge-neutral">supporting</span></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="advanced-toggle" data-action="toggle-advanced" data-target="#adv-s3">Candidate (unverified) articles ▾</button>
+  <div class="advanced-block" id="adv-s3">
+    <div class="record-list">
+      <div class="record-row legacy">
+        <div class="rr-main"><div class="rr-id">CHIPENCOD.Art.260</div><div class="rr-detail">Excerpt not found in any cached body — demoted automatically</div></div>
+        <div class="rr-meta"><span class="badge badge-warn">not_in_bundle</span><button class="btn" data-action="log" data-msg="Kept CHIPENCOD.Art.260 as candidate" data-step="S3">Keep as candidate</button></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-s4">
+  <div class="canvas-eyebrow">Step S4 · Core pipeline · Layer 3</div>
+  <div class="canvas-header">
+    <h2 class="canvas-title">Element grids</h2>
+    <p class="canvas-desc">For each established article, define the doctrinal elements that must be proven and mark which segments prove them. This feeds V06 directly.</p>
+    <span class="gate-banner">✓ Gate met — CHIPENCOD.Art.193 has 3 elements</span>
+  </div>
+
+  <div class="field"><label>Article</label><select><option>CHIPENCOD.Art.193 — Art. 193</option></select></div>
+
+  <div class="block" style="margin-top:20px;">
+    <div class="block-title">Elements × evidence</div>
+    <div class="block-sub">Click a cell to link a segment to an element. Proof-status weights are shown so the score is never a mystery.</div>
+    <div class="matrix-wrap">
+      <table class="matrix">
+        <thead><tr><th>Element</th><th>Proof status</th><th>STG-7.seg-55</th><th>STG-7.seg-56</th><th>STG-7.seg-61</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>art193.documento_oficial</td>
+            <td><span class="badge badge-warn">contested · 0.5</span></td>
+            <td class="link-cell">·</td><td class="link-cell">·</td><td class="link-cell linked">●</td>
+          </tr>
+          <tr>
+            <td>art193.faltare_a_la_verdad</td>
+            <td><span class="badge badge-pass">strong · 0.8</span></td>
+            <td class="link-cell linked">●</td><td class="link-cell">·</td><td class="link-cell">·</td>
+          </tr>
+          <tr>
+            <td>art193.hechos_sustanciales</td>
+            <td><span class="badge badge-fail">missing · 0.0</span></td>
+            <td class="link-cell">·</td><td class="link-cell">·</td><td class="link-cell">·</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="score-bar-wrap">
+      <span class="score-val">0.43</span>
+      <div class="score-bar"><div class="score-bar-fill" style="width:43%;"></div></div>
+      <span class="field-hint">weighted_score() for this grid</span>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-s5">
+  <div class="canvas-eyebrow">Step S5 · Core pipeline · Layer 4</div>
+  <div class="canvas-header">
+    <h2 class="canvas-title">Nexus matrix</h2>
+    <p class="canvas-desc">Make the fact ↔ norm ↔ element link explicit, with a strength rating. All three fields are picked from state, never typed.</p>
+    <span class="gate-banner pending">1 established article still has no nexus entry</span>
+  </div>
+
+  <div class="field-row cols-3">
+    <div class="field"><label>Fact (segment)</label><select><option>STG-7.seg-61</option></select></div>
+    <div class="field"><label>Norm (article)</label><select><option>CHIPENCOD.Art.193</option></select></div>
+    <div class="field"><label>Element</label><select><option>art193.documento_oficial</option></select></div>
+  </div>
+  <div class="field-row cols-3">
+    <div class="field"><label>Nexus type</label><input value="proves"></div>
+    <div class="field"><label>Strength</label><select><option>high</option><option selected>medium</option><option>low</option></select></div>
+    <div class="field"><label>Rationale (one line)</label><input value="Officer admits the document was not on hand at the time"></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Existing nexus entries</div>
+    <div class="record-list">
+      <div class="record-row verified">
+        <div class="rr-main"><div class="rr-id">STG-7.seg-55 → CHIPENCOD.Art.193 → art193.faltare_a_la_verdad</div><div class="rr-detail">contradicts · "no reason was given before detaining"</div></div>
+        <div class="rr-meta"><span class="badge badge-pass">high</span></div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:14px;">Coverage gap: <strong>art193.hechos_sustanciales</strong> has no incoming nexus and no evidence link.</div>
+  </div>
+</template>
+
+<template id="tpl-s6">
+  <div class="canvas-eyebrow">Step S6 · Core pipeline · Layer 5</div>
+  <div class="canvas-header">
+    <h2 class="canvas-title">Authority stubs</h2>
+    <p class="canvas-desc">Register case law, doctrine, or statute you intend to cite — deliberately unverified until S7.</p>
+    <span class="gate-banner advisory">Advisory only — every established/contested element should have ≥1 supporting authority</span>
+  </div>
+
+  <div class="field-row">
+    <div class="field"><label>Authority ID <span class="req">*</span></label><input value="AUTH-CL005-01"></div>
+    <div class="field"><label>Type <span class="req">*</span></label><select><option>statute</option><option selected>jurisprudence</option><option>doctrine</option><option>comparative</option></select></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Supports (elements)</label>
+      <div class="chip-row"><span class="chip">art193.documento_oficial ✕</span><span class="chip">+ add</span></div>
+    </div>
+    <div class="field"><label>Verification protocol</label>
+      <select><option value="">— choose after research —</option><option>statute_in_bundle_v1</option><option>statute_external_fetch_v1</option><option>human_attested_v1</option></select>
+    </div>
+  </div>
+  <div class="field"><label>Proposition to verify <span class="req">*</span></label><textarea>Chilean courts have found administrative detention without a stated legal basis to breach due-process guarantees.</textarea></div>
+  <div class="field">
+    <label>Fabrication risk note</label>
+    <textarea class="callout warning-field" style="border:1px solid var(--status-flag);">LLM-suggested holding — no primary source located yet. Do not cite until S7 verification passes.</textarea>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Stubs on file</div>
+    <div class="record-list">
+      <div class="record-row">
+        <div class="rr-main"><div class="rr-id">AUTH-CL005-01</div><div class="rr-detail">jurisprudence · supports art193.documento_oficial</div></div>
+        <div class="rr-meta"><span class="badge badge-neutral">verified: false</span></div>
+      </div>
+      <div class="record-row">
+        <div class="rr-main"><div class="rr-id">AUTH-CL005-02</div><div class="rr-detail">statute · supports art193.faltare_a_la_verdad</div></div>
+        <div class="rr-meta"><span class="badge badge-neutral">verified: false</span></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-s7">
+  <div class="canvas-eyebrow">Step S7 · Core pipeline</div>
+  <div class="canvas-header">
+    <h2 class="canvas-title">Authority verification</h2>
+    <p class="canvas-desc">Three protocols, three sub-forms. A stub only becomes evidence once one of these produces a matched offset.</p>
+    <span class="gate-banner advisory">No blocking gate — feeds V07 and the S8 confidence factor</span>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tabgroup="s7" data-tab="a">In-bundle statute</div>
+    <div class="tab" data-tabgroup="s7" data-tab="b">External fetch</div>
+    <div class="tab" data-tabgroup="s7" data-tab="c">Human attested</div>
+  </div>
+
+  <div class="tab-panel active" data-tabgroup="s7" data-tab="a">
+    <div class="field-row">
+      <div class="field"><label>Authority</label><select><option>AUTH-CL005-02 (unverified)</option></select></div>
+      <div class="field"><label>Article number</label><input value="193"></div>
+    </div>
+    <div class="field"><label>Target quote <span class="req">*</span></label><textarea class="quote">"faltare a la verdad en la narración de hechos sustanciales"</textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" data-action="open-modal" data-modal="match">View match in source ↗</button>
+      <button class="btn" data-action="run" data-tool="verify_statute_in_bundle_tool" data-step="S7">Verify</button>
+      <button class="btn" data-action="run" data-tool="verify_statute_external_fetch_tool" data-step="S7">Verify all unverified</button>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-tabgroup="s7" data-tab="b">
+    <div class="field"><label>Source URI <span class="req">*</span></label><input value="https://www.bcn.cl/leychile/navegar?idNorma=..."></div>
+    <div class="drop-zone" style="margin:10px 0;">Drop the fetched .html / .txt / .json, or paste it below</div>
+    <div class="field"><label>Source content</label><textarea></textarea></div>
+    <div class="field-row">
+      <div class="field"><label>Target quote</label><input></div>
+      <div class="field"><label>Instrument</label><input placeholder="e.g. Código Penal"></div>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-tabgroup="s7" data-tab="c">
+    <div class="field-row">
+      <div class="field"><label>Attestor <span class="req">*</span></label><input placeholder="name of the person attesting"></div>
+      <div class="field"><label>Source URI <span class="req">*</span></label><input></div>
+    </div>
+    <div class="field"><label>Source content</label><textarea></textarea></div>
+    <div class="field"><label>Target quote</label><input></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Verification results</div>
+    <div class="record-list">
+      <div class="record-row verified">
+        <div class="rr-main"><div class="rr-id">AUTH-CL005-02</div><div class="rr-detail">statute_in_bundle_v1 · matched at offset 412</div></div>
+        <div class="rr-meta"><span class="badge badge-pass">verified</span></div>
+      </div>
+      <div class="record-row">
+        <div class="rr-main"><div class="rr-id">AUTH-CL005-01</div><div class="rr-detail">no protocol run yet</div></div>
+        <div class="rr-meta"><span class="badge badge-neutral">unverified</span></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-s8">
+  <div class="canvas-eyebrow">Step S8 · Core pipeline</div>
+  <div class="canvas-header">
+    <h2 class="canvas-title">Confidence derivation</h2>
+    <p class="canvas-desc">Computed, not entered — but always shown with the exact formula that produced it.</p>
+    <span class="gate-banner">✓ Derived</span>
+  </div>
+
+  <div class="field-row">
+    <div class="field"><label>CHIPENCOD.Art.193 weight</label><input value="1.0"></div>
+    <div class="field"><label>Authority verification floor</label><input type="number" step="0.01" value="0.85"></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Why 0.74</div>
+    <div class="formula-box">
+      element_grid_component  = <b>0.43</b>  (weighted_score, Art. 193)<br>
+      authorities_verification_factor = 0.85 + (1 − 0.85) × verified_ratio<br>
+      &nbsp;&nbsp;verified_ratio = 1 of 2 authorities verified = 0.5<br>
+      &nbsp;&nbsp;→ 0.85 + 0.15 × 0.5 = <b>0.925</b><br>
+      confidence.value = <b>0.74</b>
+    </div>
+    <div class="score-bar-wrap">
+      <span class="score-val">0.74</span>
+      <div class="score-bar"><div class="score-bar-fill" style="width:74%;"></div></div>
+    </div>
+  </div>
+
+  <div class="btn-row"><button class="btn btn-primary" data-action="run" data-tool="derive_confidence_tool" data-step="S8">Recompute</button></div>
+</template>
+
+<template id="tpl-s9">
+  <div class="canvas-eyebrow">Step S9 · Core pipeline · Optional</div>
+  <div class="canvas-header">
+    <h2 class="canvas-title">LLM enrichment</h2>
+    <p class="canvas-desc">Eight stages propose refinements; the layer functions still validate everything. Authority stubs created here remain unverified — they must still pass S7.</p>
+    <span class="gate-banner advisory">No gate — convenience layer, not evidence</span>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Stages to run</div>
+    <div class="chip-row">
+      <span class="chip badge-accent">1 segments</span><span class="chip badge-accent">2 subsections</span>
+      <span class="chip badge-accent">3 element_grids</span><span class="chip badge-accent">4 nexus</span>
+      <span class="chip badge-accent">5 candidates</span><span class="chip badge-accent">6 authorities</span>
+      <span class="chip badge-accent">7 open_questions</span><span class="chip badge-accent">8 cross_references</span>
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field readonly"><label>Resolved LLM provider</label><input id="enrichModel" value="— run llm provider info in S14" readonly></div>
+    <div class="field readonly"><label>Configured via</label><input value="LLM_PROVIDER / LLM_MODEL in .env" readonly></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" data-action="run" data-tool="enrich_violation_tool" data-step="S9">Run enrichment</button>
+    <button class="btn" data-action="run" data-tool="verify_enrichment_tool" data-step="S9">Verify enrichment (separate from S10)</button>
+  </div>
+
+  <div class="block" style="margin-top:22px;">
+    <div class="block-title">Stream</div>
+    <div class="formula-box">
+      enrich [1/8]: segments ... done<br>
+      enrich [2/8]: subsections ... done<br>
+      enrich [3/8]: element_grids ... done<br>
+      enrich [4/8]: nexus ... running…
+    </div>
+  </div>
+</template>
+
+<template id="tpl-s10">
+  <div class="canvas-eyebrow">Step S10 · Core pipeline</div>
+  <div class="canvas-header">
+    <h2 class="canvas-title">Validation — V01 through V11</h2>
+    <p class="canvas-desc">The reviewer's decision surface. A failing row deep-links back to the step that caused it.</p>
+    <span class="gate-banner">Pipeline v1.0 · ran just now</span>
+  </div>
+
+  <div class="stats-inner" style="border:1px solid var(--border); border-radius:4px; margin-bottom:20px;">
+    <div class="stat-item"><div class="stat-val">11</div><div class="stat-label">Total checks</div></div>
+    <div class="stat-item"><div class="stat-val" style="color:var(--status-note)">7</div><div class="stat-label">Pass</div></div>
+    <div class="stat-item"><div class="stat-val" style="color:var(--status-analysis)">4</div><div class="stat-label">Warn</div></div>
+    <div class="stat-item"><div class="stat-val" style="color:var(--status-flag)">0</div><div class="stat-label">Fail</div></div>
+  </div>
+
+  <div class="record-list">
+    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V01 · segment_resolution</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
+    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V02 · verbatim_quote_match</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
+    <div class="record-row"><div class="rr-main"><div class="rr-id">V03 · article_text_hash</div><div class="rr-detail">Cache self-reported SHA doesn't match the recomputed one</div></div><div class="rr-meta"><span class="badge badge-warn">warn</span></div></div>
+    <div class="record-row"><div class="rr-main"><div class="rr-id">V05 · cross_references_resolve</div><div class="rr-detail">No bundle-level index to resolve siblings against</div></div><div class="rr-meta"><span class="badge badge-warn">warn</span></div></div>
+    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V06 · element_coverage</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
+    <div class="record-row" style="cursor:pointer;" data-action="open-modal" data-modal="v07"><div class="rr-main"><div class="rr-id">V07 · authorities_verification</div><div class="rr-detail">1 of 2 authorities unverified — click for detail</div></div><div class="rr-meta"><span class="badge badge-warn">warn</span></div></div>
+    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V08 · contract_consistency</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
+    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V09 · language_consistency</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
+    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V10 · confidence_derivation</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
+    <div class="record-row"><div class="rr-main"><div class="rr-id">V11 · enrichment_integrity</div><div class="rr-detail">W_AUTH_DANGLING_SUPPORT</div></div><div class="rr-meta"><span class="badge badge-warn">warn</span></div></div>
+    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V04 · article_exists_in_framework_cache</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" data-action="run" data-tool="run_pipeline_tool" data-step="S10">Run validation</button>
+    <button class="btn">Fail-only filter</button>
+    <button class="btn">Copy as markdown</button>
+  </div>
+</template>
+
+<template id="tpl-s11">
+  <div class="canvas-eyebrow">Step S11 · Core pipeline</div>
+  <div class="canvas-header">
+    <h2 class="canvas-title">Packaging &amp; batch</h2>
+    <p class="canvas-desc">Write the canonical JSON, build the manifest, and optionally zip — for one bundle, or every CL-* folder at once.</p>
+    <span class="gate-banner pending">Not yet packaged</span>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tabgroup="s11" data-tab="single">Single bundle</div>
+    <div class="tab" data-tabgroup="s11" data-tab="batch">Batch</div>
+  </div>
+
+  <div class="tab-panel active" data-tabgroup="s11" data-tab="single">
+    <div class="field-row">
+      <div class="field readonly"><label>Bundle root</label><input value="build/CL-005" readonly></div>
+      <div class="field readonly"><label>Output zip</label><input value="build/CL-005_refined_pack.zip" readonly></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" data-action="run" data-tool="write_violation_json_tool" data-step="S11">Build package</button></div>
+  </div>
+
+  <div class="tab-panel" data-tabgroup="s11" data-tab="batch">
+    <div class="field-row">
+      <div class="field"><label>Input root</label><input value="build/"></div>
+      <div class="field"><label>Limit (first N)</label><input placeholder="none"></div>
+    </div>
+    <div class="field"><label>Only these folders</label>
+      <div class="chip-row"><span class="chip badge-accent">CL-005 ✕</span><span class="chip">+ add</span></div>
+    </div>
+    <div class="toggle-row"><label class="toggle"><input type="checkbox"><span class="slider"></span></label><div><div class="toggle-row-label">Include extra (CL-&lt;digits&gt; only by default)</div></div></div>
+    <div class="toggle-row"><label class="toggle"><input type="checkbox" checked><span class="slider"></span></label><div><div class="toggle-row-label">Write .bak backup</div><div class="toggle-row-sub">re-runs read the .bak as source</div></div></div>
+    <div class="toggle-row"><label class="toggle"><input type="checkbox"><span class="slider"></span></label><div><div class="toggle-row-label">Zip each output</div></div></div>
+    <div class="btn-row"><button class="btn btn-primary" data-action="run" data-tool="refine_batch_tool" data-step="S11">Run batch</button></div>
+    <div class="block" style="margin-top:18px;">
+      <div class="formula-box">- CL-005: pass=7 warn=4 fail=0 confidence=0.74</div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-s12">
+  <div class="canvas-eyebrow">Step S12 · Extensions</div>
+  <div class="canvas-header">
+    <h2 class="canvas-title">Stores — Qdrant, Neo4j, jurisprudence</h2>
+    <p class="canvas-desc">Project the bundle into the vector index and the graph, then query across the whole corpus. All optional, all degrade gracefully.</p>
+    <span class="gate-banner advisory">No gate — read/write tools</span>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tabgroup="s12" data-tab="qdrant">Qdrant</div>
+    <div class="tab" data-tabgroup="s12" data-tab="neo4j">Neo4j</div>
+    <div class="tab" data-tabgroup="s12" data-tab="juris">Jurisprudence</div>
+  </div>
+
+  <div class="tab-panel active" data-tabgroup="s12" data-tab="qdrant">
+    <div class="field-hint" style="margin-bottom:10px;">Target: not configured — set QDRANT_URL in Settings</div>
+    <div class="field-row">
+      <div class="field"><label>Search segments</label><input placeholder="e.g. documento oficial"></div>
+      <div class="field"><label>Top K</label><input value="5"></div>
+    </div>
+    <div class="btn-row"><button class="btn" data-action="run" data-tool="qdrant_search_segments_tool" data-step="S12">Search</button></div>
+    <div class="block" style="margin-top:18px;">
+      <button class="btn btn-danger" data-action="show-danger" data-target="#danger-qdrant">Reset collections</button>
+      <div class="danger-box" id="danger-qdrant" style="display:none;">
+        <p>This deletes every indexed segment, article, and authority. Type <b>violationrefiner_v1</b> to confirm.</p>
+        <input placeholder="type the collection prefix" data-confirm="violationrefiner_v1">
+        <button class="btn btn-danger" disabled data-action="run" data-tool="qdrant_reset_collections_tool" data-step="S12">Reset collections</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-tabgroup="s12" data-tab="neo4j">
+    <div class="field-hint" style="margin-bottom:10px;">Target: not configured — set NEO4J_URI in Settings</div>
+    <div class="field-row">
+      <div class="field"><label>Violations citing article</label><input placeholder="CHIPENCOD.Art.193"></div>
+      <div class="field"><label>&nbsp;</label><button class="btn" data-action="run" data-tool="neo4j_find_violations_citing_tool" data-step="S12">Run</button></div>
+    </div>
+    <div class="block">
+      <button class="btn btn-danger" data-action="show-danger" data-target="#danger-neo4j">Reset database</button>
+      <div class="danger-box" id="danger-neo4j" style="display:none;">
+        <p>This clears the entire graph. Type <b>agent.violation.refiner</b> to confirm.</p>
+        <input placeholder="type the database name" data-confirm="agent.violation.refiner">
+        <button class="btn btn-danger" disabled data-action="run" data-tool="neo4j_reset_database_tool" data-step="S12">Reset database</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-tabgroup="s12" data-tab="juris">
+    <div class="field-row">
+      <div class="field"><label>Search</label><input placeholder="due process, administrative detention"></div>
+      <div class="field"><label>Max results</label><input value="5"></div>
+    </div>
+    <div class="btn-row"><button class="btn" data-action="run" data-tool="jurisprudence_search_tool" data-step="S12">Search</button></div>
+  </div>
+</template>
+
+<template id="tpl-s13">
+  <div class="canvas-eyebrow">Step S13 · Extensions</div>
+  <div class="canvas-header">
+    <h2 class="canvas-title">Ingesters</h2>
+    <p class="canvas-desc">Bulk-load rulings, transcripts, or framework text into the vector index. Independent of any single violation.</p>
+    <span class="gate-banner advisory">No gate</span>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Ingest framework</div>
+    <div class="field-row">
+      <div class="field"><label>Markdown file</label><input placeholder="Legal framework/CHIPENCOD_CP.md"></div>
+      <div class="field"><label>Framework code</label><input value="CHIPENCOD"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" data-action="run" data-tool="framework_ingest_tool" data-step="S13">Start ingest</button></div>
+    <div class="progress-track"><div class="progress-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Ingest rulings index</div>
+    <div class="field-row cols-3">
+      <div class="field"><label>Index file (JSON)</label><input placeholder="rulings_index.json"></div>
+      <div class="field"><label>Batch size</label><input value="64"></div>
+      <div class="field"><label>Sleep between batches</label><input value="0.0"></div>
+    </div>
+    <div class="btn-row"><button class="btn" data-action="run" data-tool="jurisprudence_ingest_tool" data-step="S13">Start ingest</button></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Ingest transcript bundle</div>
+    <div class="field-row">
+      <div class="field"><label>Bundle root</label><input value="examples/CL-005"></div>
+      <div class="field"><label>Bundle ID</label><input value="CL-005"></div>
+    </div>
+    <div class="btn-row"><button class="btn" data-action="run" data-tool="transcript_ingest_tool" data-step="S13">Start ingest</button></div>
+  </div>
+</template>
+
+<template id="tpl-s14">
+  <div class="canvas-eyebrow">Step S14 · Extensions</div>
+  <div class="canvas-header">
+    <h2 class="canvas-title">Introspection &amp; catalog</h2>
+    <p class="canvas-desc">What the running server resolves to, and how to point another client at it.</p>
+    <span class="gate-banner advisory">Read-only</span>
+  </div>
+
+  <div class="field-row">
+    <div class="field readonly"><label>Embedder</label><input id="introEmbedder" value="— run embedder info" readonly></div>
+    <div class="field readonly"><label>LLM provider</label><input id="introProvider" value="— run llm provider info" readonly></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Integrate with another client</div>
+    <div class="tabs">
+      <div class="tab active" data-tabgroup="s14" data-tab="vscode">VS Code</div>
+      <div class="tab" data-tabgroup="s14" data-tab="claude">Claude Desktop</div>
+    </div>
+    <div class="tab-panel active" data-tabgroup="s14" data-tab="vscode">
+      <div class="json-view">{<br>&nbsp;&nbsp;<span class="jk">"mcp.servers"</span>: {<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="jk">"violation-pack"</span>: { <span class="jk">"type"</span>: <span class="jv">"stdio"</span>, <span class="jk">"command"</span>: <span class="jv">"violation-pack-mcp"</span> }<br>&nbsp;&nbsp;}<br>}</div>
+      <div class="btn-row"><button class="btn">Copy snippet</button></div>
+    </div>
+    <div class="tab-panel" data-tabgroup="s14" data-tab="claude">
+      <div class="json-view">{<br>&nbsp;&nbsp;<span class="jk">"mcpServers"</span>: {<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="jk">"violation-pack"</span>: { <span class="jk">"command"</span>: <span class="jv">"violation-pack-mcp"</span> }<br>&nbsp;&nbsp;}<br>}</div>
+      <div class="btn-row"><button class="btn">Copy snippet</button></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Tool inventory</div>
+    <div class="field-hint" id="toolInventory">counting tools…</div>
+  </div>
+</template>
+
+<!-- ============================================================
+     DRAWER TAB TEMPLATES
+     ============================================================ -->
+
+<template id="tpl-drawer-json">
+  <div class="drawer-body-title">Violation JSON</div>
+  <div class="drawer-body-sub">Live, read-only. The single source of truth every step writes to.</div>
+  <div class="json-view">{
+  <span class="jk">"violation_id"</span>: <span class="jv">"CL-005"</span>,
+  <span class="jk">"severity"</span>: <span class="jv">"MEDIUM"</span>,
+  <span class="jk">"schema_version"</span>: <span class="jv">"3.0"</span>,
+  <span class="jk">"segments"</span>: [<span class="jc">3 anchored, 1 legacy</span>],
+  <span class="jk">"established_articles"</span>: [<span class="jc">1 item</span>],
+  <span class="jk">"element_grids"</span>: [<span class="jc">1 grid, score 0.43</span>],
+  <span class="jk">"authorities"</span>: [<span class="jc">2 items, 1 verified</span>],
+  <span class="jk">"confidence"</span>: { <span class="jk">"value"</span>: <span class="jv">0.74</span> },
+  <span class="jc">…</span>
+}</div>
+</template>
+
+<template id="tpl-drawer-validation">
+  <div class="drawer-body-title">Validation report</div>
+  <div class="drawer-body-sub">Pipeline v1.0 · ran a moment ago</div>
+  <div class="record-list">
+    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V01</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
+    <div class="record-row"><div class="rr-main"><div class="rr-id">V03</div></div><div class="rr-meta"><span class="badge badge-warn">warn</span></div></div>
+    <div class="record-row"><div class="rr-main"><div class="rr-id">V07</div></div><div class="rr-meta"><span class="badge badge-warn">warn</span></div></div>
+    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V10</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
+  </div>
+  <div class="field-hint" style="margin-top:10px;">Open step S10 for all 11 checks.</div>
+</template>
+
+<template id="tpl-drawer-confidence">
+  <div class="drawer-body-title">Confidence</div>
+  <div class="score-bar-wrap"><span class="score-val">0.74</span><div class="score-bar"><div class="score-bar-fill" style="width:74%;"></div></div></div>
+  <div class="formula-box" style="margin-top:14px;">
+    element_grid_component = 0.43<br>
+    authorities_verification_factor = 0.925<br>
+    derived_at = 2026-09-11 14:02
+  </div>
+</template>
+
+<template id="tpl-drawer-provenance">
+  <div class="drawer-body-title">Provenance</div>
+  <div class="drawer-body-sub">Reverse-chronological. Every write is an entry here.</div>
+  <div class="record-list">
+    <div class="note-card">
+      <div class="note-meta"><span class="note-type">derive_confidence</span><span class="note-seg">14:02</span></div>
+      <div class="note-author">analyst.mv</div>
+      <div class="note-body">Recomputed confidence — 0.74</div>
+    </div>
+    <div class="note-card">
+      <div class="note-meta"><span class="note-type">build_nexus_layer</span><span class="note-seg">13:47</span></div>
+      <div class="note-author">analyst.mv</div>
+      <div class="note-body">Added 1 nexus entry linking STG-7.seg-55</div>
+    </div>
+    <div class="note-card">
+      <div class="note-meta"><span class="note-type">build_evidence_layer</span><span class="note-seg">13:20</span></div>
+      <div class="note-author">analyst.mv</div>
+      <div class="note-body">Anchored 3 segments from STG-7, 1 legacy fallback</div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-drawer-files">
+  <div class="drawer-body-title">Bundle files</div>
+  <div class="drawer-body-sub">Mirrors MANIFEST.txt</div>
+  <div class="file-tree">
+    <span class="dir">CL-005/</span><br>
+    <span class="indent">CL-005.json <span class="fmeta">4.1 KB · a92f…</span></span><br>
+    <span class="indent">CL-005.json.bak <span class="fmeta">4.0 KB</span></span><br>
+    <span class="indent">contract.json <span class="fmeta">0.6 KB</span></span><br>
+    <span class="indent">MANIFEST.txt <span class="fmeta">0.3 KB</span></span><br>
+    <span class="indent dir">Validation/</span><br>
+    <span class="indent"><span class="indent">validation_report.md</span></span><br>
+    <span class="indent"><span class="indent">checks.json</span></span><br>
+    <span class="indent dir">Transcripts/</span><br>
+    <span class="indent"><span class="indent">timeline_aeropuerto_STG_7.html <span class="fmeta">e91a…</span></span></span><br>
+    <span class="indent dir">Legal framework/</span><br>
+    <span class="indent"><span class="indent">CHIPENCOD_CP.md <span class="fmeta">4b02…</span></span></span>
+  </div>
+</template>
+
+<!-- modal content templates -->
+<template id="tpl-modal-match">
+  <div class="modal-section">
+    <div class="modal-section-label">Source text — Legal framework/CHIPENCOD_CP.md</div>
+    <div class="json-view" style="font-family:var(--serif); font-style:italic; font-size:0.86rem;">
+      Art. 193 — Falsificación de instrumento público. Comete este delito el funcionario público que, en ejercicio de sus funciones, <mark style="background:var(--accent-dim); color:var(--accent); padding:1px 3px; font-style:normal; font-weight:600;">faltare a la verdad en la narración de hechos sustanciales</mark>, ya sea suponiendo en un acto la intervención de personas que no la han tenido…
+    </div>
+  </div>
+  <div class="modal-section">
+    <div class="modal-section-label">Match</div>
+    <div class="field-hint">Offset 412 · statute_in_bundle_v1 · verified_at 2026-09-11 13:58</div>
+  </div>
+</template>
+
+<template id="tpl-modal-v07">
+  <div class="modal-section">
+    <div class="modal-section-label">Why this is a warning, not a failure</div>
+    <p style="font-size:0.86rem; color:var(--text-secondary); line-height:1.7;">One of two declared authorities (AUTH-CL005-01) has not yet been run through S7. AUTH-CL005-02 is verified against the in-bundle statute. Nothing here is fabricated — it's simply not backed yet.</p>
+  </div>
+  <div class="modal-section">
+    <div class="modal-section-label">Fix</div>
+    <p style="font-size:0.86rem; color:var(--text-secondary);">Open step S7 and run a verification protocol against AUTH-CL005-01, or remove it from <code>supports</code> if it's no longer needed.</p>
+  </div>
+</template>
+
+<!-- ============================================================
+     SCRIPT
+     ============================================================ -->
+<script>
+const STEP_META = [
+  { id:'s0', num:'0', label:'Stage source', group:'core', done:true },
+  { id:'s1', num:'1', label:'Initialize', group:'core', done:true },
+  { id:'s2', num:'2', label:'Evidence', group:'core', done:true },
+  { id:'s3', num:'3', label:'Norms', group:'core', done:true },
+  { id:'s4', num:'4', label:'Element grids', group:'core', done:true },
+  { id:'s5', num:'5', label:'Nexus matrix', group:'core', done:true },
+  { id:'s6', num:'6', label:'Authority stubs', group:'core', done:true },
+  { id:'s7', num:'7', label:'Verification', group:'core', done:true },
+  { id:'s8', num:'8', label:'Confidence', group:'core', done:true },
+  { id:'s9', num:'9', label:'Enrichment', group:'core', done:false },
+  { id:'s10', num:'10', label:'Validation', group:'core', done:true },
+  { id:'s11', num:'11', label:'Packaging', group:'core', done:false },
+  { id:'s12', num:'12', label:'Stores', group:'ext', done:false },
+  { id:'s13', num:'13', label:'Ingesters', group:'ext', done:false },
+  { id:'s14', num:'14', label:'Introspect', group:'ext', done:false },
+];
+const STAGE_TITLES = {
+  s0:'S0 · Stage', s1:'S1 · Init', s2:'S2 · Evidence', s3:'S3 · Norms', s4:'S4 · Elements',
+  s5:'S5 · Nexus', s6:'S6 · Authorities', s7:'S7 · Verify', s8:'S8 · Confidence',
+  s9:'S9 · Enrich', s10:'S10 · Validate', s11:'S11 · Package', s12:'S12 · Stores',
+  s13:'S13 · Ingest', s14:'S14 · Introspect'
+};
+
+let state = {
+  activeStep: 's2', drawerTab: 'json', drawerOpen: true, logOpen: true,
+  bundleId: 'CL-005', title: '', violation: null,
+  intro: { provider: null, embedder: null },
+  sources: { transcripts: [], frameworks: [] },
+  activeTranscript: null,
+  segmentSpecs: {},
+};
+
+/* ==========================================================================
+   BRIDGE — real plumbing to the running violation-pack server.
+   The page is served by the same FastMCP app it talks to (GET / + /api/*),
+   so there is no CORS layer and no second port to manage.
+   ========================================================================== */
+const API = {
+  health:  () => fetchJson('/api/health'),
+  tools:   () => fetchJson('/api/tools'),
+  sources: () => fetchJson('/api/sources'),
+  transcript: uri => fetchJson('/api/source-transcript?uri=' + encodeURIComponent(uri)),
+  catalog: () => fetchJson('/api/catalog'),
+};
+
+async function fetchJson(url, options) {
+  const res = await fetch(url, options);
+  const text = await res.text();
+  let body = null;
+  try { body = text ? JSON.parse(text) : null; } catch (_) { body = { error: text }; }
+  if (!res.ok) {
+    const err = new Error((body && body.error) || `${res.status} ${res.statusText}`);
+    err.status = res.status;
+    err.body = body;
+    throw err;
+  }
+  return body;
+}
+
+/** Invoke a tool on the server. Returns the tool's real result value. */
+async function callTool(name, args = {}, opts = {}) {
+  const payload = { name, args };
+  if (opts.confirm) payload.confirm = true;
+  const body = await fetchJson('/api/tool', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return body.result;
+}
+
+/** Tool metadata cache, filled by bootstrap(). */
+const TOOLS = { byName: new Map(), all: [], available: false };
+
+/** Which tools each wizard step may invoke. Drives the per-step tool strip. */
+const STEP_TOOLS = {
+  s0:  ['copy_source_into_bundle_tool'],
+  s1:  ['init_violation'],
+  s2:  ['build_evidence_layer_tool'],
+  s3:  ['build_norms_layer_tool'],
+  s4:  ['add_element_grid_tool'],
+  s5:  ['build_nexus_layer_tool'],
+  s6:  ['add_authority_stub_tool'],
+  s7:  ['verify_statute_in_bundle_tool', 'verify_statute_external_fetch_tool', 'verify_human_attested_tool'],
+  s8:  ['derive_confidence_tool', 'attach_confidence_tool'],
+  s9:  ['enrich_violation_tool', 'enrich_stage_tool', 'verify_enrichment_tool'],
+  s10: ['run_pipeline_tool'],
+  s11: ['write_violation_json_tool', 'build_manifest_tool', 'zip_bundle_tool', 'refine_batch_tool'],
+  s12: ['qdrant_index_violation_tool', 'qdrant_search_segments_tool', 'qdrant_search_articles_tool',
+        'qdrant_search_authorities_tool', 'qdrant_search_jurisprudence_tool', 'qdrant_upsert_jurisprudence_tool',
+        'jurisprudence_search_tool', 'jurisprudence_verify_tool',
+        'neo4j_upsert_violation_tool', 'neo4j_find_violations_citing_tool',
+        'neo4j_find_violations_with_contested_element_tool', 'neo4j_walk_implications_tool'],
+  s13: ['framework_ingest_tool', 'jurisprudence_ingest_tool', 'transcript_ingest_tool'],
+  s14: ['llm_provider_info_tool', 'embedder_info_tool'],
+};
+
+/** Tool names the HTML references, so bootstrap() can report drift loudly.
+ *  Most bindings live inside inert <template> elements until their step is
+ *  opened, so template contents must be scanned too. */
+function referencedTools() {
+  const names = new Set();
+  const scan = (root) => root.querySelectorAll('[data-tool]').forEach(el => names.add(el.dataset.tool));
+  scan(document);
+  document.querySelectorAll('template').forEach(t => scan(t.content));
+  Object.values(STEP_TOOLS).forEach(list => list.forEach(n => names.add(n)));
+  return [...names];
+}
+
+function renderSidebar() {
+  const nav = document.getElementById('sidebar');
+  let html = '<div class="sidebar-group-label">Core pipeline</div>';
+  STEP_META.filter(s => s.group === 'core').forEach(s => html += stepItemHtml(s));
+  html += '<div class="sidebar-group-label">Extensions</div>';
+  STEP_META.filter(s => s.group === 'ext').forEach(s => html += stepItemHtml(s));
+  nav.innerHTML = html;
+  nav.querySelectorAll('.step-item').forEach(el => {
+    el.addEventListener('click', () => switchStep(el.dataset.id));
+  });
+}
+function stepItemHtml(s) {
+  const cls = ['step-item'];
+  if (s.id === state.activeStep) cls.push('active');
+  if (s.done) cls.push('done');
+  return `<div class="${cls.join(' ')}" data-id="${s.id}">
+      <span class="step-num">${s.done ? '✓' : s.num}</span>
+      <span class="step-label">S${s.num} — ${s.label}</span>
+    </div>`;
+}
+
+function switchStep(id) {
+  state.activeStep = id;
+  renderSidebar();
+  const canvas = document.getElementById('canvas');
+  const tpl = document.getElementById('tpl-' + id);
+  canvas.classList.remove('fade-in'); void canvas.offsetWidth; canvas.classList.add('fade-in');
+  canvas.innerHTML = '';
+  if (tpl) canvas.appendChild(tpl.content.cloneNode(true));
+  document.getElementById('statStage').textContent = STAGE_TITLES[id];
+  document.getElementById('sidebar').classList.remove('open');
+  applyIntroState();
+  hydrateSourceSelectors();
+  renderToolStrip(id);
+  pushLog('Opened step', STAGE_TITLES[id]);
+}
+
+function renderDrawer() {
+  document.querySelectorAll('.drawer-tab').forEach(t => t.classList.toggle('active', t.dataset.drawerTab === state.drawerTab));
+  const body = document.getElementById('drawerBody');
+  const tpl = document.getElementById('tpl-drawer-' + state.drawerTab);
+  const live = state.drawerTab === 'json' && state.violation;
+  body.innerHTML = '';
+
+  // Once a real violation exists the mock summary would contradict it, so the
+  // live document replaces it outright rather than sitting above it.
+  if (live) {
+    const box = document.createElement('div');
+    box.className = 'live-json';
+    box.innerHTML = `<div class="lj-head">live · ${escapeHtml(state.violation.violation_id)}</div>
+      <pre class="result-json">${escapeHtml(JSON.stringify(state.violation, null, 2))}</pre>`;
+    body.appendChild(box);
+    return;
+  }
+  if (tpl) body.appendChild(tpl.content.cloneNode(true));
+}
+
+let logSeq = 0;
+function pushLog(message, step, kind) {
+  logSeq++;
+  const body = document.getElementById('logBody');
+  const line = document.createElement('div');
+  line.className = 'log-line' + (kind ? ' log-' + kind : '');
+  const time = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  const esc = String(message).replace(/[&<>]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]));
+  line.innerHTML = `<span class="lt">${time}</span>${step ? `<span class="ls">${step}</span>` : ''}${esc}`;
+  body.appendChild(line);
+  body.scrollTop = body.scrollHeight;
+  document.getElementById('logCount').textContent = logSeq + ' events';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderSidebar();
+  switchStep(state.activeStep);
+  renderDrawer();
+
+  bootstrap();
+
+  document.querySelectorAll('.drawer-tab').forEach(t => t.addEventListener('click', () => {
+    state.drawerTab = t.dataset.drawerTab; renderDrawer();
+  }));
+
+  document.getElementById('sidebarToggle').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+  });
+
+  // bundle switcher drives the id every tool call is scoped to
+  const bundleSelect = document.getElementById('bundleSelect');
+  bundleSelect.value = state.bundleId;
+  bundleSelect.addEventListener('change', () => {
+    state.bundleId = bundleSelect.value;
+    state.violation = null;
+    localStorage.removeItem('vp.violation');
+    document.getElementById('statBundle').textContent = state.bundleId;
+    document.getElementById('statConfidence').textContent = '—';
+    document.getElementById('statSegments').textContent = '0';
+    document.getElementById('statAuthorities').textContent = '0';
+    pushLog(`Switched active bundle to ${state.bundleId}`, null, 'warn');
+  });
+
+  // capture S1 identity fields so init_violation can pre-fill from the form
+  document.addEventListener('change', (e) => {
+    const field = e.target.closest('#adv-s1, .field, .form-row');
+    if (!field || state.activeStep !== 's1') return;
+    const label = field.querySelector('label');
+    if (!label || !e.target.matches('input, select, textarea')) return;
+    const key = label.textContent.trim().toLowerCase();
+    if (key.includes('title')) state.title = e.target.value;
+  });
+
+  // generic delegated actions
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-action]');
+    if (!t) return;
+    const action = t.dataset.action;
+
+    if (action === 'toggle-drawer') {
+      state.drawerOpen = !state.drawerOpen;
+      document.getElementById('workspace').classList.toggle('drawer-closed', !state.drawerOpen);
+    }
+    if (action === 'toggle-log') {
+      state.logOpen = !state.logOpen;
+      document.getElementById('logBody').classList.toggle('collapsed', !state.logOpen);
+      document.getElementById('logCaret').classList.toggle('collapsed', !state.logOpen);
+    }
+    if (action === 'open-settings') document.getElementById('settingsOverlay').classList.add('active');
+    if (action === 'close-settings') document.getElementById('settingsOverlay').classList.remove('active');
+
+    if (action === 'toggle-advanced') {
+      const target = document.querySelector(t.dataset.target);
+      if (target) target.classList.toggle('open');
+    }
+
+    if (action === 'toggle-pw') {
+      const input = t.previousElementSibling;
+      if (input) input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    if (action === 'show-danger') {
+      const target = document.querySelector(t.dataset.target);
+      if (target) target.style.display = 'block';
+    }
+
+    if (t.closest('.tab')) {
+      // handled below by tab click listener
+    }
+
+    if (action === 'log') pushLog(t.dataset.msg, t.dataset.step);
+
+    if (action === 'run') {
+      e.preventDefault();
+      runBoundTool(t);
+    }
+
+    if (action === 'open-modal') {
+      const key = t.dataset.modal;
+      const map = {
+        match: { badge:'S7 · Verification', title:'Matched quote', sub:'AUTH-CL005-02 · statute_in_bundle_v1' },
+        v07: { badge:'S10 · Validation', title:'V07 — authorities_verification', sub:'warn' }
+      };
+      const info = map[key] || { badge:'Detail', title:'Detail', sub:'' };
+      document.getElementById('modalBadge').textContent = info.badge;
+      document.getElementById('modalTitle').textContent = info.title;
+      document.getElementById('modalSub').textContent = info.sub;
+      const b = document.getElementById('modalBody');
+      b.innerHTML = '';
+      b.appendChild(document.getElementById('tpl-modal-' + key).content.cloneNode(true));
+      document.getElementById('modalOverlay').classList.add('active');
+    }
+    if (action === 'close-modal') document.getElementById('modalOverlay').classList.remove('active');
+  });
+
+  // tab switching (event delegation, works for any .tabs added via templates)
+  document.addEventListener('click', (e) => {
+    const tab = e.target.closest('.tab');
+    if (!tab) return;
+    const group = tab.dataset.tabgroup;
+    document.querySelectorAll(`.tab[data-tabgroup="${group}"]`).forEach(x => x.classList.toggle('active', x === tab));
+    document.querySelectorAll(`.tab-panel[data-tabgroup="${group}"]`).forEach(p => p.classList.toggle('active', p.dataset.tab === tab.dataset.tab));
+  });
+
+  // transcript segment marking toggle
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.seg-mark-btn');
+    if (!btn || btn.closest('.settings-panel')) return;
+    if (btn.dataset.segmentNote === 'true') return;
+    const card = btn.closest('.transcript-segment');
+    const segmentId = card?.dataset.segmentId;
+    const segment = state.activeTranscript?.segments.find(s => s.segment_id === segmentId);
+    if (!card || !segment) return;
+    btn.classList.toggle('is-marked');
+    card.classList.toggle('is-marked');
+    const selected = btn.classList.contains('is-marked');
+    btn.textContent = selected ? '✓ in segment_specs' : 'Add to segment_specs';
+    if (selected) {
+      state.segmentSpecs[segmentId] = {
+        segment_id: segmentId,
+        role_in_argument: 'fact',
+        translation_en: segment.verbatim,
+      };
+    } else {
+      delete state.segmentSpecs[segmentId];
+    }
+    renderSelectedSegments();
+  });
+
+  // element-grid link cells
+  document.addEventListener('click', (e) => {
+    const cell = e.target.closest('.link-cell');
+    if (!cell) return;
+    cell.classList.toggle('linked');
+    cell.textContent = cell.classList.contains('linked') ? '●' : '·';
+  });
+
+  // danger-box typed confirmation
+  document.addEventListener('input', (e) => {
+    if (!e.target.matches('[data-confirm]')) return;
+    const ok = e.target.value === e.target.dataset.confirm;
+    const btn = e.target.nextElementSibling;
+    if (btn) btn.disabled = !ok;
+  });
+
+  // remove record rows
+  document.addEventListener('click', (e) => {
+    const rm = e.target.closest('.rr-remove');
+    if (!rm) return;
+    rm.closest('.record-row').remove();
+  });
+
+  document.getElementById('modalOverlay').addEventListener('click', (e) => {
+    if (e.target.id === 'modalOverlay') e.target.classList.remove('active');
+  });
+  document.getElementById('settingsOverlay').addEventListener('click', (e) => {
+    if (e.target.id === 'settingsOverlay') e.target.classList.remove('active');
+  });
+});
+
+/* ==========================================================================
+   BOOTSTRAP — probe the server, load the tool schema, report drift.
+   ========================================================================== */
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
+async function bootstrap() {
+  if (location.protocol === 'file:') {
+    setHealthPill('warn', 'opened from disk — run ./start.sh');
+    pushLog('This page is open as file:// so the API is unreachable. Serve it with ./start.sh and open http://127.0.0.1:8124/', null, 'err');
+    return;
+  }
+
+  // Tool schema first, so drift and the step strips both work.
+  try {
+    const data = await API.tools();
+    TOOLS.all = data.tools;
+    TOOLS.byName = new Map(data.tools.map(t => [t.name, t]));
+    TOOLS.available = true;
+    reportToolDrift();
+    renderToolStrip(state.activeStep);
+    renderInventory();
+    pushLog(`Loaded ${data.count} tools from the server`, null, 'ok');
+  } catch (e) {
+    setHealthPill('err', 'tool catalog unavailable');
+    pushLog(`Could not load /api/tools — ${e.message}`, null, 'err');
+  }
+
+  try {
+    const sources = await API.sources();
+    state.sources = sources;
+    hydrateSourceSelectors();
+    pushLog(`Discovered ${sources.transcripts.length} rendered transcripts and ${sources.frameworks.length} law files`, null, 'ok');
+  } catch (e) {
+    pushLog(`Could not load /api/sources — ${e.message}`, null, 'warn');
+  }
+
+  // Runtime health.
+  try {
+    const h = await API.health();
+    hydrateHealth(h);
+    setHealthPill('ok', 'all systems ready');
+    pushLog(`Runtime: Python ${h.python.version} · pydantic ${h.packages.pydantic.version || '?'} · ${h.tools.count} tools`, 'S14', 'ok');
+  } catch (e) {
+    setHealthPill('err', 'health probe failed');
+    pushLog(`Could not load /api/health — ${e.message}`, null, 'err');
+  }
+}
+
+function setHealthPill(kind, text) {
+  const pill = document.getElementById('healthPill');
+  if (!pill) return;
+  pill.dataset.health = kind;
+  pill.innerHTML = `<span class="health-dot"></span> ${escapeHtml(text)}`;
+}
+
+function hydrateHealth(h) {
+  const mark = (key, ok, warnOnly) => {
+    const row = document.querySelector(`.health-check-row[data-health="${key}"]`);
+    if (!row) return;
+    const dot = row.querySelector('.health-dot');
+    dot.classList.toggle('warn', !ok && warnOnly);
+    dot.classList.toggle('err', !ok && !warnOnly);
+  };
+
+  mark('python', h.python.ok, false);
+  mark('pydantic', h.packages.pydantic.present, false);
+
+  (h.packages.extras || []).forEach(e => mark(e.module, e.present, true));
+
+  // The server is obviously up — we just talked to it.
+  const row = document.querySelector('.health-check-row[data-health="server"]');
+  if (row) {
+    const dot = row.querySelector('.health-dot');
+    dot.classList.remove('warn', 'err');
+    const label = document.getElementById('hcServerLabel');
+    if (label) label.textContent = `MCP server — ${location.host} · ${h.tools.count} tools`;
+    const fix = document.getElementById('hcServerFix');
+    if (fix) fix.style.display = 'none';
+  }
+}
+
+/* ==========================================================================
+   TOOL DRIFT — the HTML knows which tools it needs; tell the user when the
+   server disagrees, in either direction.
+   ========================================================================== */
+function reportToolDrift() {
+  if (!TOOLS.available) return;
+  const referenced = referencedTools();
+  const missing = referenced.filter(n => !TOOLS.byName.has(n));
+  const unused = TOOLS.all.map(t => t.name).filter(n => !referenced.includes(n));
+
+  if (missing.length) {
+    pushLog(`UI references ${missing.length} tool(s) the server does not expose: ${missing.join(', ')}`, null, 'err');
+    const disable = (root) => root.querySelectorAll('[data-tool]').forEach(el => {
+      if (missing.includes(el.dataset.tool)) {
+        el.disabled = true;
+        el.title = `Not exposed by the server: ${el.dataset.tool}`;
+      }
+    });
+    disable(document);
+    document.querySelectorAll('template').forEach(t => disable(t.content));
+  }
+  if (unused.length) {
+    pushLog(`${unused.length} server tool(s) have no UI binding yet: ${unused.join(', ')}`, null, 'warn');
+  }
+  if (!missing.length && !unused.length) {
+    pushLog('Tool bindings fully in sync with the server', null, 'ok');
+  }
+}
+
+/* ==========================================================================
+   PER-STEP TOOL STRIP — every step gets a real invoke path, so steps whose
+   templates have no button (S0, S2–S6) are still fully usable.
+   ========================================================================== */
+function renderToolStrip(stepId) {
+  const existing = document.getElementById('toolStrip');
+  if (existing) existing.remove();
+  if (!TOOLS.available) return;
+
+  const names = STEP_TOOLS[stepId] || [];
+  const known = names.filter(n => TOOLS.byName.has(n));
+  if (!known.length) return;
+
+  const canvas = document.getElementById('canvas');
+  const strip = document.createElement('div');
+  strip.id = 'toolStrip';
+  strip.className = 'tool-strip';
+  strip.innerHTML = `<div class="ts-label">Tools · S${stepId.slice(1)}</div><div class="ts-buttons"></div>`;
+  const row = strip.querySelector('.ts-buttons');
+
+  known.forEach(name => {
+    const tool = TOOLS.byName.get(name);
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-sm' + (tool.destructive ? ' btn-danger' : '');
+    btn.textContent = name.replace(/_tool$/, '').replace(/_/g, ' ');
+    btn.title = tool.description || name;
+    btn.addEventListener('click', () => openToolPanel(name));
+    row.appendChild(btn);
+  });
+
+  canvas.insertBefore(strip, canvas.firstChild);
+  renderInventory();
+}
+
+/* ==========================================================================
+   TOOL INVENTORY — S14's summary line, counted from the live tool list rather
+   than hardcoded, so it can never disagree with the server.
+   ========================================================================== */
+const TOOL_GROUPS = [
+  ['Qdrant',        n => n.startsWith('qdrant_')],
+  ['Neo4j',         n => n.startsWith('neo4j_')],
+  ['jurisprudence', n => n.startsWith('jurisprudence_')],
+  ['ingesters',     n => /^(framework_ingest|transcript_ingest)/.test(n)],
+  ['introspection', n => /^(llm_provider_info|embedder_info)/.test(n)],
+  ['batch',         n => n.startsWith('refine_batch')],
+  ['pipeline',      () => true],   // catch-all, evaluated last
+];
+
+function renderInventory() {
+  const el = document.getElementById('toolInventory');
+  if (!el || !TOOLS.available) return;
+  const counts = new Map(TOOL_GROUPS.map(([label]) => [label, 0]));
+  TOOLS.all.forEach(t => {
+    const hit = TOOL_GROUPS.find(([, test]) => test(t.name));
+    if (hit) counts.set(hit[0], counts.get(hit[0]) + 1);
+  });
+  const parts = TOOL_GROUPS
+    .filter(([label]) => counts.get(label) > 0)
+    .map(([label]) => `${label} (${counts.get(label)})`);
+  const destructive = TOOLS.all.filter(t => t.destructive).length;
+  el.textContent = `${TOOLS.all.length} tools across ${parts.length} categories — ${parts.join(', ')}`
+    + ` · ${destructive} destructive (confirmation required)`;
+}
+
+function hydrateSourceSelectors() {
+  const select = document.getElementById('s2TranscriptSelect');
+  if (!select || !state.sources.transcripts.length) return;
+  const current = select.value;
+  const preferred = state.sources.transcripts.find(t => t.source_id === 'STG-7') || state.sources.transcripts[0];
+  select.innerHTML = state.sources.transcripts.map(t =>
+    `<option value="${escapeHtml(t.path)}">${escapeHtml(t.name)} · ${t.segment_count} segments</option>`
+  ).join('');
+  select.value = state.sources.transcripts.some(t => t.path === current) ? current : preferred.path;
+  const updateMeta = () => {
+    const source = state.sources.transcripts.find(t => t.path === select.value);
+    if (!source) return;
+    const meta = document.getElementById('s2TranscriptMeta');
+    if (meta) meta.textContent = `${source.source_id} · ${source.segment_count} segments · ${source.uri}`;
+  };
+  select.onchange = () => {
+    updateMeta();
+    loadSelectedTranscript();
+  };
+  updateMeta();
+  loadSelectedTranscript();
+}
+
+async function loadSelectedTranscript() {
+  const select = document.getElementById('s2TranscriptSelect');
+  const list = document.getElementById('s2TranscriptList');
+  if (!select || !list || !select.value) return;
+  if (state.activeTranscript && state.activeTranscript.uri === select.value) {
+    renderS2Segments();
+    return;
+  }
+  list.innerHTML = '<div class="field-hint">Loading segments…</div>';
+  state.segmentSpecs = {};
+  try {
+    state.activeTranscript = await API.transcript(select.value);
+    const sourceId = document.getElementById('s2SourceId');
+    if (sourceId) sourceId.value = state.activeTranscript.source_id;
+    renderS2Segments();
+  } catch (e) {
+    state.activeTranscript = null;
+    list.innerHTML = `<div class="field-hint">Could not load transcript — ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+function renderS2Segments() {
+  const list = document.getElementById('s2TranscriptList');
+  if (!list || !state.activeTranscript) return;
+  list.innerHTML = state.activeTranscript.segments.map(segment => {
+    const selected = Boolean(state.segmentSpecs[segment.segment_id]);
+    const speakerClass = /passenger/i.test(segment.speaker) ? 'seg-passenger' : 'seg-other';
+    return `<div class="transcript-segment ${speakerClass}${selected ? ' is-marked' : ''}" data-segment-id="${escapeHtml(segment.segment_id)}">
+      <div class="seg-time">${segment.audio_offset_start.toFixed(2)}s → ${segment.audio_offset_end.toFixed(2)}s · ${escapeHtml(state.activeTranscript.source_id)}.${escapeHtml(segment.segment_id)}</div>
+      <div class="seg-speaker">${escapeHtml(segment.speaker)}</div>
+      <div class="seg-text">&quot;${escapeHtml(segment.verbatim)}&quot;</div>
+      <div class="seg-actions"><button class="seg-mark-btn${selected ? ' is-marked' : ''}">${selected ? '✓ in segment_specs' : 'Add to segment_specs'}</button><button class="seg-mark-btn" data-segment-note="true">Notes</button></div>
+    </div>`;
+  }).join('');
+  renderSelectedSegments();
+}
+
+function renderSelectedSegments() {
+  const list = document.getElementById('s2SelectedSegments');
+  if (!list) return;
+  const selected = Object.values(state.segmentSpecs);
+  if (!selected.length) {
+    list.innerHTML = '<div class="field-hint">No segments selected.</div>';
+    return;
+  }
+  list.innerHTML = selected.map(spec => {
+    const segment = state.activeTranscript.segments.find(s => s.segment_id === spec.segment_id);
+    if (!segment) return '';
+    return `<div class="record-row verified"><div class="rr-main"><div class="rr-id">${escapeHtml(state.activeTranscript.source_id)}.${escapeHtml(segment.segment_id)}</div><div class="rr-detail quote">&quot;${escapeHtml(segment.verbatim)}&quot;</div></div><div class="rr-meta"><span class="hash-chip">selected</span><span class="badge badge-neutral">${segment.audio_offset_start.toFixed(2)}s–${segment.audio_offset_end.toFixed(2)}s</span></div></div>`;
+  }).join('');
+}
+
+/* ==========================================================================
+   ARG EDITOR — a form generated from the tool's JSON Schema, so every tool
+   is reachable without hand-writing a panel for each one.
+   ========================================================================== */
+/** Read the label→value pairs out of the currently-shown step form, so the
+ *  args panel opens pre-filled with whatever the user actually typed. */
+function readStepForm() {
+  const out = {};
+  document.querySelectorAll('#canvas .field').forEach(f => {
+    const label = f.querySelector('label');
+    const input = f.querySelector('input, select, textarea');
+    if (!label || !input || input.type === 'file') return;
+    const key = label.textContent.replace(/\*/g, '').trim().toLowerCase();
+    if (key) out[key] = input.value;
+  });
+  return out;
+}
+
+/** Resolve a seed value to the string an input/textarea should display. */
+function seedText(value, spec) {
+  if (value === undefined || value === null) return '';
+  const scalar = ['string', 'integer', 'number', 'boolean'].includes(spec.type);
+  return scalar ? String(value) : JSON.stringify(value);
+}
+
+function selectedTranscript() {
+  const select = document.getElementById('s2TranscriptSelect');
+  return state.sources.transcripts.find(t => t.path === select?.value)
+    || state.sources.transcripts.find(t => t.source_id === 'STG-7')
+    || state.sources.transcripts[0]
+    || null;
+}
+
+function defaultArgsFor(tool) {
+  const args = {};
+  const seeded = {
+    violation_id: state.bundleId,
+    bundle_id: state.bundleId,
+  };
+
+  if (tool.name === 'init_violation') {
+    const form = state.activeStep === 's1' ? readStepForm() : {};
+    const pick = (k) => (form[k] !== undefined && form[k] !== '' ? form[k] : undefined);
+    args.violation_id = pick('violation id') || state.bundleId;
+    args.title = pick('title') || state.title || '';
+    args.severity = pick('severity') || 'MEDIUM';
+    args.incident = {
+      date: pick('incident date') || '',
+      location: pick('incident location') || '',
+      ...(pick('flight') ? { flight: pick('flight') } : {}),
+      ...(pick('operator') ? { operator: pick('operator') } : {}),
+      ...(pick('clock time estimate') ? { clock_time_estimate: pick('clock time estimate') } : {}),
+      ...(pick('clock time confidence') ? { clock_time_confidence: pick('clock time confidence') } : {}),
+    };
+    args.open_questions = [];
+    return args;
+  }
+
+  if (tool.name === 'build_evidence_layer_tool') {
+    const transcript = selectedTranscript();
+    if (transcript) {
+      args.transcript_path = transcript.path;
+      args.transcript_source_id = transcript.source_id;
+      args.transcript_bundle_uri = transcript.uri;
+    }
+    args.segment_specs = Object.values(state.segmentSpecs);
+  }
+
+  (tool.required || []).forEach(k => {
+    if (k in seeded) args[k] = seeded[k];
+  });
+  if (state.violation) args.violation = state.violation;
+  return args;
+}
+
+function openToolPanel(name) {
+  const tool = TOOLS.byName.get(name);
+  if (!tool) return;
+  const props = (tool.parameters && tool.parameters.properties) || {};
+  const required = tool.required || [];
+  const seeded = defaultArgsFor(tool);
+
+  const rows = Object.keys(props).map(key => {
+    const spec = props[key] || {};
+    const isReq = required.includes(key);
+    const value = key in seeded ? seedText(seeded[key], spec) : '';
+    const type = spec.type;
+    const isScalar = type === 'string' || type === 'integer' || type === 'number' || type === 'boolean';
+
+    let control;
+    if (isScalar && Array.isArray(spec.enum)) {
+      control = `<select data-arg="${key}" data-type="${type}">
+        ${spec.enum.map(v => `<option value="${escapeHtml(v)}"${String(value) === String(v) ? ' selected' : ''}>${escapeHtml(v)}</option>`).join('')}
+      </select>`;
+    } else if (spec.default !== undefined && isScalar) {
+      const dv = value !== '' ? value : seedText(spec.default, spec);
+      control = `<input data-arg="${key}" data-type="${type}" value="${escapeHtml(dv)}">`;
+    } else {
+      const ta = !isScalar || spec.format;
+      control = ta
+        ? `<textarea data-arg="${key}" data-type="json" rows="${key === 'violation' ? 6 : 2}" placeholder="${escapeHtml(type || 'any')}">${escapeHtml(value)}</textarea>`
+        : `<input data-arg="${key}" data-type="${type}" value="${escapeHtml(value)}" placeholder="${escapeHtml(type || 'any')}">`;
+    }
+
+    return `<div class="arg-row">
+      <label>${escapeHtml(key)}${isReq ? ' <span class="arg-req">required</span>' : ''}</label>
+      ${control}
+      ${spec.description ? `<div class="arg-desc">${escapeHtml(spec.description)}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('modalBadge').textContent = tool.destructive ? '⚠ Destructive tool' : 'Tool';
+  document.getElementById('modalTitle').textContent = name;
+  document.getElementById('modalSub').textContent = tool.description || '';
+  const body = document.getElementById('modalBody');
+  body.innerHTML = `<div class="arg-form" id="argForm">${rows || '<p class="arg-desc">This tool takes no arguments.</p>'}</div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn btn-primary" id="argRun" data-tool="${name}" data-required="${escapeHtml(required.join(','))}">Run</button>
+      <button class="btn" data-action="close-modal">Cancel</button>
+    </div>`;
+  body.querySelector('#argRun').addEventListener('click', () => submitToolPanel(name));
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function collectArgInputs() {
+  const args = {};
+  document.querySelectorAll('#argForm [data-arg]').forEach(el => {
+    const raw = el.value;
+    if (raw === '' && el.dataset.type === 'json') return;
+    if (raw === '' && el.dataset.type === 'string') { args[el.dataset.arg] = ''; return; }
+    switch (el.dataset.type) {
+      case 'integer': args[el.dataset.arg] = parseInt(raw, 10); break;
+      case 'number':  args[el.dataset.arg] = parseFloat(raw); break;
+      case 'boolean': args[el.dataset.arg] = raw === 'true'; break;
+      case 'json':    args[el.dataset.arg] = JSON.parse(raw); break;
+      default:        args[el.dataset.arg] = raw;
+    }
+  });
+  return args;
+}
+
+async function submitToolPanel(name) {
+  const tool = TOOLS.byName.get(name);
+  let args;
+  try {
+    args = collectArgInputs();
+  } catch (err) {
+    pushLog(`Argument JSON is invalid — ${err.message}`, STAGE_TITLES[state.activeStep], 'err');
+    return;
+  }
+  document.getElementById('modalOverlay').classList.remove('active');
+  await invokeTool(name, args, { destructive: tool.destructive });
+}
+
+/* ==========================================================================
+   INVOCATION — the one path every button and panel goes through.
+   ========================================================================== */
+async function runBoundTool(btn) {
+  const name = btn.dataset.tool;
+  const tool = TOOLS.byName.get(name);
+  const args = {
+    ...(state.violation ? { violation: state.violation } : {}),
+    ...(name !== 'init_violation' ? { violation_id: state.bundleId } : {}),
+  };
+  if (btn.dataset.args) Object.assign(args, JSON.parse(btn.dataset.args));
+
+  if (tool && (tool.required || []).some(k => args[k] === undefined)) {
+    pushLog(`${name} needs more arguments — opening the form`, STAGE_TITLES[state.activeStep], 'warn');
+    openToolPanel(name);
+    return;
+  }
+  await invokeTool(name, args, { destructive: tool && tool.destructive });
+}
+
+async function invokeTool(name, args, opts = {}) {
+  const step = STAGE_TITLES[state.activeStep];
+  pushLog(`→ ${name}(${Object.keys(args).length} arg${Object.keys(args).length === 1 ? '' : 's'})`, step);
+
+  let confirmRequired = opts.destructive;
+  try {
+    const result = await callTool(name, args, { confirm: true });
+    pushLog(`← ${name} ok`, step, 'ok');
+    applyResult(name, result);
+  } catch (e) {
+    if (e.status === 409 && e.body && e.body.requires_confirmation) {
+      confirmRequired = true;
+      pushLog(`${name} blocked — confirmation required`, step, 'warn');
+    }
+    pushLog(`← ${name} failed — ${e.message}`, step, 'err');
+    const b = document.getElementById('modalBody');
+    if (b) {
+      document.getElementById('modalBadge').textContent = 'Error';
+      document.getElementById('modalTitle').textContent = name;
+      document.getElementById('modalSub').textContent = `HTTP ${e.status || '?'}`;
+      b.innerHTML = `<pre class="result-json">${escapeHtml(e.message)}</pre>
+        <div class="btn-row" style="margin-top:14px;"><button class="btn" data-action="close-modal">Close</button></div>`;
+      document.getElementById('modalOverlay').classList.add('active');
+    }
+  }
+  if (confirmRequired) { /* the typed-confirmation panel already gated the click */ }
+}
+
+/** Fold a tool result back into UI state: stats bar, the JSON drawer, the log. */
+function applyResult(name, result) {
+  if (result && typeof result === 'object' && !Array.isArray(result) && 'violation_id' in result) {
+    state.violation = result;
+    state.bundleId = result.violation_id;
+    localStorage.setItem('vp.violation', JSON.stringify(result));
+    hydrateStats(result);
+  }
+  if (Array.isArray(result)) {
+    pushLog(`   returned ${result.length} item(s)`, STAGE_TITLES[state.activeStep]);
+  }
+  hydrateIntrospection(name, result);
+  if (state.drawerTab === 'json') renderDrawer();
+}
+
+/** The S14 panel ships with example values; replace them with what the server
+ *  actually resolved, so the page never shows a provider that isn't in use. */
+function hydrateIntrospection(name, result) {
+  if (!result || typeof result !== 'object') return;
+  if (name === 'llm_provider_info_tool') {
+    const model = result.model || '(provider default)';
+    state.intro.provider = `${result.provider} · ${model}`;
+    applyIntroState();
+    pushLog(`   provider=${result.provider} model=${model} api_key=${result.has_api_key ? 'set' : 'absent'}`,
+            'S14', result.has_api_key ? 'ok' : 'warn');
+  }
+  if (name === 'embedder_info_tool') {
+    state.intro.embedder = `${result.name || '—'} · dim ${result.dim ?? '?'}`;
+    applyIntroState();
+    pushLog(`   embedder=${result.name} dim=${result.dim}`, 'S14');
+  }
+}
+
+/** S9 and S14 both display resolved-runtime facts. Their inputs only exist in
+ *  the DOM while the step is on screen, so the values are kept in state and
+ *  re-applied on every step switch rather than written once. */
+function applyIntroState() {
+  const setField = (id, text) => {
+    const el = document.getElementById(id);
+    if (el && text) el.value = text;
+  };
+  setField('introProvider', state.intro.provider);
+  setField('enrichModel', state.intro.provider);
+  setField('introEmbedder', state.intro.embedder);
+}
+
+function hydrateStats(v) {
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('statBundle', v.violation_id);
+  set('statSegments', (v.segments || []).length);
+  set('statAuthorities', (v.authorities || []).length);
+
+  const c = v.confidence;
+  const score = c && typeof c === 'object'
+    ? (c.score !== undefined ? c.score : (c.value !== undefined ? c.value : null))
+    : c;
+  set('statConfidence', score === null || score === undefined ? '—' : Number(score).toFixed(2));
+}
+
+/** Restore the last violation so a reload does not lose the session. */
+function restoreSession() {
+  try {
+    const raw = localStorage.getItem('vp.violation');
+    if (!raw) return;
+    const v = JSON.parse(raw);
+    if (v && v.violation_id) {
+      state.violation = v;
+      state.bundleId = v.violation_id;
+      hydrateStats(v);
+      pushLog(`Restored ${v.violation_id} from browser storage`, null, 'ok');
+    }
+  } catch (_) { /* corrupt entry — start clean */ }
+}
+
+window.addEventListener('resize', () => {
+  document.getElementById('sidebarToggle').style.display = window.innerWidth <= 760 ? 'inline-flex' : 'none';
+});
+window.dispatchEvent(new Event('resize'));
+restoreSession();
+</script>
+
+</body>
+</html>

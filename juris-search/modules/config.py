@@ -17,6 +17,7 @@ def _env_flag(name: str, default: bool = True) -> bool:
 BASE_DIR = Path(__file__).resolve().parent.parent
 WORKSPACE_ROOT = BASE_DIR.parent.parent
 TJRS_FRONTEND_DIST_DIR = BASE_DIR / "tjrs-frontend" / "dist"
+JURISPRUDENCE_SOURCE_PATH = BASE_DIR / "tjrs-frontend" / "src" / "jurisprudence.html"
 
 # ── DeepSeek ────────────────────────────────────────────────────────────────
 

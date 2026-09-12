@@ -87,11 +87,11 @@ Repeatedly needed paths. Proposed: a single collapsible **Settings drawer** with
 | ID | Label | Type | Default | Notes |
 | --- | --- | --- | --- | --- |
 | `F-project-root` | Project root | directory picker | repo root (dir containing `pyproject.toml`) | Used to resolve all relative paths; validates `violation_pack/` exists |
-| `F-bundles-root` | Bundles root | directory picker | `examples/` in this repo, user's `CL/` in production | Parent of `CL-*` folders; S11 operates here |
+| `F-bundles-root` | Bundles root | directory picker | `build/` in this repo, user's `CL/` in production | Parent of `CL-*` folders; S11 operates here |
 | `F-bundle-dir` | Active bundle | directory picker / list | `<bundles-root>/CL-005` | The bundle the wizard is editing; all bundle-relative paths derive from here |
 | `F-build-root` | Output / build root | directory picker | `build/` | Where `.zip` and side artifacts land |
-| `F-transcripts-dir` | Transcripts source dir | directory picker | `<bundle-dir>/Transcripts` | Drop zone for `timeline_*.html` (S0, S2) |
-| `F-frameworks-dir` | Legal framework source dir | directory picker | `<bundle-dir>/Legal framework` | Drop zone for `*_*.md` (S0, S3) |
+| `F-transcripts-dir` | Transcripts source dir | directory picker | `data/transcripts/html/` in this repo | Rendered HTML sources for S0/S2; raw JSON is kept separately for ingestion |
+| `F-frameworks-dir` | Legal framework source dir | directory picker | `data/law/` in this repo | Source Markdown caches; selected files are copied into `<bundle-dir>/Legal framework` |
 | `F-env-file` | `.env` file | file picker | `<project-root>/.env` | Loaded by `Settings.from_env()`; created from `.env.example` |
 | `F-venv-python` | Python interpreter | file picker | `<project-root>/.venv/bin/python` | Used to spawn the MCP server / CLI |
 | `F-log-dir` | Log directory | directory picker | `.dev-logs/violation-refiner/` | Where `start.sh` writes server logs |
@@ -314,10 +314,15 @@ Each step below gives: **purpose**, **user inputs**, **backing call**, **outputs
 
 | ID | Field | Type | Required | Notes |
 | --- | --- | --- | --- | --- |
-| `F-s2-transcript` | `transcript_path` | **file picker** (`.html`) | yes | Pre-filled from staged `Transcripts/*.html` |
+| `F-s2-transcript` | `transcript_path` | **file picker** (`.html`) | yes | Discovered from `data/transcripts/html/` by the UI; the bridge accepts only discovered relative URIs |
 | `F-s2-source-id` | `transcript_source_id` | text | yes | e.g. `STG-7`. Auto-suggested from filename (see below) |
-| `F-s2-uri` | `transcript_bundle_uri` | text | no | e.g. `Transcripts/timeline_aeropuerto_STG_7.html` |
+| `F-s2-uri` | `transcript_bundle_uri` | text | no | Bundle-relative after staging, e.g. `Transcripts/timeline_aeropuerto_STG_7.html` |
 | `F-s2-specs` | `segment_specs` | repeatable table | yes | see below |
+
+The browser calls `GET /api/source-transcript?uri=<data-relative-html-uri>` when
+the selection changes. The returned parsed segments replace the segment list;
+marking a row builds the corresponding `segment_specs` entry without asking the
+user to retype offsets, speaker, or verbatim text.
 
 **Filename → `source_id` inference** (mirror this in the UI so the field auto-fills):
 

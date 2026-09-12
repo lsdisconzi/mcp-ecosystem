@@ -66,6 +66,10 @@ violation-pack/
 ├── README.md
 ├── .env.example              # every Settings.from_env() var + the MCP_* transport vars
 ├── start.sh / stop.sh        # MCP server lifecycle (stdio or streamable-http)
+├── data/
+│   ├── transcripts/html/      # rendered HTML sources used by S2 evidence anchoring
+│   ├── transcripts/json/      # structured transcript sources used by ingestion
+│   └── law/                   # framework Markdown caches, grouped by jurisdiction
 ├── docs/
 │   ├── mcp_mapping.md        # MCP tool → library function → file:line → UI step
 │   └── ui_structural_skeleton.md  # front-end spec: steps S0–S14, every field
@@ -80,6 +84,7 @@ violation-pack/
 │   ├── verifier.py           # V11 enrichment-integrity checks
 │   ├── authority_verification.py  # statute_in_bundle / statute_external_fetch / human_attested
 │   ├── pack.py               # MANIFEST, zip, canonical bundle layout
+│   ├── ui_server.py           # UI, tool bridge, and /api/sources discovery
 │   ├── extensions.py         # Protocols: JurisprudenceProvider, VectorIndex, KnowledgeGraph
 │   ├── qdrant_index.py       # QdrantVectorIndex              [qdrant] extra
 │   ├── neo4j_graph.py        # Neo4jKnowledgeGraph            [neo4j]  extra
@@ -117,6 +122,19 @@ cp .env.example .env            # optional; only needed for LLM/Qdrant/Neo4j wor
 python examples/refine_cl005.py
 pytest
 ```
+
+Start the browser UI and MCP HTTP server with:
+
+```bash
+./start.sh
+open http://127.0.0.1:8124/
+```
+
+The UI discovers rendered transcripts and law caches through `GET /api/sources`.
+Transcript entries are relative URIs under `data/transcripts/html/`; the bridge
+resolves them server-side and rejects paths outside that directory. The raw
+JSON transcripts under `data/transcripts/json/` remain the structured ingestion
+source and are not passed directly to the HTML evidence parser.
 
 > Use the `all` extra, not just `test`. Without `qdrant-client` and `neo4j` the
 > eight extension and ingester tests **skip silently** instead of failing, so a

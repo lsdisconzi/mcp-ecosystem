@@ -3,14 +3,15 @@
 from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse
 
-from modules.config import TJRS_FRONTEND_DIST_DIR
+from modules.config import JURISPRUDENCE_SOURCE_PATH, TJRS_FRONTEND_DIST_DIR
 
 router = APIRouter()
 
 
-@router.get("/", include_in_schema=False)
 @router.get("/juris", include_in_schema=False)
 @router.get("/juris/", include_in_schema=False)
+@router.get("/search", include_in_schema=False)
+@router.get("/search/", include_in_schema=False)
 async def frontend_index():
     index_path = TJRS_FRONTEND_DIST_DIR / "index.html"
     if index_path.is_file():
@@ -28,6 +29,26 @@ async def frontend_index():
             "message": "juris-search backend online; frontend bundle not found",
             "hint": "run: cd tjrs-frontend && npm run build",
         }
+    )
+
+
+@router.get("/", include_in_schema=False)
+async def jurisprudence_source_index():
+    if JURISPRUDENCE_SOURCE_PATH.is_file():
+        return FileResponse(
+            str(JURISPRUDENCE_SOURCE_PATH),
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0",
+            },
+        )
+    return JSONResponse(
+        {
+            "status": "error",
+            "message": "jurisprudence source page not found",
+        },
+        status_code=404,
     )
 
 

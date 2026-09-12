@@ -14,6 +14,7 @@ vector similarity helpers on top.
 from __future__ import annotations
 
 import hashlib
+import html as _html
 import re
 from pathlib import Path
 from typing import Protocol, runtime_checkable
@@ -85,10 +86,17 @@ class FrameworkSource(Protocol):
 # ---------------------------------------------------------------------------
 
 _SEGMENT_PATTERN = re.compile(
-    r'<div class="transcript-segment" id="(seg-\d+)">'
-    r'<div class="seg-time">([\d.]+)s\s*→\s*([\d.]+)s</div>'
-    r'<div class="seg-speaker">([^<]+)</div>'
-    r'<p class="seg-text">"([^"]*)"</p>'
+    r'<div\b'
+    r'(?=[^>]*\bclass="[^"]*\btranscript-segment\b[^"]*")'
+    r'(?=[^>]*\bid="(?P<sid>seg-\d+)")[^>]*>\s*'
+    r'(?:<div\b[^>]*\bclass="[^"]*\bseg-datetime\b[^"]*"[^>]*>.*?</div>\s*)?'
+    r'<div\b[^>]*\bclass="[^"]*\bseg-time\b[^"]*"[^>]*>\s*'
+    r'(?P<t0>[\d.]+)s\s*(?:→|&rarr;|&#8594;)\s*(?P<t1>[\d.]+)s\s*</div>\s*'
+    r'<div\b[^>]*\bclass="[^"]*\bseg-speaker\b[^"]*"[^>]*>'
+    r'(?P<spk>.*?)</div>\s*'
+    r'<p\b[^>]*\bclass="[^"]*\bseg-text\b[^"]*"[^>]*>\s*"'
+    r'(?P<txt>.*?)"\s*</p>',
+    re.DOTALL,
 )
 
 
@@ -109,7 +117,11 @@ class HtmlTranscriptSource:
         self._sha256 = hashlib.sha256(self._raw_bytes).hexdigest()
         self._index: dict[str, ParsedSegment] = {}
         for m in _SEGMENT_PATTERN.finditer(self._html):
-            sid, t0, t1, spk, txt = m.groups()
+            sid = m.group("sid")
+            t0 = m.group("t0")
+            t1 = m.group("t1")
+            spk = _html.unescape(m.group("spk"))
+            txt = _html.unescape(m.group("txt"))
             seg = ParsedSegment(
                 segment_id=sid,
                 audio_offset_start=float(t0),

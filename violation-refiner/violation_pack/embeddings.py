@@ -23,6 +23,12 @@ from typing import Protocol, runtime_checkable
 from urllib import error as _urlerr
 from urllib import request as _urlreq
 
+# Provider selection may probe a local host to decide whether it is usable. That
+# probe runs inside request handlers, so it is deliberately short and never
+# retried: an unreachable Ollama must cost seconds, not minutes, and must not
+# stall the event loop the whole server shares.
+_PROBE_TIMEOUT = 3.0
+
 
 @runtime_checkable
 class Embedder(Protocol):
@@ -38,11 +44,23 @@ class Embedder(Protocol):
 # HTTP helpers
 # ---------------------------------------------------------------------------
 
-def _post_json(url: str, body: dict, headers: dict, timeout: float = 60.0) -> dict:
+def _post_json(
+    url: str,
+    body: dict,
+    headers: dict,
+    timeout: float = 60.0,
+    attempts: int = 6,
+) -> dict:
+    """POST a JSON body and return the decoded response.
+
+    ``attempts`` bounds the retry loop. Actual embedding work wants the default
+    of 6 (rate limits and flaky hosts are worth retrying); provider *probing*
+    passes 1 so a wrong guess costs one short timeout instead of minutes.
+    """
     import time
 
     last_err: Exception | None = None
-    for attempt in range(6):
+    for attempt in range(attempts):
         req = _urlreq.Request(
             url,
             data=json.dumps(body).encode("utf-8"),
@@ -54,7 +72,7 @@ def _post_json(url: str, body: dict, headers: dict, timeout: float = 60.0) -> di
         except _urlerr.HTTPError as exc:
             body_text = exc.read().decode("utf-8", errors="replace")
             # Retry rate-limit / transient server errors with backoff.
-            if exc.code in (408, 429, 500, 502, 503, 504) and attempt < 5:
+            if exc.code in (408, 429, 500, 502, 503, 504) and attempt < attempts - 1:
                 # Respect Retry-After if present, else exponential backoff.
                 retry_after = exc.headers.get("Retry-After") if exc.headers else None
                 try:
@@ -70,7 +88,7 @@ def _post_json(url: str, body: dict, headers: dict, timeout: float = 60.0) -> di
                 f"HTTP {exc.code} from {url}: {body_text[:500]}"
             ) from exc
         except _urlerr.URLError as exc:  # pragma: no cover - network path
-            if attempt < 5:
+            if attempt < attempts - 1:
                 time.sleep(min(30.0, 2.0 * (2**attempt)))
                 last_err = exc
                 continue
@@ -119,7 +137,15 @@ class OllamaEmbedder:
         dim: int | None = None,
         timeout: float = 60.0,
     ) -> None:
-        self.host = host.rstrip("/")
+        host = (host or "").strip().rstrip("/")
+        # OLLAMA_HOST is commonly written as "host:port" with no scheme. urllib
+        # then reads the host as the URL scheme and fails with "unknown url
+        # type" — a URLError, which the retry loop happily treats as transient
+        # and backs off from. Normalising here keeps a reachable Ollama
+        # reachable.
+        if host and not host.startswith(("http://", "https://")):
+            host = f"http://{host}"
+        self.host = host
         self.model = model
         self.timeout = timeout
         self._dim = dim
@@ -131,15 +157,34 @@ class OllamaEmbedder:
             self._dim = len(self._call("dim"))
         return self._dim
 
+    def probe(self, timeout: float = _PROBE_TIMEOUT) -> bool:
+        """Confirm the host answers, cheaply.
+
+        Provider selection calls this, so it must never turn a wrong guess into
+        minutes of blocking: one short attempt, no retries. Returns True when the
+        model responded and the dim is now known.
+        """
+        try:
+            self._dim = len(self._call("dim", timeout=timeout, attempts=1))
+            return True
+        except Exception:
+            return False
+
     def embed(self, texts: list[str]) -> list[list[float]]:
         return [self._call(t) for t in texts]
 
-    def _call(self, text: str) -> list[float]:
+    def _call(
+        self,
+        text: str,
+        timeout: float | None = None,
+        attempts: int | None = None,
+    ) -> list[float]:
         payload = _post_json(
             f"{self.host}/api/embeddings",
             {"model": self.model, "prompt": text},
             headers={},
-            timeout=self.timeout,
+            timeout=self.timeout if timeout is None else timeout,
+            attempts=6 if attempts is None else attempts,
         )
         emb = payload.get("embedding")
         if not isinstance(emb, list):
@@ -299,6 +344,10 @@ class CohereEmbedder:
 # default_embedder — provider selection
 # ---------------------------------------------------------------------------
 
+_CACHED_EMBEDDER: "Embedder | None" = None
+_CACHED_EMBEDDER_KEY: tuple | None = None
+
+
 def default_embedder(settings=None) -> Embedder:
     """Pick an embedder based on EMBED_PROVIDER and what is configured.
 
@@ -308,10 +357,26 @@ def default_embedder(settings=None) -> Embedder:
         3. Cohere (if COHERE_API_KEY)
         4. Ollama (if OLLAMA_HOST is reachable)
         5. HashEmbedder (always-available fallback)
+
+    Selection can probe the network, and every request handler in the server
+    calls this, so the env-driven result is memoised: the probe runs once per
+    process (per distinct environment) rather than once per tool call.
     """
     from .config import Settings
 
-    s = settings or Settings.from_env()
+    if settings is not None:
+        return _resolve_embedder(settings)
+
+    global _CACHED_EMBEDDER, _CACHED_EMBEDDER_KEY
+    key = tuple(sorted((k, v) for k, v in os.environ.items() if k.startswith(("EMBED_", "VOYAGE_", "OPENAI_", "COHERE_", "OLLAMA_"))))
+    if _CACHED_EMBEDDER is not None and key == _CACHED_EMBEDDER_KEY:
+        return _CACHED_EMBEDDER
+    _CACHED_EMBEDDER = _resolve_embedder(Settings.from_env())
+    _CACHED_EMBEDDER_KEY = key
+    return _CACHED_EMBEDDER
+
+
+def _resolve_embedder(s) -> Embedder:
     provider = (os.environ.get("EMBED_PROVIDER") or "").lower().strip()
 
     def _try_voyage() -> Embedder | None:
@@ -339,12 +404,8 @@ def default_embedder(settings=None) -> Embedder:
     def _try_ollama() -> Embedder | None:
         if not s.ollama_host:
             return None
-        try:
-            emb = OllamaEmbedder(s.ollama_host, s.ollama_embed_model)
-            _ = emb.dim  # probe
-            return emb
-        except Exception:
-            return None
+        emb = OllamaEmbedder(s.ollama_host, s.ollama_embed_model)
+        return emb if emb.probe() else None
 
     if provider == "voyage":
         return _try_voyage() or _raise("VOYAGE_API_KEY not set")
