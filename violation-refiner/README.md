@@ -66,11 +66,12 @@ violation-pack/
 ├── README.md
 ├── .env.example              # every Settings.from_env() var + the MCP_* transport vars
 ├── start.sh / stop.sh        # MCP server lifecycle (stdio or streamable-http)
-├── data/
-│   ├── transcripts/html/      # rendered HTML sources used by S2 evidence anchoring
-│   ├── transcripts/json/      # structured transcript sources used by ingestion
-│   └── law/                   # framework Markdown caches, grouped by jurisdiction
+├── data/                      # shared corpora are SYMLINKS owned by ../transcription
+│   ├── transcripts/html/      # rendered HTML sources used by S2 evidence anchoring (real files — see docs/data_source_of_truth.md §8)
+│   ├── transcripts/json/      # 27 symlinks → ../../transcription/data/transcripts/*.json
+│   └── law/                   # symlink → ../../transcription/data/law (Markdown, grouped by jurisdiction)
 ├── docs/
+│   ├── data_source_of_truth.md    # who owns data/law + data/transcripts; read before touching data/
 │   ├── mcp_mapping.md        # MCP tool → library function → file:line → UI step
 │   └── ui_structural_skeleton.md  # front-end spec: steps S0–S14, every field
 ├── violation_pack/
@@ -138,6 +139,13 @@ Transcript entries are relative URIs under `data/transcripts/html/`; the bridge
 resolves them server-side and rejects paths outside that directory. The raw
 JSON transcripts under `data/transcripts/json/` remain the structured ingestion
 source and are not passed directly to the HTML evidence parser.
+
+> **Shared data — read-only.** `data/law/` and every file in
+> `data/transcripts/json/` are **symlinks into `../transcription/`**, which owns and
+> generates them. The transcripts are ingested into Qdrant by `transcription/`, not
+> here. Editing a file through either path edits that other project's corpus, and
+> nothing in this repo will warn you. See
+> [`docs/data_source_of_truth.md`](docs/data_source_of_truth.md).
 
 > Use the `all` extra, not just `test`. Without `qdrant-client` and `neo4j` the
 > eight extension and ingester tests **skip silently** instead of failing, so a

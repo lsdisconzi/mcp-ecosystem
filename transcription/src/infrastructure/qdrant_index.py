@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 COLLECTION = "transcription_transcripts"
 VECTOR_DIM = 384  # all-MiniLM-L6-v2 output dimension
 
-# Path to the speaker index produced by scripts/generate_speaker_index.py
+# Path to the speaker index produced by scripts/generate_speaker_index_v3.py
 _SPEAKER_INDEX_PATH = Path(__file__).resolve().parents[2] / "data" / "speaker_index.json"
 
 
