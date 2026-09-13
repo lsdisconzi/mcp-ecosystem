@@ -5,7 +5,7 @@ import re
 import json
 import hashlib
 import unicodedata
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, Dict, Any, List, Tuple
 
@@ -131,15 +131,42 @@ def _normalize_result_item(item: Dict[str, Any], court_key: str) -> Dict[str, An
         normalized.get("result_description"),
     )[:500]
 
-    # ── Chile: Poder Judicial is SPA-based; no direct document URL exists.
-    # Do not fabricate an inteiro_url — the "Inteiro Teor" link will not show.
-    # Downloads are handled via Selenium navigation in chile_scraper.py.
+    # ── Document URL / download capability ───────────────────────────────────
+    # CL  (PJud): the buscador is SPA-based and exposes no direct document URL,
+    #              so no inteiro_url is fabricated and the "Inteiro Teor" link
+    #              stays hidden. Downloads re-drive the browser and are keyed by
+    #              id_sentencia + categoria (chile_scraper.py).
+    # CLTC (TC Chile): the REST backend DOES expose a stable document URL,
+    #              https://buscador-backend.tcchile.cl/api/extended/{folio}/download,
+    #              which tc_chile_scraper.py puts in inteiro_url/download_url.
+    #
+    # The frontend used to treat "downloadable" as "has inteiro_url", which made
+    # every CL (PJud) result a dead end: no link, no checkbox, both download
+    # buttons disabled. Publish the capability explicitly so the UI can offer
+    # the two download modes without inferring them from a URL alone.
+    inteiro_url = _clean_text(
+        normalized.get("inteiro_url")
+        or normalized.get("download_url")
+        or normalized.get("url")
+    )
+    normalized["inteiro_url"] = inteiro_url
+
+    tribunal_key = normalized.get("tribunal")
+    id_sentencia = _clean_text(normalized.get("id_sentencia"))
+    if inteiro_url:
+        normalized["download_mode"] = "url"
+    elif tribunal_key == "CL" and id_sentencia:
+        # PJud has no document URL; download works by id_sentencia + categoria.
+        normalized["download_mode"] = "browser"
+    else:
+        normalized["download_mode"] = "none"
+    normalized["downloadable"] = normalized["download_mode"] != "none"
 
     return normalized
 
 
 def _utc_now() -> str:
-    return datetime.utcnow().isoformat() + "Z"
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 def _read_json_file(path: Path, default: Any) -> Any:

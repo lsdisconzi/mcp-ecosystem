@@ -585,8 +585,15 @@ export default function AdminView({ apiBase, isMobile, T }) {
               fontFamily: T.fontSans, outline: "none",
             }}
           >
-            {["TJPR", "TJSP", "TJMS", "TJCE", "TJRS"].map((t) => (
-              <option key={t} value={t}>{t}</option>
+            {[
+              ["TJPR", "TJPR"],
+              ["TJSP", "TJSP"],
+              ["TJMS", "TJMS"],
+              ["TJCE", "TJCE"],
+              ["TJRS", "TJRS"],
+              ["CLTC", "CLTC (TC Chile)"],
+            ].map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
             ))}
           </select>
 

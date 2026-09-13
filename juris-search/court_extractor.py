@@ -65,6 +65,86 @@ TJRS_FNAME_RE = re.compile(
 ESAJ_FNAME_RE = re.compile(
     r"(?:inteiro_teor|acordao|cdacordao)[_\-]?(?P<cdacordao>\d{6,})", re.IGNORECASE)
 
+# ── TC Chile (Tribunal Constitucional de Chile) patterns ────────────────────
+# Local download names are ``CLTC_[YYYY-MM-DD_]folio.pdf`` — see tc_chile_scraper.py.
+CLTC_FNAME_RE = re.compile(
+    r"CLTC[_-](?:(?P<fecha>\d{4}-\d{2}-\d{2})[_-])?(?P<folio>\d+)", re.IGNORECASE)
+# "Rol 16.622-2025 INA" / "Rol N° 16.622-25-INA"
+CLTC_ROL_RE = re.compile(
+    r"\bRol\s*(?:N[°º]?\.?)?\s*(?P<numero>\d[\d\.]*)\s*[-–]\s*(?P<ano>\d{2,4})"
+    r"(?:[\s\-–]+(?P<sigla>[A-Z]{2,4})(?![A-Z]))?",
+    re.IGNORECASE)
+# TC sentences are structured VISTOS / CONSIDERANDO / SE RESUELVE (not EMENTA/ACÓRDÃO).
+CLTC_VISTOS_RE = re.compile(r"\bVISTOS\b\s*:?", re.IGNORECASE)
+# The operative part always carries a colon ("SE RESUELVE:", "RESUELVO:").
+# Requiring it avoids matching body prose such as "sí ha resuelto reiteradamente".
+CLTC_RESUELVE_RE = re.compile(
+    r"\b(?:SE\s+RESUELVE|RESUELVO|HA\s+RESUELTO)\s*:", re.IGNORECASE)
+CLTC_CONSIDERANDO_RE = re.compile(
+    r"\b(?:CONSIDERANDO|TENIENDO\s+PRESENTE|PRIMERO|SEGUNDO|TERCERO|CUARTO|QUINTO|SEXTO|"
+    r"S[ÉE]PTIMO|OCTAVO|NOVENO|D[ÉE]CIMO)\b\s*:?",
+    re.IGNORECASE)
+CLTC_DISIDENCIA_RE = re.compile(
+    r"\b(?:DISIDENCIA|VOTO\s+DE\s+MINOR[ÍI]A|PREVENCI[ÓO]N|ESTUVIERON\s+POR)\b",
+    re.IGNORECASE)
+CLTC_REDACTOR_RE = re.compile(
+    r"Redact[óo]\s+la\s+sentencia\s+(?:el|la)\s+Ministr[oa]\s+(?:se[ñn]or(?:a)?\s+)?"
+    r"(?P<nombre>[^.,]{5,90}?)\s*[.,]",
+    re.IGNORECASE)
+CLTC_INTEGRACION_RE = re.compile(
+    r"(?:integrada|compuesta|constituida)\s+por\s+(?P<body>.{20,1500}?)\.\s",
+    re.IGNORECASE | re.DOTALL)
+CLTC_SIDECAR_RE = re.compile(r"^CLTC_", re.IGNORECASE)
+# "I. QUE SE RECHAZA EL REQUERIMIENTO ..." holdings under SE RESUELVE:
+CLTC_HOLDING_RE = re.compile(
+    r"^\s*(?P<num>[IVXLC]{1,6})\s*[.\-–]\s*(?:QUE\s+)?(?P<texto>.+?)"
+    r"(?=^\s*[IVXLC]{1,6}\s*[.\-–]\s|\Z)",
+    re.IGNORECASE | re.DOTALL | re.MULTILINE)
+CLTC_LEGISLACAO_RE = re.compile(
+    r"(?:art[íi]culos?\s*[\d\.\-]+\s*(?:incisos?\s+\w+\s*)?(?:,?\s*N[°º]\s*\d+\s*)?"
+    r"(?:de\s+la\s+|del\s+|de\s+)?)?"
+    r"(Constituci[óo]n\s+Pol[íi]tica(?:\s+de\s+la\s+Rep[úu]blica)?|"
+    r"C[óo]digo\s+(?:de\s+Procedimiento\s+)?(?:Civil|Penal|Procesal\s+Penal|Tributario|"
+    r"del\s+Trabajo|Org[áa]nico\s+de\s+Tribunales)|"
+    r"Ley\s+(?:N[°º]\s*)?[\d\.]+\s*(?:Org[áa]nica\s+Constitucional)?)",
+    re.IGNORECASE)
+CLTC_OUTCOME_PATTERNS: List[Tuple[str, re.Pattern]] = [
+    ("acoge",           re.compile(r"\bQUE\s+SE\s+ACOGE\b|\bse\s+acoge\s+el\s+requerimiento\b"
+                                   r"|\bacoger\s+el\s+libelo\b", re.IGNORECASE)),
+    ("rechaza",         re.compile(r"\bQUE\s+SE\s+RECHAZA\b|\bse\s+rechaza\s+el\s+requerimiento\b"
+                                   r"|\brechazar\s+el\s+libelo\b", re.IGNORECASE)),
+    ("acoge_parcial",   re.compile(r"\bacoge\s+parcial|\bparcialmente\s+acoge", re.IGNORECASE)),
+    ("rechaza_parcial", re.compile(r"\brechaza\s+parcial|\bparcialmente\s+rechaza", re.IGNORECASE)),
+    ("empate_votos",    re.compile(r"\bempate\s+de\s+votos?\b", re.IGNORECASE)),
+    ("inadmisible",     re.compile(r"\bdeclara\s+inadmisible\b|\binadmisible\s+el\s+requerimiento\b",
+                                   re.IGNORECASE)),
+    ("no_conoce",       re.compile(r"\bse\s+abstiene\s+de\s+conocer\b", re.IGNORECASE)),
+]
+# Spanish-Chilean constitutional subject keywords (the inherited list is
+# Brazilian Portuguese and would always return nothing for TC Chile).
+CLTC_ASSUNTOS: List[str] = [
+    "DERECHO A LA VIDA", "IGUALDAD ANTE LA LEY", "DEBIDO PROCESO",
+    "LIBERTAD PERSONAL", "DERECHO DE PROPIEDAD", "MEDIO AMBIENTE",
+    "DERECHO A LA SALUD", "DERECHO A LA EDUCACIÓN", "LIBERTAD DE CONCIENCIA",
+    "LIBERTAD DE EXPRESIÓN", "PROTECCIÓN DE LA VIDA PRIVADA",
+    "INVIOLABILIDAD DEL HOGAR", "PROTECCIÓN DE DATOS PERSONALES",
+    "TUTELA JUDICIAL EFECTIVA", "DERECHO AL RECURSO", "LIBERTAD ECONÓMICA",
+    "DERECHO A LA INTIMIDAD", "PROTECCIÓN DE LA FAMILIA", "SEGURIDAD SOCIAL",
+    "LIBERTAD DE TRABAJO", "NO DISCRIMINACIÓN", "DERECHO A LA HONRA",
+    "INAPLICABILIDAD POR INCONSTITUCIONALIDAD", "CONTROL DE CONSTITUCIONALIDAD",
+]
+
+# ── Spanish month names (TC Chile dates: "19 de marzo de 2026") ─────────────
+_MONTHS_ES = {
+    "enero": 1, "febrero": 2, "marzo": 3, "abril": 4, "mayo": 5, "junio": 6,
+    "julio": 7, "agosto": 8, "septiembre": 9, "setiembre": 9, "octubre": 10,
+    "noviembre": 11, "diciembre": 12,
+}
+DATE_LONG_ES_RE = re.compile(
+    r"(\d{1,2})\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|"
+    r"septiembre|setiembre|octubre|noviembre|diciembre)\s+de\s+(\d{4})",
+    re.IGNORECASE)
+
 # ── Month name → number for Brazilian Portuguese ─────────────────────────────
 _MONTHS = {
     "janeiro": 1, "fevereiro": 2, "março": 3, "marco": 3, "abril": 4,
@@ -121,6 +201,57 @@ def _parse_date(text: str) -> Optional[str]:
         except ValueError:
             pass
     return None
+
+
+def _parse_date_es(text: str) -> Optional[str]:
+    """Parse a Spanish/ISO date, returning ISO ``YYYY-MM-DD`` or None.
+
+    Handles ``19 de marzo de 2026``, ``2026-03-19`` and
+    ``2026-03-19 03:00:00`` (the shape stored in the TC Chile sidecar).
+    """
+    if not text:
+        return None
+    text = str(text).strip()
+    # ISO / sidecar timestamp
+    m = re.match(r"(\d{4})-(\d{2})-(\d{2})", text)
+    if m:
+        return f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
+    # "19 de marzo de 2026"
+    m = DATE_LONG_ES_RE.search(text)
+    if m:
+        mon = _MONTHS_ES.get(m.group(2).lower(), 0)
+        if mon:
+            return f"{m.group(3)}-{mon:02d}-{int(m.group(1)):02d}"
+    # dd/mm/yyyy
+    m = DATE_DDMMYYYY_RE.search(text)
+    if m:
+        try:
+            return f"{m.group(3)}-{int(m.group(2)):02d}-{int(m.group(1)):02d}"
+        except ValueError:
+            pass
+    return None
+
+
+def _titlecase_name(name: str) -> str:
+    """Title-case an ALL-CAPS personal name ("HÉCTOR MERY ROMERO" → "Héctor Mery Romero").
+
+    Names that already contain lowercase letters are returned unchanged.
+    """
+    name = _norm(name)
+    if not name:
+        return name
+    letters = [c for c in name if c.isalpha()]
+    if not letters or not all(c.isupper() for c in letters):
+        return name
+    small = {"de", "del", "la", "las", "los", "y", "e", "van", "von", "da", "do"}
+    out = []
+    for i, word in enumerate(name.split()):
+        low = word.lower()
+        if i > 0 and low in small:
+            out.append(low)
+        else:
+            out.append(low[:1].upper() + low[1:])
+    return " ".join(out)
 
 
 def _extract_outcomes(text: str) -> List[str]:
@@ -180,6 +311,24 @@ def _build_master_lookup(master: dict) -> Dict[str, dict]:
         if rsp:
             by_rsp[os.path.basename(rsp)] = doc
     return by_cdacordao, by_rsp
+
+
+def _load_sidecar(filepath: str) -> Dict[str, Any]:
+    """Read the ``<file>.metadata.json`` sidecar written by the scrapers.
+
+    Returns an empty dict when the sidecar is missing or unreadable. The
+    scraper-produced sidecar is the most reliable source of structured
+    metadata (especially for TC Chile, whose PDFs are Spanish free text).
+    """
+    path = Path(f"{filepath}.metadata.json")
+    if not path.is_file():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8", errors="replace"))
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("sidecar unreadable for %s: %s", filepath, exc)
+        return {}
+    return data if isinstance(data, dict) else {}
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -294,11 +443,15 @@ class BaseExtractor:
         re.IGNORECASE,
     )
 
-    def __init__(self, text: str, filename: str, master_lookup: dict = None):
+    def __init__(self, text: str, filename: str, master_lookup: dict = None,
+                 sidecar: dict = None):
         self.raw_text = text
         self.text = _norm(text)
         self.filename = filename
         self.master = master_lookup or {}
+        # Scraper-written ``<file>.metadata.json`` payload (may be empty).
+        # Preferred over PDF free text when a field is available there.
+        self.sidecar: Dict[str, Any] = sidecar or {}
         self.result: Dict[str, Any] = {
             "schema_version": 1,
             "extracted_at": datetime.now(timezone.utc).isoformat(),
@@ -1018,6 +1171,463 @@ class TJPRExtractor(BaseExtractor):
             if m:
                 self._set("decisao", _norm(m.group(0)), "medium")
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLTC Extractor — Tribunal Constitucional de Chile
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class CLTCExtractor(BaseExtractor):
+    """Spanish-Chilean extractor for TC Chile (*Tribunal Constitucional*) rulings.
+
+    TC sentences follow ``VISTOS`` / considerandos / ``SE RESUELVE`` and use
+    Chilean legal vocabulary, so none of the Brazilian Portuguese machinery in
+    :class:`BaseExtractor` applies (no ``EMENTA``, no ``ACÓRDÃO``, no CNJ number).
+
+    The scraper already writes a rich ``<file>.metadata.json`` sidecar carrying
+    the official ficha fields (competencia, resultado, ministros, doctrina,
+    palabras clave, precepto impugnado). That sidecar is authoritative and is
+    preferred; the PDF text is used for the full body, the header block and any
+    field the sidecar does not provide.
+    """
+
+    tribunal = "CLTC"
+    tribunal_nombre = "Tribunal Constitucional de Chile"
+
+    # TC preambles open with one of these subject headings.
+    MATERIA_KEYWORDS = (
+        "REQUERIMIENTO DE INAPLICABILIDAD",
+        "INAPLICABILIDAD POR INCONSTITUCIONALIDAD",
+        "INAPLICABILIDAD DE PRECEPTO LEGAL",
+        "REQUERIMIENTO DE INCONSTITUCIONALIDAD",
+        "CUESTIÓN DE INCONSTITUCIONALIDAD",
+        "CONTROL PREVENTIVO DE CONSTITUCIONALIDAD",
+        "CONTROL DE CONSTITUCIONALIDAD",
+        "PROYECTO DE LEY",
+        "TRATADO INTERNACIONAL",
+        "LEY ORGÁNICA CONSTITUCIONAL",
+        "DECRETO CON FUERZA DE LEY",
+        "AUTO ACORDADO",
+        "RECURSO DE PROTECCIÓN",
+        "AMPARO",
+    )
+    # Marker separating the subject heading from the parties block.
+    PARTIES_MARKER_RE = re.compile(
+        r"\b(Y\s+OTROS?|Y\s+OTRAS?|EN\s+EL\s+PROCESO|EN\s+LOS\s+AUTOS|"
+        r"CONTRA|SOBRE)\b",
+        re.IGNORECASE)
+    # Legal instruments that terminate a TC Chile subject heading.
+    MATERIA_TAIL_RE = re.compile(
+        r"\b(?:C[ÓO]DIGO(?:\s+DE\s+[A-ZÁÉÍÓÚÑ]+)?|LEY(?:\s+N[°º]\s*[\d\.]+)?|"
+        r"CONSTITUCI[ÓO]N(?:\s+POL[ÍI]TICA)?|DECRETO(?:\s+(?:LEY|CON\s+FUERZA\s+DE\s+LEY))?|"
+        r"TRATADO(?:\s+INTERNACIONAL)?|AUTO\s+ACORDADO|REGLAMENTO|ESTATUTO|"
+        r"ORDENANZA|CONVENIO|CIVIL|PENAL)\b",
+        re.IGNORECASE)
+
+    # ── sidecar accessors ───────────────────────────────────────────────────
+
+    @property
+    def _ficha(self) -> Dict[str, Any]:
+        """The nested ``metadata`` object (official ficha fields)."""
+        inner = self.sidecar.get("metadata")
+        return inner if isinstance(inner, dict) else {}
+
+    def _sc(self, *keys: str) -> Any:
+        """First non-empty value among *keys* across sidecar and nested ficha."""
+        for key in keys:
+            for src in (self.sidecar, self._ficha):
+                val = src.get(key)
+                if val not in (None, "", [], {}):
+                    return val
+        return None
+
+    @staticmethod
+    def _split_pipe(value: Any) -> List[str]:
+        """Split a sidecar multi-value field (``"A | B | C"``) into a list."""
+        if not value:
+            return []
+        if isinstance(value, (list, tuple)):
+            return [str(v).strip() for v in value if str(v).strip()]
+        return [part.strip() for part in str(value).split("|") if part.strip()]
+
+    # ── header helpers ──────────────────────────────────────────────────────
+
+    def _cltc_header(self) -> str:
+        """Return the normalized front matter between the date banner and ``VISTOS``."""
+        m = CLTC_VISTOS_RE.search(self.raw_text)
+        if not m:
+            return ""
+        head = self.raw_text[:m.start()]
+        m_date = re.search(r"\[[^\]]*\d{4}[^\]]*\]", head)
+        if m_date:
+            head = head[m_date.end():]
+        head = _norm(head.replace("_", " "))
+        return head[:1500]
+
+    def _cltc_rol(self) -> Optional[re.Match]:
+        return CLTC_ROL_RE.search(self.text)
+
+    def _operative_text(self) -> str:
+        """Return only the operative part (``SE RESUELVE`` → dissent/signatures).
+
+        Scoping to this slice prevents body prose and, crucially, a dissenting
+        vote ("estuvieron por acoger el libelo") from being read as the holding.
+        """
+        m = CLTC_RESUELVE_RE.search(self.raw_text)
+        if not m:
+            return ""
+        tail = self.raw_text[m.end():]
+        m_stop = CLTC_DISIDENCIA_RE.search(tail)
+        if m_stop and m_stop.start() > 20:
+            tail = tail[:m_stop.start()]
+        return tail
+
+    def _cltc_holdings(self) -> List[str]:
+        """Roman-numbered holdings listed under ``SE RESUELVE``."""
+        tail = self._operative_text()
+        if not tail:
+            return []
+        holdings = []
+        for m_h in CLTC_HOLDING_RE.finditer(tail):
+            texto = _norm(m_h.group("texto"))
+            if len(texto) >= 12:
+                holdings.append(f"{_norm(m_h.group('num')).upper()}. {texto}")
+        return holdings[:10]
+
+    def _cltc_se_resuelve_text(self) -> Optional[str]:
+        texto = _norm(self._operative_text())
+        return texto[:4000] if len(texto) > 40 else None
+
+    # Role scaffolding that prefixes each name in the closing "integrada por"
+    # sentence ("su Presidenta, Ministra señora X, y por sus Ministros señor Y").
+    ROLE_PREFIX_RE = re.compile(
+        r"^(?:y|e|por|sus|su|el|la|los|las|Excmo|Ministr[oa]s?|President[ae]|"
+        r"se[ñn]or(?:a|es)?)\b[\s,]*",
+        re.IGNORECASE)
+
+    def _cltc_ministerios(self) -> Tuple[List[str], List[str]]:
+        """Return ``(ministros, ministros_disidencia)`` from the closing block."""
+        m = CLTC_INTEGRACION_RE.search(self.raw_text)
+        if not m:
+            return [], []
+        body = _norm(m.group("body"))
+        ministros: List[str] = []
+        seen = set()
+        for part in re.split(r"[,;]|\by\b", body):
+            name = part.strip()
+            prev = None
+            while prev != name:  # strip stacked role words
+                prev = name
+                name = self.ROLE_PREFIX_RE.sub("", name).strip(" ,.-")
+            if len(name) < 8 or len(name.split()) < 2:
+                continue
+            if not re.match(r"^[A-ZÁÉÍÓÚÑÜ]", name):
+                continue
+            name = _titlecase_name(name)
+            key = name.lower()
+            if key not in seen:
+                seen.add(key)
+                ministros.append(name)
+        disidencia = self._split_pipe(self._sc("tc_Voto disidencia", "Voto disidencia"))
+        return ministros[:12], disidencia
+
+    # ── BaseExtractor overrides ─────────────────────────────────────────────
+
+    def _extract_common(self):
+        m_fname = CLTC_FNAME_RE.search(self.filename)
+        folio = self._sc("folio", "numero_processo") or (
+            m_fname.group("folio") if m_fname else None)
+        if folio:
+            self._set("numero_processo", str(folio))
+            self._set("pdf_folio", str(folio))
+
+        # Date — sidecar first (exact), PDF banner as fallback.
+        fecha = _parse_date_es(
+            self._sc("fecha", "data_julgamento", "fecha_sentencia", "tc_fecha_sentencia")
+        )
+        if not fecha:
+            m_date = re.search(r"\[([^\]]*\d{4}[^\]]*)\]", self.raw_text)
+            if m_date:
+                fecha = _parse_date_es(m_date.group(1))
+        if not fecha and m_fname and m_fname.group("fecha"):
+            fecha = m_fname.group("fecha")
+        if fecha:
+            self._set("data_julgamento", fecha, "high")
+
+        # ROL (case number + year + competence sigla), e.g. "16.622-2025 INA"
+        rol_match = self._cltc_rol()
+        if rol_match:
+            self._set("rol", _norm(rol_match.group(0)))
+            numero = rol_match.group("numero").replace(".", "")
+            ano = rol_match.group("ano")
+            if ano and len(ano) == 2:
+                ano = f"20{ano}"
+            if ano:
+                self._set("ano", ano)
+            if rol_match.group("sigla"):
+                self._set("codigo", rol_match.group("sigla").upper())
+            # Last-resort folio: the download key (folio) equals the ROL number
+            # with separators removed. This matters when neither the sidecar nor
+            # the CLTC_<fecha>_<folio>.pdf filename is available — e.g. a PDF
+            # uploaded through the API, which is stored under a UUID filename.
+            if numero and not folio:
+                self._set("numero_processo", numero)
+                self._set("pdf_folio", numero)
+        # The official ficha ships the canonical competence code (e.g. "06a-INA").
+        codigo = self._sc("codigo", "template_codigo", "nombre")
+        if codigo:
+            self._set("codigo", str(codigo), "high")
+
+        # Competence / case class — the official ficha template is authoritative.
+        competencia = self._sc("template", "classe_assunto", "classe", "tipo_processo")
+        if not competencia:
+            head_up = self._cltc_header().upper()
+            for kw in self.MATERIA_KEYWORDS:
+                if kw in head_up:
+                    competencia = kw.title()
+                    break
+        if competencia:
+            self._set("classe", str(competencia), "high" if self._ficha.get("template") else "medium")
+            self._set("competencia", str(competencia), "high" if self._ficha.get("template") else "medium")
+
+        # Rapporteur ("relator") — redactor of the majority opinion.
+        relator = self._sc("tc_Redactor voto mayoría", "relator", "redactor")
+        if not relator:
+            m_red = CLTC_REDACTOR_RE.search(self.raw_text)
+            if m_red:
+                relator = _norm(m_red.group("nombre"))
+        if relator:
+            self._set("relator", _titlecase_name(str(relator)), "high")
+
+        # Court / chamber
+        orgao = self._sc("tribunal", "orgao_julgador") or self.tribunal_nombre
+        sala = self._sc("sala")
+        if sala:
+            orgao = f"{orgao} - {sala}"
+        self._set("orgao_julgador", str(orgao))
+
+        # Outcome (raw Spanish + normalized label)
+        resultado = self._sc("tc_Resultado", "resultado")
+        if resultado:
+            self._set("decisao", _norm(str(resultado)), "high")
+
+        # Parties from the preamble (best effort; PyPDF2 flattens the block).
+        header = self._cltc_header()
+        if header:
+            self._set("encabezado", header, "medium")
+            upper = header.upper()
+            start = -1
+            for kw in self.MATERIA_KEYWORDS:
+                idx = upper.find(kw)
+                if idx >= 0 and (start < 0 or idx < start):
+                    start = idx
+            region = header[start:] if start >= 0 else header
+            # Scope the search for the closing legal instrument to the part
+            # before the parties block, so a parenthetical such as
+            # "ROL N° 9947-2025 (CIVIL)" cannot be mistaken for it.
+            m_marker = self.PARTIES_MARKER_RE.search(region)
+            limit = m_marker.start() if m_marker else len(region)
+            cut = None
+            for m_tail in self.MATERIA_TAIL_RE.finditer(region[:limit]):
+                cut = m_tail.end()
+            if cut is None and m_marker:
+                cut = m_marker.start()
+            if cut is not None and cut >= 15:
+                materia = _norm(region[:cut]).strip(" ,.-")
+                partes = _norm(region[cut:]).strip(" ,.-")
+                partes = re.sub(r"^(?:Y|E)\s+", "", partes).strip(" ,.-")
+                if len(materia) >= 15:
+                    self._set("materia", materia, "medium")
+                if len(partes) >= 10:
+                    self._set("partes", [partes], "medium")
+            elif len(region) >= 15:
+                self._set("materia", _norm(region), "low")
+
+        # Voting alignment
+        voto_mayoria = self._split_pipe(self._sc("tc_Voto mayoría"))
+        voto_disidencia = self._split_pipe(self._sc("tc_Voto disidencia"))
+        if voto_disidencia:
+            self._set("votacao", "MAYORÍA / CON DISIDENCIA", "high")
+        elif voto_mayoria or "UNÁNIME" in self.text.upper():
+            self._set("votacao", "UNÁNIME", "medium")
+        # Free-text fallback when the sidecar is missing
+        if not voto_disidencia and CLTC_DISIDENCIA_RE.search(self.raw_text):
+            self._set("votacao", "MAYORÍA / CON DISIDENCIA", "low")
+
+    def _extract_ementa(self):
+        """TC Chile 'doctrina': sidecar ``tc_Doctrina``, else the VISTOS preamble."""
+        doctrina = self._sc("tc_Doctrina", "ementa_trecho", "ementa")
+        if doctrina and len(str(doctrina)) > 60:
+            self._set("ementa", _norm(str(doctrina)), "high")
+            return
+        m_start = CLTC_VISTOS_RE.search(self.raw_text)
+        if m_start:
+            rest = self.raw_text[m_start.end():]
+            m_end = CLTC_RESUELVE_RE.search(rest) or CLTC_CONSIDERANDO_RE.search(rest)
+            end = m_end.start() if m_end else min(3000, len(rest))
+            ementa = _norm(rest[:end])
+            if len(ementa) > 120:
+                self._set("ementa", ementa[:6000], "medium")
+                return
+        self._set("ementa", _norm(self.raw_text)[:2000], "low")
+
+    def _extract_outcomes(self):
+        """Normalized outcome labels.
+
+        The official ficha ``Resultado`` field is authoritative and is used on
+        its own when present; only in its absence do we scan the operative part
+        (never the body, so a dissent is not mistaken for the holding).
+        """
+        canonical = {
+            "acoge": "acoge",
+            "acoge parcial": "acoge_parcial",
+            "acoge parcialmente": "acoge_parcial",
+            "rechaza": "rechaza",
+            "rechaza parcial": "rechaza_parcial",
+            "rechaza parcialmente": "rechaza_parcial",
+            "empate de votos": "empate_votos",
+            "empate": "empate_votos",
+            "inadmisible": "inadmisible",
+            "declara inadmisible": "inadmisible",
+            "no se pronuncia": "no_conoce",
+        }
+        raw = _norm(str(self._sc("tc_Resultado", "resultado") or "")).lower()
+        outcomes: List[str] = []
+        if raw in canonical:
+            outcomes.append(canonical[raw])
+        else:
+            operative = self._operative_text()
+            if operative:
+                for label, pat in CLTC_OUTCOME_PATTERNS:
+                    if label not in outcomes and pat.search(operative):
+                        outcomes.append(label)
+            # De-duplicate the generic form when a "_parcial" variant matched.
+            if "acoge_parcial" in outcomes and "acoge" in outcomes:
+                outcomes.remove("acoge")
+            if "rechaza_parcial" in outcomes and "rechaza" in outcomes:
+                outcomes.remove("rechaza")
+        self._set("outcome", outcomes, "high" if outcomes else "low")
+
+    def _extract_legislacao(self):
+        found: List[str] = []
+        seen = set()
+
+        def _add(item: str) -> None:
+            item = _norm(str(item)).strip(" ,.;:-")
+            # Drop vestigial fragments ("ley .", "326", "segundo").
+            if len(item) < 6 or not re.search(r"[A-Za-zÁÉÍÓÚÑ]{3}", item):
+                return
+            key = item.lower()
+            if key not in seen:
+                found.append(item)
+                seen.add(key)
+
+        # Sidecar: impugned provision, rendered as one readable citation.
+        impugnado = self._split_pipe(
+            self._sc("tc_Precepto legal impugnado", "Precepto legal impugnado"))
+        if impugnado:
+            cuerpo = impugnado[0]
+            numeros = [p for p in impugnado[1:] if re.fullmatch(r"\d+", p)]
+            incisos = [p for p in impugnado[1:] if not re.fullmatch(r"\d+", p)]
+            cita = f"{cuerpo}, artículo {', '.join(numeros)}" if numeros else cuerpo
+            if incisos:
+                cita += f", inciso {', '.join(incisos)}"
+            _add(cita)
+        # Sidecar: constitutional articles invoked.
+        for raw in (self._sc("tc_Artículo de la Constitución"),
+                    self._sc("Artículo de la Constitución")):
+            for item in self._split_pipe(raw):
+                _add(item)
+        # Free-text citations from the PDF body.
+        for m in CLTC_LEGISLACAO_RE.finditer(self.text):
+            _add(m.group(0))
+            if len(found) >= 25:
+                break
+        self._set("legislacao_citada", found[:25], "high" if found else "low")
+
+    def _extract_assuntos(self):
+        found: List[str] = []
+        seen = set()
+        # Official ficha keywords first — authoritative.
+        for raw in (self._sc("tc_Palabras clave"), self._sc("Palabras clave")):
+            for item in self._split_pipe(raw):
+                if item.lower() not in seen:
+                    found.append(item)
+                    seen.add(item.lower())
+        # Constitutional-right keywords detected in the body.
+        for kw in _classify(self.text, CLTC_ASSUNTOS):
+            if kw.lower() not in seen:
+                found.append(kw)
+                seen.add(kw.lower())
+        self._set("assuntos", found[:20], "high" if found else "low")
+
+    def _extract_court_specific(self):
+        specific: Dict[str, Any] = {}
+
+        folio = self._sc("folio", "numero_processo")
+        if folio:
+            specific["folio"] = str(folio)
+        for key, out in (
+            ("ficha_id", "ficha_id"), ("template", "template"),
+            ("template_codigo", "template_codigo"), ("estado", "estado"),
+            ("fecha_sentencia", "fecha_sentencia"),
+            ("tc_Resultado", "resultado"), ("resultado", "resultado"),
+            ("tc_Redactor voto mayoría", "redactor_mayoria"),
+            ("tc_Redactor disidencia", "redactor_disidencia"),
+            ("tc_Tipo de resolución", "tipo_resolucion"),
+            ("sala", "sala"), ("search_terms", "search_terms"),
+            ("url_detalle", "url_detalle"), ("inteiro_url", "inteiro_url"),
+            ("es_reservada", "es_reservada"),
+        ):
+            val = self._sc(key)
+            if val not in (None, "", [], {}):
+                specific.setdefault(out, val)
+
+        for key, out in (
+            ("tc_Voto mayoría", "ministros_mayoria"),
+            ("tc_Voto disidencia", "ministros_disidencia"),
+            ("tc_Artículo de la Constitución", "articulos_constitucion"),
+            ("tc_Palabras clave", "palabras_clave"),
+            ("tc_Precepto legal impugnado", "preceptos_impugnados"),
+            ("tc_Sentencias relacionadas", "sentencias_relacionadas"),
+            ("tc_Gestión pendiente", "gestion_pendiente"),
+            ("tc_Doctrina", "doctrina"),
+        ):
+            items = self._split_pipe(self._sc(key))
+            if items:
+                specific.setdefault(out, items)
+
+        # Derived from the PDF body
+        ministros, disidencia = self._cltc_ministerios()
+        if ministros and "ministros" not in specific:
+            specific["ministros"] = ministros
+        if disidencia and "ministros_disidencia" not in specific:
+            specific["ministros_disidencia"] = disidencia
+
+        holdings = self._cltc_holdings()
+        if holdings:
+            specific["resuelvo"] = holdings
+        se_resuelve = self._cltc_se_resuelve_text()
+        if se_resuelve:
+            specific["se_resuelve_texto"] = se_resuelve
+
+        m_verif = re.search(r"\b([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})\b",
+                            self.raw_text)
+        if m_verif:
+            specific["codigo_verificacion"] = m_verif.group(1)
+
+        specific["pais"] = "Chile"
+        if specific:
+            self.result.setdefault("court_specific", {}).update(specific)
+
+    # ── convenience ─────────────────────────────────────────────────────────
+
+    def extract_all(self) -> dict:
+        result = super().extract_all()
+        result["tribunal_pais"] = "Chile"
+        result["tribunal_nombre"] = self.tribunal_nombre
+        return result
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Extractor registry
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1028,6 +1638,7 @@ EXTRACTORS: Dict[str, type] = {
     "TJCE": TJCEExtractor,
     "TJRS": TJRSExtractor,
     "TJPR": TJPRExtractor,
+    "CLTC": CLTCExtractor,
 }
 
 
@@ -1071,6 +1682,17 @@ def _find_files_for_courts(
     if docx_dir.exists() and "TJRS" in courts:
         for f in sorted(docx_dir.glob("*.docx")):
             court_files["TJRS"].append(str(f))
+
+    # Scan CLTC downloads — TC Chile files are named CLTC_[YYYY-MM-DD_]folio.pdf
+    # and live under jurisprudence_downloads/<agent>/<folder>/<timestamp>/.
+    if "CLTC" in courts:
+        seen: set = set()
+        for pattern in ("CLTC_*.pdf", "**/CLTC_*.pdf", "*.pdf", "**/*.pdf"):
+            for f in sorted(base.glob(pattern)):
+                if CLTC_SIDECAR_RE.match(f.name) or CLTC_FNAME_RE.match(f.name):
+                    if str(f) not in seen:
+                        seen.add(str(f))
+                        court_files["CLTC"].append(str(f))
 
     return court_files
     # ═══════════════════════════════════════════════════════════════════════════════
@@ -1135,7 +1757,11 @@ def process_file(filepath: str, tribunal: str, master_lookup_rsp: dict) -> List[
     if tribunal == "TJPR":
         return _process_tjpr_multiple(text, fname, master_lookup_rsp)
     # ---- Normal single‑case ----
-    extractor = extractor_cls(text, fname, master_lookup_rsp)
+    # Scrapers write a ``<file>.metadata.json`` sidecar with authoritative
+    # structured metadata; pass it through so extractors can prefer it over
+    # parsing free text (essential for TC Chile / CLTC).
+    sidecar = _load_sidecar(filepath)
+    extractor = extractor_cls(text, fname, master_lookup_rsp, sidecar=sidecar)
     result = extractor.extract_all()
     return [result] if result else []
 
@@ -1143,7 +1769,7 @@ def process_file(filepath: str, tribunal: str, master_lookup_rsp: dict) -> List[
 def main():
     parser = argparse.ArgumentParser(description="Mechanical Jurisprudence Document Extractor")
     parser.add_argument("--courts", nargs="+", default=["TJSP", "TJMS", "TJCE", "TJRS"],
-                        choices=["TJSP", "TJMS", "TJCE", "TJRS", "TJPR"],   # added TJPR
+                        choices=["TJSP", "TJMS", "TJCE", "TJRS", "TJPR", "CLTC"],
                         help="Courts to process")
     parser.add_argument("--max-per-court", type=int, default=None,
                         help="Max documents per court (for testing)")

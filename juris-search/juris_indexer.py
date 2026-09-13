@@ -37,7 +37,7 @@ import urllib.error
 import urllib.request
 import uuid
 from dataclasses import dataclass, field, asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -148,7 +148,7 @@ class IndexerConfig:
 # ── Utilities ────────────────────────────────────────────────────────────────
 
 def _utc_now() -> str:
-    return datetime.utcnow().isoformat() + "Z"
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 def _read_json(path: Path, default: Any = None) -> Any:
     try:

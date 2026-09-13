@@ -43,8 +43,10 @@ EXTRACTIONS_DIR = Path(os.environ.get(
 EXTRACTIONS_DIR.mkdir(parents=True, exist_ok=True)
 JSON_OUT_DIR = EXTRACTIONS_DIR
 
-# Supported tribunals (mirrors court_extractor.EXTRACTORS keys).
-SUPPORTED_TRIBUNALS = ["TJSP", "TJMS", "TJCE", "TJRS", "TJPR"]
+# Supported tribunals. The authoritative list is court_extractor.EXTRACTORS;
+# this is only a fallback used if that module fails to import, and it is
+# refreshed in _try_import_extractor() below so the two can never drift apart.
+SUPPORTED_TRIBUNALS = ["TJSP", "TJMS", "TJCE", "TJRS", "TJPR", "CLTC"]
 
 
 # ── lazy imports (court_extractor + ingest_to_qdrant + master indexer) ──────────
@@ -65,6 +67,12 @@ def _try_import_extractor():
         import court_extractor
         _process_file = getattr(court_extractor, "process_file", None)
         _load_master_lookup = getattr(court_extractor, "_load_master_lookup", None)
+
+        # Keep the allow-list in lock-step with the real extractor registry so
+        # a newly added tribunal (e.g. CLTC) is accepted without a second edit.
+        _registry = sorted(getattr(court_extractor, "EXTRACTORS", {}) or {})
+        if _registry:
+            SUPPORTED_TRIBUNALS[:] = _registry
 
         # Import the low-level ingest helper directly so we can key each point
         # by numero_processo (dedupe/idempotency across multi-case PDFs).

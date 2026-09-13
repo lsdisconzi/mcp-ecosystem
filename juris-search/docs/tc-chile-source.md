@@ -3,9 +3,12 @@
 Reverse-engineering / integration notes for adding a scraper for the **Chilean
 Constitutional Court** jurisprudence search to juris-search.
 
-> **Status: ✅ IMPLEMENTED.** The scraper lives in `tc_chile_scraper.py`
-> (`TCChileJurisprudenciaScraper`), registered as court key **`CLTC`** in
-> `modules/courts.py`. Search + PDF download are verified working end-to-end.
+> **Status: ✅ FULLY IMPLEMENTED.** Scrape → download → extract → index all work.
+> The scraper lives in `tc_chile_scraper.py` (`TCChileJurisprudenciaScraper`),
+> registered as court key **`CLTC`** in `modules/courts.py`. The downstream
+> extractor is `CLTCExtractor` in `court_extractor.py`, registered as
+> `EXTRACTORS["CLTC"]`, so downloaded TC PDFs are parsed into
+> `extracted_documents/` and ingested into Qdrant. See §9 for the checklist.
 >
 > **Read §0 first.** The original recon below (§3–§4) contained several
 > incorrect claims that were only caught when the API was probed directly
@@ -438,9 +441,11 @@ court_extractor → extracted_documents/CLTC_*.json → master_index → Qdrant
 - The local filename is built from verified data (`CLTC_{fecha}_{folio}.pdf`);
   the server's `Content-Disposition` name is stored only in the sidecar as
   `server_filename`, because its embedded date is misleading.
-- ⚠️ **`court_extractor` has no `CLTC` extractor yet**, so the last arrow is
-  currently broken: downloads succeed but `process_file` logs
-  `SKIP …: no extractor for CLTC` and nothing is indexed. See §9 item 5.
+- ✅ **`court_extractor` now has a `CLTCExtractor`** (`court_extractor.py`),
+  registered as `EXTRACTORS["CLTC"]`, so the last arrow works. It prefers the
+  scraper-written **sidecar** (`*.pdf.metadata.json`) for the official ficha
+  fields and falls back to parsing the PDF text when the sidecar is absent.
+  See §9 item 5 and §10 item 9.
 - Because documents are PDFs, the downstream pipeline already handles them
   (`parser: "pdf"`, see `docs/ingestion_schema.md`).
 
@@ -577,7 +582,7 @@ Normalize each TC-Chile result to the shape the frontend / master index expects
 
 ## 9. Integration Checklist
 
-> **Status: items 1–4 and 6 are ✅ done.** Item 5 is the only remaining work.
+> **Status: ✅ COMPLETE.** All items below are done.
 
 1. ✅ **Create** `tc_chile_scraper.py` implementing the common interface (§7).
 2. ✅ **Register** the court in `modules/courts.py`:
@@ -599,20 +604,42 @@ Normalize each TC-Chile result to the shape the frontend / master index expects
    `chile` scraper label. The existing `CL` entry was renamed to **"Chile PJud"**.
 4. ✅ **System prompt**: `_build_tc_chile_system_prompt()` added to
    `modules/system_prompt.py` (Spanish; dispatched before the `CL` branch).
-5. ⬜ **Extractor** *(only remaining item)*: `court_extractor.py` has no `CLTC`
-   entry, so `process_file` logs `SKIP {file}: no extractor for CLTC` and
-   downloaded TC PDFs are **not** indexed into Qdrant/Neo4j. `BaseExtractor` is
-   Brazil/Portuguese-specific (`EMENTA` markers, CNJ keywords), so this needs a
-   Spanish-Chilean `CLTCExtractor` subclass — not a quick patch. Note the API
-   already returns structured metadata, so much of this can be a pass-through.
+5. ✅ **Extractor**: `court_extractor.py` now ships a `CLTCExtractor`
+   (`EXTRACTORS["CLTC"]`), so downloaded TC PDFs are extracted, written to
+   `extracted_documents/CLTC_{folio}.json` and ingested into Qdrant. What it does:
+   - **Sidecar-first**: reads the `*.pdf.metadata.json` written by the scraper
+     and passes through the official ficha fields (competencia/template,
+     `tc_Resultado`, `tc_Voto mayoría`/`tc_Voto disidencia`, redactores,
+     `tc_Doctrina`, `tc_Palabras clave`, `tc_Artículo de la Constitución`,
+     `tc_Precepto legal impugnado`, `tc_Sentencias relacionadas`, `ficha_id`,
+     `folio`, `url_detalle`).
+   - **PDF fallback**: when there is no sidecar it parses the sentence text
+     (`Rol N.º`, `VISTOS`, `SE RESUELVE`, `DISIDENCIA`, the `integrada por …`
+     bench list and the `Redactó la sentencia …` line).
+   - **Operative-part scoping**: TC sentences contain a `DISIDENCIA` that says
+     the opposite of the holding ("estuvieron por acoger el libelo"), so the
+     outcome and the `resuelvo` holdings are read only from the slice between
+     `SE RESUELVE:` and `DISIDENCIA` — never from the full text.
+   - Also registered in the `--courts` CLI choices, in
+     `_find_files_for_courts` (CLTC glob), in `modules/routes_ingest_pdf.py`
+     (allow-list is now derived from `EXTRACTORS`), and in the admin PDF-upload
+     tribunal selector.
+   - **`numero_processo` is resolved independently of the filename**, because
+     the `/api/ingest-pdf/upload` endpoint stores uploads under a UUID name and
+     does not copy the sidecar. Preference order: sidecar `folio` → the
+     `CLTC_<fecha>_<folio>.pdf` filename → the **ROL number** parsed out of the
+     PDF text (`Rol 16.622-2025 INA` → `16622`). Without the last fallback an
+     API-uploaded TC sentence lands as `CLTC_desconhecido_0.json`.
 6. ✅ **Tests**: `test_integration.py` §13 does a live search + a real PDF
-   download and asserts the `%PDF-` magic.
+   download and asserts the `%PDF-` magic. §14 exercises the extractor offline
+   (registered class, all core fields, canonical outcomes, correctly-scoped
+   `resuelvo`, plus the sidecar-less fallback).
 
 ---
 
 ## 10. Open Questions / Risks
 
-> **Resolutions are in §0.** Outstanding items are marked ⬜.
+> **Resolutions are in §0.** All items below are ✅ resolved.
 
 1. ✅ **Detail page deep link** — SPA is hash-routed; implemented as
    `{TC_PUBLIC_BASE}/#/ficha/{folio}`.
@@ -628,10 +655,17 @@ Normalize each TC-Chile result to the shape the frontend / master index expects
    `incluir_reservadas=True`; `exist_file` gates downloadability.
 7. ✅ **`fecha_sentencia` time-of-day** — truncated to date when normalizing.
 8. ✅ **CORS / Origin** — `Origin: https://buscador.tcchile.cl` is always sent.
-9. ⬜ **Downstream indexing** — see checklist item 5; requires `CLTCExtractor`.
-10. ⬜ **MCP catalog staleness** — `mcp/juris_api.json` and
-    `mcp/catalog/*` are generated snapshots that predate the `SearchFields`
-    addition; regenerate with `mcp/generate_tool_catalog.py` while the API is up.
+9. ✅ **Downstream indexing** — implemented as `CLTCExtractor`; see checklist
+   item 5. Verified end-to-end: `extract_and_ingest` returns
+   `{"ok": true, "proc": "16622", "ingested": 1}` and
+   `extracted_documents/CLTC_16622.json` is written.
+10. ✅ **MCP catalog staleness** — `mcp/juris_api.json` and `mcp/catalog/*`
+    were regenerated with `mcp/generate_tool_catalog.py` while the API was up
+    (requires restarting the API first, since `SearchFields` is a Pydantic
+    model). Now verified in sync with the live `/openapi.json`: **74 routes,
+    37 `SearchFields` properties** in both. The generator itself had a bug —
+    it only walked `operation["parameters"]` and ignored `requestBody`, where
+    Pydantic/FastAPI puts the body model — which is fixed.
 
 ---
 

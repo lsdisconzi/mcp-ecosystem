@@ -45,14 +45,14 @@ def parse_courts() -> List[Dict[str, Any]]:
         return []
     block = block.group(1)
     courts: List[Dict[str, Any]] = []
-    for m in re.finditer(r'"(?P<key>TJ[A-Z0-9]+|STF|CL)":\s*\{(.*?)\}', block, re.S):
+    for m in re.finditer(r'"(?P<key>TJ[A-Z0-9]+|CLTC|STF|CL)":\s*\{(.*?)\}', block, re.S):
         key = m.group("key")
         body = m.group(2)
         name = re.search(r'"name":\s*"([^"]+)"', body)
         module = re.search(r'"scraper_module":\s*"([^"]+)"', body)
         cls = re.search(r'"scraper_class":\s*"([^"]+)"', body)
         category = "esaj" if (module and "esaj" in module.group(1)) else (
-            "stf" if key == "STF" else ("chile" if key == "CL" else "custom-portal")
+            "stf" if key == "STF" else ("chile" if key in ("CL", "CLTC") else "custom-portal")
         )
         courts.append({
             "key": key,
@@ -61,7 +61,11 @@ def parse_courts() -> List[Dict[str, Any]]:
             "scraper_class": cls.group(1) if cls else "",
             "category": category,
         })
-    names = dict(re.findall(r'"(TJ[A-Z0-9]+|STF|CL)":\s*"([^"]+)"', src))
+    # Scope the friendly names to the COURT_NAMES block so unrelated
+    # "TJxx": "..." dicts elsewhere in the file cannot leak in.
+    names_src = re.search(r"COURT_NAMES\s*=\s*\{(.*?)\n\}", src, re.S)
+    names = dict(re.findall(r'"(TJ[A-Z0-9]+|CLTC|STF|CL)":\s*"([^"]+)"',
+                            names_src.group(1) if names_src else ""))
     for c in courts:
         if c["key"] in names:
             c["name"] = names[c["key"]]
@@ -168,8 +172,9 @@ def build_payload(master_path: Path, courts: List[Dict[str, Any]],
             ],
             "panels": frontend_panels(),
             "global_search_filters": ["Tribunal", "Ano"],
-            "frontend_supported_tribunals": [
-                "TJSP", "TJMS", "TJRS", "TJCE", "TJAL", "TJAM"],
+            # Derived from modules/courts.py SUPPORTED_COURTS so this can
+            # never drift from the real court registry again.
+            "frontend_supported_tribunals": [c["key"] for c in courts],
         },
         "extracted_document_schema": extracted_schema_example(),
         "sources": [
@@ -186,6 +191,7 @@ def build_payload(master_path: Path, courts: List[Dict[str, Any]],
             {"role": "frontend_view", "path": "tjrs-frontend/src/jurisprudence.html"},
             {"role": "extracted_docs_dir", "path": "extracted_documents/"},
             {"role": "scraper_chile", "path": "chile_scraper.py"},
+            {"role": "scraper_chile_tc", "path": "tc_chile_scraper.py"},
             {"role": "extractor", "path": "court_extractor.py"},
             {"role": "indexer", "path": "juris_indexer.py"},
             {"role": "ingest_qdrant", "path": "ingest_to_qdrant.py"},

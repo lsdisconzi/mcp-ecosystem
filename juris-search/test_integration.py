@@ -478,6 +478,284 @@ try:
 except Exception as exc:
     check("CLTC: section ran without exception", False, f"{type(exc).__name__}: {exc}")
 
+# ── 14. CLTC extractor (offline, no network) ─────────────────────────────
+# The downstream court_extractor must understand TC Chile PDFs, otherwise
+# every downloaded sentence is reported as "no extractor for CLTC" and never
+# reaches extracted_documents/.
+
+test_section("14. CLTC extractor")
+
+try:
+    import glob as _glob
+    import shutil
+    import tempfile
+
+    import court_extractor as CE
+
+    check("CLTC: registered in EXTRACTORS", "CLTC" in CE.EXTRACTORS)
+    check("CLTC: extractor class is CLTCExtractor",
+          getattr(CE.EXTRACTORS.get("CLTC"), "__name__", None) == "CLTCExtractor",
+          f"got {getattr(CE.EXTRACTORS.get('CLTC'), '__name__', None)!r}")
+
+    _repo = os.path.dirname(os.path.abspath(__file__))
+    candidates = sorted(_glob.glob(
+        os.path.join(_repo, "jurisprudence_downloads", "**", "CLTC_*.pdf"),
+        recursive=True))
+    check("CLTC: a downloaded sample PDF exists", bool(candidates),
+          "run section 13 first / download a TC Chile sentence")
+    if candidates:
+        sample = candidates[0]
+        print(f"    sample: {os.path.relpath(sample, _repo)}")
+
+        # 14.1 Extraction with the scraper-written sidecar present
+        cases = CE.process_file(sample, "CLTC", {})
+        check("CLTC: process_file returns exactly 1 case", len(cases) == 1,
+              f"got {len(cases)}")
+        if cases:
+            doc = cases[0]
+
+            check("CLTC: tribunal", doc.get("tribunal") == "CLTC", f"got {doc.get('tribunal')!r}")
+            check("CLTC: tribunal_pais == Chile", doc.get("tribunal_pais") == "Chile",
+                  f"got {doc.get('tribunal_pais')!r}")
+            check("CLTC: numero_processo is the folio",
+                  bool(str(doc.get("numero_processo") or "").strip()),
+                  f"got {doc.get('numero_processo')!r}")
+            check("CLTC: rol looks like a Chilean rol",
+                  bool(re.match(r"^Rol\s+\d[\d\.]*\s*-\s*\d{2,4}", doc.get("rol") or "")),
+                  f"got {doc.get('rol')!r}")
+            check("CLTC: codigo present", bool(doc.get("codigo")), f"got {doc.get('codigo')!r}")
+            check("CLTC: classe present", bool(doc.get("classe")), f"got {doc.get('classe')!r}")
+            check("CLTC: data_julgamento is ISO",
+                  bool(re.match(r"^\d{4}-\d{2}-\d{2}$", doc.get("data_julgamento") or "")),
+                  f"got {doc.get('data_julgamento')!r}")
+            check("CLTC: relator not shouted",
+                  (doc.get("relator") or "") != (doc.get("relator") or "").upper(),
+                  f"got {doc.get('relator')!r}")
+            check("CLTC: orgao_julgador", doc.get("orgao_julgador") == "Tribunal Constitucional de Chile",
+                  f"got {doc.get('orgao_julgador')!r}")
+            check("CLTC: outcome non-empty", bool(doc.get("outcome")),
+                  f"got {doc.get('outcome')!r}")
+            check("CLTC: outcome labels are canonical",
+                  all(o in {"acoge", "rechaza", "acoge_parcial", "rechaza_parcial",
+                            "empate_votos", "inadmisible", "no_conoce"}
+                      for o in (doc.get("outcome") or [])),
+                  f"got {doc.get('outcome')!r}")
+            check("CLTC: ementa non-trivial", len(doc.get("ementa") or "") > 100,
+                  f"got {len(doc.get('ementa') or '')} chars")
+            check("CLTC: legislacao_citada non-empty", bool(doc.get("legislacao_citada")),
+                  f"got {doc.get('legislacao_citada')!r}")
+            check("CLTC: assuntos non-empty", bool(doc.get("assuntos")),
+                  f"got {doc.get('assuntos')!r}")
+            check("CLTC: texto_length is non-trivial", (doc.get("texto_length") or 0) > 5000,
+                  f"got {doc.get('texto_length')!r}")
+
+            cs = doc.get("court_specific") or {}
+            check("CLTC: court_specific carries folio", bool(cs.get("folio")),
+                  f"keys={sorted(cs)[:6]}")
+            check("CLTC: court_specific carries resuelvo",
+                  len(cs.get("resuelvo") or []) >= 1,
+                  f"got {cs.get('resuelvo')!r}")
+            check("CLTC: resuelvo is the operative part, not the dissent",
+                  all("SE RECHAZA" in h.upper() or "SE ALZA" in h.upper()
+                      or "NO SE CONDENA" in h.upper() or "OFÍCIESE" in h.upper()
+                      for h in (cs.get("resuelvo") or [])),
+                  f"got {cs.get('resuelvo')}")
+            check("CLTC: court_specific carries ministros",
+                  len(cs.get("ministros") or []) >= 3,
+                  f"got {cs.get('ministros')!r}")
+            print(f"    rol={doc.get('rol')} outcome={doc.get('outcome')} "
+                  f"votacao={doc.get('votacao')!r}")
+            print(f"    resuelvo entries={len(cs.get('resuelvo') or [])} "
+                  f"ministros={len(cs.get('ministros') or [])}")
+
+        # 14.2 Extraction WITHOUT the sidecar (PDF-only fallback)
+        tmpdir = tempfile.mkdtemp(prefix="cltc_nosidecar_")
+        try:
+            stripped = os.path.join(tmpdir, os.path.basename(sample))
+            shutil.copy2(sample, stripped)
+            fallback = CE.process_file(stripped, "CLTC", {})
+            check("CLTC: sidecar-less extraction returns 1 case", len(fallback) == 1,
+                  f"got {len(fallback)}")
+            if fallback:
+                fd = fallback[0]
+                check("CLTC: sidecar-less rol still parsed",
+                      bool(re.match(r"^Rol\s+\d[\d\.]*\s*-\s*\d{2,4}", fd.get("rol") or "")),
+                      f"got {fd.get('rol')!r}")
+                check("CLTC: sidecar-less data_julgamento still parsed",
+                      bool(re.match(r"^\d{4}-\d{2}-\d{2}$", fd.get("data_julgamento") or "")),
+                      f"got {fd.get('data_julgamento')!r}")
+                check("CLTC: sidecar-less outcome non-empty", bool(fd.get("outcome")),
+                      f"got {fd.get('outcome')!r}")
+                check("CLTC: sidecar-less resuelvo non-empty",
+                      len((fd.get("court_specific") or {}).get("resuelvo") or []) >= 1,
+                      f"got {(fd.get('court_specific') or {}).get('resuelvo')!r}")
+                check("CLTC: sidecar-less tribunal_pais still set",
+                      fd.get("tribunal_pais") == "Chile", f"got {fd.get('tribunal_pais')!r}")
+        finally:
+            shutil.rmtree(tmpdir, ignore_errors=True)
+
+        # 14.3 Extraction from a UUID-named file with no sidecar — this is what
+        # the /api/ingest-pdf/upload endpoint produces, so numero_processo must
+        # still be recovered (here, from the ROL in the PDF text).
+        tmpdir = tempfile.mkdtemp(prefix="cltc_uuid_")
+        try:
+            uuid_named = os.path.join(
+                tmpdir, "f503459b-6c9e-4084-8a06-78f2e75664ef.pdf")
+            shutil.copy2(sample, uuid_named)
+            anon = CE.process_file(uuid_named, "CLTC", {})
+            check("CLTC: UUID-named PDF still yields 1 case", len(anon) == 1,
+                  f"got {len(anon)}")
+            if anon:
+                ad = anon[0]
+                check("CLTC: UUID-named PDF still yields numero_processo",
+                      bool(str(ad.get("numero_processo") or "").strip()),
+                      f"got {ad.get('numero_processo')!r}")
+                check("CLTC: UUID-named numero_processo is not a placeholder",
+                      "desconhecido" not in str(ad.get("numero_processo") or "").lower(),
+                      f"got {ad.get('numero_processo')!r}")
+                check("CLTC: UUID-named numero_processo matches the ROL digits",
+                      str(ad.get("numero_processo")) ==
+                      re.sub(r"\D", "", (ad.get("rol") or "").split("-")[0]),
+                      f"proc={ad.get('numero_processo')!r} rol={ad.get('rol')!r}")
+        finally:
+            shutil.rmtree(tmpdir, ignore_errors=True)
+
+except Exception as exc:
+    check("CLTC: extractor section ran without exception", False, f"{type(exc).__name__}: {exc}")
+
+# ── 15. Chile download contract (CL vs CLTC) ─────────────────────────────
+#
+# The frontend used to treat "has inteiro_url" as "is downloadable", which made
+# every CL (PJud) result a dead end (no link, no checkbox, both download
+# buttons disabled). The server now publishes an explicit contract.
+
+test_section("15. Chile download contract (CL vs CLTC)")
+
+try:
+    from modules.utils import _normalize_result_item
+    from modules.routes_download import _is_downloadable_item
+
+    # 15.1 CLTC carries a real document URL.
+    cltc_raw = {
+        "court": "CLTC",
+        "tribunal": "CLTC",
+        "numero_processo": "1234-2024",
+        "rol": "1234-2024",
+        "inteiro_url": "https://buscador-backend.tcchile.cl/api/extended/1234-2024/download",
+        "url_detalle": "https://buscador.tcchile.cl/#/ficha/1234-2024",
+    }
+    cltc = _normalize_result_item(cltc_raw, "CLTC")
+    check("CLTC: inteiro_url preserved", "tcchile.cl" in (cltc.get("inteiro_url") or ""),
+          f"got {cltc.get('inteiro_url')!r}")
+    check("CLTC: download_mode == 'url'", cltc.get("download_mode") == "url",
+          f"got {cltc.get('download_mode')!r}")
+    check("CLTC: downloadable is True", cltc.get("downloadable") is True,
+          f"got {cltc.get('downloadable')!r}")
+    check("CLTC: url_detalle preserved for the fallback link",
+          cltc.get("url_detalle") == cltc_raw["url_detalle"],
+          f"got {cltc.get('url_detalle')!r}")
+    check("CLTC: _is_downloadable_item accepts the raw result",
+          _is_downloadable_item(cltc_raw) is True)
+
+    # 15.2 CL (PJud) has NO document URL but is still downloadable, because the
+    # scraper re-drives the browser from id_sentencia + categoria.
+    cl_raw = {
+        "court": "CL",
+        "tribunal": "CL",
+        "numero_processo": "",
+        "rol": "C-9632-2024",
+        "id_sentencia": "199016334",
+        "categoria": "civiles",
+        "search_terms": "latam airlines",
+        "url_detalle": "https://juris.pjud.cl/busqueda/buscar_sentencias",
+        "inteiro_url": None,
+    }
+    cl = _normalize_result_item(dict(cl_raw), "CL")
+    check("CL: inteiro_url is empty (never fabricated)",
+          (cl.get("inteiro_url") or "") == "",
+          f"got {cl.get('inteiro_url')!r}")
+    check("CL: download_mode == 'browser'", cl.get("download_mode") == "browser",
+          f"got {cl.get('download_mode')!r}")
+    check("CL: downloadable is True", cl.get("downloadable") is True,
+          f"got {cl.get('downloadable')!r}")
+    check("CL: url_detalle preserved for the fallback link",
+          "pjud.cl" in (cl.get("url_detalle") or ""),
+          f"got {cl.get('url_detalle')!r}")
+    check("CL: _is_downloadable_item accepts a URL-less result with id_sentencia",
+          _is_downloadable_item(cl_raw) is True)
+
+    # 15.3 CL without id_sentencia cannot be re-driven -> not downloadable.
+    cl_broken = dict(cl_raw)
+    cl_broken.pop("id_sentencia")
+    cl_broken_norm = _normalize_result_item(dict(cl_broken), "CL")
+    check("CL (no id_sentencia): download_mode == 'none'",
+          cl_broken_norm.get("download_mode") == "none",
+          f"got {cl_broken_norm.get('download_mode')!r}")
+    check("CL (no id_sentencia): downloadable is False",
+          cl_broken_norm.get("downloadable") is False,
+          f"got {cl_broken_norm.get('downloadable')!r}")
+    check("CL (no id_sentencia): _is_downloadable_item rejects it",
+          _is_downloadable_item(cl_broken) is False)
+
+    # 15.4 A plain Brazilian result with no URL stays non-downloadable.
+    tjsp = _normalize_result_item(
+        {"court": "TJSP", "numero_processo": "1000001-11.2024.8.26.0001"}, "TJSP")
+    check("TJSP (no URL): download_mode == 'none'",
+          tjsp.get("download_mode") == "none", f"got {tjsp.get('download_mode')!r}")
+    check("TJSP (no URL): _is_downloadable_item rejects it",
+          _is_downloadable_item(tjsp) is False)
+
+    # 15.5 download_url is honoured as a document URL alias.
+    alias = _normalize_result_item(
+        {"court": "CLTC", "download_url": "https://example.test/doc.pdf"}, "CLTC")
+    check("alias: download_url promotes to inteiro_url",
+          alias.get("inteiro_url") == "https://example.test/doc.pdf",
+          f"got {alias.get('inteiro_url')!r}")
+    check("alias: download_mode == 'url'", alias.get("download_mode") == "url",
+          f"got {alias.get('download_mode')!r}")
+
+    # 15.6 Junk input must not raise.
+    check("non-dict input is rejected by _is_downloadable_item",
+          _is_downloadable_item(None) is False and _is_downloadable_item("x") is False)
+except Exception as exc:
+    check("Chile download contract section ran without exception", False,
+          f"{type(exc).__name__}: {exc}")
+
+# ── 16. Chile field definitions exposed to the dedicated section ──────────
+
+test_section("16. Chile field definitions")
+
+try:
+    from modules.courts import SUPPORTED_COURTS, _resolve_court
+    from chile_scraper import CHILE_CATEGORIES
+
+    check("CL registered", "CL" in SUPPORTED_COURTS)
+    check("CLTC registered", "CLTC" in SUPPORTED_COURTS)
+    check("CL resolves to itself", _resolve_court("CL") == "CL")
+    check("CLTC resolves to itself", _resolve_court("CLTC") == "CLTC")
+    check("lowercase 'cltc' resolves", _resolve_court("cltc") == "CLTC")
+    check("CLTC scraper class is TCChileJurisprudenciaScraper",
+          SUPPORTED_COURTS["CLTC"].get("scraper_class") == "TCChileJurisprudenciaScraper",
+          f"got {SUPPORTED_COURTS['CLTC'].get('scraper_class')!r}")
+    check("CL scraper class is ChileJurisprudenciaScraper",
+          SUPPORTED_COURTS["CL"].get("scraper_class") == "ChileJurisprudenciaScraper",
+          f"got {SUPPORTED_COURTS['CL'].get('scraper_class')!r}")
+    check("CLTC scraper module is tc_chile_scraper",
+          SUPPORTED_COURTS["CLTC"].get("scraper_module") == "tc_chile_scraper",
+          f"got {SUPPORTED_COURTS['CLTC'].get('scraper_module')!r}")
+    check("CL scraper module is chile_scraper",
+          SUPPORTED_COURTS["CL"].get("scraper_module") == "chile_scraper",
+          f"got {SUPPORTED_COURTS['CL'].get('scraper_module')!r}")
+
+    for key in ("corte_suprema", "civiles", "penales", "laborales", "familia"):
+        entry = CHILE_CATEGORIES.get(key) or {}
+        check(f"CHILE_CATEGORIES['{key}'] has slug+name",
+              bool(entry.get("slug")) and bool(entry.get("name")),
+              f"got {entry!r}")
+except Exception as exc:
+    check("Chile field definitions section ran without exception", False,
+          f"{type(exc).__name__}: {exc}")
+
 # ── Summary ──────────────────────────────────────────────────────────────
 
 test_section("SUMMARY")

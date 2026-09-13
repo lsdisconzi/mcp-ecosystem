@@ -51,6 +51,25 @@ def _try_import_extractor():
         logger.warning("court_extractor not available: %s", exc)
 
 
+def _is_downloadable_item(item: Dict[str, Any]) -> bool:
+    """Whether a search result carries enough information to be downloaded.
+
+    Most courts expose a document URL (``inteiro_url``). CL (PJud) does not —
+    its buscador is SPA/F5-protected and the scraper downloads by re-driving the
+    browser using ``id_sentencia`` + ``categoria`` (see chile_scraper.py). The
+    explicit ``downloadable`` flag is published by ``_normalize_result_item``;
+    fall back to the field-level check for callers that bypass normalization.
+    """
+    if not isinstance(item, dict):
+        return False
+    if item.get("inteiro_url") or item.get("download_url") or item.get("url"):
+        return True
+    if item.get("downloadable") is True or item.get("download_mode") in ("url", "browser"):
+        return True
+    court = (item.get("tribunal") or item.get("court") or "").strip().upper()
+    return court == "CL" and bool(item.get("id_sentencia"))
+
+
 def _auto_extract_and_ingest(file_path: str, tribunal: str) -> bool:
     """Run extraction + Qdrant ingestion on a downloaded file. Non-blocking."""
     if not _COURT_EXTRACTOR_AVAILABLE or _extract_and_ingest is None:
@@ -82,6 +101,7 @@ def _collect_download_results(req: DownloadRequest) -> List[Dict[str, Any]]:
     return [{
         "inteiro_url": single_url,
         "numero_processo": req.numero_processo,
+        "tribunal": req.tribunal or DEFAULT_COURT,
     }]
 
 
@@ -108,20 +128,36 @@ async def download_inteiro_teor(req: DownloadRequest):
 
             scraper = scraper_cls(headless=_resolve_headless())
             try:
-                file_path = scraper.download_inteiro_teor_url(
-                    url=target_url,
-                    save_dir=save_root,
-                    metadata={
-                        "numero_processo": numero,
-                        "source_url": target_url,
-                    },
-                    folder_name=req.folder_name,
-                    agent_id="juris-search",
-                    search_params={
-                        "tribunal": req.tribunal or DEFAULT_COURT,
-                        "mode": "single",
-                    },
-                )
+                if target_url:
+                    file_path = scraper.download_inteiro_teor_url(
+                        url=target_url,
+                        save_dir=save_root,
+                        metadata={
+                            "numero_processo": numero,
+                            "source_url": target_url,
+                        },
+                        folder_name=req.folder_name,
+                        agent_id="juris-search",
+                        search_params={
+                            "tribunal": req.tribunal or DEFAULT_COURT,
+                            "mode": "single",
+                        },
+                    )
+                else:
+                    # URL-less sources (e.g. CL / PJud) download by re-driving
+                    # the browser from the search metadata, so fall back to the
+                    # batch-capable entry point with a single item.
+                    single_files = scraper.download_all_inteiro_teor(
+                        [target],
+                        save_dir=save_root,
+                        folder_name=req.folder_name,
+                        agent_id="juris-search",
+                        search_params={
+                            "tribunal": court,
+                            "mode": "single",
+                        },
+                    )
+                    file_path = single_files[0] if single_files else None
             finally:
                 scraper.close()
 
@@ -180,6 +216,10 @@ async def download_inteiro_teor(req: DownloadRequest):
 
             files: List[str] = []
             download_report: List[Dict[str, Any]] = []
+            # Map each produced file back to its source court so auto-extraction
+            # uses the right extractor. Using req.tribunal here was wrong for
+            # multi-court batches and mis-attributed CL (PJud) downloads.
+            file_courts: Dict[str, str] = {}
 
             for court_key, court_results in grouped_results.items():
                 scraper_cls, _ = _get_scraper_class(court_key)
@@ -196,6 +236,8 @@ async def download_inteiro_teor(req: DownloadRequest):
                         },
                     )
                     files.extend(court_files)
+                    for saved_file in court_files:
+                        file_courts[saved_file] = court_key
                     download_report.append({
                         "court": court_key,
                         "status": "completed",
@@ -222,7 +264,7 @@ async def download_inteiro_teor(req: DownloadRequest):
             _sync_export_links()
             # Auto-extract structured fields + ingest all downloaded files to Qdrant
             for f in files:
-                court_for_file = req.tribunal or DEFAULT_COURT
+                court_for_file = file_courts.get(f) or req.tribunal or DEFAULT_COURT
                 _auto_extract_and_ingest(f, court_for_file)
             if _MASTER_INDEXER_AVAILABLE and _master_indexer is not None:
                 try:
@@ -270,7 +312,7 @@ async def download_status(job_id: str):
 @router.post("/api/download-batch")
 async def download_batch_compat(req: BatchDownloadRequest):
     """Legacy-compatible synchronous batch download endpoint."""
-    to_download = [r for r in req.results if r.get("inteiro_url")]
+    to_download = [r for r in req.results if _is_downloadable_item(r)]
 
     if not to_download:
         return {
@@ -278,7 +320,7 @@ async def download_batch_compat(req: BatchDownloadRequest):
             "successful": 0,
             "failed": 0,
             "files": [],
-            "errors": ["No results with inteiro_url found"],
+            "errors": ["No downloadable results found (no inteiro_url and no browser-downloadable id)"],
         }
 
     try:

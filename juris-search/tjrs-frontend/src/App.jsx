@@ -100,6 +100,8 @@ const T = {
   accentHover: "#15472D",
   danger: "#C4453C",
   dangerLight: "#FDF0EF",
+  warning: "#9A6B14",
+  warningLight: "#FDF6E7",
   tag: "#F0EDE7",
   shadow: "0 1px 3px rgba(45,42,38,0.06)",
   shadowLg: "0 8px 32px rgba(45,42,38,0.08)",
@@ -206,6 +208,13 @@ const Icons = {
       <path d="M12 3v18" /><path d="M5 7l7-3 7 3" /><path d="M5 7l-2 6a4 4 0 0 0 8 0l-2-6" /><path d="M19 7l-2 6a4 4 0 0 0 8 0l-2-6" /><path d="M7 21h10" />
     </svg>
   ),
+  chile: (active) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? T.accent : T.textMuted} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" />
+      <path d="M9 4v16" />
+      <path d="m14 8 .9 1.8 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2L11 10l2-.3z" />
+    </svg>
+  ),
 };
 
 // Master Index style helpers
@@ -245,7 +254,7 @@ const COURTS = [
   { key: "TJRJ", name: "TJRJ", fullName: "Tribunal de Justiça do Rio de Janeiro", region: "Southeast", scraperType: "dedicated" },
 
   // ── Chile ───────────────────────────────────────────────────────────
-  { key: "CL", name: "Chile PJud", fullName: "Poder Judicial de Chile — Buscador Unificado de Fallos", region: "Chile", scraperType: "chile" },
+  { key: "CL", name: "Chile PJud", fullName: "Poder Judicial de Chile — Buscador Unificado de Fallos", region: "Chile", scraperType: "chile", limited: true },
   { key: "CLTC", name: "TC Chile", fullName: "Tribunal Constitucional de Chile — Buscador de Jurisprudencia", region: "Chile", scraperType: "chile" },
 
   // ── South ───────────────────────────────────────────────────────────
@@ -283,6 +292,114 @@ const COURTS = [
 ];
 
 const ALL_COURT_KEYS = COURTS.map((court) => court.key);
+
+// ── Chile ───────────────────────────────────────────────────────────────────
+// Two structurally different Chilean sources, so they get a dedicated section:
+//
+//   CLTC (Tribunal Constitucional) — Laravel REST backend, stable document URL
+//        (`/api/extended/{folio}/download`), dedicated CLTCExtractor. Primary path.
+//   CL   (Poder Judicial)          — SPA behind F5 BIG-IP ASM; exposes NO
+//        document URL. Downloads re-drive the browser keyed by
+//        id_sentencia + categoria, and there is no extractor yet. Limited.
+const CHILE_COURT_KEYS = ["CLTC", "CL"];
+const CHILE_DEFAULT_COURT = "CLTC";
+const CHILE_LIMITED_COURT_KEYS = ["CL"];
+
+const CHILE_CATEGORIA_OPTIONS = [
+  { value: "civiles", label: "Civiles" },
+  { value: "penales", label: "Penales" },
+  { value: "laborales", label: "Laborales" },
+  { value: "familia", label: "Familia" },
+  { value: "cobranza", label: "Cobranza" },
+  { value: "corte_suprema", label: "Corte Suprema" },
+  { value: "corte_apelaciones", label: "Corte de Apelaciones" },
+  { value: "salud_cs", label: "Salud CS" },
+  { value: "lineas_jurisprudenciales", label: "Líneas Jurisprudenciales" },
+  { value: "compendio_extranjeria", label: "Compendio Extranjería" },
+];
+
+const CHILE_ORDEN_OPTIONS = [
+  { value: "recientes", label: "Más recientes" },
+  { value: "antiguos", label: "Más antiguos" },
+  { value: "rol", label: "ROL" },
+  { value: "relevancia", label: "Relevancia" },
+];
+
+const DEFAULT_CHILE_FIELDS = {
+  search_text: "",
+  categoria: "civiles",
+  rol: "",
+  juez: "",
+  materia: "",
+  fecha_inicio: "",
+  fecha_fin: "",
+  orden: "recientes",
+  resultados_por_pagina: 20,
+  max_results: 20,
+  // CLTC (TC Chile) native filters
+  folio: "",
+  competencia: "",
+  ministro: "",
+  tipo_resolucion: "",
+  resultado: "",
+  palabra_clave: "",
+  cuerpo_legal: "",
+  fecha_sentencia: "",
+};
+
+/** Field set for the dedicated Chilean form, per source. */
+function getChileFields(courtKey) {
+  const commonTail = [
+    { key: "max_results", label: "Máx. Resultados", type: "number", placeholder: "20" },
+  ];
+
+  if (courtKey === "CLTC") {
+    return [
+      { key: "search_text", label: "Termos de Busca", placeholder: "Ex: vida, debido proceso..." },
+      { key: "folio", label: "Folio", placeholder: "Ex: 16622" },
+      { key: "competencia", label: "Competencia", placeholder: "Ex: INA, ROL..." },
+      { key: "ministro", label: "Ministro", placeholder: "Nome do ministro..." },
+      { key: "tipo_resolucion", label: "Tipo de Resolución", placeholder: "Ex: Sentencia" },
+      { key: "resultado", label: "Resultado", placeholder: "Ex: Acogido, Rechazado..." },
+      { key: "fecha_sentencia", label: "Fecha de Sentencia", type: "date" },
+      { key: "palabra_clave", label: "Palabra Clave", placeholder: "Ex: igualdad" },
+      { key: "cuerpo_legal", label: "Cuerpo Legal", placeholder: "Ex: Constitución" },
+      ...commonTail,
+    ];
+  }
+
+  return [
+    { key: "search_text", label: "Termos de Busca", placeholder: "Ex: latam airlines, daño moral..." },
+    { key: "categoria", label: "Categoría", type: "select", options: CHILE_CATEGORIA_OPTIONS },
+    { key: "rol", label: "ROL / RIT", placeholder: "Ex: C-9632-2024" },
+    { key: "juez", label: "Juez(a)", placeholder: "Nome do juiz..." },
+    { key: "materia", label: "Materia", placeholder: "Ex: CONTRATO, RESOLUCIÓN DE" },
+    { key: "fecha_inicio", label: "Fecha — Início", type: "date" },
+    { key: "fecha_fin", label: "Fecha — Fim", type: "date" },
+    { key: "orden", label: "Orden", type: "select", options: CHILE_ORDEN_OPTIONS },
+    { key: "resultados_por_pagina", label: "Resultados por Página", type: "number", placeholder: "20" },
+    ...commonTail,
+  ];
+}
+
+function isLimitedChileCourt(courtKey) {
+  return CHILE_LIMITED_COURT_KEYS.includes(String(courtKey || "").toUpperCase());
+}
+
+/**
+ * Whether a result can be downloaded.
+ *
+ * Prefers the server-published capability: `downloadable` / `download_mode`
+ * ("url" = direct document link, "browser" = re-drive the browser, e.g. PJud).
+ * Falls back to field sniffing for payloads that bypass normalization.
+ */
+function isResultDownloadable(result) {
+  if (!result || typeof result !== "object") return false;
+  if (result.downloadable === true) return true;
+  if (result.download_mode === "url" || result.download_mode === "browser") return true;
+  if (result.inteiro_url || result.download_url || result.url) return true;
+  return isLimitedChileCourt(result.tribunal || result.court) && Boolean(result.id_sentencia);
+}
 
 function getCourtInfo(key) {
   return COURTS.find((c) => c.key === key) || COURTS[0];
@@ -434,6 +551,8 @@ function WorkspaceApp() {
   const isMobile = useIsMobile();
   const [selectedCourts, setSelectedCourts] = useState([DEFAULT_TRIBUNAL]);
   const [showSourceMenu, setShowSourceMenu] = useState(false);
+  const [chileCourt, setChileCourt] = useState(CHILE_DEFAULT_COURT);
+  const [chileFields, setChileFields] = useState({ ...DEFAULT_CHILE_FIELDS });
 
   const normalizedSelection = normalizeSelectedCourts(selectedCourts);
   const primaryCourt = normalizedSelection[0] || DEFAULT_TRIBUNAL;
@@ -699,21 +818,36 @@ function WorkspaceApp() {
   };
 
   // ── Search ─────────────────────────────────────────────────────────────
-  const runSearch = async () => {
-    if (!fields.search_text && !Object.values(fields).some((v) => v)) return;
+  // `override` lets the dedicated Chile section run a search with its own field
+  // set and court selection while reusing the polling/bookkeeping below.
+  const runSearch = async (override = null) => {
+    const activeFields = override?.fields || fields;
+    const activeCourts = override?.courts || normalizedSelection;
+    const activePrimaryCourt = activeCourts[0] || DEFAULT_TRIBUNAL;
+
+    if (!activeFields.search_text && !Object.values(activeFields).some((v) => v)) return;
 
     // Normalize an inverted date range. <input type="date"> yields "YYYY-MM-DD",
     // so a plain string comparison is a valid chronological comparison.
-    let dataInicio = fields.data_julgamento_inicio;
-    let dataFim = fields.data_julgamento_fim;
-    if (dataInicio && dataFim && dataInicio > dataFim) {
-      [dataInicio, dataFim] = [dataFim, dataInicio];
+    const searchPayload = { ...activeFields };
+    if (searchPayload.data_julgamento_inicio || searchPayload.data_julgamento_fim) {
+      let dataInicio = searchPayload.data_julgamento_inicio;
+      let dataFim = searchPayload.data_julgamento_fim;
+      if (dataInicio && dataFim && dataInicio > dataFim) {
+        [dataInicio, dataFim] = [dataFim, dataInicio];
+      }
+      searchPayload.data_julgamento_inicio = dataInicio;
+      searchPayload.data_julgamento_fim = dataFim;
     }
-    const searchPayload = {
-      ...fields,
-      data_julgamento_inicio: dataInicio,
-      data_julgamento_fim: dataFim,
-    };
+    if (searchPayload.fecha_inicio || searchPayload.fecha_fin) {
+      let fechaInicio = searchPayload.fecha_inicio;
+      let fechaFin = searchPayload.fecha_fin;
+      if (fechaInicio && fechaFin && fechaInicio > fechaFin) {
+        [fechaInicio, fechaFin] = [fechaFin, fechaInicio];
+      }
+      searchPayload.fecha_inicio = fechaInicio;
+      searchPayload.fecha_fin = fechaFin;
+    }
 
     setSearchStatus("running"); setSearchError(null); setResults([]);
     setSearchBreakdown([]);
@@ -728,9 +862,9 @@ function WorkspaceApp() {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...searchPayload,
-          court: primaryCourt,
-          courts: normalizedSelection,
-          tribunal: normalizedSelection.length === 1 ? normalizedSelection[0] : "ALL",
+          court: activePrimaryCourt,
+          courts: activeCourts,
+          tribunal: activeCourts.length === 1 ? activeCourts[0] : "ALL",
         }),
       });
       const { job_id } = await res.json();
@@ -759,9 +893,9 @@ function WorkspaceApp() {
     } catch (err) { setSearchStatus("error"); setSearchError(err.message); }
   };
 
-  const downloadableResults = results.filter((r) => Boolean(r?.inteiro_url));
+  const downloadableResults = results.filter((r) => isResultDownloadable(r));
   const selectedDownloadableResults = results.filter((r, i) => (
-    Boolean(r?.inteiro_url) && selectedResultKeys.has(makeResultKey(r, i))
+    isResultDownloadable(r) && selectedResultKeys.has(makeResultKey(r, i))
   ));
   const selectedCount = selectedDownloadableResults.length;
   const allDownloadableSelected = downloadableResults.length > 0 && selectedCount === downloadableResults.length;
@@ -783,7 +917,7 @@ function WorkspaceApp() {
     }
     const next = new Set();
     results.forEach((r, i) => {
-      if (r?.inteiro_url) next.add(makeResultKey(r, i));
+      if (isResultDownloadable(r)) next.add(makeResultKey(r, i));
     });
     setSelectedResultKeys(next);
   };
@@ -812,6 +946,15 @@ function WorkspaceApp() {
       setDownloadFolderName(folderName);
     }
 
+    // Derive the tribunal from the payload itself rather than the global source
+    // selection — a Chile-section download must not fall back to TJSP.
+    const payloadCourts = [...new Set(
+      payloadResults
+        .map((r) => String(r?.tribunal || r?.court || "").toUpperCase().trim())
+        .filter(Boolean),
+    )];
+    const payloadTribunal = payloadCourts.length === 1 ? payloadCourts[0] : null;
+
     try {
       const res = await fetch(apiUrl("/api/download"), {
         method: "POST",
@@ -819,7 +962,7 @@ function WorkspaceApp() {
         body: JSON.stringify({
           results: payloadResults,
           folder_name: folderName,
-          tribunal: normalizedSelection.length === 1 ? primaryCourt : null,
+          tribunal: payloadTribunal,
         }),
       });
       if (!res.ok) throw new Error(`Falha ao iniciar download (${res.status})`);
@@ -866,6 +1009,13 @@ function WorkspaceApp() {
 
   const updateField = (key, value) => setFields((p) => ({ ...p, [key]: value }));
   const clearFields = () => setFields({ ...DEFAULT_FIELDS });
+
+  // ── Chile section ──────────────────────────────────────────────────────
+  const updateChileField = (key, value) => setChileFields((p) => ({ ...p, [key]: value }));
+  const clearChileFields = () => setChileFields({ ...DEFAULT_CHILE_FIELDS });
+  const chileFieldList = getChileFields(chileCourt);
+  const chileCourtInfo = getCourtInfo(chileCourt);
+  const chileCourtIsLimited = isLimitedChileCourt(chileCourt);
 
   // ═════════════════════════════════════════════════════════════════════════
   // SUB-COMPONENTS
@@ -1017,6 +1167,151 @@ function WorkspaceApp() {
     </div>
   );
 
+  // ═════════════════════════════════════════════════════════════════════════
+  // DEDICATED CHILE SECTION
+  // The two Chilean sources share nothing with the Brazilian field set, and
+  // CL (PJud) cannot be driven by the generic download flow (no document URL),
+  // so they get their own form + search entry point.
+  // ═════════════════════════════════════════════════════════════════════════
+  const ChileView = ({ style }) => (
+    <div style={{
+      flex: 1, overflowY: "auto", background: T.bg,
+      padding: isMobile ? "16px 14px 120px" : "24px 28px",
+      WebkitOverflowScrolling: "touch", ...style,
+    }}>
+      {/* Header */}
+      <div style={{
+        background: T.surface, border: `1px solid ${T.border}`, borderRadius: T.radius,
+        padding: isMobile ? "12px" : "14px 16px", marginBottom: "14px", boxShadow: T.shadow,
+      }}>
+        <div style={{ fontSize: "14px", fontWeight: 600, marginBottom: "6px" }}>
+          🇨🇱 Busca — Tribunais do Chile
+        </div>
+        <div style={{ fontSize: "12px", color: T.textMuted, lineHeight: 1.55 }}>
+          Seção dedicada às fontes chilenas, com os campos nativos de cada
+          buscador. Os campos abaixo mudam conforme a fonte escolhida.
+        </div>
+      </div>
+
+      {/* Source selector */}
+      <div style={{ marginBottom: "14px" }}>
+        <label htmlFor="chile-court" style={{
+          display: "block", fontSize: "11px", fontWeight: 600,
+          textTransform: "uppercase", letterSpacing: "0.06em",
+          color: T.textMuted, marginBottom: "5px", fontFamily: T.fontSans,
+        }}>Fonte Chilena</label>
+        <select
+          id="chile-court" name="chile-court"
+          value={chileCourt}
+          onChange={(e) => setChileCourt(e.target.value)}
+          style={{
+            width: "100%", border: `1px solid ${T.border}`,
+            borderRadius: T.radiusSm, padding: isMobile ? "12px" : "9px 12px",
+            fontSize: isMobile ? "16px" : "13.5px", fontFamily: T.fontSans,
+            color: T.text, background: T.surface, outline: "none",
+            boxSizing: "border-box",
+          }}>
+          {CHILE_COURT_KEYS.map((key) => {
+            const info = getCourtInfo(key);
+            return (
+              <option key={key} value={key}>
+                {info.name} — {info.fullName}{isLimitedChileCourt(key) ? " (limitado)" : ""}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+
+      {/* Limited-source warning */}
+      {chileCourtIsLimited && (
+        <div style={{
+          background: T.warningLight, border: `1px solid ${T.warning}33`,
+          borderRadius: T.radiusSm, padding: "10px 12px", marginBottom: "14px",
+          fontSize: "12px", color: T.warning, lineHeight: 1.55,
+        }}>
+          <strong>Fonte limitada.</strong> O buscador do Poder Judicial não expõe
+          URL de documento (SPA atrás de F5/reCAPTCHA), então o download é feito
+          reabrindo o buscador no navegador a partir do <code>id_sentencia</code> —
+          mais lento e sujeito a bloqueio. A busca também é menos estável.
+          Para resultados indexáveis, prefira <strong>TC Chile (CLTC)</strong>.
+        </div>
+      )}
+
+      {/* Dynamic fields */}
+      {chileFieldList.map((f) => {
+        const isSelect = f.type === "select";
+        const inputStyle = {
+          width: "100%", border: `1px solid ${T.border}`,
+          borderRadius: T.radiusSm, padding: isMobile ? "12px" : "9px 12px",
+          fontSize: isMobile ? "16px" : "13.5px", fontFamily: T.fontSans,
+          color: T.text, background: T.surface, outline: "none",
+          boxSizing: "border-box",
+        };
+        const fieldId = `chile-field-${f.key}`;
+        return (
+          <div key={f.key} style={{ marginBottom: "14px" }}>
+            <label htmlFor={fieldId} style={{
+              display: "block", fontSize: "11px", fontWeight: 600,
+              textTransform: "uppercase", letterSpacing: "0.06em",
+              color: T.textMuted, marginBottom: "5px", fontFamily: T.fontSans,
+            }}>{f.label}</label>
+            {isSelect ? (
+              <select
+                id={fieldId} name={fieldId}
+                value={chileFields[f.key] ?? ""}
+                onChange={(e) => updateChileField(f.key, e.target.value)}
+                style={inputStyle}>
+                {(f.options || []).map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                id={fieldId} name={fieldId}
+                type={f.type || "text"}
+                value={chileFields[f.key] ?? ""}
+                onChange={(e) => updateChileField(
+                  f.key,
+                  f.type === "number" ? (parseInt(e.target.value, 10) || "") : e.target.value,
+                )}
+                placeholder={f.placeholder}
+                style={inputStyle} />
+            )}
+          </div>
+        );
+      })}
+
+      {/* Actions */}
+      <div style={{ display: "flex", gap: "8px" }}>
+        <button
+          onClick={() => runSearch({ fields: chileFields, courts: [chileCourt] })}
+          disabled={searchStatus === "running"}
+          style={{
+            flex: 1, padding: isMobile ? "15px" : "12px",
+            background: T.accent, color: "#fff", border: "none",
+            borderRadius: T.radiusSm, fontSize: isMobile ? "15.5px" : "14px",
+            fontWeight: 600, cursor: searchStatus === "running" ? "not-allowed" : "pointer",
+            fontFamily: T.fontSans, opacity: searchStatus === "running" ? 0.6 : 1,
+          }}>
+          {searchStatus === "running" ? (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+              <Spinner size={14} color="#fff" /> Buscando...
+            </span>
+          ) : `Buscar em ${chileCourtInfo.name}`}
+        </button>
+        <button
+          onClick={clearChileFields}
+          style={{
+            padding: isMobile ? "15px" : "12px 16px",
+            background: "transparent", color: T.danger,
+            border: `1px solid ${T.border}`, borderRadius: T.radiusSm,
+            fontSize: "13px", cursor: "pointer", fontFamily: T.fontSans,
+            whiteSpace: "nowrap",
+          }}>Limpar</button>
+      </div>
+    </div>
+  );
+
   const ResultsView = ({ style }) => (
     <div style={{
       flex: 1, overflowY: "auto", background: T.bg,
@@ -1075,8 +1370,16 @@ function WorkspaceApp() {
           padding: isMobile ? "10px" : "12px 14px", marginBottom: "12px", boxShadow: T.shadow,
         }}>
           <div style={{ fontSize: "12px", color: T.textMuted, marginBottom: "8px" }}>
-            {downloadableResults.length} resultado{downloadableResults.length !== 1 ? "s" : ""} com inteiro teor disponível.
+            {downloadableResults.length} de {results.length} resultado{results.length !== 1 ? "s" : ""} podem ser baixados.
           </div>
+          {results.length > downloadableResults.length && (
+            <div style={{
+              fontSize: "11.5px", color: T.warning, marginBottom: "8px",
+              lineHeight: 1.5,
+            }}>
+              {results.length - downloadableResults.length} resultado{results.length - downloadableResults.length !== 1 ? "s" : ""} sem documento para download nesta fonte.
+            </div>
+          )}
           <div style={{ fontSize: "11.5px", color: T.textMuted, marginBottom: "10px", lineHeight: 1.5 }}>
             Padrão exibido: Processo, Tribunal, Relator, Órgão Julgador, Comarca, Data de Julgamento e Ementa.
           </div>
@@ -1157,8 +1460,9 @@ function WorkspaceApp() {
             normalized.comarcaOrigem ? `Comarca: ${normalized.comarcaOrigem}` : "",
             normalized.dataJulgamento ? `Julgamento: ${normalized.dataJulgamento}` : "",
           ].filter(Boolean);
-        const selectable = Boolean(normalized.inteiroUrl);
+        const selectable = isResultDownloadable(r);
         const selected = selectedResultKeys.has(makeResultKey(r, i));
+        const detailUrl = normalized.inteiroUrl || String(r?.url_detalle || "").trim();
         return (
           <div key={i} style={{
             background: T.surface, border: `1px solid ${T.border}`,
@@ -1182,7 +1486,7 @@ function WorkspaceApp() {
                   Selecionar
                 </label>
               )}
-              {normalized.inteiroUrl && (
+              {normalized.inteiroUrl ? (
                 <a href={normalized.inteiroUrl} target="_blank" rel="noopener noreferrer"
                   style={{
                     fontSize: "11.5px", color: T.accent, textDecoration: "none",
@@ -1190,7 +1494,16 @@ function WorkspaceApp() {
                     borderRadius: "6px", border: `1px solid ${T.accent}33`,
                     whiteSpace: "nowrap", flexShrink: 0,
                   }}>Inteiro Teor ↗</a>
-              )}
+              ) : detailUrl ? (
+                <a href={detailUrl} target="_blank" rel="noopener noreferrer"
+                  title="Esta fonte não expõe URL de documento; o download é feito pelo buscador (requer navegador)."
+                  style={{
+                    fontSize: "11.5px", color: T.textMuted, textDecoration: "none",
+                    fontWeight: 500, padding: isMobile ? "6px 12px" : "4px 10px",
+                    borderRadius: "6px", border: `1px solid ${T.border}`,
+                    whiteSpace: "nowrap", flexShrink: 0,
+                  }}>Abrir no buscador ↗</a>
+              ) : null}
             </div>
             {metaParts.length > 0 && (
               <div style={{ fontSize: "12px", color: T.textMuted, marginTop: "5px", lineHeight: 1.5 }}>
@@ -1264,6 +1577,9 @@ function WorkspaceApp() {
         <div style={{ fontSize: "14px", fontWeight: 600, marginBottom: "6px" }}>Downloads de Inteiro Teor</div>
         <div style={{ fontSize: "12px", color: T.textMuted, lineHeight: 1.5, marginBottom: "10px" }}>
           Baixe todos os resultados encontrados ou apenas os selecionados na aba Resultados.
+          Resultados do <strong>TC Chile (CLTC)</strong> baixam o PDF direto do buscador; resultados
+          do <strong>Poder Judicial (CL)</strong> são recuperados reabrindo o buscador no navegador
+          (mais lento e sem <em>inteiro teor</em> pré-indexado).
         </div>
         <div style={{ marginBottom: "10px" }}>
           <label htmlFor="download-folder-name" style={{
@@ -1634,7 +1950,16 @@ function WorkspaceApp() {
                     onChange={() => toggleSource(item.key)}
                   />
                   <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.25 }}>
-                    <span style={{ fontWeight: 600 }}>{item.name}</span>
+                    <span style={{ fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                      {item.name}
+                      {item.limited && (
+                        <span style={{
+                          fontSize: "9.5px", fontWeight: 700, letterSpacing: "0.04em",
+                          textTransform: "uppercase", padding: "1px 5px", borderRadius: "4px",
+                          background: T.warningLight, color: T.warning,
+                        }}>limitado</span>
+                      )}
+                    </span>
                     <span style={{ color: T.textMuted, fontSize: "11px" }}>{item.fullName}</span>
                   </span>
                 </label>
@@ -1886,6 +2211,18 @@ function WorkspaceApp() {
             }}>
               <JurisprudenceView apiBase={API_BASE} isMobile={true} T={T} />
             </div>
+
+            {/* Chile (dedicated search/form/download section) */}
+            <div style={{
+              position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+              transform: mobileView === "chile" ? "translateX(0)" : "translateX(100%)",
+              opacity: mobileView === "chile" ? 1 : 0,
+              transition: "transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.2s ease",
+              pointerEvents: mobileView === "chile" ? "auto" : "none",
+              willChange: "transform",
+            }}>
+              {ChileView({})}
+            </div>
           </div>
 
           {/* Bottom Nav */}
@@ -1898,6 +2235,7 @@ function WorkspaceApp() {
             {[
               { id: "chat", label: "Chat", icon: Icons.chat },
               { id: "fields", label: "Campos", icon: Icons.fields },
+              { id: "chile", label: "Chile", icon: Icons.chile },
               { id: "results", label: "Resultados", icon: Icons.results },
               { id: "downloads", label: "Download", icon: Icons.download },
               { id: "mindex", label: "Índice", icon: Icons.masterIndex },
@@ -1957,6 +2295,7 @@ function WorkspaceApp() {
             }}>
               {[
                 { id: "fields", label: "Campos de Busca" },
+                { id: "chile", label: "Chile" },
                 { id: "results", label: `Resultados${results.length > 0 ? ` (${results.length})` : ""}` },
                 { id: "downloads", label: "Downloads" },
                 { id: "mindex", label: "Índice Mestre" },
@@ -1983,7 +2322,9 @@ function WorkspaceApp() {
                 ? <AdminView apiBase={API_BASE} isMobile={false} T={T} />
                 : desktopTab === "juris"
                   ? <JurisprudenceView apiBase={API_BASE} isMobile={false} T={T} />
-                  : desktopTab === "fields" ? FieldsView({}) : desktopTab === "results" ? ResultsView({}) : DownloadsView({})}
+                  : desktopTab === "fields" ? FieldsView({})
+                    : desktopTab === "chile" ? ChileView({})
+                      : desktopTab === "results" ? ResultsView({}) : DownloadsView({})}
           </div>
         </div>
       )}
