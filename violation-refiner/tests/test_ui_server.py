@@ -31,6 +31,7 @@ from violation_pack.config import Settings  # noqa: E402
 from violation_pack.mcp_server import build_server  # noqa: E402
 from violation_pack.ui_server import (  # noqa: E402
     UI_FILENAME,
+    bundle_jurisdiction,
     describe_schema,
     describe_settings,
     describe_tools,
@@ -40,6 +41,7 @@ from violation_pack.ui_server import (  # noqa: E402
     browse_workspace,
     discover_bundles,
     find_ui_path,
+    is_bundle_dir,
     probe_runtime,
 )
 
@@ -307,10 +309,65 @@ def test_discover_bundles_reads_real_build_directories():
     ids = [bundle["id"] for bundle in payload["bundles"]]
     assert ids == sorted(ids)
     assert len(ids) == len(set(ids))
-    assert all(re.fullmatch(r"CL-\d+", bundle_id) for bundle_id in ids)
     assert "CL-005" in ids
     by_id = {bundle["id"]: bundle for bundle in payload["bundles"]}
     assert by_id["CL-005"]["file_count"] > 0
+
+
+def test_discover_bundles_lists_every_real_bundle_on_disk():
+    """Disk is the source of truth — a name filter must not hide bundles.
+
+    A ``CL-\\d+`` test used to gate this list, which silently dropped every BR
+    bundle, every INT bundle and non-numeric CL ids such as ``CL-f7dd941e``. An
+    equivalence against the directory tree fails loudly if that returns.
+    """
+    root = REPO_ROOT / "build"
+    on_disk = {
+        path.name for path in root.iterdir()
+        if path.is_dir() and (path / f"{path.name}.json").is_file()
+    } if root.is_dir() else set()
+    listed = {bundle["id"] for bundle in discover_bundles()["bundles"]}
+    assert on_disk == listed
+
+
+def test_discover_bundles_reports_a_derived_jurisdiction_per_bundle():
+    payload = discover_bundles()
+    for bundle in payload["bundles"]:
+        assert bundle["jurisdiction"] == bundle["id"].split("-", 1)[0]
+    assert payload["jurisdictions"] == sorted(set(payload["jurisdictions"]))
+
+
+def test_bundle_jurisdiction_is_derived_not_mapped():
+    assert bundle_jurisdiction("CL-001") == "CL"
+    assert bundle_jurisdiction("BR-020") == "BR"
+    assert bundle_jurisdiction("INT-019") == "INT"
+    # The code must not assume a 2-letter jurisdiction or a numeric local id.
+    assert bundle_jurisdiction("CL-f7dd941e") == "CL"
+    assert bundle_jurisdiction("nodash") == ""
+
+
+def test_is_bundle_dir_requires_the_named_payload(tmp_path):
+    empty = tmp_path / "CL-001"
+    empty.mkdir()
+    # A directory that merely looks like a bundle is the remains of an
+    # interrupted run, not a bundle.
+    assert not is_bundle_dir(empty)
+    (empty / "CL-001.json").write_text("{}", encoding="utf-8")
+    assert is_bundle_dir(empty)
+    # A payload named for a different id is not this directory's payload.
+    other = tmp_path / "BR-001"
+    other.mkdir()
+    (other / "BR-002.json").write_text("{}", encoding="utf-8")
+    assert not is_bundle_dir(other)
+
+
+def test_discover_bundle_accepts_every_jurisdiction():
+    """One id per jurisdiction shape, including a non-numeric local id."""
+    for bundle_id in ("CL-005", "CL-f7dd941e", "BR-001", "INT-001"):
+        payload = discover_bundle(bundle_id)
+        assert payload is not None, bundle_id
+        assert payload["violation_id"] == bundle_id
+        assert payload["path"] == f"build/{bundle_id}"
 
 
 def test_get_api_bundles_returns_real_build_directories(client):

@@ -160,27 +160,75 @@ def browse_workspace(path: str = "", kind: str = "directory") -> dict[str, Any] 
     return {"ok": True, "kind": "directory", "path": rel, "parent": parent, "entries": entries}
 
 
+#: Bundle directory names are the violation id verbatim: ``<JURISDICTION>-<local>``,
+#: where the jurisdiction is an upper-case alpha code (``CL``, ``BR``, ``INT``) and
+#: the local part is alphanumeric and may carry ``_``, ``.`` or ``-`` — see
+#: ``CL-f7dd941e`` and ``CL-001__opus46``.
+#:
+#: This is a *safety* check (no path separator, no ``..``), deliberately **not** a
+#: membership test. The previous ``CL-\d+`` filter mirrored a jurisdiction list that
+#: drifts silently: it hid all 20 BR bundles, all 19 INT bundles and ``CL-f7dd941e``,
+#: so the UI listed 41 of the 81 bundles on disk with no warning.
+_BUNDLE_DIR_RE = re.compile(r"(?!.*\.\.)[A-Za-z0-9][A-Za-z0-9._-]*")
+
+
+def bundle_payload_path(bundle_dir: Path) -> Path | None:
+    """``<bundle>/<bundle>.json`` when it exists — the structural bundle marker.
+
+    Every real bundle carries the violation payload under its own directory name,
+    so this doubles as the "is this really a bundle?" test.
+    """
+    named = bundle_dir / f"{bundle_dir.name}.json"
+    return named if named.is_file() else None
+
+
+def is_bundle_dir(path: Path) -> bool:
+    """True when ``path`` is a directory carrying its own violation payload."""
+    return path.is_dir() and bundle_payload_path(path) is not None
+
+
+def bundle_jurisdiction(violation_id: str) -> str:
+    """The leading jurisdiction code of a bundle id (``CL-001`` -> ``CL``).
+
+    Derived from the id rather than restated in a mapping, so a jurisdiction
+    added upstream shows up here without a code change.
+    """
+    return violation_id.split("-", 1)[0] if "-" in violation_id else ""
+
+
 def discover_bundles() -> dict[str, Any]:
-    """List real CL-* bundle directories under the repository build root."""
+    """List every real bundle directory under the repository build root.
+
+    Discovery is structural — a directory is a bundle when it carries its own
+    ``<dirname>.json`` payload — so all jurisdictions (CL, BR, INT) are listed.
+    """
     root = find_workspace_root().resolve()
     build_root = root / "build"
     bundles = []
     if build_root.is_dir():
         for path in sorted(build_root.iterdir(), key=lambda item: item.name):
-            if not path.is_dir() or not re.fullmatch(r"CL-\d+", path.name):
+            if not _BUNDLE_DIR_RE.fullmatch(path.name):
+                continue
+            if not is_bundle_dir(path):
                 continue
             file_count = sum(1 for item in path.rglob("*") if item.is_file())
             if file_count == 0:
-                # A CL-* directory with no files is not a bundle — it is the
-                # remains of an interrupted run. `build/CL-001/` sat empty and
+                # A bundle-shaped directory with no files is not a bundle — it is
+                # the remains of an interrupted run. `build/CL-001/` sat empty and
                 # made this function report a phantom bundle.
                 continue
             bundles.append({
                 "id": path.name,
+                "jurisdiction": bundle_jurisdiction(path.name),
                 "path": str(path.relative_to(root)),
                 "file_count": file_count,
             })
-    return {"ok": True, "root": "build", "bundles": bundles}
+    return {
+        "ok": True,
+        "root": "build",
+        "bundles": bundles,
+        "jurisdictions": sorted({bundle["jurisdiction"] for bundle in bundles}),
+    }
 
 
 #: Bundle-relative artifacts the UI reads. Every entry is optional on disk: a
@@ -225,15 +273,20 @@ def discover_bundle(violation_id: str) -> dict[str, Any] | None:
     """Read one real ``build/<violation_id>/`` bundle for the UI.
 
     Read-only and filesystem-only: it dispatches no tool and writes nothing. The
-    id is validated against the same ``CL-<digits>`` shape ``discover_bundles()``
-    lists, so a traversal attempt and an off-sequence directory are both refused
-    with ``None`` (the caller answers 400 without disclosing what exists).
+    id must be a bare bundle-directory name that resolves to a real bundle under
+    ``build/``, so a traversal attempt, a path-shaped id and an off-sequence
+    directory are all refused with ``None`` (the caller answers 400 without
+    disclosing what actually exists).
     """
-    if not re.fullmatch(r"CL-\d+", violation_id or ""):
+    if not _BUNDLE_DIR_RE.fullmatch(violation_id or ""):
         return None
     root = find_workspace_root().resolve()
     bundle = root / "build" / violation_id
-    if not bundle.is_dir():
+    # Belt and braces: the name is already separator-free, but confirm the
+    # resolved path is still a direct child of build/ before reading anything.
+    if bundle.parent.resolve() != (root / "build").resolve():
+        return None
+    if not is_bundle_dir(bundle):
         return None
 
     artifacts: dict[str, Any] = {}
@@ -883,8 +936,8 @@ def build_ui_routes(mcp):
                 {
                     "ok": False,
                     "error": (
-                        "violation_id must name a CL-<digits> bundle directory "
-                        "under build/."
+                        "violation_id must name an existing bundle directory "
+                        "under build/ (e.g. CL-005, BR-001, INT-019)."
                     ),
                 },
                 status_code=400,
