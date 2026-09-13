@@ -209,6 +209,18 @@ code {
 .record-row.verified { border-left-color: var(--status-note); }
 .rr-main { flex: 1; min-width: 0; }
 .rr-id { font-family: var(--mono); font-size: 0.78rem; color: var(--text-primary); font-weight: 600; }
+.rr-arrow { color: var(--text-muted); }
+/* Rows the hydration layer generates: one badge set per server status value,
+   a coverage grid cell, and a stage chip that reports whether the layer ran. */
+.weight-note { font-family: var(--mono); font-size: 0.66rem; color: var(--text-muted); margin-left: 6px; }
+.chip.chip-done { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.check-row { background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--border-strong); border-radius: 3px; padding: 11px 14px; }
+.cr-head { display: flex; align-items: center; gap: 8px; }
+.cr-id { font-family: var(--mono); font-size: 0.74rem; font-weight: 600; color: var(--text-primary); }
+.cr-name { flex: 1; font-size: 0.82rem; color: var(--text-secondary); }
+.cr-detail { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+.matrix td.cell-on { color: var(--status-note); text-align: center; }
+.matrix td.cell-off { color: var(--border-strong); text-align: center; }
 .rr-detail { font-size: 0.82rem; color: var(--text-secondary); margin-top: 3px; }
 .rr-detail.quote { font-family: var(--serif); font-style: italic; }
 .rr-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-left: auto; flex-shrink: 0; }
@@ -420,12 +432,12 @@ code {
       <div class="context-switchers">
         <div class="switcher">
           <label>Project</label>
-          <select><option>violation-pack</option></select>
+          <select id="projectSelect"><option value="">loading…</option></select>
         </div>
         <div class="switcher">
           <label>Bundle</label>
           <select id="bundleSelect">
-            <option>Loading bundles…</option>
+            <option value="">Loading bundles…</option>
           </select>
         </div>
       </div>
@@ -445,7 +457,7 @@ code {
       <div class="stat-item"><div class="stat-val" id="statBundle">—</div><div class="stat-label">Active bundle</div></div>
       <div class="stat-item"><div class="stat-val" id="statStage">S2 · Evidence</div><div class="stat-label">Current step</div></div>
       <div class="stat-item"><div class="stat-val accent" id="statConfidence">—</div><div class="stat-label">Confidence</div></div>
-      <div class="stat-item"><div class="stat-val" id="statValidation">not run</div><div class="stat-label">Validation (V01–V11)</div></div>
+      <div class="stat-item"><div class="stat-val" id="statValidation">not run</div><div class="stat-label" id="statValidationLabel">Validation</div></div>
       <div class="stat-item"><div class="stat-val" id="statSegments">0</div><div class="stat-label">Anchored segments</div></div>
       <div class="stat-item"><div class="stat-val" id="statAuthorities">0</div><div class="stat-label">Authorities</div></div>
     </div>
@@ -497,54 +509,14 @@ code {
 
     <div class="settings-section">
       <h3>Project &amp; paths</h3>
-      <p class="sec-desc">Resolved once here; every step derives its file pickers from these.</p>
-      <div class="settings-row"><div><div class="settings-row-label">Project root</div><div class="settings-row-sub" data-setting-value="projectRoot">workspace/violation-refiner</div></div><button class="btn" data-action="browse" data-setting="projectRoot" data-browse-kind="directory" data-browse-path=".">Browse</button></div>
-      <div class="settings-row"><div><div class="settings-row-label">Bundles root</div><div class="settings-row-sub" data-setting-value="bundlesRoot">build/</div></div><button class="btn" data-action="browse" data-setting="bundlesRoot" data-browse-kind="directory" data-browse-path="build">Browse</button></div>
-      <div class="settings-row"><div><div class="settings-row-label">Active bundle</div><div class="settings-row-sub" data-setting-value="bundleRoot">build/CL-005</div></div><button class="btn" data-action="browse" data-setting="bundleRoot" data-browse-kind="directory" data-browse-path="build">Browse</button></div>
-      <div class="settings-row"><div><div class="settings-row-label">Output / build root</div><div class="settings-row-sub" data-setting-value="buildRoot">build/</div></div><button class="btn" data-action="browse" data-setting="buildRoot" data-browse-kind="directory" data-browse-path="build">Browse</button></div>
-      <div class="settings-row"><div><div class="settings-row-label">Transcripts source dir</div><div class="settings-row-sub" data-setting-value="transcriptsRoot">data/transcripts/html/</div></div><button class="btn" data-action="browse" data-setting="transcriptsRoot" data-browse-kind="directory" data-browse-path="data/transcripts/html">Browse</button></div>
-      <div class="settings-row"><div><div class="settings-row-label">Legal framework source dir</div><div class="settings-row-sub" data-setting-value="frameworkRoot">data/law/CL/</div></div><button class="btn" data-action="browse" data-setting="frameworkRoot" data-browse-kind="directory" data-browse-path="data/law/CL">Browse</button></div>
-      <button class="advanced-toggle" data-action="toggle-advanced" data-target="#adv-paths">Show interpreter &amp; log paths ▾</button>
-      <div class="advanced-block" id="adv-paths">
-        <div class="settings-row"><div><div class="settings-row-label">.env file</div><div class="settings-row-sub" data-setting-value="envFile">project-root/.env</div></div><button class="btn" data-action="browse" data-setting="envFile" data-browse-kind="file" data-browse-path=".env">Browse</button></div>
-        <div class="settings-row"><div><div class="settings-row-label">Python interpreter</div><div class="settings-row-sub" data-setting-value="pythonPath">.venv/bin/python</div></div><button class="btn" data-action="browse" data-setting="pythonPath" data-browse-kind="file" data-browse-path=".venv/bin/python">Browse</button></div>
-        <div class="settings-row"><div><div class="settings-row-label">Log directory</div><div class="settings-row-sub" data-setting-value="logRoot">.dev-logs/violation-refiner/</div></div><button class="btn" data-action="browse" data-setting="logRoot" data-browse-kind="directory" data-browse-path=".dev-logs">Browse</button></div>
-      </div>
+      <p class="sec-desc">Resolved by <code>config.Settings</code> on the server; every step derives its file pickers from these. Nothing here is typed by hand.</p>
+      <div id="settingsPaths"><div class="field-hint">Loading resolved paths…</div></div>
     </div>
 
     <div class="settings-section">
       <h3>Environment</h3>
-      <p class="sec-desc">Read from <code>.env</code>. Secrets are masked after saving.</p>
-
-      <div class="settings-row-sub" style="margin:10px 0 2px;">QDRANT</div>
-      <div class="settings-row"><div class="settings-row-label">QDRANT_URL</div><input placeholder="not set"></div>
-      <div class="settings-row"><div class="settings-row-label">QDRANT_API_KEY</div>
-        <div class="pw-row"><input type="password" value="••••••••"><button class="icon-btn" style="width:30px;height:30px;" data-action="toggle-pw">👁</button></div>
-      </div>
-      <div class="settings-row"><div class="settings-row-label">QDRANT_COLLECTION_PREFIX</div><input value="violationrefiner_v1"></div>
-
-      <div class="settings-row-sub" style="margin:14px 0 2px;">NEO4J</div>
-      <div class="settings-row"><div class="settings-row-label">NEO4J_URI</div><input placeholder="not set"></div>
-      <div class="settings-row"><div class="settings-row-label">NEO4J_DATABASE</div><input value="agent.violation.refiner"></div>
-
-      <div class="settings-row-sub" style="margin:14px 0 2px;">LLM (generic)</div>
-      <div class="settings-row"><div class="settings-row-label">LLM_PROVIDER</div>
-        <select><option>anthropic</option><option>openrouter</option><option>deepseek</option><option>openai</option><option>ollama</option></select>
-      </div>
-      <div class="settings-row"><div class="settings-row-label">LLM_MODEL</div><input placeholder="not set"></div>
-      <div class="settings-row"><div class="settings-row-label">LLM_TEMPERATURE</div><input type="number" step="0.1" value="0.1"></div>
-
-      <button class="advanced-toggle" data-action="toggle-advanced" data-target="#adv-env">Show 20 more variables (Ollama, provider keys, governance) ▾</button>
-      <div class="advanced-block" id="adv-env">
-        <div class="settings-row"><div class="settings-row-label">OLLAMA_HOST</div><input placeholder="http://localhost:11434"></div>
-        <div class="settings-row"><div class="settings-row-label">OLLAMA_EMBED_MODEL</div><input value="bge-m3"></div>
-        <div class="settings-row"><div class="settings-row-label">LLM_MAX_TOKENS</div><input value="8000"></div>
-        <div class="settings-row"><div class="settings-row-label">LLM_TOKEN_BUDGET</div><input value="250000"></div>
-        <div class="settings-row"><div class="settings-row-label">LLM_TIMEOUT_SECONDS</div><input value="90.0"></div>
-        <div class="settings-row"><div class="settings-row-label">ANTHROPIC_API_KEY</div><input type="password" value="••••••••"></div>
-        <div class="settings-row"><div class="settings-row-label">AUTHORITY_VERIFICATION_FLOOR</div><input type="number" step="0.01" min="0" max="1" value="0.85"></div>
-      </div>
-
+      <p class="sec-desc">Read from <code>.env</code> by <code>Settings.from_env()</code>. Secrets are never sent to the browser — only whether a value is set.</p>
+      <div id="settingsEnv"><div class="field-hint">Loading effective settings…</div></div>
       <div class="btn-row">
         <button class="btn btn-primary" data-action="run" data-tool="llm_provider_info_tool" data-step="S14">Test connections</button>
       </div>
@@ -553,13 +525,7 @@ code {
     <div class="settings-section">
       <h3>Runtime health</h3>
       <p class="sec-desc">Checked on launch. Amber items disable their panel rather than failing the app.</p>
-      <div class="health-check-row" data-health="python"><span class="health-dot"></span><span class="hc-label">Python ≥ 3.10</span></div>
-      <div class="health-check-row" data-health="pydantic"><span class="health-dot"></span><span class="hc-label">pydantic ≥ 2.5</span></div>
-      <div class="health-check-row" data-health="mcp"><span class="health-dot"></span><span class="hc-label">mcp extra</span></div>
-      <div class="health-check-row" data-health="httpx"><span class="health-dot"></span><span class="hc-label">httpx extra (LLM enrichment)</span></div>
-      <div class="health-check-row" data-health="qdrant_client"><span class="health-dot"></span><span class="hc-label">qdrant-client extra</span><span class="hc-fix">pip install -e '.[qdrant]'</span></div>
-      <div class="health-check-row" data-health="neo4j"><span class="health-dot"></span><span class="hc-label">neo4j extra</span><span class="hc-fix">pip install -e '.[neo4j]'</span></div>
-      <div class="health-check-row" data-health="server"><span class="health-dot"></span><span class="hc-label" id="hcServerLabel">MCP server — 127.0.0.1:8124</span><span class="hc-fix" id="hcServerFix" style="display:none;">./start.sh</span></div>
+      <div id="settingsHealth"><div class="field-hint">Probing runtime…</div></div>
     </div>
   </div>
 </div>
@@ -592,25 +558,16 @@ code {
   <div class="canvas-header">
     <h2 class="canvas-title">Stage source artifacts</h2>
     <p class="canvas-desc">Drop the real transcript and framework files into the bundle first — every later hash and quote check is anchored against exactly these bytes.</p>
-    <span class="gate-banner">✓ Gate met — 1 transcript and 1 framework staged</span>
+    <span class="gate-banner" id="s0Gate">Loading bundle…</span>
   </div>
 
   <div class="block">
-    <div class="drop-zone" data-action="browse" data-setting="sourceFile" data-browse-kind="file" data-browse-path="data/transcripts/html">Drag files here, or <strong>browse</strong> to choose a source file<div class="field-hint" id="s0SourceFile"></div></div>
+    <div class="drop-zone" id="s0DropZone" data-action="browse" data-setting="sourceFile" data-browse-kind="file">Drag files here, or <strong>browse</strong> to choose a source file<div class="field-hint" id="s0SourceFile"></div></div>
     <div class="field-row" style="margin-top:16px;">
       <div class="field">
         <label>Destination <span class="req">*</span></label>
-        <select>
-          <option>transcripts_dir → Transcripts/</option>
-          <option>framework_dir → Legal framework/</option>
-          <option>violation_main → {violation_id}.json</option>
-          <option>contract → contract.json</option>
-          <option>manifest → MANIFEST.txt</option>
-          <option>readme → Violation bundle/README.md</option>
-          <option>validation_report → Validation/validation_report.md</option>
-          <option>validation_checks → Validation/checks.json</option>
-          <option>element_grid → Schema/element_grid_{id}.json</option>
-        </select>
+        <select id="s0Destination"></select>
+        <div class="field-hint">Every option is a key <code>pack.copy_source_into_bundle</code> resolves.</div>
       </div>
       <div class="field readonly">
         <label>Bundle root</label>
@@ -621,23 +578,8 @@ code {
 
   <div class="block">
     <div class="block-title">Staged files</div>
-    <div class="block-sub">The hash shown here is what S2/S3 and V02/V03 will compare against later.</div>
-    <div class="record-list" id="s0StagedFiles">
-      <div class="record-row verified">
-        <div class="rr-main">
-          <div class="rr-id">timeline_aeropuerto_STG_7.html</div>
-          <div class="rr-detail">→ Transcripts/timeline_aeropuerto_STG_7.html</div>
-        </div>
-        <div class="rr-meta"><span class="hash-chip">e91a…7fd2</span><button class="rr-remove">✕</button></div>
-      </div>
-      <div class="record-row verified">
-        <div class="rr-main">
-          <div class="rr-id">CHIPENCOD_CP.md</div>
-          <div class="rr-detail">→ Legal framework/CHIPENCOD_CP.md</div>
-        </div>
-        <div class="rr-meta"><span class="hash-chip">4b02…c91e</span><button class="rr-remove">✕</button></div>
-      </div>
-    </div>
+    <div class="block-sub">Sizes and paths are read off the bundle; per-file SHA256 lives in MANIFEST.txt.</div>
+    <div class="record-list" id="s0StagedFiles"><div class="field-hint">Loading bundle files…</div></div>
   </div>
 </template>
 
@@ -646,29 +588,29 @@ code {
   <div class="canvas-header">
     <h2 class="canvas-title">Initialize the violation</h2>
     <p class="canvas-desc">Identity and incident details that every downstream layer hangs off. This runs once per bundle.</p>
-    <span class="gate-banner">✓ Gate met</span>
+    <span class="gate-banner" id="s1Gate">Loading bundle…</span>
   </div>
 
   <div class="block">
     <div class="field-row cols-3">
       <div class="field readonly"><label>Violation ID</label><input id="s1ViolationId" value="" readonly></div>
-      <div class="field"><label>Title <span class="req">*</span></label><input value="Detención irregular en pista, Aeropuerto Arturo Merino Benítez"></div>
+      <div class="field"><label>Title <span class="req">*</span></label><input id="s1Title"></div>
       <div class="field">
         <label>Severity <span class="req">*</span></label>
-        <select><option>LOW</option><option selected>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select>
+        <select id="s1Severity"></select>
       </div>
     </div>
     <div class="field-row cols-3">
-      <div class="field"><label>Incident date <span class="req">*</span></label><input value="2025-11-02"></div>
-      <div class="field"><label>Incident location <span class="req">*</span></label><input value="Aeropuerto Arturo Merino Benítez, pista 17L"></div>
-      <div class="field"><label>Flight</label><input value="LA-1234"></div>
+      <div class="field"><label>Incident date <span class="req">*</span></label><input id="s1Date"></div>
+      <div class="field"><label>Incident location <span class="req">*</span></label><input id="s1Location"></div>
+      <div class="field"><label>Flight</label><input id="s1Flight"></div>
     </div>
     <div class="field-row cols-3">
-      <div class="field"><label>Operator</label><input value="LATAM Airlines"></div>
-      <div class="field"><label>Clock time estimate</label><input value="15:16"></div>
+      <div class="field"><label>Operator</label><input id="s1Operator"></div>
+      <div class="field"><label>Clock time estimate</label><input id="s1Clock"></div>
       <div class="field">
         <label>Clock time confidence</label>
-        <select><option>unknown</option><option selected>estimated_from_audio_offset</option><option>verified</option></select>
+        <select id="s1ClockConfidence"></select>
       </div>
     </div>
   </div>
@@ -676,17 +618,12 @@ code {
   <button class="advanced-toggle" data-action="toggle-advanced" data-target="#adv-s1">Cross-references &amp; open questions ▾</button>
   <div class="advanced-block" id="adv-s1">
     <div class="block">
+      <div class="block-title">Cross-references</div>
+      <div class="record-list" id="xref-list"><div class="field-hint">None recorded in this bundle.</div></div>
+    </div>
+    <div class="block">
       <div class="block-title">Open questions</div>
-      <div class="record-list" id="oq-list">
-        <div class="record-row">
-          <div class="rr-main">
-            <div class="rr-id">OQ-CL005-PDI-PARTE</div>
-            <div class="rr-detail">Request the PDI parte policial via Ley 20.285 · blocks art193.documento_oficial</div>
-          </div>
-          <div class="rr-meta"><span class="badge badge-warn">high</span><button class="rr-remove">✕</button></div>
-        </div>
-      </div>
-      <div class="btn-row"><button class="btn" data-action="log" data-msg="Added open question row" data-step="S1">+ Add open question</button></div>
+      <div class="record-list" id="oq-list"><div class="field-hint">None recorded in this bundle.</div></div>
     </div>
   </div>
 
@@ -698,12 +635,12 @@ code {
   <div class="canvas-header">
     <h2 class="canvas-title">Evidence — transcript segments</h2>
     <p class="canvas-desc">Anchor verbatim quotes to the source transcript. Tick segments below rather than typing IDs — offsets, speaker, and hashes are parsed, never hand-entered.</p>
-    <span class="gate-banner">✓ Gate met — 3 anchored segments, 1 legacy</span>
+    <span class="gate-banner" id="s2Gate">Loading bundle…</span>
   </div>
 
   <div class="field-row">
-    <div class="field"><label>Transcript <span class="req">*</span></label><select id="s2TranscriptSelect"><option>Loading rendered transcripts…</option></select><div class="field-hint" id="s2TranscriptMeta">Source files are discovered from data/transcripts/html/.</div></div>
-    <div class="field"><label>Source ID <span class="req">*</span></label><input id="s2SourceId" value="STG-7"></div>
+    <div class="field"><label>Transcript <span class="req">*</span></label><select id="s2TranscriptSelect"><option value="">Loading transcripts…</option></select><div class="field-hint" id="s2TranscriptMeta"></div></div>
+    <div class="field"><label>Source ID <span class="req">*</span></label><input id="s2SourceId" value=""></div>
   </div>
 
   <div class="block">
@@ -724,58 +661,43 @@ code {
   <div class="canvas-header">
     <h2 class="canvas-title">Norms — cached articles</h2>
     <p class="canvas-desc">Attach the articles this violation invokes, with an excerpt that must be a byte-exact substring of the cached framework text.</p>
-    <span class="gate-banner">✓ Gate met — 1 article verified in-bundle</span>
+    <span class="gate-banner" id="s3Gate">Loading bundle…</span>
   </div>
 
   <div class="field-row">
-    <div class="field"><label>Framework file <span class="req">*</span></label><select id="s3FrameworkFile"><option></option></select></div>
-    <div class="field"><label>Framework code <span class="req">*</span></label><input value="CHIPENCOD"></div>
+    <div class="field"><label>Framework file <span class="req">*</span></label><select id="s3FrameworkFile"><option value="">No framework cache in this bundle</option></select></div>
+    <div class="field"><label>Framework code <span class="req">*</span></label><input id="s3FrameworkCode" value=""></div>
   </div>
 
   <div class="block">
     <div class="block-title">Article picker</div>
-    <div class="block-sub">Parsed <code>### Art.</code> headers from the cache. Select an article, then select its text to fill the excerpt below — this guarantees the substring match.</div>
-    <div class="chip-row">
-      <span class="chip badge-accent" style="border-color:var(--accent);">Art. 193</span>
-      <span class="chip">Art. 194</span>
-      <span class="chip">Art. 133 A</span>
-      <span class="chip">Art. 260</span>
-    </div>
+    <div class="block-sub">Article numbers the cache actually holds. Select an article, then select its text to fill the excerpt below — this guarantees the substring match.</div>
+    <div class="chip-row" id="s3ArticleChips"><span class="field-hint">Loading cached articles…</span></div>
   </div>
 
   <div class="block">
     <div class="field-row">
-      <div class="field"><label>Article ID</label><input value="CHIPENCOD.Art.193"></div>
+      <div class="field"><label>Article ID</label><input id="s3ArticleId" value=""></div>
       <div class="field">
         <label>Norm type</label>
-        <select><option>definition</option><option selected>prohibition</option><option>penalty</option><option>right</option><option>liability</option><option>exemption</option></select>
+        <select id="s3NormType"></select>
       </div>
     </div>
     <div class="field">
       <label>Verbatim excerpt <span class="req">*</span></label>
-      <textarea class="quote">"Comete falsificación de instrumento público el funcionario que, en ejercicio de sus funciones, faltare a la verdad en la narración de hechos sustanciales."</textarea>
-      <div class="field-hint">✅ bundled copy from data/law/CL/CHIPENCOD_CP.md</div>
+      <textarea class="quote" id="s3Verbatim"></textarea>
+      <div class="field-hint" id="s3VerbatimSource"></div>
     </div>
   </div>
 
   <div class="block">
     <div class="block-title">Established articles</div>
-    <div class="record-list">
-      <div class="record-row verified">
-        <div class="rr-main"><div class="rr-id">CHIPENCOD.Art.193</div><div class="rr-detail">Falsificación de instrumento público</div></div>
-        <div class="rr-meta"><span class="badge badge-pass">verified_in_bundle</span><span class="badge badge-neutral">supporting</span></div>
-      </div>
-    </div>
+    <div class="record-list" id="s3Established"><div class="field-hint">No established articles in this bundle.</div></div>
   </div>
 
   <button class="advanced-toggle" data-action="toggle-advanced" data-target="#adv-s3">Candidate (unverified) articles ▾</button>
   <div class="advanced-block" id="adv-s3">
-    <div class="record-list">
-      <div class="record-row legacy">
-        <div class="rr-main"><div class="rr-id">CHIPENCOD.Art.260</div><div class="rr-detail">Excerpt not found in any cached body — demoted automatically</div></div>
-        <div class="rr-meta"><span class="badge badge-warn">not_in_bundle</span><button class="btn" data-action="log" data-msg="Kept CHIPENCOD.Art.260 as candidate" data-step="S3">Keep as candidate</button></div>
-      </div>
-    </div>
+    <div class="record-list" id="s3Candidates"><div class="field-hint">No candidate articles in this bundle.</div></div>
   </div>
 </template>
 
@@ -784,40 +706,19 @@ code {
   <div class="canvas-header">
     <h2 class="canvas-title">Element grids</h2>
     <p class="canvas-desc">For each established article, define the doctrinal elements that must be proven and mark which segments prove them. This feeds V06 directly.</p>
-    <span class="gate-banner">✓ Gate met — CHIPENCOD.Art.193 has 3 elements</span>
+    <span class="gate-banner" id="s4Gate">Loading bundle…</span>
   </div>
 
-  <div class="field"><label>Article</label><select><option>CHIPENCOD.Art.193 — Art. 193</option></select></div>
+  <div class="field"><label>Article</label><select id="s4Article"><option value="">No element grid in this bundle</option></select></div>
 
   <div class="block" style="margin-top:20px;">
     <div class="block-title">Elements × evidence</div>
-    <div class="block-sub">Click a cell to link a segment to an element. Proof-status weights are shown so the score is never a mystery.</div>
-    <div class="matrix-wrap">
-      <table class="matrix">
-        <thead><tr><th>Element</th><th>Proof status</th><th>STG-7.seg-55</th><th>STG-7.seg-56</th><th>STG-7.seg-61</th></tr></thead>
-        <tbody>
-          <tr>
-            <td>art193.documento_oficial</td>
-            <td><span class="badge badge-warn">contested · 0.5</span></td>
-            <td class="link-cell">·</td><td class="link-cell">·</td><td class="link-cell linked">●</td>
-          </tr>
-          <tr>
-            <td>art193.faltare_a_la_verdad</td>
-            <td><span class="badge badge-pass">strong · 0.8</span></td>
-            <td class="link-cell linked">●</td><td class="link-cell">·</td><td class="link-cell">·</td>
-          </tr>
-          <tr>
-            <td>art193.hechos_sustanciales</td>
-            <td><span class="badge badge-fail">missing · 0.0</span></td>
-            <td class="link-cell">·</td><td class="link-cell">·</td><td class="link-cell">·</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <div class="block-sub">Columns are the segments the grid actually links, read off <code>proof_evidence_segments</code>. Badge shows the real proof-status weight.</div>
+    <div class="matrix-wrap"><table class="matrix" id="s4Matrix"></table></div>
     <div class="score-bar-wrap">
-      <span class="score-val">0.43</span>
-      <div class="score-bar"><div class="score-bar-fill" style="width:43%;"></div></div>
-      <span class="field-hint">weighted_score() for this grid</span>
+      <span class="score-val" id="s4Score">—</span>
+      <div class="score-bar"><div class="score-bar-fill" id="s4ScoreBar" style="width:0%;"></div></div>
+      <span class="field-hint" id="s4ArticleWeight">weighted_score() for this grid</span>
     </div>
   </div>
 </template>
@@ -827,29 +728,24 @@ code {
   <div class="canvas-header">
     <h2 class="canvas-title">Nexus matrix</h2>
     <p class="canvas-desc">Make the fact ↔ norm ↔ element link explicit, with a strength rating. All three fields are picked from state, never typed.</p>
-    <span class="gate-banner pending">1 established article still has no nexus entry</span>
+    <span class="gate-banner" id="s5Gate">Loading bundle…</span>
   </div>
 
   <div class="field-row cols-3">
-    <div class="field"><label>Fact (segment)</label><select><option>STG-7.seg-61</option></select></div>
-    <div class="field"><label>Norm (article)</label><select><option>CHIPENCOD.Art.193</option></select></div>
-    <div class="field"><label>Element</label><select><option>art193.documento_oficial</option></select></div>
+    <div class="field"><label>Fact (segment)</label><select id="s5Fact"><option value="">No segments in this bundle</option></select></div>
+    <div class="field"><label>Norm (article)</label><select id="s5Norm"><option value="">No articles in this bundle</option></select></div>
+    <div class="field"><label>Element</label><select id="s5Element"><option value="">No elements in this bundle</option></select></div>
   </div>
   <div class="field-row cols-3">
-    <div class="field"><label>Nexus type</label><input value="proves"></div>
-    <div class="field"><label>Strength</label><select><option>high</option><option selected>medium</option><option>low</option></select></div>
-    <div class="field"><label>Rationale (one line)</label><input value="Officer admits the document was not on hand at the time"></div>
+    <div class="field"><label>Nexus type</label><input id="s5NexusType" value="" placeholder="free-form label, e.g. proves"></div>
+    <div class="field"><label>Strength</label><select id="s5Strength"></select></div>
+    <div class="field"><label>Rationale (one line)</label><input id="s5Rationale" value=""></div>
   </div>
 
   <div class="block">
     <div class="block-title">Existing nexus entries</div>
-    <div class="record-list">
-      <div class="record-row verified">
-        <div class="rr-main"><div class="rr-id">STG-7.seg-55 → CHIPENCOD.Art.193 → art193.faltare_a_la_verdad</div><div class="rr-detail">contradicts · "no reason was given before detaining"</div></div>
-        <div class="rr-meta"><span class="badge badge-pass">high</span></div>
-      </div>
-    </div>
-    <div class="callout" style="margin-top:14px;">Coverage gap: <strong>art193.hechos_sustanciales</strong> has no incoming nexus and no evidence link.</div>
+    <div class="record-list" id="s5NexusRows"><div class="field-hint">No nexus entries in this bundle.</div></div>
+    <div class="callout" id="s5Gap" style="margin-top:14px;display:none;"></div>
   </div>
 </template>
 
@@ -858,39 +754,31 @@ code {
   <div class="canvas-header">
     <h2 class="canvas-title">Authority stubs</h2>
     <p class="canvas-desc">Register case law, doctrine, or statute you intend to cite — deliberately unverified until S7.</p>
-    <span class="gate-banner advisory">Advisory only — every established/contested element should have ≥1 supporting authority</span>
+    <span class="gate-banner" id="s6Gate">Loading bundle…</span>
   </div>
 
   <div class="field-row">
-    <div class="field"><label>Authority ID <span class="req">*</span></label><input value="AUTH-CL005-01"></div>
-    <div class="field"><label>Type <span class="req">*</span></label><select><option>statute</option><option selected>jurisprudence</option><option>doctrine</option><option>comparative</option></select></div>
+    <div class="field"><label>Authority ID <span class="req">*</span></label><input id="s6AuthorityId" value="" placeholder="AUTH-<violation>-NN"></div>
+    <div class="field"><label>Type <span class="req">*</span></label><select id="s6Type"></select></div>
   </div>
   <div class="field-row">
     <div class="field"><label>Supports (elements)</label>
-      <div class="chip-row"><span class="chip">art193.documento_oficial ✕</span><span class="chip">+ add</span></div>
+      <div class="chip-row" id="s6SupportsChips"><span class="field-hint">Type element ids; one per entry.</span></div>
+      <input id="s6Supports" value="" placeholder="space-separated element ids">
     </div>
     <div class="field"><label>Verification protocol</label>
-      <select><option value="">— choose after research —</option><option>statute_in_bundle_v1</option><option>statute_external_fetch_v1</option><option>human_attested_v1</option></select>
+      <select id="s6Protocol"><option value="">— choose after research —</option></select>
     </div>
   </div>
-  <div class="field"><label>Proposition to verify <span class="req">*</span></label><textarea>Chilean courts have found administrative detention without a stated legal basis to breach due-process guarantees.</textarea></div>
+  <div class="field"><label>Proposition to verify <span class="req">*</span></label><textarea id="s6Proposition"></textarea></div>
   <div class="field">
     <label>Fabrication risk note</label>
-    <textarea class="callout warning-field" style="border:1px solid var(--status-flag);">LLM-suggested holding — no primary source located yet. Do not cite until S7 verification passes.</textarea>
+    <textarea id="s6Risk" class="callout warning-field" style="border:1px solid var(--status-flag);"></textarea>
   </div>
 
   <div class="block">
     <div class="block-title">Stubs on file</div>
-    <div class="record-list">
-      <div class="record-row">
-        <div class="rr-main"><div class="rr-id">AUTH-CL005-01</div><div class="rr-detail">jurisprudence · supports art193.documento_oficial</div></div>
-        <div class="rr-meta"><span class="badge badge-neutral">verified: false</span></div>
-      </div>
-      <div class="record-row">
-        <div class="rr-main"><div class="rr-id">AUTH-CL005-02</div><div class="rr-detail">statute · supports art193.faltare_a_la_verdad</div></div>
-        <div class="rr-meta"><span class="badge badge-neutral">verified: false</span></div>
-      </div>
-    </div>
+    <div class="record-list" id="s6Stubs"><div class="field-hint">No authority stubs in this bundle.</div></div>
   </div>
 </template>
 
@@ -899,7 +787,7 @@ code {
   <div class="canvas-header">
     <h2 class="canvas-title">Authority verification</h2>
     <p class="canvas-desc">Three protocols, three sub-forms. A stub only becomes evidence once one of these produces a matched offset.</p>
-    <span class="gate-banner advisory">No blocking gate — feeds V07 and the S8 confidence factor</span>
+    <span class="gate-banner advisory" id="s7Gate">Loading bundle…</span>
   </div>
 
   <div class="tabs">
@@ -910,10 +798,10 @@ code {
 
   <div class="tab-panel active" data-tabgroup="s7" data-tab="a">
     <div class="field-row">
-      <div class="field"><label>Authority</label><select><option>AUTH-CL005-02 (unverified)</option></select></div>
-      <div class="field"><label>Article number</label><input value="193"></div>
+      <div class="field"><label>Authority</label><select id="s7Authority"><option value="">No authority stubs in this bundle</option></select></div>
+      <div class="field"><label>Article number</label><input id="s7Article" value="" placeholder="e.g. 193"></div>
     </div>
-    <div class="field"><label>Target quote <span class="req">*</span></label><textarea class="quote">"faltare a la verdad en la narración de hechos sustanciales"</textarea></div>
+    <div class="field"><label>Target quote <span class="req">*</span></label><textarea class="quote" id="s7Quote"></textarea></div>
     <div class="btn-row">
       <button class="btn btn-primary" data-action="open-modal" data-modal="match">View match in source ↗</button>
       <button class="btn" data-action="run" data-tool="verify_statute_in_bundle_tool" data-step="S7">Verify</button>
@@ -922,7 +810,7 @@ code {
   </div>
 
   <div class="tab-panel" data-tabgroup="s7" data-tab="b">
-    <div class="field"><label>Source URI <span class="req">*</span></label><input value="https://www.bcn.cl/leychile/navegar?idNorma=..."></div>
+    <div class="field"><label>Source URI <span class="req">*</span></label><input id="s7Uri" value="" placeholder="https://www.bcn.cl/leychile/navegar?idNorma=..."></div>
     <div class="drop-zone" style="margin:10px 0;">Drop the fetched .html / .txt / .json, or paste it below</div>
     <div class="field"><label>Source content</label><textarea></textarea></div>
     <div class="field-row">
@@ -942,16 +830,7 @@ code {
 
   <div class="block">
     <div class="block-title">Verification results</div>
-    <div class="record-list">
-      <div class="record-row verified">
-        <div class="rr-main"><div class="rr-id">AUTH-CL005-02</div><div class="rr-detail">statute_in_bundle_v1 · matched at offset 412</div></div>
-        <div class="rr-meta"><span class="badge badge-pass">verified</span></div>
-      </div>
-      <div class="record-row">
-        <div class="rr-main"><div class="rr-id">AUTH-CL005-01</div><div class="rr-detail">no protocol run yet</div></div>
-        <div class="rr-meta"><span class="badge badge-neutral">unverified</span></div>
-      </div>
-    </div>
+    <div class="record-list" id="s7Results"><div class="field-hint">No authority stubs in this bundle.</div></div>
   </div>
 </template>
 
@@ -960,26 +839,20 @@ code {
   <div class="canvas-header">
     <h2 class="canvas-title">Confidence derivation</h2>
     <p class="canvas-desc">Computed, not entered — but always shown with the exact formula that produced it.</p>
-    <span class="gate-banner">✓ Derived</span>
+    <span class="gate-banner" id="s8Gate">Loading bundle…</span>
   </div>
 
   <div class="field-row">
-    <div class="field"><label>CHIPENCOD.Art.193 weight</label><input value="1.0"></div>
-    <div class="field"><label>Authority verification floor</label><input type="number" step="0.01" value="0.85"></div>
+    <div class="field"><label>Per-article weights</label><input id="s8ArticleWeight" value="" readonly></div>
+    <div class="field"><label>Authority verification floor</label><input id="s8Floor" type="number" step="0.01" value="" readonly></div>
   </div>
 
   <div class="block">
-    <div class="block-title">Why 0.74</div>
-    <div class="formula-box">
-      element_grid_component  = <b>0.43</b>  (weighted_score, Art. 193)<br>
-      authorities_verification_factor = 0.85 + (1 − 0.85) × verified_ratio<br>
-      &nbsp;&nbsp;verified_ratio = 1 of 2 authorities verified = 0.5<br>
-      &nbsp;&nbsp;→ 0.85 + 0.15 × 0.5 = <b>0.925</b><br>
-      confidence.value = <b>0.74</b>
-    </div>
+    <div class="block-title" id="s8FormulaTitle">Derivation</div>
+    <div class="formula-box" id="s8Formula"></div>
     <div class="score-bar-wrap">
-      <span class="score-val">0.74</span>
-      <div class="score-bar"><div class="score-bar-fill" style="width:74%;"></div></div>
+      <span class="score-val" id="s8Score">—</span>
+      <div class="score-bar"><div class="score-bar-fill" id="s8ScoreBar" style="width:0%;"></div></div>
     </div>
   </div>
 
@@ -991,22 +864,17 @@ code {
   <div class="canvas-header">
     <h2 class="canvas-title">LLM enrichment</h2>
     <p class="canvas-desc">Eight stages propose refinements; the layer functions still validate everything. Authority stubs created here remain unverified — they must still pass S7.</p>
-    <span class="gate-banner advisory">No gate — convenience layer, not evidence</span>
+    <span class="gate-banner advisory" id="s9Gate">Loading bundle…</span>
   </div>
 
   <div class="block">
     <div class="block-title">Stages to run</div>
-    <div class="chip-row">
-      <span class="chip badge-accent">1 segments</span><span class="chip badge-accent">2 subsections</span>
-      <span class="chip badge-accent">3 element_grids</span><span class="chip badge-accent">4 nexus</span>
-      <span class="chip badge-accent">5 candidates</span><span class="chip badge-accent">6 authorities</span>
-      <span class="chip badge-accent">7 open_questions</span><span class="chip badge-accent">8 cross_references</span>
-    </div>
+    <div class="chip-row" id="s9Stages"><span class="field-hint">Loading stage registry…</span></div>
   </div>
 
   <div class="field-row">
     <div class="field readonly"><label>Resolved LLM provider</label><input id="enrichModel" value="— run llm provider info in S14" readonly></div>
-    <div class="field readonly"><label>Configured via</label><input value="LLM_PROVIDER / LLM_MODEL in .env" readonly></div>
+    <div class="field readonly"><label>Configured via</label><input id="enrichConfiguredVia" value="" readonly></div>
   </div>
 
   <div class="btn-row">
@@ -1016,12 +884,7 @@ code {
 
   <div class="block" style="margin-top:22px;">
     <div class="block-title">Stream</div>
-    <div class="formula-box">
-      enrich [1/8]: segments ... done<br>
-      enrich [2/8]: subsections ... done<br>
-      enrich [3/8]: element_grids ... done<br>
-      enrich [4/8]: nexus ... running…
-    </div>
+    <div class="formula-box" id="enrichStream">Nothing run in this session.</div>
   </div>
 </template>
 
@@ -1030,34 +893,22 @@ code {
   <div class="canvas-header">
     <h2 class="canvas-title">Validation — V01 through V11</h2>
     <p class="canvas-desc">The reviewer's decision surface. A failing row deep-links back to the step that caused it.</p>
-    <span class="gate-banner">Pipeline v1.0 · ran just now</span>
+    <span class="gate-banner" id="s10Gate">Loading bundle…</span>
   </div>
 
   <div class="stats-inner" style="border:1px solid var(--border); border-radius:4px; margin-bottom:20px;">
-    <div class="stat-item"><div class="stat-val">11</div><div class="stat-label">Total checks</div></div>
-    <div class="stat-item"><div class="stat-val" style="color:var(--status-note)">7</div><div class="stat-label">Pass</div></div>
-    <div class="stat-item"><div class="stat-val" style="color:var(--status-analysis)">4</div><div class="stat-label">Warn</div></div>
-    <div class="stat-item"><div class="stat-val" style="color:var(--status-flag)">0</div><div class="stat-label">Fail</div></div>
+    <div class="stat-item"><div class="stat-val" id="s10Total">—</div><div class="stat-label">Total checks</div></div>
+    <div class="stat-item"><div class="stat-val" id="s10Pass" style="color:var(--status-note)">—</div><div class="stat-label">Pass</div></div>
+    <div class="stat-item"><div class="stat-val" id="s10Warn" style="color:var(--status-analysis)">—</div><div class="stat-label">Warn</div></div>
+    <div class="stat-item"><div class="stat-val" id="s10Fail" style="color:var(--status-flag)">—</div><div class="stat-label">Fail</div></div>
   </div>
 
-  <div class="record-list">
-    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V01 · segment_resolution</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
-    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V02 · verbatim_quote_match</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
-    <div class="record-row"><div class="rr-main"><div class="rr-id">V03 · article_text_hash</div><div class="rr-detail">Cache self-reported SHA doesn't match the recomputed one</div></div><div class="rr-meta"><span class="badge badge-warn">warn</span></div></div>
-    <div class="record-row"><div class="rr-main"><div class="rr-id">V05 · cross_references_resolve</div><div class="rr-detail">No bundle-level index to resolve siblings against</div></div><div class="rr-meta"><span class="badge badge-warn">warn</span></div></div>
-    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V06 · element_coverage</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
-    <div class="record-row" style="cursor:pointer;" data-action="open-modal" data-modal="v07"><div class="rr-main"><div class="rr-id">V07 · authorities_verification</div><div class="rr-detail">1 of 2 authorities unverified — click for detail</div></div><div class="rr-meta"><span class="badge badge-warn">warn</span></div></div>
-    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V08 · contract_consistency</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
-    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V09 · language_consistency</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
-    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V10 · confidence_derivation</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
-    <div class="record-row"><div class="rr-main"><div class="rr-id">V11 · enrichment_integrity</div><div class="rr-detail">W_AUTH_DANGLING_SUPPORT</div></div><div class="rr-meta"><span class="badge badge-warn">warn</span></div></div>
-    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V04 · article_exists_in_framework_cache</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
-  </div>
+  <div class="record-list" id="s10Checks"><div class="field-hint">No <code>Validation/checks.json</code> in this bundle yet.</div></div>
 
   <div class="btn-row">
     <button class="btn btn-primary" data-action="run" data-tool="run_pipeline_tool" data-step="S10">Run validation</button>
-    <button class="btn">Fail-only filter</button>
-    <button class="btn">Copy as markdown</button>
+    <button class="btn" data-action="filter-checks" data-filter="fail">Fail-only filter</button>
+    <button class="btn" data-action="copy-checks">Copy as markdown</button>
   </div>
 </template>
 
@@ -1066,7 +917,7 @@ code {
   <div class="canvas-header">
     <h2 class="canvas-title">Packaging &amp; batch</h2>
     <p class="canvas-desc">Write the canonical JSON, build the manifest, and optionally zip — for one bundle, or every CL-* folder at once.</p>
-    <span class="gate-banner pending">Not yet packaged</span>
+    <span class="gate-banner" id="s11Gate">Loading bundle…</span>
   </div>
 
   <div class="tabs">
@@ -1084,18 +935,18 @@ code {
 
   <div class="tab-panel" data-tabgroup="s11" data-tab="batch">
     <div class="field-row">
-      <div class="field"><label>Input root</label><input value="build/"></div>
+      <div class="field"><label>Input root</label><input id="s11InputRoot" value="build/"></div>
       <div class="field"><label>Limit (first N)</label><input placeholder="none"></div>
     </div>
     <div class="field"><label>Only these folders</label>
-      <div class="chip-row"><span class="chip badge-accent">CL-005 ✕</span><span class="chip">+ add</span></div>
+      <div class="chip-row" id="s11BatchChips"><span class="field-hint">Loading bundles…</span></div>
     </div>
     <div class="toggle-row"><label class="toggle"><input type="checkbox"><span class="slider"></span></label><div><div class="toggle-row-label">Include extra (CL-&lt;digits&gt; only by default)</div></div></div>
     <div class="toggle-row"><label class="toggle"><input type="checkbox" checked><span class="slider"></span></label><div><div class="toggle-row-label">Write .bak backup</div><div class="toggle-row-sub">re-runs read the .bak as source</div></div></div>
     <div class="toggle-row"><label class="toggle"><input type="checkbox"><span class="slider"></span></label><div><div class="toggle-row-label">Zip each output</div></div></div>
     <div class="btn-row"><button class="btn btn-primary" data-action="run" data-tool="refine_batch_tool" data-step="S11">Run batch</button></div>
     <div class="block" style="margin-top:18px;">
-      <div class="formula-box">- CL-005: pass=7 warn=4 fail=0 confidence=0.74</div>
+      <div class="formula-box" id="s11BatchReport">Batch output appears here.</div>
     </div>
   </div>
 </template>
@@ -1105,7 +956,7 @@ code {
   <div class="canvas-header">
     <h2 class="canvas-title">Stores — Qdrant, Neo4j, jurisprudence</h2>
     <p class="canvas-desc">Project the bundle into the vector index and the graph, then query across the whole corpus. All optional, all degrade gracefully.</p>
-    <span class="gate-banner advisory">No gate — read/write tools</span>
+    <span class="gate-banner advisory" id="s12Gate">No gate — read/write tools</span>
   </div>
 
   <div class="tabs">
@@ -1115,33 +966,33 @@ code {
   </div>
 
   <div class="tab-panel active" data-tabgroup="s12" data-tab="qdrant">
-    <div class="field-hint" style="margin-bottom:10px;">Target: not configured — set QDRANT_URL in Settings</div>
+    <div class="field-hint" style="margin-bottom:10px;" id="s12QdrantTarget">Checking QDRANT_URL…</div>
     <div class="field-row">
-      <div class="field"><label>Search segments</label><input placeholder="e.g. documento oficial"></div>
+      <div class="field"><label>Search segments</label><input placeholder="free-text query"></div>
       <div class="field"><label>Top K</label><input value="5"></div>
     </div>
     <div class="btn-row"><button class="btn" data-action="run" data-tool="qdrant_search_segments_tool" data-step="S12">Search</button></div>
     <div class="block" style="margin-top:18px;">
       <button class="btn btn-danger" data-action="show-danger" data-target="#danger-qdrant">Reset collections</button>
       <div class="danger-box" id="danger-qdrant" style="display:none;">
-        <p>This deletes every indexed segment, article, and authority. Type <b>violationrefiner_v1</b> to confirm.</p>
-        <input placeholder="type the collection prefix" data-confirm="violationrefiner_v1">
+        <p>This deletes every indexed segment, article, and authority. Type <b id="s12QdrantConfirmName">the collection prefix</b> to confirm.</p>
+        <input id="s12QdrantConfirm" placeholder="type the collection prefix" data-confirm="">
         <button class="btn btn-danger" disabled data-action="run" data-tool="qdrant_reset_collections_tool" data-step="S12">Reset collections</button>
       </div>
     </div>
   </div>
 
   <div class="tab-panel" data-tabgroup="s12" data-tab="neo4j">
-    <div class="field-hint" style="margin-bottom:10px;">Target: not configured — set NEO4J_URI in Settings</div>
+    <div class="field-hint" style="margin-bottom:10px;" id="s12Neo4jTarget">Checking NEO4J_URI…</div>
     <div class="field-row">
-      <div class="field"><label>Violations citing article</label><input placeholder="CHIPENCOD.Art.193"></div>
+      <div class="field"><label>Violations citing article</label><input placeholder="article id"></div>
       <div class="field"><label>&nbsp;</label><button class="btn" data-action="run" data-tool="neo4j_find_violations_citing_tool" data-step="S12">Run</button></div>
     </div>
     <div class="block">
       <button class="btn btn-danger" data-action="show-danger" data-target="#danger-neo4j">Reset database</button>
       <div class="danger-box" id="danger-neo4j" style="display:none;">
-        <p>This clears the entire graph. Type <b>agent.violation.refiner</b> to confirm.</p>
-        <input placeholder="type the database name" data-confirm="agent.violation.refiner">
+        <p>This clears the entire graph. Type <b id="s12Neo4jConfirmName">the database name</b> to confirm.</p>
+        <input id="s12Neo4jConfirm" placeholder="type the database name" data-confirm="">
         <button class="btn btn-danger" disabled data-action="run" data-tool="neo4j_reset_database_tool" data-step="S12">Reset database</button>
       </div>
     </div>
@@ -1149,7 +1000,7 @@ code {
 
   <div class="tab-panel" data-tabgroup="s12" data-tab="juris">
     <div class="field-row">
-      <div class="field"><label>Search</label><input placeholder="due process, administrative detention"></div>
+      <div class="field"><label>Search</label><input placeholder="free-text query"></div>
       <div class="field"><label>Max results</label><input value="5"></div>
     </div>
     <div class="btn-row"><button class="btn" data-action="run" data-tool="jurisprudence_search_tool" data-step="S12">Search</button></div>
@@ -1161,14 +1012,14 @@ code {
   <div class="canvas-header">
     <h2 class="canvas-title">Ingesters</h2>
     <p class="canvas-desc">Bulk-load rulings, transcripts, or framework text into the vector index. Independent of any single violation.</p>
-    <span class="gate-banner advisory">No gate</span>
+    <span class="gate-banner advisory" id="s13Gate">Loading bundle…</span>
   </div>
 
   <div class="block">
     <div class="block-title">Ingest framework</div>
     <div class="field-row">
-      <div class="field"><label>Markdown file</label><input placeholder="Legal framework/CHIPENCOD_CP.md"></div>
-      <div class="field"><label>Framework code</label><input value="CHIPENCOD"></div>
+      <div class="field"><label>Markdown file</label><input id="s13CacheFile" placeholder="no framework cache in this bundle"></div>
+      <div class="field"><label>Framework code</label><input id="s13FrameworkCode" value=""></div>
     </div>
     <div class="btn-row"><button class="btn btn-primary" data-action="run" data-tool="framework_ingest_tool" data-step="S13">Start ingest</button></div>
     <div class="progress-track"><div class="progress-fill" style="width:0%"></div></div>
@@ -1177,7 +1028,7 @@ code {
   <div class="block">
     <div class="block-title">Ingest rulings index</div>
     <div class="field-row cols-3">
-      <div class="field"><label>Index file (JSON)</label><input placeholder="rulings_index.json"></div>
+      <div class="field"><label>Index file (JSON)</label><input id="s13RulingsIndex" placeholder="path to a jurisprudence index JSON"></div>
       <div class="field"><label>Batch size</label><input value="64"></div>
       <div class="field"><label>Sleep between batches</label><input value="0.0"></div>
     </div>
@@ -1199,7 +1050,7 @@ code {
   <div class="canvas-header">
     <h2 class="canvas-title">Introspection &amp; catalog</h2>
     <p class="canvas-desc">What the running server resolves to, and how to point another client at it.</p>
-    <span class="gate-banner advisory">Read-only</span>
+    <span class="gate-banner advisory" id="s14Gate">Read-only</span>
   </div>
 
   <div class="field-row">
@@ -1214,18 +1065,20 @@ code {
       <div class="tab" data-tabgroup="s14" data-tab="claude">Claude Desktop</div>
     </div>
     <div class="tab-panel active" data-tabgroup="s14" data-tab="vscode">
-      <div class="json-view">{<br>&nbsp;&nbsp;<span class="jk">"mcp.servers"</span>: {<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="jk">"violation-pack"</span>: { <span class="jk">"type"</span>: <span class="jv">"stdio"</span>, <span class="jk">"command"</span>: <span class="jv">"violation-pack-mcp"</span> }<br>&nbsp;&nbsp;}<br>}</div>
-      <div class="btn-row"><button class="btn">Copy snippet</button></div>
+      <pre class="json-view" id="s14VscodeSnippet">Loading catalog…</pre>
+      <div class="btn-row"><button class="btn" data-action="copy-snippet" data-target="#s14VscodeSnippet">Copy snippet</button></div>
     </div>
     <div class="tab-panel" data-tabgroup="s14" data-tab="claude">
-      <div class="json-view">{<br>&nbsp;&nbsp;<span class="jk">"mcpServers"</span>: {<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="jk">"violation-pack"</span>: { <span class="jk">"command"</span>: <span class="jv">"violation-pack-mcp"</span> }<br>&nbsp;&nbsp;}<br>}</div>
-      <div class="btn-row"><button class="btn">Copy snippet</button></div>
+      <pre class="json-view" id="s14ClaudeSnippet">Loading catalog…</pre>
+      <div class="btn-row"><button class="btn" data-action="copy-snippet" data-target="#s14ClaudeSnippet">Copy snippet</button></div>
     </div>
   </div>
 
   <div class="block">
     <div class="block-title">Tool inventory</div>
     <div class="field-hint" id="toolInventory">counting tools…</div>
+    <div class="field-hint" id="s14CatalogLine">reading catalog…</div>
+    <div class="record-list" id="toolInventoryRows"></div>
   </div>
 </template>
 
@@ -1236,104 +1089,41 @@ code {
 <template id="tpl-drawer-json">
   <div class="drawer-body-title">Violation JSON</div>
   <div class="drawer-body-sub">Live, read-only. The single source of truth every step writes to.</div>
-  <div class="json-view">{
-  <span class="jk">"violation_id"</span>: <span class="jv">"CL-005"</span>,
-  <span class="jk">"severity"</span>: <span class="jv">"MEDIUM"</span>,
-  <span class="jk">"schema_version"</span>: <span class="jv">"3.0"</span>,
-  <span class="jk">"segments"</span>: [<span class="jc">3 anchored, 1 legacy</span>],
-  <span class="jk">"established_articles"</span>: [<span class="jc">1 item</span>],
-  <span class="jk">"element_grids"</span>: [<span class="jc">1 grid, score 0.43</span>],
-  <span class="jk">"authorities"</span>: [<span class="jc">2 items, 1 verified</span>],
-  <span class="jk">"confidence"</span>: { <span class="jk">"value"</span>: <span class="jv">0.74</span> },
-  <span class="jc">…</span>
-}</div>
+  <div class="field-hint">No bundle loaded yet.</div>
 </template>
 
 <template id="tpl-drawer-validation">
   <div class="drawer-body-title">Validation report</div>
-  <div class="drawer-body-sub">Pipeline v1.0 · ran a moment ago</div>
-  <div class="record-list">
-    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V01</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
-    <div class="record-row"><div class="rr-main"><div class="rr-id">V03</div></div><div class="rr-meta"><span class="badge badge-warn">warn</span></div></div>
-    <div class="record-row"><div class="rr-main"><div class="rr-id">V07</div></div><div class="rr-meta"><span class="badge badge-warn">warn</span></div></div>
-    <div class="record-row verified"><div class="rr-main"><div class="rr-id">V10</div></div><div class="rr-meta"><span class="badge badge-pass">pass</span></div></div>
-  </div>
-  <div class="field-hint" style="margin-top:10px;">Open step S10 for all 11 checks.</div>
+  <div class="field-hint">No <code>Validation/checks.json</code> in this bundle yet.</div>
 </template>
 
 <template id="tpl-drawer-confidence">
   <div class="drawer-body-title">Confidence</div>
-  <div class="score-bar-wrap"><span class="score-val">0.74</span><div class="score-bar"><div class="score-bar-fill" style="width:74%;"></div></div></div>
-  <div class="formula-box" style="margin-top:14px;">
-    element_grid_component = 0.43<br>
-    authorities_verification_factor = 0.925<br>
-    derived_at = 2026-09-11 14:02
-  </div>
+  <div class="field-hint">Not derived in this bundle yet.</div>
 </template>
 
 <template id="tpl-drawer-provenance">
   <div class="drawer-body-title">Provenance</div>
-  <div class="drawer-body-sub">Reverse-chronological. Every write is an entry here.</div>
-  <div class="record-list">
-    <div class="note-card">
-      <div class="note-meta"><span class="note-type">derive_confidence</span><span class="note-seg">14:02</span></div>
-      <div class="note-author">analyst.mv</div>
-      <div class="note-body">Recomputed confidence — 0.74</div>
-    </div>
-    <div class="note-card">
-      <div class="note-meta"><span class="note-type">build_nexus_layer</span><span class="note-seg">13:47</span></div>
-      <div class="note-author">analyst.mv</div>
-      <div class="note-body">Added 1 nexus entry linking STG-7.seg-55</div>
-    </div>
-    <div class="note-card">
-      <div class="note-meta"><span class="note-type">build_evidence_layer</span><span class="note-seg">13:20</span></div>
-      <div class="note-author">analyst.mv</div>
-      <div class="note-body">Anchored 3 segments from STG-7, 1 legacy fallback</div>
-    </div>
-  </div>
+  <div class="field-hint">No provenance entries in this bundle yet.</div>
 </template>
 
 <template id="tpl-drawer-files">
   <div class="drawer-body-title">Bundle files</div>
-  <div class="drawer-body-sub">Mirrors MANIFEST.txt</div>
-  <div class="file-tree">
-    <span class="dir">CL-005/</span><br>
-    <span class="indent">CL-005.json <span class="fmeta">4.1 KB · a92f…</span></span><br>
-    <span class="indent">CL-005.json.bak <span class="fmeta">4.0 KB</span></span><br>
-    <span class="indent">contract.json <span class="fmeta">0.6 KB</span></span><br>
-    <span class="indent">MANIFEST.txt <span class="fmeta">0.3 KB</span></span><br>
-    <span class="indent dir">Validation/</span><br>
-    <span class="indent"><span class="indent">validation_report.md</span></span><br>
-    <span class="indent"><span class="indent">checks.json</span></span><br>
-    <span class="indent dir">Transcripts/</span><br>
-    <span class="indent"><span class="indent">timeline_aeropuerto_STG_7.html <span class="fmeta">e91a…</span></span></span><br>
-    <span class="indent dir">Legal framework/</span><br>
-    <span class="indent"><span class="indent">CHIPENCOD_CP.md <span class="fmeta">4b02…</span></span></span>
-  </div>
+  <div class="field-hint">No bundle loaded yet.</div>
 </template>
 
-<!-- modal content templates -->
+<!-- modal content is built from live bundle state by open-modal -->
 <template id="tpl-modal-match">
   <div class="modal-section">
-    <div class="modal-section-label">Source text — Legal framework/CHIPENCOD_CP.md</div>
-    <div class="json-view" style="font-family:var(--serif); font-style:italic; font-size:0.86rem;">
-      Art. 193 — Falsificación de instrumento público. Comete este delito el funcionario público que, en ejercicio de sus funciones, <mark style="background:var(--accent-dim); color:var(--accent); padding:1px 3px; font-style:normal; font-weight:600;">faltare a la verdad en la narración de hechos sustanciales</mark>, ya sea suponiendo en un acto la intervención de personas que no la han tenido…
-    </div>
-  </div>
-  <div class="modal-section">
-    <div class="modal-section-label">Match</div>
-    <div class="field-hint">Offset 412 · statute_in_bundle_v1 · verified_at 2026-09-11 13:58</div>
+    <div class="modal-section-label">No verification provenance</div>
+    <div class="field-hint">This authority has never been run through S7, so there is no source match to show.</div>
   </div>
 </template>
 
 <template id="tpl-modal-v07">
   <div class="modal-section">
-    <div class="modal-section-label">Why this is a warning, not a failure</div>
-    <p style="font-size:0.86rem; color:var(--text-secondary); line-height:1.7;">One of two declared authorities (AUTH-CL005-01) has not yet been run through S7. AUTH-CL005-02 is verified against the in-bundle statute. Nothing here is fabricated — it's simply not backed yet.</p>
-  </div>
-  <div class="modal-section">
-    <div class="modal-section-label">Fix</div>
-    <p style="font-size:0.86rem; color:var(--text-secondary);">Open step S7 and run a verification protocol against AUTH-CL005-01, or remove it from <code>supports</code> if it's no longer needed.</p>
+    <div class="modal-section-label">No V07 detail</div>
+    <div class="field-hint">This bundle has no <code>Validation/checks.json</code> yet.</div>
   </div>
 </template>
 
@@ -1342,21 +1132,21 @@ code {
      ============================================================ -->
 <script>
 const STEP_META = [
-  { id:'s0', num:'0', label:'Stage source', group:'core', done:true },
-  { id:'s1', num:'1', label:'Initialize', group:'core', done:true },
-  { id:'s2', num:'2', label:'Evidence', group:'core', done:true },
-  { id:'s3', num:'3', label:'Norms', group:'core', done:true },
-  { id:'s4', num:'4', label:'Element grids', group:'core', done:true },
-  { id:'s5', num:'5', label:'Nexus matrix', group:'core', done:true },
-  { id:'s6', num:'6', label:'Authority stubs', group:'core', done:true },
-  { id:'s7', num:'7', label:'Verification', group:'core', done:true },
-  { id:'s8', num:'8', label:'Confidence', group:'core', done:true },
-  { id:'s9', num:'9', label:'Enrichment', group:'core', done:false },
-  { id:'s10', num:'10', label:'Validation', group:'core', done:true },
-  { id:'s11', num:'11', label:'Packaging', group:'core', done:false },
-  { id:'s12', num:'12', label:'Stores', group:'ext', done:false },
-  { id:'s13', num:'13', label:'Ingesters', group:'ext', done:false },
-  { id:'s14', num:'14', label:'Introspect', group:'ext', done:false },
+  { id:'s0', num:'0', label:'Stage source', group:'core' },
+  { id:'s1', num:'1', label:'Initialize', group:'core' },
+  { id:'s2', num:'2', label:'Evidence', group:'core' },
+  { id:'s3', num:'3', label:'Norms', group:'core' },
+  { id:'s4', num:'4', label:'Element grids', group:'core' },
+  { id:'s5', num:'5', label:'Nexus matrix', group:'core' },
+  { id:'s6', num:'6', label:'Authority stubs', group:'core' },
+  { id:'s7', num:'7', label:'Verification', group:'core' },
+  { id:'s8', num:'8', label:'Confidence', group:'core' },
+  { id:'s9', num:'9', label:'Enrichment', group:'core' },
+  { id:'s10', num:'10', label:'Validation', group:'core' },
+  { id:'s11', num:'11', label:'Packaging', group:'core' },
+  { id:'s12', num:'12', label:'Stores', group:'ext' },
+  { id:'s13', num:'13', label:'Ingesters', group:'ext' },
+  { id:'s14', num:'14', label:'Introspect', group:'ext' },
 ];
 const STAGE_TITLES = {
   s0:'S0 · Stage', s1:'S1 · Init', s2:'S2 · Evidence', s3:'S3 · Norms', s4:'S4 · Elements',
@@ -1367,10 +1157,12 @@ const STAGE_TITLES = {
 
 let state = {
   activeStep: 's2', drawerTab: 'json', drawerOpen: true, logOpen: true,
-  bundleId: 'CL-005', title: '', violation: null,
+  bundleId: null, title: '', violation: null,
+  bundle: null, schema: null, config: null, catalog: null, bundles: [],
   intro: { provider: null, embedder: null },
   sources: { transcripts: [], frameworks: [] },
   activeTranscript: null,
+  transcriptChosen: false,
   segmentSpecs: {},
   settings: {},
 };
@@ -1385,6 +1177,9 @@ const API = {
   tools:   () => fetchJson('/api/tools'),
   sources: () => fetchJson('/api/sources'),
   bundles: () => fetchJson('/api/bundles'),
+  bundle:  id => fetchJson('/api/bundle?violation_id=' + encodeURIComponent(id)),
+  schema:  () => fetchJson('/api/schema'),
+  settings: () => fetchJson('/api/settings'),
   transcript: uri => fetchJson('/api/source-transcript?uri=' + encodeURIComponent(uri)),
   browse: (path, kind) => fetchJson('/api/browse?path=' + encodeURIComponent(path) + '&kind=' + kind),
   catalog: () => fetchJson('/api/catalog'),
@@ -1488,29 +1283,191 @@ function switchStep(id) {
   document.getElementById('sidebar').classList.remove('open');
   applyIntroState();
   hydrateSourceSelectors();
-  if (id === 's0') loadS0StagedFiles();
+  applyBundleToStep(id);
   renderToolStrip(id);
   pushLog('Opened step', STAGE_TITLES[id]);
 }
 
+/** Every drawer tab renders from the loaded bundle. The templates are kept as
+ *  the honest empty state for a bundle that is missing the artifact. */
 function renderDrawer() {
   document.querySelectorAll('.drawer-tab').forEach(t => t.classList.toggle('active', t.dataset.drawerTab === state.drawerTab));
   const body = document.getElementById('drawerBody');
-  const tpl = document.getElementById('tpl-drawer-' + state.drawerTab);
-  const live = state.drawerTab === 'json' && state.violation;
+  const b = state.bundle;
+  const v = state.violation;
+  const tab = state.drawerTab;
   body.innerHTML = '';
 
-  // Once a real violation exists the mock summary would contradict it, so the
-  // live document replaces it outright rather than sitting above it.
-  if (live) {
-    const box = document.createElement('div');
-    box.className = 'live-json';
-    box.innerHTML = `<div class="lj-head">live · ${escapeHtml(state.violation.violation_id)}</div>
-      <pre class="result-json">${escapeHtml(JSON.stringify(state.violation, null, 2))}</pre>`;
-    body.appendChild(box);
+  const shell = (title, sub, inner) =>
+    `<div class="drawer-body-title">${escapeHtml(title)}</div>`
+    + (sub ? `<div class="drawer-body-sub">${escapeHtml(sub)}</div>` : '') + inner;
+
+  if (tab === 'json') {
+    if (!v) {
+      body.innerHTML = shell('Violation JSON', b ? `${b.violation_id} has no violation JSON on disk yet.` : 'No bundle loaded.',
+        hintRow('Run S1 initialize to create one.'));
+      return;
+    }
+    body.innerHTML = shell('Violation JSON', `live · ${v.violation_id} · schema v${v.schema_version}`,
+      `<pre class="result-json">${escapeHtml(JSON.stringify(v, null, 2))}</pre>`);
     return;
   }
+
+  if (tab === 'validation') {
+    const report = b && b.validation;
+    const checks = (report && report.checks) || [];
+    const s = (b && b.validation_summary) || {};
+    if (!checks.length) {
+      body.innerHTML = shell('Validation report',
+        b ? 'Validation has not been run against this bundle.' : 'No bundle loaded.',
+        hintRow('No Validation/checks.json in this bundle yet.'));
+      return;
+    }
+    const names = Object.fromEntries(((state.schema && state.schema.validation_pipeline) || []).map(p => [p.check_id, p.name]));
+    body.innerHTML = shell('Validation report',
+      `pipeline v${report.pipeline_version} · ran ${fmtStamp(report.ran_at)} · ${s.pass} pass / ${s.warn} warn / ${s.fail} fail`,
+      checks.map(c => `
+        <div class="check-row">
+          <div class="cr-head"><span class="cr-id">${escapeHtml(c.check_id)}</span>
+            <span class="cr-name">${escapeHtml(c.name || names[c.check_id] || '')}</span>${tag(c.status)}</div>
+          <div class="cr-detail">${escapeHtml(c.details || '')}</div>
+        </div>`).join(''));
+    return;
+  }
+
+  if (tab === 'confidence') {
+    const c = v && v.confidence;
+    if (!c) {
+      body.innerHTML = shell('Confidence', v ? `${v.violation_id} has no confidence block.` : 'No bundle loaded.',
+        hintRow(v ? 'Not derived in this bundle yet.' : 'Load a bundle to see its derivation.'));
+      return;
+    }
+    const components = c.components || {};
+    const value = typeof c.value === 'number' ? c.value : Number(c.value);
+    body.innerHTML = shell('Confidence derivation',
+      `value ${Number.isFinite(value) ? value.toFixed(2) : '—'} · factor ${c.authorities_verification_factor}`
+      + (c.derived_at ? ` · ${fmtStamp(c.derived_at)}` : ''),
+      `<div class="score-bar-wrap"><span class="score-val">${Number.isFinite(value) ? value.toFixed(2) : '—'}</span>
+         <div class="score-bar"><div class="score-bar-fill" style="width:${Number.isFinite(value) ? Math.round(value * 100) : 0}%;"></div></div></div>`
+      + (c.derivation_formula ? `<div class="formula-box">${escapeHtml(c.derivation_formula)}</div>` : '')
+      + Object.entries(components).map(([k, w]) =>
+        `<div class="note-card"><div class="note-meta"><span class="note-type">article weight</span></div>
+           <div class="note-author">${escapeHtml(k)}</div><div class="note-body">${escapeHtml(w)}</div></div>`).join('')
+      + `<div class="block"><div class="block-title">History</div>` +
+        ((c.history || []).length ? (c.history || []).map(h => `<div class="field-hint">${escapeHtml(h)}</div>`).join('')
+          : hintRow('No derivation history on file.')) + `</div>`);
+    return;
+  }
+
+  if (tab === 'provenance') {
+    const entries = (v && v.provenance) || [];
+    if (!entries.length) {
+      body.innerHTML = shell('Provenance', v ? `${v.violation_id} · ${entries.length} entries` : 'No bundle loaded.',
+        hintRow(v ? 'No provenance entries in this bundle yet.' : 'Load a bundle to see its audit trail.'));
+      return;
+    }
+    body.innerHTML = shell('Provenance', `${entries.length} entries · newest first`,
+      entries.slice().reverse().map(e => `
+        <div class="note-card">
+          <div class="note-meta"><span class="note-type">${escapeHtml(e.operation || '')}</span>
+            <span class="note-seg">layer ${e.layer === null || e.layer === undefined ? '—' : escapeHtml(e.layer)}</span></div>
+          <div class="note-author">${escapeHtml(e.actor || '')} · ${escapeHtml(fmtStamp(e.timestamp))}</div>
+          <div class="note-body">${escapeHtml(e.note || '')}</div>
+        </div>`).join(''));
+    return;
+  }
+
+  if (tab === 'files') {
+    const files = bundleFiles();
+    if (!files.length) {
+      body.innerHTML = shell('Bundle files', b ? `${b.violation_id} · ${b.path}` : 'No bundle loaded.',
+        hintRow(b ? 'No files in this bundle yet.' : 'Load a bundle to list its files.'));
+      return;
+    }
+    body.innerHTML = shell('Bundle files', `${files.length} file(s) under ${b.path}`,
+      files.map(f => `
+        <div class="record-row">
+          <div class="rr-main"><div class="rr-id">${escapeHtml(f.name)}</div>
+            <div class="rr-detail">${escapeHtml(f.path)}</div></div>
+          <div class="rr-meta">${tag(f.kind)}${tag(fmtBytes(f.size))}</div>
+        </div>`).join(''));
+    return;
+  }
+
+  const tpl = document.getElementById('tpl-drawer-' + tab);
   if (tpl) body.appendChild(tpl.content.cloneNode(true));
+}
+
+/** Modals read the record the row pointed at. The templates are only the empty
+ *  state for a bundle that does not hold that record. */
+function openModal(key) {
+  const badge = document.getElementById('modalBadge');
+  const title = document.getElementById('modalTitle');
+  const sub = document.getElementById('modalSub');
+  const body = document.getElementById('modalBody');
+  const v = state.violation;
+  const b = state.bundle;
+  body.innerHTML = '';
+
+  const emptyState = (name) => {
+    const tpl = document.getElementById('tpl-modal-' + name);
+    if (tpl) body.appendChild(tpl.content.cloneNode(true));
+    else body.innerHTML = hintRow('No detail available.');
+  };
+  const metaGrid = (pairs) => `<div class="modal-section"><div class="modal-section-label">Record</div>`
+    + pairs.filter(([, val]) => val !== null && val !== undefined && val !== '')
+      .map(([k, val]) => `<div class="rr-detail"><b>${escapeHtml(k)}</b> ${escapeHtml(val)}</div>`).join('')
+    + `</div>`;
+
+  if (key === 'match') {
+    badge.textContent = 'S7 · Verification';
+    const authority = ((v && v.authorities) || []).find(a => a.verification_provenance);
+    if (!authority) {
+      title.textContent = 'No matched quote';
+      sub.textContent = '';
+      emptyState('match');
+    } else {
+      const p = authority.verification_provenance;
+      title.textContent = `${authority.id} — matched quote`;
+      sub.textContent = [p.protocol, p.verified_at ? fmtStamp(p.verified_at) : null].filter(Boolean).join(' · ');
+      body.innerHTML =
+        `<div class="modal-section"><div class="modal-section-label">Quote as it appears in the source</div>`
+        + `<div class="note-card"><div class="note-body">${escapeHtml(p.matched_quote || '')}</div></div></div>`
+        + metaGrid([
+          ['offset', p.matched_offset],
+          ['source_uri', p.source_uri],
+          ['source_sha256', p.source_sha256],
+          ['notes', p.notes],
+        ]);
+    }
+  } else if (key === 'v07') {
+    badge.textContent = 'S10 · Validation';
+    title.textContent = 'V07 — authorities_verification';
+    const check = ((b && b.validation && b.validation.checks) || []).find(c => c.check_id === 'V07');
+    sub.textContent = check ? check.status : 'not run';
+    if (!check) {
+      emptyState('v07');
+    } else {
+      const authorities = (v && v.authorities) || [];
+      body.innerHTML =
+        `<div class="modal-section"><div class="modal-section-label">Details</div>`
+        + `<div class="note-card"><div class="note-body">${escapeHtml(check.details || '')}</div></div></div>`
+        + `<div class="modal-section"><div class="modal-section-label">Authority stubs in this bundle</div>`
+        + (authorities.length ? authorities.map(a => `<div class="record-row${a.verified ? ' verified' : ''}">
+             <div class="rr-main"><div class="rr-id">${escapeHtml(a.id)}</div>
+               <div class="rr-detail">${escapeHtml(a.proposition_to_verify || '')}</div></div>
+             <div class="rr-meta"><span class="badge badge-neutral">${a.verified ? 'verified' : 'unverified'}</span></div>
+           </div>`).join('') : hintRow('No authority stubs — V07 has nothing to verify.'))
+        + `</div>`;
+    }
+  } else {
+    badge.textContent = 'Detail';
+    title.textContent = key || 'Detail';
+    sub.textContent = '';
+    body.innerHTML = hintRow('No detail available.');
+  }
+
+  document.getElementById('modalOverlay').classList.add('active');
 }
 
 let logSeq = 0;
@@ -1614,21 +1571,35 @@ document.addEventListener('DOMContentLoaded', () => {
       runBoundTool(t);
     }
 
-    if (action === 'open-modal') {
-      const key = t.dataset.modal;
-      const map = {
-        match: { badge:'S7 · Verification', title:'Matched quote', sub:'AUTH-CL005-02 · statute_in_bundle_v1' },
-        v07: { badge:'S10 · Validation', title:'V07 — authorities_verification', sub:'warn' }
-      };
-      const info = map[key] || { badge:'Detail', title:'Detail', sub:'' };
-      document.getElementById('modalBadge').textContent = info.badge;
-      document.getElementById('modalTitle').textContent = info.title;
-      document.getElementById('modalSub').textContent = info.sub;
-      const b = document.getElementById('modalBody');
-      b.innerHTML = '';
-      b.appendChild(document.getElementById('tpl-modal-' + key).content.cloneNode(true));
-      document.getElementById('modalOverlay').classList.add('active');
+    if (action === 'open-modal') openModal(t.dataset.modal);
+
+    if (action === 'copy-snippet') {
+      const src = document.querySelector(t.dataset.target);
+      const text = src ? src.textContent : '';
+      navigator.clipboard.writeText(text).then(
+        () => pushLog('Copied snippet to the clipboard', 'S14', 'ok'),
+        () => pushLog('Clipboard blocked by the browser', 'S14', 'warn'));
     }
+
+    if (action === 'filter-checks') {
+      const on = t.dataset.active !== '1';
+      t.dataset.active = on ? '1' : '0';
+      t.textContent = on ? 'Show all checks' : 'Show failures only';
+      document.querySelectorAll('#s10Checks .record-row').forEach(row => {
+        row.style.display = (!on || row.dataset.status === 'fail') ? '' : 'none';
+      });
+    }
+
+    if (action === 'copy-checks') {
+      const checks = ((state.bundle && state.bundle.validation && state.bundle.validation.checks) || []);
+      if (!checks.length) { pushLog('Nothing to copy — this bundle has no checks.json', 'S10', 'warn'); return; }
+      const md = checks.map(c => `| ${c.check_id} | ${c.name} | ${c.status} | ${c.details} |`).join('\n');
+      const table = `| Check | Name | Status | Details |\n| --- | --- | --- | --- |\n${md}\n`;
+      navigator.clipboard.writeText(table).then(
+        () => pushLog('Copied validation table as markdown', 'S10', 'ok'),
+        () => pushLog('Clipboard blocked by the browser', 'S10', 'warn'));
+    }
+
     if (action === 'close-modal') document.getElementById('modalOverlay').classList.remove('active');
   });
 
@@ -1740,6 +1711,21 @@ async function bootstrap() {
   }
 
   try {
+    state.schema = await API.schema();
+    pushLog(`Option lists derived from the models — ${state.schema.severity.length} severities, ${state.schema.authority_protocol.length} verification protocols`, 'S14', 'ok');
+  } catch (e) {
+    pushLog(`Could not load /api/schema — ${e.message}`, null, 'warn');
+  }
+
+  try {
+    state.config = await API.settings();
+    hydrateSettings(state.config);
+    pushLog(`Settings resolved — interpreter ${state.config.paths.python}`, null, 'ok');
+  } catch (e) {
+    pushLog(`Could not load /api/settings — ${e.message}`, null, 'warn');
+  }
+
+  try {
     const sources = await API.sources();
     state.sources = sources;
     hydrateSourceSelectors();
@@ -1750,10 +1736,28 @@ async function bootstrap() {
 
   try {
     const bundles = await API.bundles();
-    hydrateBundleSelector(bundles.bundles);
-    pushLog(`Discovered ${bundles.bundles.length} build bundle(s)`, null, 'ok');
+    state.bundles = bundles.bundles || [];
+    await hydrateBundleSelector(state.bundles);
+    pushLog(`Discovered ${state.bundles.length} build bundle(s)`, null, 'ok');
   } catch (e) {
     pushLog(`Could not load /api/bundles — ${e.message}`, null, 'warn');
+  }
+
+  try {
+    const catalog = await API.catalog();
+    state.catalog = catalog;
+    const server = (catalog.servers || [])[0];
+    if (server) {
+      const project = document.getElementById('projectSelect');
+      if (project) {
+        project.innerHTML = `<option value="${escapeHtml(server.name)}">${escapeHtml(server.name)}</option>`;
+      }
+      hydrateS14Catalog(catalog);
+    } else {
+      pushLog('The MCP catalog lists no server — S14 snippets are unavailable', 'S14', 'warn');
+    }
+  } catch (e) {
+    pushLog(`Could not load /api/catalog — ${e.message}`, null, 'warn');
   }
 
   // Runtime health.
@@ -1761,7 +1765,7 @@ async function bootstrap() {
     const h = await API.health();
     hydrateHealth(h);
     setHealthPill('ok', 'all systems ready');
-    pushLog(`Runtime: Python ${h.python.version} · pydantic ${h.packages.pydantic.version || '?'} · ${h.tools.count} tools`, 'S14', 'ok');
+    pushLog(`Runtime: Python ${h.python.version} · pydantic ${h.packages.pydantic.version || '?'} · ${TOOLS.available ? TOOLS.all.length : h.tools.count} tools registered`, 'S14', 'ok');
   } catch (e) {
     setHealthPill('err', 'health probe failed');
     pushLog(`Could not load /api/health — ${e.message}`, null, 'err');
@@ -1775,63 +1779,107 @@ function hydrateBundleSelector(bundles) {
   if (!available.length) {
     select.innerHTML = '<option value="">No build bundles</option>';
     select.disabled = true;
+    pushLog('No CL-* bundle directories under build/ — run a conversion first', 'S0', 'warn');
     return;
   }
   select.disabled = false;
   select.innerHTML = available.map(bundle =>
     `<option value="${escapeHtml(bundle.id)}">${escapeHtml(bundle.id)} · ${bundle.file_count} files</option>`
   ).join('');
-  if (available.some(bundle => bundle.id === state.bundleId)) {
-    select.value = state.bundleId;
-  } else {
-    select.value = available[0].id;
-    switchBundle(select.value);
+  select.value = available.some(bundle => bundle.id === state.bundleId)
+    ? state.bundleId
+    : available[0].id;
+  switchBundle(select.value);
+}
+
+/** Reset the stats bar to its "nothing loaded" state. */
+function resetStats() {
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('statBundle', state.bundleId || '—');
+  set('statConfidence', '—');
+  set('statValidation', 'not run');
+  set('statSegments', '0');
+  set('statAuthorities', '0');
+}
+
+/** Fetch one bundle's real artifacts and make them the page's source of truth.
+ *  Nothing in the step templates carries demo data any more, so this single
+ *  call is what fills every panel; switching bundles rewrites the whole canvas. */
+async function loadBundle(violationId) {
+  const id = violationId || state.bundleId;
+  if (!id) return null;
+  try {
+    state.bundle = await API.bundle(id);
+  } catch (e) {
+    state.bundle = null;
+    pushLog(`Could not load bundle ${id} — ${e.message}`, 'S0', 'err');
+    return null;
   }
+  const violation = state.bundle.violation;
+  if (violation) {
+    state.violation = violation;
+    state.bundleId = violation.violation_id || id;
+    state.title = violation.title || '';
+  }
+  hydrateStats(state.violation);
+  hydrateValidation(state.bundle);
+  syncStepCompletion(state.bundle);
+  if (!state.bundle.artifacts_present.violation) {
+    pushLog(`${id} has no violation JSON yet — panels show only what exists on disk`, 'S0', 'warn');
+  }
+  return state.bundle;
 }
 
 function switchBundle(bundleId) {
   state.bundleId = bundleId;
   state.settings.bundleRoot = `build/${bundleId}`;
   state.violation = null;
+  state.bundle = null;
+  state.activeTranscript = null;
+  state.segmentSpecs = {};
   localStorage.removeItem('vp.violation');
-  document.getElementById('statBundle').textContent = state.bundleId;
-  document.getElementById('statConfidence').textContent = '—';
-  document.getElementById('statSegments').textContent = '0';
-  document.getElementById('statAuthorities').textContent = '0';
-  const bundlePath = document.querySelector('[data-setting-value="bundleRoot"]');
-  if (bundlePath) bundlePath.textContent = state.settings.bundleRoot;
-  const bundleFields = {
-    s0BundleRoot: state.settings.bundleRoot,
-    s11BundleRoot: state.settings.bundleRoot,
-    s11OutputZip: `${state.settings.bundleRoot}_refined_pack.zip`,
-    s13BundleRoot: state.settings.bundleRoot,
-  };
-  Object.entries(bundleFields).forEach(([id, value]) => {
-    const field = document.getElementById(id);
-    if (field) field.value = value;
-  });
+  resetStats();
+  syncStepCompletion(null);
+  hydrateSettings(state.config);
   const bundleTrigger = document.querySelector('[data-setting="bundleRoot"][data-action="browse"]');
   if (bundleTrigger) bundleTrigger.dataset.browsePath = 'build';
-  if (state.activeStep === 's0') loadS0StagedFiles();
-  pushLog(`Switched active bundle to ${state.bundleId}`, null, 'warn');
+  pushLog(`Switched active bundle to ${state.bundleId}`, null, 'ok');
+  loadBundle(bundleId).then(() => applyBundleToStep());
 }
-// Sync all hardcoded fields to the active bundle
-  const vidField = document.getElementById('s1ViolationId');
-  if (vidField) vidField.value = state.bundleId;
-  const s3Select = document.getElementById('s3FrameworkFile');
-  if (s3Select) s3Select.innerHTML = `<option>${state.settings.bundleRoot}/Legal framework/CHIPENCOD_CP.md</option>`;
-  const s0Bundle = document.getElementById('s0BundleRoot');
-  if (s0Bundle) s0Bundle.value = state.settings.bundleRoot;
-  const s11Bundle = document.getElementById('s11BundleRoot');
-  if (s11Bundle) s11Bundle.value = state.settings.bundleRoot;
-  const s11Zip = document.getElementById('s11OutputZip');
-  if (s11Zip) s11Zip.value = `${state.settings.bundleRoot}_refined_pack.zip`;
-  const s13Bundle = document.getElementById('s13BundleRoot');
-  if (s13Bundle) s13Bundle.value = state.settings.bundleRoot;
-  const s13Id = document.getElementById('s13BundleId');
-  if (s13Id) s13Id.value = state.bundleId;
-  pushLog(`Switched active bundle to ${state.bundleId}`, null, 'warn');
 
+/** Write the active bundle into whichever step is on screen.
+ *
+ *  A step's controls only exist in the DOM after switchStep() clones its
+ *  template, so this runs from switchStep() and again once a bundle arrives —
+ *  never at parse time. (The old code did exactly that: a block sitting outside
+ *  any function queried #s1ViolationId/#s3FrameworkFile before their templates
+ *  had ever been cloned, so it was a permanent no-op and still hardcoded
+ *  "CHIPENCOD_CP.md".) */
+function applyBundleToStep(stepId) {
+  const id = stepId || state.activeStep;
+  const root = state.settings.bundleRoot || (state.bundleId ? `build/${state.bundleId}` : '');
+  const setValue = (fieldId, value) => { const el = document.getElementById(fieldId); if (el) el.value = value; };
+  if (id === 's0') { setValue('s0BundleRoot', root); hydrateS0(); }
+  if (id === 's1') { setValue('s1ViolationId', state.bundleId || ''); hydrateS1(); }
+  if (id === 's2') { hydrateSourceSelectors(); hydrateS2(); }
+  if (id === 's3') hydrateS3();
+  if (id === 's4') hydrateS4();
+  if (id === 's5') hydrateS5();
+  if (id === 's6') hydrateS6();
+  if (id === 's7') hydrateS7();
+  if (id === 's8') hydrateS8();
+  if (id === 's9') hydrateS9();
+  if (id === 's10') hydrateS10();
+  if (id === 's11') {
+    setValue('s11BundleRoot', root);
+    setValue('s11OutputZip', root ? `${root}_refined_pack.zip` : '');
+    hydrateS11();
+  }
+  if (id === 's12') hydrateS12();
+  if (id === 's13') { setValue('s13BundleRoot', root); setValue('s13BundleId', state.bundleId || ''); hydrateS13(); }
+  if (id === 's14') { hydrateS14(); renderInventory(); }
+  renderDrawer();
+}
 
 function setHealthPill(kind, text) {
   const pill = document.getElementById('healthPill');
@@ -1840,29 +1888,34 @@ function setHealthPill(kind, text) {
   pill.innerHTML = `<span class="health-dot"></span> ${escapeHtml(text)}`;
 }
 
+/** Build the runtime-health list from the probe itself.
+ *
+ *  The probe already ships `required`, `version` and `fix` per dependency, so
+ *  the panel is generated rather than hand-listed — adding an extra to
+ *  `probe_runtime()` makes it appear here with no HTML change. */
 function hydrateHealth(h) {
-  const mark = (key, ok, warnOnly) => {
-    const row = document.querySelector(`.health-check-row[data-health="${key}"]`);
-    if (!row) return;
-    const dot = row.querySelector('.health-dot');
-    dot.classList.toggle('warn', !ok && warnOnly);
-    dot.classList.toggle('err', !ok && !warnOnly);
-  };
+  const host = document.getElementById('settingsHealth');
+  if (!host) return;
+  const rows = [];
+  const row = (key, label, ok, fix, warnOnly) => rows.push(
+    `<div class="health-check-row" data-health="${escapeHtml(key)}"><span class="health-dot ${ok ? '' : (warnOnly ? 'warn' : 'err')}"></span>` +
+    `<span class="hc-label">${escapeHtml(label)}</span>` +
+    (ok || !fix ? '' : `<span class="hc-fix">${escapeHtml(fix)}</span>`) +
+    `</div>`
+  );
 
-  mark('python', h.python.ok, false);
-  mark('pydantic', h.packages.pydantic.present, false);
+  row('python', `Python ${h.python.version} — requires ${h.python.required}`, h.python.ok, './start.sh');
+  const pyd = h.packages.pydantic;
+  row('pydantic', `pydantic ${pyd.version || 'missing'}`, pyd.present, pyd.fix);
+  (h.packages.extras || []).forEach(e => {
+    row(e.module, `${e.module} ${e.version || 'missing'} (${e.extra})`, e.present, e.fix, true);
+  });
+  const toolCount = TOOLS.available ? TOOLS.all.length : '?';
+  row('server', `MCP server — ${location.host} · ${toolCount} tools`, true, null);
+  host.innerHTML = rows.join('');
 
-  (h.packages.extras || []).forEach(e => mark(e.module, e.present, true));
-
-  // The server is obviously up — we just talked to it.
-  const row = document.querySelector('.health-check-row[data-health="server"]');
-  if (row) {
-    const dot = row.querySelector('.health-dot');
-    dot.classList.remove('warn', 'err');
-    const label = document.getElementById('hcServerLabel');
-    if (label) label.textContent = `MCP server — ${location.host} · ${h.tools.count} tools`;
-    const fix = document.getElementById('hcServerFix');
-    if (fix) fix.style.display = 'none';
+  if (!h.ui.present) {
+    pushLog(`Serving a stale UI: ${h.ui.path} is missing`, null, 'err');
   }
 }
 
@@ -1959,22 +2012,73 @@ function renderInventory() {
     + ` · ${destructive} destructive (confirmation required)`;
 }
 
+/** The bare filename stem of a source reference, with any ``#fragment`` and any
+ *  extension removed, so a bundle-relative ``Transcripts/x.json#seg-18`` and a
+ *  browsable ``data/transcripts/html/x.html`` compare equal. */
+function stemOfFile(value) {
+  return String(value || '').split('#')[0].split('/').pop().replace(/\.[^.]+$/, '');
+}
+
+/** Every segment id this bundle actually relies on: the element grid's
+ *  ``proof_evidence_segments`` plus the nexus matrix's ``fact_id``. Reading only
+ *  one of the two under-reports the evidence — the nexus cites facts that no
+ *  grid element claims (CL-005: 8 from the grid, 10 with the nexus). */
+function citedSegmentIds(violation) {
+  const out = new Set();
+  (((violation || {}).element_grids) || []).forEach(grid =>
+    ((grid.elements) || []).forEach(element =>
+      (element.proof_evidence_segments || []).forEach(id => out.add(id))));
+  (((violation || {}).nexus_matrix) || []).forEach(nexus => {
+    if (nexus.fact_id) out.add(nexus.fact_id);
+  });
+  return out;
+}
+
+/** The transcript a bundle's segments actually came from. Hardcoding a source
+ *  id meant the picker opened on the wrong file as soon as a second corpus
+ *  arrived, so the bundle's own segment provenance decides it.
+ *
+ *  A bundle segment carries ``source_uri`` like
+ *  ``Transcripts/<stem>.json#seg-18`` — bundle-relative, fragment-suffixed and
+ *  not necessarily the same file as the browsable HTML corpus entry — so match
+ *  on the bare stem as well as the exact path. */
+function preferredTranscript() {
+  const list = state.sources.transcripts || [];
+  if (!list.length) return null;
+  for (const segment of ((state.violation && state.violation.segments) || [])) {
+    const uri = String(segment.source_uri || '');
+    const byUri = list.find(t => t.uri === uri || t.path === uri);
+    if (byUri) return byUri;
+    const wanted = [stemOfFile(uri), String(segment.segment_id || '').split('.')[0]]
+      .filter(Boolean);
+    const byStem = list.find(t => wanted.includes(stemOfFile(t.name)));
+    if (byStem) return byStem;
+  }
+  return list[0];
+}
+
 function hydrateSourceSelectors() {
   const select = document.getElementById('s2TranscriptSelect');
   if (!select || !state.sources.transcripts.length) return;
+  const list = state.sources.transcripts;
   const current = select.value;
-  const preferred = state.sources.transcripts.find(t => t.source_id === 'STG-7') || state.sources.transcripts[0];
-  select.innerHTML = state.sources.transcripts.map(t =>
+  const preferred = preferredTranscript();
+  select.innerHTML = list.map(t =>
     `<option value="${escapeHtml(t.path)}">${escapeHtml(t.name)} · ${t.segment_count} segments</option>`
   ).join('');
-  select.value = state.sources.transcripts.some(t => t.path === current) ? current : preferred.path;
+  // The bundle's own provenance decides the default; an explicit pick by the
+  // user survives a re-hydration (this runs again on every step switch).
+  const keepCurrent = state.transcriptChosen && list.some(t => t.path === current);
+  select.value = keepCurrent ? current : (preferred ? preferred.path : current);
   const updateMeta = () => {
-    const source = state.sources.transcripts.find(t => t.path === select.value);
+    const source = list.find(t => t.path === select.value);
     if (!source) return;
     const meta = document.getElementById('s2TranscriptMeta');
     if (meta) meta.textContent = `${source.source_id} · ${source.segment_count} segments · ${source.uri}`;
   };
   select.onchange = () => {
+    state.transcriptChosen = true;
+    state.activeTranscript = null;
     updateMeta();
     loadSelectedTranscript();
   };
@@ -2006,11 +2110,19 @@ async function loadSelectedTranscript() {
 function renderS2Segments() {
   const list = document.getElementById('s2TranscriptList');
   if (!list || !state.activeTranscript) return;
+  // Written here rather than only at fetch time: the transcript may have been
+  // loaded while another step was on screen, in which case the input did not
+  // exist yet and the cache-guard path never fills it.
+  const sourceIdField = document.getElementById('s2SourceId');
+  if (sourceIdField) sourceIdField.value = state.activeTranscript.source_id || '';
   list.innerHTML = state.activeTranscript.segments.map(segment => {
     const selected = Boolean(state.segmentSpecs[segment.segment_id]);
     const speakerClass = /passenger/i.test(segment.speaker) ? 'seg-passenger' : 'seg-other';
+    const start = Number(segment.audio_offset_start);
+    const end = Number(segment.audio_offset_end);
+    const span = Number.isFinite(start) && Number.isFinite(end) ? `${start.toFixed(2)}s → ${end.toFixed(2)}s` : 'offset not stated';
     return `<div class="transcript-segment ${speakerClass}${selected ? ' is-marked' : ''}" data-segment-id="${escapeHtml(segment.segment_id)}">
-      <div class="seg-time">${segment.audio_offset_start.toFixed(2)}s → ${segment.audio_offset_end.toFixed(2)}s · ${escapeHtml(state.activeTranscript.source_id)}.${escapeHtml(segment.segment_id)}</div>
+      <div class="seg-time">${span} · ${escapeHtml(state.activeTranscript.source_id)}.${escapeHtml(segment.segment_id)}</div>
       <div class="seg-speaker">${escapeHtml(segment.speaker)}</div>
       <div class="seg-text">&quot;${escapeHtml(segment.verbatim)}&quot;</div>
       <div class="seg-actions"><button class="seg-mark-btn${selected ? ' is-marked' : ''}">${selected ? '✓ in segment_specs' : 'Add to segment_specs'}</button><button class="seg-mark-btn" data-segment-note="true">Notes</button></div>
@@ -2030,7 +2142,10 @@ function renderSelectedSegments() {
   list.innerHTML = selected.map(spec => {
     const segment = state.activeTranscript.segments.find(s => s.segment_id === spec.segment_id);
     if (!segment) return '';
-    return `<div class="record-row verified"><div class="rr-main"><div class="rr-id">${escapeHtml(state.activeTranscript.source_id)}.${escapeHtml(segment.segment_id)}</div><div class="rr-detail quote">&quot;${escapeHtml(segment.verbatim)}&quot;</div></div><div class="rr-meta"><span class="hash-chip">selected</span><span class="badge badge-neutral">${segment.audio_offset_start.toFixed(2)}s–${segment.audio_offset_end.toFixed(2)}s</span></div></div>`;
+    const start = Number(segment.audio_offset_start);
+    const end = Number(segment.audio_offset_end);
+    const span = Number.isFinite(start) && Number.isFinite(end) ? `${start.toFixed(2)}s–${end.toFixed(2)}s` : 'offset not stated';
+    return `<div class="record-row verified"><div class="rr-main"><div class="rr-id">${escapeHtml(state.activeTranscript.source_id)}.${escapeHtml(segment.segment_id)}</div><div class="rr-detail quote">&quot;${escapeHtml(segment.verbatim)}&quot;</div></div><div class="rr-meta"><span class="hash-chip">selected</span><span class="badge badge-neutral">${span}</span></div></div>`;
   }).join('');
 }
 
@@ -2060,11 +2175,8 @@ function seedText(value, spec) {
 }
 
 function selectedTranscript() {
-  const select = document.getElementById('s2TranscriptSelect');
-  return state.sources.transcripts.find(t => t.path === select?.value)
-    || state.sources.transcripts.find(t => t.source_id === 'STG-7')
-    || state.sources.transcripts[0]
-    || null;
+  return state.sources.transcripts.find(t => t.path === (document.getElementById('s2TranscriptSelect') || {}).value)
+    || preferredTranscript();
 }
 
 async function openBrowsePicker(button) {
@@ -2116,26 +2228,7 @@ function chooseSetting(setting, path) {
   document.getElementById('modalOverlay').classList.remove('active');
 }
 
-async function loadS0StagedFiles() {
-  const list = document.getElementById('s0StagedFiles');
-  if (!list) return;
-  const bundle = state.settings.bundleRoot || 'build/CL-005';
-  list.innerHTML = '<div class="field-hint">Loading bundle files…</div>';
-  try {
-    const files = [];
-    const walk = async path => {
-      const data = await API.browse(path, 'directory');
-      for (const entry of data.entries) {
-        if (entry.kind === 'file') files.push(entry);
-        else await walk(entry.path);
-      }
-    };
-    await walk(bundle);
-    list.innerHTML = files.length ? files.map(file => `<div class="record-row verified"><div class="rr-main"><div class="rr-id">${escapeHtml(file.name)}</div><div class="rr-detail">${escapeHtml(file.path)}</div></div><div class="rr-meta"><span class="badge badge-neutral">present</span></div></div>`).join('') : '<div class="field-hint">No files staged in this bundle.</div>';
-  } catch (e) {
-    list.innerHTML = `<div class="field-hint">Could not inspect ${escapeHtml(bundle)} — ${escapeHtml(e.message)}</div>`;
-  }
-}
+
 
 function defaultArgsFor(tool) {
   const args = {};
@@ -2149,7 +2242,12 @@ function defaultArgsFor(tool) {
     const pick = (k) => (form[k] !== undefined && form[k] !== '' ? form[k] : undefined);
     args.violation_id = pick('violation id') || state.bundleId;
     args.title = pick('title') || state.title || '';
-    args.severity = pick('severity') || 'MEDIUM';
+    // The severity select is filled from the model Literal, so its value is
+    // always a legal enum. Never invent one: an empty string fails validation.
+    const severity = pick('severity') || (state.violation && state.violation.severity)
+      || ((state.schema && state.schema.severity) || [])[0];
+    if (!severity) pushLog('No severity available — /api/schema did not load', 'S1', 'err');
+    args.severity = severity || '';
     args.incident = {
       date: pick('incident date') || '',
       location: pick('incident location') || '',
@@ -2172,7 +2270,9 @@ function defaultArgsFor(tool) {
     args.segment_specs = Object.values(state.segmentSpecs);
   }
 
-  (tool.required || []).forEach(k => {
+  // ``Tool`` (the pydantic model) has no ``required`` attribute of its own —
+  // the list lives on the JSON Schema it carries.
+  (((tool.parameters || {}).required) || []).forEach(k => {
     if (k in seeded) args[k] = seeded[k];
   });
   if (state.violation) args.violation = state.violation;
@@ -2183,7 +2283,7 @@ function openToolPanel(name) {
   const tool = TOOLS.byName.get(name);
   if (!tool) return;
   const props = (tool.parameters && tool.parameters.properties) || {};
-  const required = tool.required || [];
+  const required = (tool.parameters || {}).required || [];
   const seeded = defaultArgsFor(tool);
 
   const rows = Object.keys(props).map(key => {
@@ -2271,7 +2371,7 @@ async function runBoundTool(btn) {
   };
   if (btn.dataset.args) Object.assign(args, JSON.parse(btn.dataset.args));
 
-  if (tool && (tool.required || []).some(k => args[k] === undefined)) {
+  if (tool && (((tool.parameters || {}).required) || []).some(k => args[k] === undefined)) {
     pushLog(`${name} needs more arguments — opening the form`, STAGE_TITLES[state.activeStep], 'warn');
     openToolPanel(name);
     return;
@@ -2355,6 +2455,7 @@ function applyIntroState() {
 
 function hydrateStats(v) {
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  if (!v) { set('statBundle', state.bundleId || '—'); set('statSegments', '0'); set('statAuthorities', '0'); set('statConfidence', '—'); return; }
   set('statBundle', v.violation_id);
   set('statSegments', (v.segments || []).length);
   set('statAuthorities', (v.authorities || []).length);
@@ -2364,6 +2465,913 @@ function hydrateStats(v) {
     ? (c.score !== undefined ? c.score : (c.value !== undefined ? c.value : null))
     : c;
   set('statConfidence', score === null || score === undefined ? '—' : Number(score).toFixed(2));
+}
+
+/** The stats bar's validation cell reads the real checks.json tallies. The
+ *  previous code never wrote this cell, so it kept its "not run" literal even
+ *  when a fully validated bundle was loaded. */
+function hydrateValidation(bundle) {
+  const el = document.getElementById('statValidation');
+  if (!el) return;
+  const s = bundle && bundle.validation_summary;
+  if (!s || !s.total) { el.textContent = 'not run'; return; }
+  el.textContent = `${s.pass} pass · ${s.warn} warn · ${s.fail} fail`;
+  el.classList.toggle('accent', s.fail === 0 && s.warn === 0);
+}
+
+/* ==========================================================================
+   BUNDLE HYDRATION
+   --------------------------------------------------------------------------
+   One function per step. Every one of them is null-safe and idempotent,
+   because a bundle mid-pipeline legitimately lacks artifacts and
+   applyBundleToStep() re-runs on every step switch.
+
+   Nothing in this file carries a demo value: the option lists come from
+   /api/schema (read off the pydantic Literals), the paths and settings from
+   /api/settings, the JSON from /api/bundle, and the snippets from
+   /api/catalog. Adding a stage means editing enrich.py only.
+   ========================================================================== */
+
+const STATUS_BADGE = {
+  pass: 'badge-pass', warn: 'badge-warn', fail: 'badge-fail',
+  verified_in_bundle: 'badge-pass', not_in_bundle: 'badge-warn', pending_fetch: 'badge-neutral',
+  established: 'badge-pass', strong: 'badge-pass', contested: 'badge-warn',
+  weak: 'badge-warn', missing: 'badge-fail',
+  not_applicable: 'badge-neutral', not_developed: 'badge-neutral',
+  critical: 'badge-fail', high: 'badge-warn', medium: 'badge-neutral', low: 'badge-neutral',
+};
+
+function setInput(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.value = (value === null || value === undefined) ? '' : String(value);
+}
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = (value === null || value === undefined) ? '' : String(value);
+}
+function setHtml(id, html) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+function hintRow(text) { return `<div class="field-hint">${escapeHtml(text)}</div>`; }
+
+/** Colour-coded chip for one server-side status / enum value. */
+function tag(value, cls) {
+  if (value === null || value === undefined || value === '') return '';
+  const key = String(value);
+  return `<span class="badge ${cls || STATUS_BADGE[key] || 'badge-neutral'}">${escapeHtml(key)}</span>`;
+}
+
+function setGate(id, text, kind) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'gate-banner' + (kind === 'pending' ? ' pending' : kind === 'advisory' ? ' advisory' : '');
+  el.textContent = text;
+}
+
+/** Fill a <select> from primitives or {value,label} pairs, keeping the user's
+ *  choice when it is still on offer. */
+function fillSelect(id, values, selected, placeholder) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  const list = (values || []).slice();
+  if (!list.length && placeholder) list.push({ value: '', label: placeholder });
+  const keep = el.value;
+  const want = (selected === undefined || selected === null || selected === '') ? keep : String(selected);
+  el.innerHTML = list.map(v => {
+    const isObj = v && typeof v === 'object';
+    const value = isObj ? v.value : v;
+    const label = isObj ? v.label : v;
+    return `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`;
+  }).join('');
+  if ([...el.options].some(o => o.value === want)) el.value = want;
+  return el;
+}
+
+function fmtBytes(n) {
+  if (typeof n !== 'number') return '';
+  if (n < 1024) return `${n} B`;
+  if (n < 1048576) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / 1048576).toFixed(1)} MB`;
+}
+function fmtStamp(iso) {
+  if (!iso) return '';
+  return String(iso).replace('T', ' ').replace(/\.\d+Z?$/, '').replace(/Z$/, '');
+}
+/** Composite ids are long; show the tail, keep the whole id in the tooltip. */
+function shortId(id) {
+  const s = String(id === null || id === undefined ? '' : id);
+  const i = s.lastIndexOf('.');
+  return i === -1 ? s : s.slice(i + 1);
+}
+function elementsOf(v) {
+  return ((v && v.element_grids) || []).flatMap(g => g.elements || []);
+}
+function bundleFiles() {
+  return ((state.bundle && state.bundle.files) || []).slice()
+    .sort((a, b) => String(a.path).localeCompare(String(b.path)));
+}
+
+/* ---------------------------------------------------------------- settings */
+
+/** Project paths. Rendered rather than typed: every row is a value the server
+ *  resolved, and the Browse button opens the workspace walker at that root. */
+function hydrateSettings(cfg) {
+  const host = document.getElementById('settingsPaths');
+  if (!host) return;
+  if (!cfg || cfg.ok === false) {
+    host.innerHTML = hintRow(cfg && cfg.error ? cfg.error : 'Settings unavailable.');
+    setHtml('settingsEnv', '');
+    return;
+  }
+  const p = cfg.paths || {};
+  const src = state.sources || {};
+  const rows = [
+    { key: 'projectRoot', label: 'Project root', value: p.workspaceRoot, browse: '.', kind: 'directory' },
+    { key: 'bundlesRoot', label: 'Bundles root', value: 'build/', browse: 'build', kind: 'directory' },
+    { key: 'bundleRoot', label: 'Active bundle', value: state.settings.bundleRoot, browse: 'build', kind: 'directory' },
+    { key: 'transcriptsRoot', label: 'Transcripts source root', value: src.transcripts_root, browse: src.transcripts_root, kind: 'directory' },
+    { key: 'frameworkRoot', label: 'Legal framework source root', value: src.frameworks_root, browse: src.frameworks_root, kind: 'directory' },
+    { key: 'buildRoot', label: 'Output root', value: p.buildRoot, browse: 'build', kind: 'directory' },
+    { key: 'pythonPath', label: 'Python interpreter', value: p.python, browse: null, kind: 'file' },
+    { key: 'envFile', label: '.env file', value: p.envFile, browse: null, kind: 'file' },
+    { key: 'logRoot', label: 'Log directory', value: p.logRoot, browse: null, kind: 'directory' },
+    { key: 'uiFile', label: 'Served UI file', value: p.uiFile, browse: null, kind: null },
+  ];
+  host.innerHTML = rows.map(r => `
+    <div class="settings-row">
+      <div class="settings-row-label">${escapeHtml(r.label)}</div>
+      <div class="settings-row-sub" data-setting-value="${escapeHtml(r.key)}">${escapeHtml(r.value || 'not set')}</div>
+      ${r.browse ? `<button class="btn" data-action="browse" data-setting="${escapeHtml(r.key)}" data-browse-kind="${escapeHtml(r.kind)}" data-browse-path="${escapeHtml(r.browse)}">Browse</button>` : ''}
+    </div>`).join('');
+  hydrateSettingsEnv(cfg);
+}
+
+/** Effective environment. The field list and the group headings are derived
+ *  from the Settings dataclass fields the server sent, so a new setting appears
+ *  here without touching this file. Secrets never leave the server. */
+function hydrateSettingsEnv(cfg) {
+  const host = document.getElementById('settingsEnv');
+  if (!host) return;
+  const values = cfg.settings || {};
+  const secrets = cfg.secrets || {};
+  const keys = Object.keys(values).sort();
+  if (!keys.length) { host.innerHTML = hintRow('No settings resolved.'); return; }
+
+  const counts = {};
+  keys.forEach(k => { const t = k.split('_')[0]; counts[t] = (counts[t] || 0) + 1; });
+  const groups = new Map();
+  keys.forEach(k => {
+    const t = k.split('_')[0];
+    const name = (counts[t] > 1 ? t : 'other').toUpperCase();
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name).push(k);
+  });
+
+  host.innerHTML = [...groups.entries()].map(([name, fields]) => {
+    const rows = fields.map(k => {
+      const secret = Boolean(secrets[k]);
+      const raw = values[k];
+      const isSet = raw !== null && raw !== undefined && raw !== '';
+      const shown = !isSet ? '' : (secret ? '••••••••' : String(raw));
+      return `<div class="settings-row">
+        <div class="settings-row-label">${escapeHtml(k.toUpperCase())}</div>
+        <input type="${secret ? 'password' : 'text'}" value="${escapeHtml(shown)}" placeholder="not set" readonly>
+      </div>`;
+    }).join('');
+    return `<div class="settings-row-sub" style="margin:12px 0 4px;">${escapeHtml(name)}</div>${rows}`;
+  }).join('');
+}
+
+/* --------------------------------------------------------------------- S0 */
+
+/** Destinations are the keys pack.copy_source_into_bundle can resolve, so the
+ *  dropdown can never offer a folder the server does not know how to place. */
+function hydrateS0() {
+  const layout = (state.schema && state.schema.bundle_layout) || {};
+  const dest = document.getElementById('s0Destination');
+  if (dest) {
+    const keep = dest.value;
+    dest.innerHTML = Object.keys(layout)
+      .map(k => `<option value="${escapeHtml(k)}">${escapeHtml(k)} → ${escapeHtml(layout[k])}</option>`)
+      .join('');
+    if ([...dest.options].some(o => o.value === keep)) dest.value = keep;
+  }
+  setInput('s0BundleRoot', state.settings.bundleRoot || '');
+
+  const files = bundleFiles();
+  setHtml('s0StagedFiles', files.length ? files.map(f => `
+    <div class="record-row verified">
+      <div class="rr-main">
+        <div class="rr-id">${escapeHtml(f.name)}</div>
+        <div class="rr-detail">${escapeHtml(f.path)}</div>
+      </div>
+      <div class="rr-meta">${tag(f.kind)}${tag(fmtBytes(f.size))}</div>
+    </div>`).join('') : hintRow(state.bundle ? 'This bundle holds no files yet.' : 'Loading bundle…'));
+
+  const b = state.bundle;
+  if (!b) { setGate('s0Gate', 'Loading bundle…', 'pending'); return; }
+  const present = Object.entries(b.artifacts_present || {});
+  const have = present.filter(([, ok]) => ok).map(([name]) => name);
+  const missing = present.filter(([, ok]) => !ok).map(([name]) => name);
+  setGate('s0Gate',
+    `Bundle ${b.violation_id} · ${b.file_count} file(s) · present: ${have.join(', ') || 'none'}` +
+    (missing.length ? ` · still to produce: ${missing.join(', ')}` : ''),
+    missing.length ? 'advisory' : 'met');
+}
+
+function loadS0StagedFiles() { hydrateS0(); }
+
+/* --------------------------------------------------------------------- S1 */
+
+function hydrateS1() {
+  const v = state.violation;
+  const sch = state.schema || {};
+  setInput('s1ViolationId', state.bundleId || '');
+
+  const inc = (v && v.incident) || {};
+  ['s1Title', 's1Date', 's1Location', 's1Flight', 's1Operator', 's1Clock'].forEach(id => setInput(id, ''));
+  fillSelect('s1Severity', sch.severity, v && v.severity, 'no severity on file');
+  fillSelect('s1ClockConfidence', sch.clock_time_confidence, inc.clock_time_confidence, 'no incident on file');
+
+  if (!v) {
+    setGate('s1Gate', 'This bundle has no violation JSON yet — run initialize to create one.', 'pending');
+    const refs = state.bundle ? 'No violation JSON on disk yet.' : 'No bundle loaded.';
+    setHtml('xref-list', hintRow(refs));
+    setHtml('oq-list', hintRow(refs));
+    return;
+  }
+
+  setInput('s1Title', v.title);
+  setInput('s1Date', inc.date);
+  setInput('s1Location', inc.location);
+  setInput('s1Flight', inc.flight);
+  setInput('s1Operator', inc.operator);
+  setInput('s1Clock', inc.clock_time_estimate);
+
+  const refs = v.cross_references || [];
+  const oqs = v.open_questions || [];
+  const segs = v.segments || [];
+  setGate('s1Gate',
+    `violation JSON schema v${v.schema_version} · ${segs.length} segment(s) · ` +
+    `${(v.established_articles || []).length} article(s) · ${refs.length} cross-reference(s) · ` +
+    `${(v.authorities || []).length} authority stub(s) · ${oqs.length} open question(s)`);
+
+  setHtml('xref-list', refs.length ? refs.map(r => `
+    <div class="record-row">
+      <div class="rr-main">
+        <div class="rr-id">${escapeHtml(r.ref)}</div>
+        <div class="rr-detail">${escapeHtml(r.relation || 'relation not stated')}</div>
+      </div>
+    </div>`).join('') : hintRow('No cross-references on file.'));
+
+  const rank = { critical: 0, high: 1, medium: 2, low: 3 };
+  setHtml('oq-list', oqs.length ? oqs.slice()
+    .sort((a, b) => (rank[a.priority] ?? 9) - (rank[b.priority] ?? 9))
+    .map(q => `
+    <div class="record-row">
+      <div class="rr-main">
+        <div class="rr-id">${escapeHtml(q.id)}</div>
+        <div class="rr-detail">${escapeHtml(q.question)}</div>
+        <div class="rr-detail">${escapeHtml([
+          q.blocks_element ? `blocks ${shortId(q.blocks_element)}` : null,
+          q.obtaining_method ? `via ${q.obtaining_method}` : 'no obtaining method',
+        ].filter(Boolean).join(' · '))}</div>
+      </div>
+      <div class="rr-meta">${tag(q.priority)}</div>
+    </div>`).join('') : hintRow('No open questions on file.'));
+}
+
+/* --------------------------------------------------------------------- S2 */
+
+function hydrateS2() {
+  const v = state.violation;
+  if (!state.bundle) {
+    setGate('s2Gate', 'Loading bundle…', 'pending');
+    return;
+  }
+  if (!v) {
+    setGate('s2Gate', 'No violation JSON in this bundle.', 'pending');
+    return;
+  }
+  const segs = v.segments || [];
+  if (!segs.length) {
+    setGate('s2Gate', 'No segments in the violation JSON yet — run the evidence layer to ingest one.', 'pending');
+    return;
+  }
+
+  // Count what the *bundle* holds, never what the browsed corpus file holds:
+  // the picker opens on a whole transcript, which legitimately has far more
+  // segments than the violation cites.
+  const onFile = new Set(segs.map(s => s.segment_id));
+  const cited = citedSegmentIds(v);
+  const unresolved = [...cited].filter(id => !onFile.has(id));
+  const speakers = [...new Set(segs.map(s => s.speaker).filter(Boolean))];
+  const starts = segs.map(s => Number(s.audio_offset_start)).filter(Number.isFinite);
+  const ends = segs.map(s => Number(s.audio_offset_end)).filter(Number.isFinite);
+  const span = starts.length && ends.length
+    ? `audio span ${Math.min(...starts).toFixed(1)}s–${Math.max(...ends).toFixed(1)}s`
+    : 'no audio offsets on file';
+
+  // The picker is a corpus browser; say so when it is showing a different
+  // transcript from the one this bundle's segments came from.
+  const browsed = selectedTranscript();
+  const bundleStem = stemOfFile((segs[0] && segs[0].segment_id || '').split('.')[0]);
+  const browsedStem = browsed ? stemOfFile(browsed.name) : '';
+  const elsewhere = browsedStem && bundleStem && browsedStem !== bundleStem;
+
+  setGate('s2Gate',
+    `${segs.length} segment(s) in the violation JSON · ${cited.size} cited by the element grid / nexus · `
+    + `${speakers.length} speaker label(s) · ${span}`
+    + (unresolved.length ? ` · ⚠ ${unresolved.length} cited id(s) absent from the bundle` : '')
+    + (elsewhere ? ` · picker shows ${browsedStem} (bundle source: ${bundleStem})` : ''),
+    unresolved.length ? 'advisory' : (elsewhere ? 'advisory' : 'met'));
+}
+
+/* --------------------------------------------------------------------- S3 */
+
+function hydrateS3() {
+  const v = state.violation;
+  const sch = state.schema || {};
+  const caches = (v && v.framework_caches) || [];
+  const discovered = (state.sources && state.sources.frameworks) || [];
+  const est = (v && v.established_articles) || [];
+  const cands = (v && v.candidate_articles) || [];
+
+  const options = caches.length
+    ? caches.map(c => ({ value: c.framework_code, label: `${c.framework_code} — ${c.cache_file || 'no cache file'}` }))
+    : discovered.map(f => ({ value: f.framework_code, label: `${f.framework_code} — ${f.path}` }));
+  const select = fillSelect('s3FrameworkFile', options, (caches[0] || discovered[0] || {}).framework_code,
+    'No framework in this bundle');
+
+  const syncFramework = () => {
+    const code = select ? select.value : '';
+    const cache = caches.find(c => c.framework_code === code);
+    const disc = discovered.find(f => f.framework_code === code);
+    setInput('s3FrameworkCode', code || '');
+    const articles = cache ? (cache.articles_cached || []) : [];
+    if (articles.length) {
+      setHtml('s3ArticleChips', articles.map(a => `<span class="chip">Art. ${escapeHtml(a)}</span>`).join(''));
+    } else if (disc && disc.article_count) {
+      setHtml('s3ArticleChips', hintRow(`${disc.article_count} article(s) in ${disc.path} — not cached into this bundle yet.`));
+    } else {
+      setHtml('s3ArticleChips', hintRow(cache ? 'This cache lists no articles.' : 'No framework cache in this bundle.'));
+    }
+  };
+  if (select) select.onchange = syncFramework;
+  syncFramework();
+
+  fillSelect('s3NormType', sch.norm_type, est[0] && est[0].norm_type, 'no established article');
+  setInput('s3ArticleId', est.length ? est[0].article_id : '');
+  setInput('s3Verbatim', est.length ? (est[0].verbatim_excerpt || '') : '');
+  const cache0 = caches[0];
+  setText('s3VerbatimSource', est.length
+    ? `${est[0].framework_cache_status || 'status unknown'} · ${est[0].applicability || 'applicability unknown'}`
+      + (cache0 && cache0.cache_file ? ` · ${cache0.cache_file}` : '')
+    : '');
+
+  setHtml('s3Established', est.length ? est.map(a => `
+    <div class="record-row verified">
+      <div class="rr-main">
+        <div class="rr-id">${escapeHtml(a.article_id)}</div>
+        ${a.article_name ? `<div class="rr-detail">${escapeHtml(a.article_name)}</div>` : ''}
+        ${a.verbatim_excerpt ? `<div class="rr-detail quote">&ldquo;${escapeHtml(a.verbatim_excerpt)}&rdquo;</div>` : ''}
+        <div class="rr-detail">${escapeHtml([
+          a.subsections_invoked && a.subsections_invoked.length ? `subsections ${a.subsections_invoked.join(', ')}` : null,
+          a.duty_bearer ? `duty bearer: ${a.duty_bearer}` : null,
+          a.applicability_rationale || null,
+        ].filter(Boolean).join(' · '))}</div>
+      </div>
+      <div class="rr-meta">${tag(a.framework_cache_status)}${tag(a.norm_type)}${tag(a.applicability)}</div>
+    </div>`).join('') : hintRow('No established articles in this bundle.'));
+
+  setHtml('s3Candidates', cands.length ? cands.map(c => `
+    <div class="record-row legacy">
+      <div class="rr-main">
+        <div class="rr-id">${escapeHtml(c.candidate_article_id)}</div>
+        ${c.candidate_name ? `<div class="rr-detail">${escapeHtml(c.candidate_name)}</div>` : ''}
+        ${c.preliminary_view ? `<div class="rr-detail">${escapeHtml(c.preliminary_view)}</div>` : ''}
+        <div class="rr-detail">${escapeHtml([
+          c.verification_required && c.verification_required.length ? `verify: ${c.verification_required.join('; ')}` : null,
+          c.history_note || null,
+        ].filter(Boolean).join(' · '))}</div>
+      </div>
+      <div class="rr-meta">${tag(c.framework_cache_status)}</div>
+    </div>`).join('') : hintRow('No candidate articles in this bundle.'));
+
+  if (!v) setGate('s3Gate', 'Loading bundle…', 'pending');
+  else if (!caches.length && !est.length) setGate('s3Gate', 'No framework cache or established article in this bundle yet.', 'pending');
+  else setGate('s3Gate',
+    `${caches.length} framework cache(s) · ${est.length} established · ${cands.length} candidate` +
+    (caches.length ? ` · articles cached: ${caches.reduce((n, c) => n + (c.articles_cached || []).length, 0)}` : ''),
+    est.length ? 'met' : 'advisory');
+}
+
+/* --------------------------------------------------------------------- S4 */
+
+function hydrateS4() {
+  const v = state.violation;
+  const grids = (v && v.element_grids) || [];
+  const weights = (state.schema && state.schema.proof_weights) || {};
+
+  const select = fillSelect('s4Article',
+    grids.map(g => ({ value: g.article_id, label: g.article_short || g.article_id })),
+    grids.length ? grids[0].article_id : '',
+    'No element grid in this bundle');
+  if (!select) return;
+
+  const draw = () => {
+    const grid = grids.find(g => g.article_id === select.value) || grids[0];
+    if (!grid) {
+      setHtml('s4Matrix', '');
+      setInput('s4ArticleWeight', '');
+      setText('s4Score', '—');
+      const bar = document.getElementById('s4ScoreBar');
+      if (bar) bar.style.width = '0%';
+      setGate('s4Gate', v ? 'No element grid in this bundle yet.' : 'Loading bundle…', 'pending');
+      return;
+    }
+    const elements = grid.elements || [];
+    const cols = [...new Set(elements.flatMap(e => e.proof_evidence_segments || []))];
+
+    const head = `<thead><tr><th>Element</th><th>Proof</th>${
+      cols.map(c => `<th title="${escapeHtml(c)}">${escapeHtml(shortId(c))}</th>`).join('')}</tr></thead>`;
+    const body = elements.map(e => {
+      const cited = new Set(e.proof_evidence_segments || []);
+      return `<tr><td title="${escapeHtml(e.element_id)}">${escapeHtml(e.label || shortId(e.element_id))}</td>`
+        + `<td>${tag(e.proof_status)}<span class="weight-note">${weights[e.proof_status] !== undefined ? ` ×${weights[e.proof_status]}` : ''}</span></td>`
+        + cols.map(c => `<td class="cell-${cited.has(c) ? 'on' : 'off'}">${cited.has(c) ? '●' : '·'}</td>`).join('')
+        + `</tr>`;
+    }).join('');
+    setHtml('s4Matrix', head + `<tbody>${body}</tbody>`);
+
+    // weighted_score() ignores not_developed — reproduce that exactly.
+    const scored = elements.map(e => e.proof_status).filter(s => s !== 'not_developed');
+    const total = scored.reduce((n, s) => n + (typeof weights[s] === 'number' ? weights[s] : 0), 0);
+    const score = scored.length ? total / scored.length : null;
+    setText('s4Score', score === null ? '—' : score.toFixed(2));
+    const bar = document.getElementById('s4ScoreBar');
+    if (bar) bar.style.width = `${score === null ? 0 : Math.round(score * 100)}%`;
+    setInput('s4ArticleWeight', score === null ? '' : `${grid.article_id} = ${score.toFixed(3)}`);
+
+    const missing = elements.filter(e => e.proof_status === 'missing').length;
+    const weak = elements.filter(e => ['weak', 'contested'].includes(e.proof_status)).length;
+    setGate('s4Gate',
+      `${elements.length} element(s) · ${cols.length} cited segment(s) · weighted score ${score === null ? '—' : score.toFixed(3)}`
+      + (missing ? ` · ${missing} missing` : '') + (weak ? ` · ${weak} weak/contested` : ''),
+      missing ? 'pending' : (weak ? 'advisory' : 'met'));
+  };
+  select.onchange = draw;
+  draw();
+}
+
+/* --------------------------------------------------------------------- S5 */
+
+function hydrateS5() {
+  const v = state.violation;
+  const sch = state.schema || {};
+  const nexus = (v && v.nexus_matrix) || [];
+  const elements = elementsOf(v);
+  const segs = (v && v.segments) || [];
+
+  const facts = [...new Set(nexus.map(n => n.fact_id))];
+  fillSelect('s5Fact', (facts.length ? facts : segs.map(s => s.segment_id)).map(f => ({ value: f, label: shortId(f) })),
+    facts[0], 'no facts on file');
+  fillSelect('s5Norm', [...new Set(nexus.map(n => n.norm_id))]
+    .concat(((v && v.established_articles) || []).map(a => a.article_id))
+    .filter((x, i, arr) => x && arr.indexOf(x) === i)
+    .map(n => ({ value: n, label: `${shortId(n)} — ${n}` })), null, 'no norms on file');
+  fillSelect('s5Element', (elements.length ? elements.map(e => ({ value: e.element_id, label: e.label || shortId(e.element_id) }))
+    : nexus.map(n => ({ value: n.element_id, label: shortId(n.element_id) }))), null, 'no elements on file');
+  fillSelect('s5Strength', sch.nexus_strength, nexus[0] && nexus[0].strength, 'no nexus on file');
+
+  const rank = { high: 0, medium: 1, low: 2 };
+  setHtml('s5NexusRows', nexus.length ? nexus.slice()
+    .sort((a, b) => (rank[a.strength] ?? 9) - (rank[b.strength] ?? 9))
+    .map(n => `
+    <div class="record-row">
+      <div class="rr-main">
+        <div class="rr-id">${escapeHtml(shortId(n.fact_id))} <span class="rr-arrow">→</span> ${escapeHtml(shortId(n.norm_id))}</div>
+        <div class="rr-detail">${escapeHtml(n.element_id)} · ${escapeHtml(n.nexus_type)}</div>
+        ${n.rationale_oneline ? `<div class="rr-detail">${escapeHtml(n.rationale_oneline)}</div>` : ''}
+      </div>
+      <div class="rr-meta">${tag(n.strength)}</div>
+    </div>`).join('') : hintRow('No nexus entries in this bundle.'));
+
+  // Coverage gap: a grid element nothing in the nexus matrix reaches.
+  const reached = new Set(nexus.map(n => n.element_id));
+  const gaps = elements.filter(e => !reached.has(e.element_id));
+  const gapBox = document.getElementById('s5Gap');
+  if (gapBox) {
+    gapBox.style.display = gaps.length ? '' : 'none';
+    gapBox.innerHTML = gaps.length
+      ? `<b>${gaps.length} element(s) with no nexus entry</b><div class="rr-detail">${gaps.map(g => escapeHtml(g.label || shortId(g.element_id))).join(' · ')}</div>`
+      : '';
+  }
+
+  const counts = { high: 0, medium: 0, low: 0 };
+  nexus.forEach(n => { if (counts[n.strength] !== undefined) counts[n.strength] += 1; });
+  if (!v) setGate('s5Gate', 'Loading bundle…', 'pending');
+  else if (!nexus.length) setGate('s5Gate', 'No nexus entries in this bundle yet.', 'pending');
+  else setGate('s5Gate',
+    `${nexus.length} nexus entry(ies) · ${counts.high} high / ${counts.medium} medium / ${counts.low} low · `
+    + `${elements.length - gaps.length}/${elements.length} element(s) reached`,
+    gaps.length ? 'advisory' : 'met');
+}
+
+/* --------------------------------------------------------------------- S6 */
+
+function hydrateS6() {
+  const v = state.violation;
+  const sch = state.schema || {};
+  const authorities = (v && v.authorities) || [];
+  const elements = elementsOf(v);
+
+  const next = `AUTH-${state.bundleId || 'CL-XXX'}-${String(authorities.length + 1).padStart(2, '0')}`;
+  setInput('s6AuthorityId', authorities.some(a => a.id === next) ? '' : next);
+  fillSelect('s6Type', sch.authority_type, authorities[0] && authorities[0].type, 'no authority on file');
+  fillSelect('s6Protocol', sch.authority_protocol, authorities[0] && authorities[0].verification_protocol, 'no protocol on file');
+  if (!document.getElementById('s6Supports').value) setInput('s6Supports', '');
+  setHtml('s6SupportsChips', elements.length
+    ? elements.map(e => `<span class="chip" data-element-id="${escapeHtml(e.element_id)}" title="${escapeHtml(e.element_id)}">${escapeHtml(e.label || shortId(e.element_id))}</span>`).join('')
+    : '');
+
+  setHtml('s6Stubs', authorities.length ? authorities.map(a => `
+    <div class="record-row${a.verified ? ' verified' : ''}">
+      <div class="rr-main">
+        <div class="rr-id">${escapeHtml(a.id)}</div>
+        <div class="rr-detail">${escapeHtml(a.proposition_to_verify || 'no proposition recorded')}</div>
+        <div class="rr-detail">${escapeHtml([
+          a.type ? `type: ${a.type}` : null,
+          (a.supports || []).length ? `supports ${a.supports.map(shortId).join(', ')}` : 'supports nothing',
+          a.research_query ? `query: ${a.research_query}` : null,
+        ].filter(Boolean).join(' · '))}</div>
+        ${a.fabrication_risk_note ? `<div class="rr-detail"><b>Fabrication risk:</b> ${escapeHtml(a.fabrication_risk_note)}</div>` : ''}
+      </div>
+      <div class="rr-meta">${tag(a.verified ? 'pass' : 'warn', a.verified ? 'badge-pass' : 'badge-warn')}
+        <span class="badge badge-neutral">${a.verified ? 'verified' : 'unverified'}</span></div>
+    </div>`).join('') : hintRow('No authority stubs in this bundle. V07 will report nothing to verify.'));
+
+  const verified = authorities.filter(a => a.verified).length;
+  if (!v) setGate('s6Gate', 'Loading bundle…', 'pending');
+  else if (!authorities.length) setGate('s6Gate', 'No authority stubs on file — add one, or V07 has nothing to check.', 'advisory');
+  else setGate('s6Gate', `${authorities.length} stub(s) · ${verified} verified / ${authorities.length - verified} unverified`,
+    verified === authorities.length ? 'met' : 'advisory');
+}
+
+/* --------------------------------------------------------------------- S7 */
+
+function hydrateS7() {
+  const v = state.violation;
+  const authorities = (v && v.authorities) || [];
+  const select = fillSelect('s7Authority',
+    authorities.map(a => ({ value: a.id, label: `${a.id} — ${(a.type || 'type?')} · ${(a.proposition_to_verify || '').slice(0, 48)}` })),
+    authorities[0] && authorities[0].id, 'No authority stubs in this bundle');
+  setInput('s7Article', '');
+  setInput('s7Quote', '');
+
+  const rows = [];
+  authorities.forEach(a => {
+    const p = a.verification_provenance;
+    if (p) {
+      setInput('s7Article', '');
+      rows.push(`
+        <div class="record-row verified">
+          <div class="rr-main">
+            <div class="rr-id">${escapeHtml(a.id)} — matched at offset ${escapeHtml(p.matched_offset)}</div>
+            <div class="rr-detail quote">&ldquo;${escapeHtml(p.matched_quote || '')}&rdquo;</div>
+            <div class="rr-detail">${escapeHtml([
+              p.protocol, p.source_uri ? `source ${p.source_uri}` : null,
+              p.source_sha256 ? `sha ${p.source_sha256.slice(0, 12)}…` : null,
+              p.verified_at ? `verified ${fmtStamp(p.verified_at)}` : null,
+            ].filter(Boolean).join(' · '))}</div>
+            ${p.notes ? `<div class="rr-detail">${escapeHtml(p.notes)}</div>` : ''}
+          </div>
+          <div class="rr-meta">${tag(a.verified ? 'verified_in_bundle' : 'pending_fetch')}</div>
+        </div>`);
+    } else {
+      rows.push(`
+        <div class="record-row">
+          <div class="rr-main">
+            <div class="rr-id">${escapeHtml(a.id)} — never verified</div>
+            <div class="rr-detail">${escapeHtml(a.proposition_to_verify || 'no proposition recorded')}</div>
+            <div class="rr-detail">${escapeHtml(a.verification_protocol ? `declared protocol: ${a.verification_protocol}` : 'no protocol declared')}</div>
+          </div>
+          <div class="rr-meta">${tag('missing')}</div>
+        </div>`);
+    }
+  });
+  setHtml('s7Results', rows.length ? rows.join('') : hintRow(
+    state.bundle ? 'No authority results — this bundle has no stubs to verify.' : 'Loading bundle…'));
+
+  const verified = authorities.filter(a => a.verified).length;
+  const provenance = authorities.filter(a => a.verification_provenance).length;
+  if (!state.bundle) setGate('s7Gate', 'Loading bundle…', 'pending');
+  else if (!authorities.length) setGate('s7Gate', 'No authority stubs to verify in this bundle.', 'advisory');
+  else setGate('s7Gate', `${verified} of ${authorities.length} verified · ${provenance} provenance record(s)`,
+    verified === authorities.length ? 'met' : 'pending');
+}
+
+/* --------------------------------------------------------------------- S8 */
+
+function hydrateS8() {
+  const v = state.violation;
+  const cfg = (state.config && state.config.settings) || {};
+  const c = v && v.confidence;
+
+  const floorEl = document.getElementById('s8Floor');
+  if (floorEl) floorEl.value = cfg.authority_verification_floor === undefined ? '' : String(cfg.authority_verification_floor);
+
+  if (!c) {
+    setInput('s8ArticleWeight', '');
+    setText('s8FormulaTitle', 'Confidence — not derived');
+    setHtml('s8Formula', hintRow(state.bundle ? 'No confidence block in this bundle yet.' : 'Loading bundle…'));
+    setText('s8Score', '—');
+    const bar = document.getElementById('s8ScoreBar');
+    if (bar) bar.style.width = '0%';
+    setGate('s8Gate', state.bundle ? 'Not derived in this bundle yet.' : 'Loading bundle…', 'pending');
+    return;
+  }
+
+  const components = c.components || {};
+  const value = typeof c.value === 'number' ? c.value : Number(c.value);
+  setInput('s8ArticleWeight', Object.entries(components)
+    .map(([k, w]) => `${k} = ${w}`).join('   '));
+  setText('s8Score', Number.isFinite(value) ? value.toFixed(2) : '—');
+  const bar = document.getElementById('s8ScoreBar');
+  if (bar) bar.style.width = Number.isFinite(value) ? `${Math.round(value * 100)}%` : '0%';
+  setText('s8FormulaTitle', Number.isFinite(value) ? `Why ${value.toFixed(2)}` : 'Derivation');
+
+  const parts = [];
+  if (c.derivation_formula) parts.push(escapeHtml(c.derivation_formula));
+  const perArticle = Object.entries(components).map(([k, w]) => `&nbsp;&nbsp;${escapeHtml(k)} = <b>${escapeHtml(w)}</b>`).join('<br>');
+  if (perArticle) parts.push(`components<br>${perArticle}`);
+  parts.push(`authorities_verification_factor = <b>${escapeHtml(c.authorities_verification_factor)}</b>`);
+  if (c.derived_at) parts.push(`derived_at = ${escapeHtml(fmtStamp(c.derived_at))}`);
+  if ((c.history || []).length) {
+    parts.push(`history<br>${c.history.map(h => `&nbsp;&nbsp;${escapeHtml(h)}`).join('<br>')}`);
+  }
+  setHtml('s8Formula', parts.join('<br><br>'));
+
+  const floor = Number(cfg.authority_verification_floor);
+  const belowFloor = Number.isFinite(floor) && Number.isFinite(value) && value < floor;
+  setGate('s8Gate',
+    `confidence ${Number.isFinite(value) ? value.toFixed(2) : '—'} · `
+    + `${Object.keys(components).length} article weight(s) · factor ${c.authorities_verification_factor}`
+    + (Number.isFinite(floor) ? ` · floor ${floor}` : ''),
+    belowFloor ? 'advisory' : 'met');
+}
+
+/* --------------------------------------------------------------------- S9 */
+
+function hydrateS9() {
+  const stages = (state.schema && state.schema.enrichment_stages) || [];
+  const v = state.violation;
+  // A stage counts as done when its artifact is actually in the bundle — the
+  // provenance log only names operations, so a grid added by
+  // `add_or_replace_element_grid` would otherwise read as "not enriched".
+  const STAGE_PRODUCT = {
+    segments: x => (x.segments || []).length,
+    subsections: x => (x.established_articles || []).filter(a => (a.subsections_invoked || []).length).length,
+    element_grids: x => (x.element_grids || []).length,
+    nexus: x => (x.nexus_matrix || []).length,
+    candidates: x => (x.candidate_articles || []).length,
+    authorities: x => (x.authorities || []).length,
+    open_questions: x => (x.open_questions || []).length,
+    cross_references: x => (x.cross_references || []).length,
+  };
+  const countOf = stage => (v && STAGE_PRODUCT[stage]) ? STAGE_PRODUCT[stage](v) : 0;
+  const produced = stages.filter(stage => countOf(stage) > 0);
+
+  setHtml('s9Stages', stages.length ? stages.map((s, i) => {
+    const n = countOf(s);
+    return `<span class="chip${n ? ' chip-done' : ''}" title="${n ? `${n} item(s) in this bundle` : 'nothing in this bundle yet'}">${i + 1}. ${escapeHtml(s)}${n ? ` · ${n}` : ''}</span>`;
+  }).join('') : hintRow('No enrichment stages reported by the server.'));
+
+  const cfg = (state.config && state.config.settings) || {};
+  setText('enrichConfiguredVia', cfg.llm_provider || cfg.llm_model
+    ? `Effective Settings: provider ${cfg.llm_provider || 'unset'} · model ${cfg.llm_model || 'unset'}`
+    : 'No LLM provider in the effective Settings.');
+
+  const runs = ((v && v.provenance) || []).filter(p => /enrich/i.test(p.operation || '')).slice(-8).reverse();
+  setHtml('enrichStream', runs.length
+    ? runs.map(p => `${escapeHtml(fmtStamp(p.timestamp))}  ${escapeHtml(p.operation)}  ${escapeHtml(p.note || '')}`).join('\n')
+    : 'Nothing run in this session.');
+
+  setGate('s9Gate',
+    `${stages.length} ENRICHMENT_STAGES · ${produced.length} with output in this bundle`
+    + (produced.length !== stages.length ? ` (missing: ${stages.filter(s => !countOf(s)).join(', ')})` : '')
+    + ` · ${runs.length} enrich run(s) logged`,
+    produced.length ? 'met' : 'advisory');
+}
+
+/* -------------------------------------------------------------------- S10 */
+
+function hydrateS10() {
+  const b = state.bundle;
+  const report = (b && b.validation) || null;
+  const s = (b && b.validation_summary) || {};
+  const checks = (report && report.checks) || [];
+  const pipeline = (state.schema && state.schema.validation_pipeline) || [];
+
+  setText('s10Total', s.total || 0);
+  setText('s10Pass', s.pass || 0);
+  setText('s10Warn', s.warn || 0);
+  setText('s10Fail', s.fail || 0);
+
+  if (pipeline.length) {
+    const label = pipeline.length === 1 ? pipeline[0].check_id
+      : `${pipeline[0].check_id}–${pipeline[pipeline.length - 1].check_id}`;
+    setText('statValidationLabel', `Validation (${label})`);
+  }
+
+  // Real execution order from the report, with registry names filled in.
+  const names = Object.fromEntries(pipeline.map(p => [p.check_id, p.name]));
+  const ordered = checks.slice().sort((a, b2) => String(a.check_id).localeCompare(String(b2.check_id)));
+  setHtml('s10Checks', ordered.length ? ordered.map(c => `
+    <div class="record-row" data-status="${escapeHtml(c.status)}" data-check-id="${escapeHtml(c.check_id)}">
+      <div class="rr-main">
+        <div class="rr-id">${escapeHtml(c.check_id)} · <span class="check-name">${escapeHtml(c.name || names[c.check_id] || '')}</span></div>
+        <div class="rr-detail">${escapeHtml(c.details || '')}</div>
+      </div>
+      <div class="rr-meta">${tag(c.status)}${names[c.check_id] ? '' : '<span class="badge badge-neutral">not in registry</span>'}</div>
+    </div>`).join('') : hintRow(b ? 'No Validation/checks.json in this bundle yet.' : 'Loading bundle…'));
+
+  const drifted = pipeline.filter(p => !checks.some(c => c.check_id === p.check_id));
+  if (!b) setGate('s10Gate', 'Loading bundle…', 'pending');
+  else if (!report) setGate('s10Gate', 'Validation has not been run against this bundle yet.', 'pending');
+  else setGate('s10Gate',
+    `pipeline v${report.pipeline_version} · ran ${fmtStamp(report.ran_at)} · violation ${report.violation_id}`
+    + (drifted.length ? ` · ${drifted.length} registered check(s) missing from this report` : ''),
+    s.fail ? 'pending' : (s.warn ? 'advisory' : 'met'));
+}
+
+/* -------------------------------------------------------------------- S11 */
+
+function hydrateS11() {
+  const b = state.bundle;
+  const bundles = state.bundles || [];
+  setText('s11BatchReport', 'Batch output appears here.');
+  setInput('s11InputRoot', 'build/');
+  setHtml('s11BatchChips', bundles.length ? bundles.map(x =>
+    `<span class="chip${x.violation_id === state.bundleId ? ' chip-done' : ''}" title="${escapeHtml(x.path || '')}">${escapeHtml(x.violation_id)}</span>`
+  ).join('') : hintRow('No bundles discovered under build/.'));
+  const packaged = Boolean(b && b.artifacts_present && b.artifacts_present.manifest);
+  if (!b) setGate('s11Gate', 'Loading bundle…', 'pending');
+  else setGate('s11Gate',
+    packaged ? 'MANIFEST.txt present — this bundle has been packaged.'
+      : `Not packaged yet · ${b.file_count} file(s) staged in ${b.path}`,
+    packaged ? 'met' : 'pending');
+}
+
+/* -------------------------------------------------------------------- S12 */
+
+function hydrateS12() {
+  const cfg = (state.config && state.config.settings) || {};
+  const secrets = (state.config && state.config.secrets) || {};
+
+  setText('s12QdrantTarget', cfg.qdrant_url
+    ? `${cfg.qdrant_url} · collection prefix “${cfg.qdrant_collection_prefix}” · api key ${secrets.qdrant_api_key ? 'set' : 'not set'}`
+    : 'QDRANT_URL not set — store panels are disabled.');
+  setText('s12Neo4jTarget', cfg.neo4j_uri
+    ? `${cfg.neo4j_uri} · user ${cfg.neo4j_user || '—'} · database “${cfg.neo4j_database}” · password ${secrets.neo4j_password ? 'set' : 'not set'}`
+    : 'NEO4J_URI not set — graph panels are disabled.');
+
+  // The literal a user must type before a destructive tool fires is the value
+  // the server itself will use, so it can never drift from what gets deleted.
+  const qInput = document.getElementById('s12QdrantConfirm');
+  if (qInput) {
+    qInput.dataset.confirm = cfg.qdrant_collection_prefix || '';
+    qInput.placeholder = cfg.qdrant_collection_prefix ? `type ${cfg.qdrant_collection_prefix}` : 'not configured';
+  }
+  setText('s12QdrantConfirmName', cfg.qdrant_collection_prefix || 'the collection prefix');
+
+  const nInput = document.getElementById('s12Neo4jConfirm');
+  if (nInput) {
+    nInput.dataset.confirm = cfg.neo4j_database || '';
+    nInput.placeholder = cfg.neo4j_database ? `type ${cfg.neo4j_database}` : 'not configured';
+  }
+  setText('s12Neo4jConfirmName', cfg.neo4j_database || 'the database name');
+
+  const missing = [!cfg.qdrant_url ? 'QDRANT_URL' : null, !cfg.neo4j_uri ? 'NEO4J_URI' : null].filter(Boolean);
+  setGate('s12Gate', missing.length
+    ? `No gate — read/write tools · unset: ${missing.join(', ')}`
+    : 'No gate — read/write tools · both stores configured',
+    missing.length ? 'advisory' : 'met');
+}
+
+/* -------------------------------------------------------------------- S13 */
+
+function hydrateS13() {
+  const v = state.violation;
+  const caches = (v && v.framework_caches) || [];
+  const discovered = (state.sources && state.sources.frameworks) || [];
+  const cache = caches[0];
+  const disc = cache
+    ? discovered.find(f => f.framework_code === cache.framework_code)
+    : discovered[0];
+
+  setInput('s13CacheFile', cache ? cache.cache_file : (disc ? disc.path : ''));
+  setInput('s13FrameworkCode', cache ? cache.framework_code : (disc ? disc.framework_code : ''));
+  // No rulings index is registered by any endpoint, so that field keeps its
+  // placeholder rather than being filled with a guessed filename.
+
+  const bits = [];
+  if (cache) {
+    bits.push(`cached ${(cache.articles_cached || []).length} article(s) · sha256 ${(cache.cache_file_sha256 || '').slice(0, 12)}…`);
+    if (cache.cache_self_reported_sha256 && cache.cache_self_reported_sha256 !== cache.cache_file_sha256) {
+      bits.push(`self-reported sha ${cache.cache_self_reported_sha256.slice(0, 12)}… differs — V03 flags this`);
+    }
+    if (cache.cache_fetched_at) bits.push(`fetched ${fmtStamp(cache.cache_fetched_at)}`);
+    if (cache.cache_source_url) bits.push(cache.cache_source_url);
+  } else if (disc) {
+    bits.push(`${disc.article_count} article(s) discovered at ${disc.path} · not in this bundle`);
+  }
+  setGate('s13Gate', bits.length ? bits.join(' · ') : 'No framework cache in this bundle or in the corpus.', bits.length ? 'met' : 'pending');
+}
+
+/* -------------------------------------------------------------------- S14 */
+
+function hydrateS14() {
+  const toolCount = TOOLS.all.length;
+  const sch = state.schema || {};
+  setGate('s14Gate',
+    `${toolCount} tool(s) registered · ${(sch.enrichment_stages || []).length} enrichment stage(s) · `
+    + `${(sch.validation_pipeline || []).length} validation check(s)`
+    + (state.catalog ? ' · catalog loaded' : ' · catalog unavailable'),
+    state.catalog ? 'met' : 'pending');
+  hydrateS14Catalog(state.catalog);
+}
+
+function hydrateS14Catalog(catalog) {
+  const server = ((catalog && catalog.servers) || [])[0];
+  if (!server) {
+    setHtml('s14VscodeSnippet', 'No MCP server in the catalog.');
+    setHtml('s14ClaudeSnippet', 'No MCP server in the catalog.');
+    return;
+  }
+  const command = (server.command || [])[0] || '';
+  const args = (server.command || []).slice(1);
+  // ``env`` is a mapping of NAME → value (the values are already ${PLACEHOLDER}
+  // form); ``optional_env`` is a plain list of names. Accept either shape so a
+  // catalog change cannot break the snippet.
+  const env = Array.isArray(server.env)
+    ? Object.fromEntries((server.env || []).map(k => [k, `<${k}>`]))
+    : { ...(server.env || {}) };
+  const optional = Array.isArray(server.optional_env) ? server.optional_env : Object.keys(server.optional_env || {});
+  const name = server.name || 'violation-pack';
+
+  // Shapes mirror mcp_catalog.to_vscode_mcp_snippet / to_claude_desktop_snippet —
+  // the same functions the CLI prints, so a hand-edit here is never needed.
+  const vscode = { mcp: { servers: { [name]: { type: server.transport || 'stdio', command, args, env } } } };
+  const claude = { mcpServers: { [name]: { command, args, env } } };
+  setHtml('s14VscodeSnippet', escapeHtml(JSON.stringify(vscode, null, 2)));
+  setHtml('s14ClaudeSnippet', escapeHtml(JSON.stringify(claude, null, 2)));
+
+  // The three targets below live in the S14 template; bail out only if the
+  // whole step is absent so a partial DOM cannot throw mid-hydration.
+  if (!document.getElementById('s14CatalogLine')) return;
+  const tools = server.tools || [];
+  setText('s14CatalogLine',
+    `catalog entry ${escapeHtml(name)} · ${tools.length} tool(s)`
+    + (optional.length ? ` · ${optional.length} optional env var(s)` : ''));
+  setHtml('toolInventoryRows', tools.map(t => `
+      <div class="record-row">
+        <div class="rr-main">
+          <div class="rr-id">${escapeHtml(t.name)}</div>
+          <div class="rr-detail">${escapeHtml(t.description || '')}</div>
+        </div>
+        <div class="rr-meta">${(t.tags || []).map(x => tag(x)).join('')}</div>
+      </div>`).join(''));
+}
+
+/* ------------------------------------------------- step-completion flags */
+
+const STEP_PROGRESS = {
+  s0: b => (b.files || []).length > 0,
+  s1: (b, v) => Boolean(v),
+  s2: (b, v) => ((v && v.segments) || []).length > 0,
+  s3: (b, v) => ((v && v.established_articles) || []).length > 0,
+  s4: (b, v) => ((v && v.element_grids) || []).length > 0,
+  s5: (b, v) => ((v && v.nexus_matrix) || []).length > 0,
+  s6: (b, v) => ((v && v.authorities) || []).length > 0,
+  s7: (b, v) => ((v && v.authorities) || []).some(a => a.verified),
+  s8: (b, v) => Boolean(v && v.confidence),
+  s9: (b, v) => ((v && v.provenance) || []).some(p => /enrich/i.test(p.operation || '')),
+  s10: b => Boolean(b.validation_summary && b.validation_summary.total),
+  s11: b => Boolean(b.artifacts_present && b.artifacts_present.manifest),
+  s12: b => false,
+  s13: b => false,
+  s14: b => false,
+};
+
+function syncStepCompletion(bundle) {
+  const v = (bundle && bundle.violation) || null;
+  STEP_META.forEach(step => {
+    const probe = STEP_PROGRESS[step.id];
+    step.done = Boolean(bundle && probe && probe(bundle, v));
+  });
+  renderSidebar();
 }
 
 /** Restore the last violation so a reload does not lose the session. */

@@ -10,6 +10,12 @@ the MCP protocol, so `./start.sh` gives you both on one port:
     POST /api/tool      invoke one tool: {"name": ..., "args": {...}}
     GET  /api/catalog   the mcp_catalog payload
     GET  /api/sources   rendered transcripts and law caches under data/
+    GET  /api/bundle    one bundle's real artifacts (violation JSON, contract,
+                        Validation/checks.json, segments_manifest.json, files)
+    GET  /api/schema    every option list the UI renders, read off the live
+                        model Literals + bundle layout (no hardcoded enums)
+    GET  /api/settings  effective config.Settings values (secrets masked) and
+                        the resolved workspace paths
     GET  /api/shared-collections
                         owner/dim/payload contracts for the shared Qdrant
                         collections (``?live=1`` adds a live drift check)
@@ -37,7 +43,7 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, get_args
 
 # ---------------------------------------------------------------------------
 # UI asset resolution
@@ -177,6 +183,194 @@ def discover_bundles() -> dict[str, Any]:
     return {"ok": True, "root": "build", "bundles": bundles}
 
 
+#: Bundle-relative artifacts the UI reads. Every entry is optional on disk: a
+#: bundle mid-run legitimately lacks some, and a missing artifact must degrade
+#: to an empty panel rather than a failed request.
+BUNDLE_ARTIFACTS: tuple[tuple[str, str], ...] = (
+    ("violation", "{violation_id}.json"),
+    ("contract", "contract.json"),
+    ("validation", "Validation/checks.json"),
+    ("manifest", "segments_manifest.json"),
+    ("warnings", "conversion_warnings.json"),
+)
+
+
+def _read_json_file(path: Path) -> Any | None:
+    """Parse a JSON artifact, or return ``None`` when absent/unreadable.
+
+    A malformed artifact is treated exactly like a missing one: the UI renders
+    every other panel instead of losing the request to a 500.
+    """
+    try:
+        with path.open(encoding="utf-8") as handle:
+            return json.load(handle)
+    except (OSError, ValueError):
+        return None
+
+
+def _validation_summary(report: Any) -> dict[str, int]:
+    """Count check statuses. ``checks.json`` carries no summary key, so the
+    UI would otherwise have to recompute the tallies itself."""
+    summary = {"total": 0, "pass": 0, "warn": 0, "fail": 0}
+    checks = (report or {}).get("checks") if isinstance(report, dict) else None
+    for check in checks or []:
+        summary["total"] += 1
+        status = str(check.get("status") or "").lower()
+        if status in summary:
+            summary[status] += 1
+    return summary
+
+
+def discover_bundle(violation_id: str) -> dict[str, Any] | None:
+    """Read one real ``build/<violation_id>/`` bundle for the UI.
+
+    Read-only and filesystem-only: it dispatches no tool and writes nothing. The
+    id is validated against the same ``CL-<digits>`` shape ``discover_bundles()``
+    lists, so a traversal attempt and an off-sequence directory are both refused
+    with ``None`` (the caller answers 400 without disclosing what exists).
+    """
+    if not re.fullmatch(r"CL-\d+", violation_id or ""):
+        return None
+    root = find_workspace_root().resolve()
+    bundle = root / "build" / violation_id
+    if not bundle.is_dir():
+        return None
+
+    artifacts: dict[str, Any] = {}
+    present: dict[str, bool] = {}
+    for key, template in BUNDLE_ARTIFACTS:
+        payload = _read_json_file(bundle / template.format(violation_id=violation_id))
+        artifacts[key] = payload
+        present[key] = payload is not None
+
+    files = [
+        {
+            "name": item.name,
+            "path": str(item.relative_to(root)),
+            "kind": "directory" if item.is_dir() else "file",
+            "size": item.stat().st_size if item.is_file() else None,
+        }
+        for item in sorted(bundle.rglob("*"), key=lambda p: str(p))
+        if not item.name.startswith(".")
+    ]
+    return {
+        "ok": True,
+        "violation_id": violation_id,
+        "root": "build",
+        "path": f"build/{violation_id}",
+        "artifacts_present": present,
+        "violation": artifacts["violation"],
+        "contract": artifacts["contract"],
+        "validation": artifacts["validation"],
+        "validation_summary": _validation_summary(artifacts["validation"]),
+        "manifest": artifacts["manifest"],
+        "warnings": artifacts["warnings"],
+        "files": files,
+        "file_count": sum(1 for f in files if f["kind"] == "file"),
+    }
+
+
+def describe_schema() -> dict[str, Any]:
+    """Every option list the UI needs, read off the live registries.
+
+    The frontend used to hardcode these as literal ``<option>``/chip markup, so
+    adding a status to a ``Literal`` in ``models.py`` silently produced a UI that
+    could not display it. Deriving them here keeps one source of truth; a new
+    member of any enum shows up in the browser with no HTML change.
+    """
+    from . import models
+    from .enrich import ENRICHMENT_STAGES
+    from .pack import BUNDLE_LAYOUT
+    from .validation import DEFAULT_PIPELINE
+
+    def literal(name: str, field: str) -> list[str]:
+        annotation = models.__dict__[name].model_fields[field].annotation
+        return [str(item) for item in get_args(annotation)]
+
+    def union(*literals: Any) -> list[str]:
+        seen: list[str] = []
+        for literal in literals:
+            for value in literal:
+                if value not in seen:
+                    seen.append(value)
+        return seen
+
+    return {
+        "ok": True,
+        "severity": literal("Violation", "severity"),
+        "clock_time_confidence": literal("Incident", "clock_time_confidence"),
+        "norm_type": literal("CachedArticle", "norm_type"),
+        "applicability": literal("CachedArticle", "applicability"),
+        "article_cache_status": union(
+            literal("CachedArticle", "framework_cache_status"),
+            literal("CandidateArticle", "framework_cache_status"),
+        ),
+        "proof_status": literal("Element", "proof_status"),
+        "proof_weights": models.PROOF_WEIGHTS,
+        "nexus_strength": literal("NexusEntry", "strength"),
+        "authority_type": literal("Authority", "type"),
+        "authority_protocol": literal("VerificationProvenance", "protocol"),
+        "open_question_priority": literal("OpenQuestion", "priority"),
+        "check_status": literal("CheckResult", "status"),
+        # Layer-0 staging destinations come from the bundle layout itself, so the
+        # ``kind`` a user picks always matches a key pack.py can resolve.
+        "bundle_layout": {kind: rel for kind, rel in BUNDLE_LAYOUT.items()},
+        # S9's stage chips and S10's check rows are the registry order, so a new
+        # stage or a new V-check appears in the UI without an HTML change.
+        "enrichment_stages": list(ENRICHMENT_STAGES),
+        "validation_pipeline": [
+            {"check_id": check_id, "name": name} for check_id, name, _ in DEFAULT_PIPELINE
+        ],
+    }
+
+
+#: Settings fields whose value must never round-trip to the browser.
+SECRET_SETTINGS: frozenset[str] = frozenset({
+    "qdrant_api_key", "neo4j_password", "llm_api_key",
+})
+
+
+def describe_settings() -> dict[str, Any]:
+    """The *effective* configuration plus every resolved workspace path.
+
+    The Settings panel previously printed hand-written literals (``bge-m3``,
+    ``violationrefiner_v1``, ``.venv/bin/python``) that silently drifted from
+    ``config.Settings``. Here the defaults are read from the class that actually
+    applies them, secrets are replaced by a ``configured`` boolean, and the
+    paths are the ones this process really resolved.
+    """
+    from .config import Settings
+
+    try:
+        settings = Settings.from_env()
+    except Exception as exc:  # noqa: BLE001 - a broken .env must not kill the UI
+        return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+
+    values: dict[str, Any] = {}
+    secrets: dict[str, bool] = {}
+    for name in Settings.__dataclass_fields__:
+        value = getattr(settings, name)
+        if name in SECRET_SETTINGS:
+            secrets[name] = bool(value)
+            continue
+        values[name] = value
+
+    root = find_workspace_root().resolve()
+    venv_python = root / ".venv" / "bin" / "python"
+    data_root = find_data_root()
+    ui_path = find_ui_path()
+    paths = {
+        "workspaceRoot": str(root),
+        "buildRoot": str(root / "build"),
+        "dataRoot": str(data_root) if data_root else None,
+        "envFile": str(root / ".env") if (root / ".env").is_file() else None,
+        "python": str(venv_python) if venv_python.is_file() else sys.executable,
+        "logRoot": str(root / ".dev-logs" / "violation-refiner"),
+        "uiFile": str(ui_path) if ui_path else None,
+    }
+    return {"ok": True, "settings": values, "secrets": secrets, "paths": paths}
+
+
 def _resolve_transcript_uri(uri: str) -> Path | None:
     """Resolve a discovered transcript URI without allowing path traversal.
 
@@ -307,6 +501,8 @@ def discover_sources() -> dict[str, Any]:
         return {
             "ok": True,
             "root": None,
+            "transcripts_root": None,
+            "frameworks_root": None,
             "transcripts": [],
             "transcripts_json": [],
             "frameworks": [],
@@ -374,6 +570,11 @@ def discover_sources() -> dict[str, Any]:
     return {
         "ok": True,
         "root": str(data_root),
+        # The roots the two corpora were actually discovered under, relative to
+        # the workspace. The UI uses these for its directory pickers instead of
+        # hardcoding "data/transcripts/html" / "data/law" and drifting.
+        "transcripts_root": str(transcript_root.relative_to(data_root.parent)),
+        "frameworks_root": str(framework_root.relative_to(data_root.parent)),
         "transcripts": transcripts,
         "transcripts_json": transcripts_json,
         "frameworks": frameworks,
@@ -670,6 +871,37 @@ def build_ui_routes(mcp):
         if request.method == "OPTIONS":
             return Response(status_code=204, headers=CORS)
         return json_response(discover_bundles())
+
+    @mcp.custom_route("/api/bundle", methods=["GET", "OPTIONS"])
+    async def api_bundle(request) -> Response:
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+        violation_id = request.query_params.get("violation_id", "")
+        payload = discover_bundle(violation_id)
+        if payload is None:
+            return json_response(
+                {
+                    "ok": False,
+                    "error": (
+                        "violation_id must name a CL-<digits> bundle directory "
+                        "under build/."
+                    ),
+                },
+                status_code=400,
+            )
+        return json_response(payload)
+
+    @mcp.custom_route("/api/schema", methods=["GET", "OPTIONS"])
+    async def api_schema(request) -> Response:
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+        return json_response(describe_schema())
+
+    @mcp.custom_route("/api/settings", methods=["GET", "OPTIONS"])
+    async def api_settings(request) -> Response:
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+        return json_response(describe_settings())
 
     # -- tool invocation ----------------------------------------------------
 

@@ -30,7 +30,10 @@ from starlette.testclient import TestClient  # noqa: E402
 from violation_pack.mcp_server import build_server  # noqa: E402
 from violation_pack.ui_server import (  # noqa: E402
     UI_FILENAME,
+    describe_schema,
+    describe_settings,
     describe_tools,
+    discover_bundle,
     discover_sources,
     discover_transcript,
     browse_workspace,
@@ -43,7 +46,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 HTML_PATH = REPO_ROOT / "ui" / UI_FILENAME
 
 #: API routes the bridge promises. `/health` is MCP-owned and asserted too.
-EXPECTED_API_ROUTES = {"/", "/api/health", "/api/tools", "/api/tool", "/api/catalog", "/api/sources", "/api/source-transcript", "/api/browse", "/api/bundles"}
+EXPECTED_API_ROUTES = {"/", "/api/health", "/api/tools", "/api/tool", "/api/catalog", "/api/sources", "/api/source-transcript", "/api/browse", "/api/bundles", "/api/bundle", "/api/schema", "/api/settings"}
 
 
 @pytest.fixture(scope="module")
@@ -193,6 +196,15 @@ def test_discover_sources_matches_the_data_corpus():
     assert chipencod["jurisdiction"] == "CL"
     assert chipencod["framework_code"] == "CHIPENCOD"
     assert chipencod["article_count"] == 12
+    # The S3/S13 pickers and the Settings overlay print these roots instead of
+    # assuming a layout, so they must reflect the real corpus directories.
+    assert payload["transcripts_root"] == "data/transcripts/html"
+    assert payload["frameworks_root"] == "data/law"
+    # ...and they are workspace-relative, which is what /api/browse accepts.
+    assert not payload["transcripts_root"].startswith("/")
+    assert payload["transcripts_json"], "the JSON evidence corpus came back empty"
+    assert payload["transcripts_json"][0]["path"].startswith("data/transcripts/json/")
+    assert all("segment_count" in t for t in payload["transcripts_json"])
 
 
 def test_get_api_sources_returns_transcript_and_framework_metadata(client):
@@ -277,14 +289,131 @@ def test_browse_workspace_rejects_a_missing_target():
 def test_discover_bundles_reads_real_build_directories():
     payload = discover_bundles()
     assert payload["root"] == "build"
-    assert {bundle["id"] for bundle in payload["bundles"]} == {"CL-005"}
-    assert payload["bundles"][0]["file_count"] > 0
+    # ``build/`` is a generated output tree whose contents grow with every
+    # conversion, so assert the structural contract instead of a pinned list.
+    ids = [bundle["id"] for bundle in payload["bundles"]]
+    assert ids == sorted(ids)
+    assert len(ids) == len(set(ids))
+    assert all(re.fullmatch(r"CL-\d+", bundle_id) for bundle_id in ids)
+    assert "CL-005" in ids
+    by_id = {bundle["id"]: bundle for bundle in payload["bundles"]}
+    assert by_id["CL-005"]["file_count"] > 0
 
 
 def test_get_api_bundles_returns_real_build_directories(client):
     res = client.get("/api/bundles")
     assert res.status_code == 200
-    assert res.json()["bundles"][0]["id"] == "CL-005"
+    ids = [bundle["id"] for bundle in res.json()["bundles"]]
+    assert ids == sorted(ids)
+    assert "CL-005" in ids
+
+
+def test_discover_bundle_reads_the_real_cl005_artifacts():
+    payload = discover_bundle("CL-005")
+    assert payload is not None
+    assert payload["path"] == "build/CL-005"
+    # Every artifact the UI renders from must be present for a finished bundle.
+    assert payload["artifacts_present"] == {
+        "violation": True, "contract": True, "validation": True,
+        "manifest": True, "warnings": True,
+    }
+
+    violation = payload["violation"]
+    assert violation["violation_id"] == "CL-005"
+    # The bundle's own values, not the demo fixtures the UI used to hardcode.
+    assert violation["severity"] == "CRITICAL"
+    assert violation["incident"]["flight"] == "LA8159"
+
+    # checks.json has no summary key, so the counts are recomputed server-side.
+    assert payload["validation_summary"] == {
+        "total": len(payload["validation"]["checks"]),
+        "pass": sum(c["status"] == "pass" for c in payload["validation"]["checks"]),
+        "warn": sum(c["status"] == "warn" for c in payload["validation"]["checks"]),
+        "fail": sum(c["status"] == "fail" for c in payload["validation"]["checks"]),
+    }
+    assert payload["validation_summary"]["total"] > 0
+
+    # The file listing feeds the drawer's Files tab; paths stay workspace-relative.
+    assert payload["file_count"] > 0
+    assert all(not f["path"].startswith("/") for f in payload["files"])
+    assert all(f["path"].startswith("build/CL-005/") for f in payload["files"])
+
+
+def test_discover_bundle_refuses_bad_and_traversing_ids():
+    for bad in ("", "CL-abc", "CL-005/../CL-001", "../../etc", "/etc/passwd", "build/CL-005"):
+        assert discover_bundle(bad) is None, bad
+    # A well-formed id with no directory is absent, not an error shape.
+    assert discover_bundle("CL-999999") is None
+
+
+def test_get_api_bundle_route(client):
+    res = client.get("/api/bundle", params={"violation_id": "CL-005"})
+    assert res.status_code == 200
+    body = res.json()
+    assert body["ok"] is True
+    assert body["violation"]["violation_id"] == "CL-005"
+
+    bad = client.get("/api/bundle", params={"violation_id": "../etc"})
+    assert bad.status_code == 400
+    assert client.get("/api/bundle").status_code == 400
+
+
+def test_describe_schema_derives_every_option_list_from_the_models():
+    from typing import get_args
+
+    from violation_pack import models
+    from violation_pack.pack import BUNDLE_LAYOUT
+
+    def args(name: str, field: str) -> list[str]:
+        annotation = getattr(models, name).model_fields[field].annotation
+        return [str(v) for v in get_args(annotation)]
+
+    schema = describe_schema()
+    # Each list must equal the Literal it claims to describe, so adding a member
+    # to models.py cannot leave the UI unable to display it.
+    assert schema["severity"] == args("Violation", "severity")
+    assert schema["proof_status"] == args("Element", "proof_status")
+    assert schema["proof_weights"] == models.PROOF_WEIGHTS
+    assert schema["authority_protocol"] == args("VerificationProvenance", "protocol")
+    assert schema["check_status"] == args("CheckResult", "status")
+    assert schema["nexus_strength"] == args("NexusEntry", "strength")
+    assert schema["norm_type"] == args("CachedArticle", "norm_type")
+    # The staging destinations are the layout keys pack.copy_source_into_bundle
+    # accepts, not a parallel hand-written list.
+    assert schema["bundle_layout"] == dict(BUNDLE_LAYOUT)
+    assert "transcripts_dir" in schema["bundle_layout"]
+
+    # S9 and S10 render these registries; mirroring them by hand is how a stage
+    # or check silently disappears from the UI when the backend grows one.
+    from violation_pack.enrich import ENRICHMENT_STAGES
+    from violation_pack.validation import DEFAULT_PIPELINE
+
+    assert schema["enrichment_stages"] == list(ENRICHMENT_STAGES)
+    assert len(schema["enrichment_stages"]) == 8
+    assert schema["validation_pipeline"] == [
+        {"check_id": cid, "name": name} for cid, name, _ in DEFAULT_PIPELINE
+    ]
+    assert [c["check_id"] for c in schema["validation_pipeline"]][0] == "V01"
+
+
+def test_get_api_schema_and_settings(client):
+    schema = client.get("/api/schema")
+    assert schema.status_code == 200
+    assert schema.json()["severity"][0] == "LOW"
+
+    res = client.get("/api/settings")
+    assert res.status_code == 200
+    body = res.json()
+    assert body["ok"] is True
+    # Defaults come from config.Settings, so they match what tools actually see.
+    assert body["settings"]["qdrant_collection_prefix"] == "violationrefiner_v1"
+    assert body["settings"]["neo4j_database"] == "agent.violation.refiner"
+    assert body["settings"]["authority_verification_floor"] == 0.85
+    # Secrets never round-trip; only their configured-ness does.
+    assert set(body["secrets"]) == {"qdrant_api_key", "neo4j_password", "llm_api_key"}
+    assert all(isinstance(v, bool) for v in body["secrets"].values())
+    assert body["paths"]["buildRoot"].endswith("/build")
+    assert body["paths"]["uiFile"] == str(HTML_PATH)
 
 
 def test_build_evidence_rejects_untrusted_transcript_paths(client):
@@ -385,6 +514,157 @@ def test_ui_calls_the_documented_endpoints():
     for endpoint in ("/api/health", "/api/tools", "/api/sources", "/api/bundles", "/api/tool"):
         assert f"'{endpoint}'" in html, f"UI never calls {endpoint}"
     assert "'/api/source-transcript?uri='" in html
+
+
+def test_ui_hydrates_from_the_server_instead_of_a_baked_in_bundle():
+    """The wizard must render live artifacts, not the demo values it shipped with.
+
+    The page was originally a static mock: every step carried fabricated demo
+    content (``LA-1234``, ``Detencion irregular...``, ``AUTH-CL005-01``,
+    ``0.74``, ``violation-pack-mcp``) that matched no bundle on disk. Each
+    section now derives from ``/api/bundle``, ``/api/schema``, or
+    ``/api/settings``; this test fails if any of those literals creeps back, or
+    if a step quietly stops calling its hydration function.
+    """
+    html = HTML_PATH.read_text(encoding="utf-8")
+
+    demo_literals = {
+        # incident identity from the old mock
+        "LA-1234", "LA8159-2025", "Detención irregular", "Detencion irregular",
+        "2025-11-02", "15:16",
+        # fabricated legal findings
+        "OQ-CL005-PDI-PARTE", "AUTH-CL005-01", "AUTH-CL005-02",
+        "CL.CHIPENCOD.Art.193.8.elem.dolo", "STG-7.seg-55",
+        # fabricated scores / counts
+        "0.74", "0.43", "9 checks", "11 checks",
+        # invented infrastructure names
+        "violation-pack-mcp", "rulings_index.json", "violation-pack-dev",
+        # a confirm-token literal the UI must read off Settings instead
+        "agent.violation.refiner", "violationrefiner_v1",
+    }
+    # Only the document body is scanned: the design system legitimately uses
+    # values like ``font-size: 0.74rem`` in <style>, which say nothing about
+    # whether the wizard renders live data.
+    body = html.split("</style>", 1)[1]
+    found = sorted(l for l in demo_literals if l in body)
+    assert not found, (
+        f"hardcoded demo values are back in the UI: {found}. "
+        "Derive them from /api/bundle, /api/schema or /api/settings."
+    )
+
+    # Every hydration function the dispatcher claims to have must exist.
+    declared = set(re.findall(r"^\s*function\s+(hydrate\w+)\s*\(", html, re.M))
+    expected = {f"hydrateS{i}" for i in range(15)} | {
+        "hydrateSettings", "hydrateSettingsEnv", "hydrateHealth",
+        "hydrateS14Catalog", "hydrateValidation", "hydrateStats",
+        "hydrateBundleSelector", "hydrateSourceSelectors",
+    }
+    assert expected - declared == set(), (
+        f"UI is missing hydrators: {sorted(expected - declared)}"
+    )
+
+
+def test_every_wizard_step_derives_its_gate_from_the_bundle():
+    """Each step shows a live gate banner; a static one would misreport state."""
+    html = HTML_PATH.read_text(encoding="utf-8")
+    for index in range(15):
+        gate = f'id="s{index}Gate"'
+        assert gate in html, f"step S{index} has no {gate} banner"
+        start = html.index(f"function hydrateS{index}(")
+        end = html.index("\n}\n", start)
+        assert f"'s{index}Gate'" in html[start:end], (
+            f"hydrateS{index}() never writes its gate banner"
+        )
+
+
+def test_ui_source_picker_prefers_the_bundles_own_transcript():
+    """The S2 picker must not hardcode which corpus file is 'the' transcript."""
+    html = HTML_PATH.read_text(encoding="utf-8")
+    assert "STG-7'" not in html, (
+        "the S2 transcript picker prefers a hardcoded source id; "
+        "derive it from the bundle's segment source_uri instead"
+    )
+    assert "function preferredTranscript()" in html
+
+
+def test_tool_panels_read_required_args_from_the_json_schema():
+    """`Tool` has no `.required` field — the list lives on its JSON Schema.
+
+    Reading ``tool.required`` yields ``undefined``, so no seed value is applied
+    for required arguments and the panel silently submits an incomplete call.
+    """
+    html = HTML_PATH.read_text(encoding="utf-8")
+    assert "tool.required" not in html, (
+        "the Tool model has no `required` attribute — read "
+        "`tool.parameters.required` instead"
+    )
+    assert re.search(r"tool\.parameters[\s\S]{0,24}\.required", html), (
+        "required tool arguments must be read from tool.parameters.required"
+    )
+
+
+def test_s2_gate_counts_the_bundle_not_the_browsed_transcript():
+    """S2 must describe the violation, never the corpus file the picker shows.
+
+    The transcript picker browses a whole rendered transcript (STG-*: ~180
+    segments) while the bundle anchors only the segments it cites. Deriving the
+    gate from `state.activeTranscript` therefore reported a number the violation
+    JSON never contained.
+    """
+    html = HTML_PATH.read_text(encoding="utf-8")
+    start = html.index("function hydrateS2(")
+    body = html[start:html.index("\n}\n", start)]
+    assert "state.activeTranscript" not in body, (
+        "hydrateS2() must not derive its gate from the browsed transcript"
+    )
+    assert "citedSegmentIds(" in body, (
+        "the S2 gate must report how many segments the bundle actually cites"
+    )
+
+    assert "function citedSegmentIds(" in html
+    cited = html[html.index("function citedSegmentIds("):]
+    cited = cited[:cited.index("\n}\n")]
+    assert "proof_evidence_segments" in cited and "nexus_matrix" in cited, (
+        "cited segments come from the element grid AND the nexus matrix"
+    )
+
+
+def test_transcript_picker_prefers_the_bundle_over_its_boot_default():
+    """A bundle's own source wins unless the user picked a transcript.
+
+    `hydrateSourceSelectors()` runs on every step switch, so without an explicit
+    "the user chose this" flag the boot default (the first corpus entry) keeps
+    winning and the picker never follows the loaded bundle.
+    """
+    html = HTML_PATH.read_text(encoding="utf-8")
+    assert "state.transcriptChosen" in html, (
+        "an explicit pick must be distinguished from the boot default"
+    )
+    start = html.index("function hydrateSourceSelectors(")
+    body = html[start:html.index("\n}\n", start)]
+    assert "transcriptChosen" in body and "preferredTranscript()" in body
+    assert "if (id === 's2') { hydrateSourceSelectors(); hydrateS2(); }" in html, (
+        "the picker must re-hydrate once the bundle is loaded"
+    )
+
+
+def test_every_hydration_target_exists_in_the_markup():
+    """A hydrator writing to an id that is not in the markup is a silent no-op.
+
+    The S7/S9/S13 gate banners were missing exactly this way: the JS "worked",
+    nothing threw, and the step kept showing its static placeholder forever.
+    Comparing the two sets makes that a red test instead of a cosmetic surprise.
+    """
+    html = HTML_PATH.read_text(encoding="utf-8")
+    declared = set(re.findall(r'\bid="([A-Za-z0-9_-]+)"', html))
+    targets = set()
+    for helper in ("setText", "setInput", "setHtml", "setGate", "fillSelect"):
+        targets |= set(re.findall(rf"\b{helper}\(\s*'([A-Za-z0-9_-]+)'", html))
+    assert targets, "no hydration targets matched — the scan pattern went stale"
+    assert targets <= declared, (
+        "hydration targets with no matching element: "
+        f"{sorted(targets - declared)}"
+    )
 
 
 def test_tool_manager_list_tools_is_synchronous(server):
