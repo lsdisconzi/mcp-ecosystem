@@ -237,6 +237,43 @@ def test_browse_workspace_rejects_escape_paths(client):
     assert res.status_code == 400
 
 
+def test_browse_workspace_follows_a_symlink_that_leaves_the_workspace():
+    """``data/law`` and ``data/transcripts/html`` are symlinks out of the workspace.
+
+    Resolving before checking containment made them unreachable — ``data/law`` was
+    refused silently for as long as it has existed, with no test covering it.
+    """
+    law = browse_workspace("data/law")
+    assert law is not None, "data/law is a symlink to ../transcription/data — must be browsable"
+    assert law["kind"] == "directory"
+    assert law["path"] == "data/law"
+    assert [(e["name"], e["kind"]) for e in law["entries"]][:1] != []
+
+    html = browse_workspace("data/transcripts/html")
+    assert html is not None
+    assert html["path"] == "data/transcripts/html"
+    assert html["parent"] == "data/transcripts"
+    assert len([e for e in html["entries"] if e["name"].endswith(".html")]) == 27
+    # Entries must stay workspace-relative, not resolve to the symlink's target.
+    assert all(e["path"].startswith("data/transcripts/html/") for e in html["entries"])
+
+
+def test_browse_workspace_still_rejects_traversal_through_a_symlink(client):
+    """Fixing the symlink case must not have opened a traversal hole."""
+    assert browse_workspace("../transcription/data/law") is None
+    assert browse_workspace("data/law/../../..") is None
+    assert browse_workspace("/etc") is None
+    assert browse_workspace("data/transcripts/html/../../../../olivia") is None
+    res = client.get("/api/browse", params={"path": "data/law/../../..", "kind": "directory"})
+    assert res.status_code == 400
+
+
+def test_browse_workspace_rejects_a_missing_target():
+    """A link whose target is gone must resolve to nothing, not raise."""
+    assert browse_workspace("data/does-not-exist") is None
+    assert browse_workspace("data/transcripts/nope.html", kind="file") is None
+
+
 def test_discover_bundles_reads_real_build_directories():
     payload = discover_bundles()
     assert payload["root"] == "build"

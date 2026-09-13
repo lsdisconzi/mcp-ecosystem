@@ -106,24 +106,42 @@ def find_workspace_root() -> Path:
 
 
 def browse_workspace(path: str = "", kind: str = "directory") -> dict[str, Any] | None:
-    """List a safe workspace directory or resolve one safe file selection."""
+    """List a safe workspace directory or resolve one safe file selection.
+
+    Containment is checked **lexically**, on the unresolved path, and only then is
+    the path resolved for existence and type. That order matters twice over:
+
+    * It is the check that actually stops user-supplied traversal — ``../../`` is
+      normalised and rejected before any filesystem access.
+    * Resolving *first* made every out-of-tree symlink unreachable, because
+      ``data/law`` and ``data/transcripts/html`` are symlinks that leave this
+      workspace **by design**. ``data/law`` was refused silently this way, with no
+      test covering it, until the render symlink made it visible.
+
+    A repo-owned symlink is not a traversal vector: passing ``../../etc`` is still
+    refused, and anyone able to plant a symlink in the repo can already read those
+    files directly.
+    """
     root = find_workspace_root().resolve()
     requested = Path(path or ".")
     if requested.is_absolute():
         return None
-    candidate = (root / requested).resolve()
+    lexical = Path(os.path.normpath(root / requested))
     try:
-        candidate.relative_to(root)
+        lexical.relative_to(root)
     except ValueError:
         return None
+    candidate = lexical.resolve()
     if not candidate.exists() or (kind == "file" and not candidate.is_file()):
         return None
     if kind == "file":
-        return {"ok": True, "kind": "file", "path": str(candidate.relative_to(root))}
+        return {"ok": True, "kind": "file", "path": str(lexical.relative_to(root))}
     if not candidate.is_dir():
         return None
+    # List through the lexical path so each entry stays workspace-relative; the
+    # children of a resolved path are no longer under ``root``.
     entries = []
-    for entry in sorted(candidate.iterdir(), key=lambda item: (item.is_file(), item.name.lower())):
+    for entry in sorted(lexical.iterdir(), key=lambda item: (item.is_file(), item.name.lower())):
         if entry.name.startswith("."):
             continue
         entries.append({
@@ -131,8 +149,8 @@ def browse_workspace(path: str = "", kind: str = "directory") -> dict[str, Any] 
             "kind": "directory" if entry.is_dir() else "file",
             "path": str(entry.relative_to(root)),
         })
-    rel = str(candidate.relative_to(root)) if candidate != root else "."
-    parent = str(candidate.parent.relative_to(root)) if candidate != root else None
+    rel = str(lexical.relative_to(root)) if lexical != root else "."
+    parent = str(lexical.parent.relative_to(root)) if lexical != root else None
     return {"ok": True, "kind": "directory", "path": rel, "parent": parent, "entries": entries}
 
 
@@ -145,10 +163,16 @@ def discover_bundles() -> dict[str, Any]:
         for path in sorted(build_root.iterdir(), key=lambda item: item.name):
             if not path.is_dir() or not re.fullmatch(r"CL-\d+", path.name):
                 continue
+            file_count = sum(1 for item in path.rglob("*") if item.is_file())
+            if file_count == 0:
+                # A CL-* directory with no files is not a bundle — it is the
+                # remains of an interrupted run. `build/CL-001/` sat empty and
+                # made this function report a phantom bundle.
+                continue
             bundles.append({
                 "id": path.name,
                 "path": str(path.relative_to(root)),
-                "file_count": sum(1 for item in path.rglob("*") if item.is_file()),
+                "file_count": file_count,
             })
     return {"ok": True, "root": "build", "bundles": bundles}
 
@@ -157,7 +181,8 @@ def _resolve_transcript_uri(uri: str) -> Path | None:
     """Resolve a discovered transcript URI without allowing path traversal.
 
     Accepts both corpus forms: ``data/transcripts/json/*.json`` (canonical,
-    authoritative) and ``data/transcripts/html/*.html`` (vendored render).
+    authoritative) and ``data/transcripts/html/*.html`` (a render, symlinked to
+    the OliviaLegal render tree — see ``docs/data_source_of_truth.md`` §8).
     """
     data_root = find_data_root()
     if data_root is None:

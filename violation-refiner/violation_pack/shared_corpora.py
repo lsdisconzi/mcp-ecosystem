@@ -18,11 +18,20 @@ The two corpora
     declared derivation, 1119 distinct ``original_id``, ``content == text``.
 
 ``reviewed_transcripts``
-    2968 points, 384-d (``all-MiniLM-L6-v2``), point id
+    3163 points, 384-d (``all-MiniLM-L6-v2``), point id
     ``UUID(md5("<transcript_id>:<segment_index>"))``. Exactly the set of canonical
-    JSON segments with ``reviewed == true``, and it is a **strict superset** of
-    ``transcription_transcripts`` (2272 points), which lacks ``speaker_id`` and
-    ``segment_id``. Read this one, not that one.
+    JSON segments with ``reviewed == true`` across the **27** ``I-002_*`` case
+    transcripts. This is the only transcript corpus in contract.
+
+``transcription_transcripts`` is deliberately **not** in contract, and it is
+**not** a subset of ``reviewed_transcripts`` — an earlier note here claimed it
+was, and that was wrong. It is ``transcription``'s own working index over raw
+audio: 2272 points across **481** ad-hoc job ids (``denoise (25)_1788032405.wav``,
+``stg_7_p2_1787952500``), with ``SPEAKER_00`` diarization labels and empty
+``case_id``/``narrative_id``. Its transcript ids and the case corpus's share
+**zero** overlap, so it is a disjoint corpus, not a superset. Do not read it, and
+do not drop it: ``transcription`` recreates it at startup and its transcript
+search depends on it.
 
 The embedder trap
 -----------------
@@ -214,7 +223,7 @@ TRANSCRIPTION_LAW = CollectionContract(
     ),
 )
 
-#: The reviewed transcript segments — a superset of ``transcription_transcripts``.
+#: The reviewed transcript segments — the 27 canonical ``I-002_*`` case transcripts.
 REVIEWED_TRANSCRIPTS = CollectionContract(
     name="reviewed_transcripts",
     owner="transcription",
@@ -236,11 +245,13 @@ REVIEWED_TRANSCRIPTS = CollectionContract(
         "tags", "forensic_cluster_ids", "key_finding_ids", "participants",
     ),
     notes=(
-        "Exactly the canonical segments with reviewed == true. Carries the "
-        "canonical SPK-… speaker_id (resolved via transcription's "
-        "speaker_index.json) and segment_id, which transcription_transcripts "
-        "does not. transcript_id equals the JSON basename == canonical id == "
-        "JsonTranscriptSource.source_id()."
+        "Exactly the canonical segments with reviewed == true, for the 27 "
+        "I-002_* case transcripts. Carries the canonical SPK-… speaker_id "
+        "(resolved via transcription's speaker_index.json) and segment_id. "
+        "transcript_id equals the JSON basename == canonical id == "
+        "JsonTranscriptSource.source_id(). NOT related to "
+        "transcription_transcripts, which indexes raw audio under its own "
+        "job ids (0 id overlap) and is out of contract."
     ),
 )
 
