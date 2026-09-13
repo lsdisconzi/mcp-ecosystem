@@ -258,8 +258,13 @@ def test_accepts_an_empty_but_present_segments_list(tmp_path: Path) -> None:
 def test_discovery_returns_the_whole_canonical_corpus() -> None:
     sources = discover_json_transcripts(JSON_ROOT, speaker_index_path=SPEAKER_INDEX)
 
-    assert len(sources) == 27
-    assert sum(s.segment_count() for s in sources.values()) == 3207
+    # Parity with the corpus on disk rather than a pinned size: the corpus grows
+    # (27 -> 29 on 2026-09-13) and a magic number fails on every new transcript
+    # while still missing a one-sided gap.
+    on_disk = {p.stem for p in JSON_ROOT.glob("*.json")}
+    assert {s.path.stem for s in sources.values()} == on_disk
+    # Magnitude check — a deliberate snapshot, bumped when the corpus grows.
+    assert sum(s.segment_count() for s in sources.values()) == 3576
     assert sum(len(s.reviewed_segments()) for s in sources.values()) == 3163
     assert all(s.is_canonical for s in sources.values())
     assert all(s.source_id() == s.transcript_id for s in sources.values())

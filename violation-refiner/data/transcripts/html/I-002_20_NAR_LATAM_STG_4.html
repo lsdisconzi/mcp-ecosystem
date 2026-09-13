@@ -1,0 +1,2857 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="clean-professional">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disconzi v. LATAM — latam_STG_4</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+
+    :root {
+      --bg-primary: #f8f7f4;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f2f0ea;
+      --bg-surface: #f1efe8;
+      --border: #e1ddd1;
+      --border-strong: #c7c1b0;
+      --text-primary: #1b1c1e;
+      --text-secondary: #52555c;
+      --text-muted: #8a8b87;
+      --accent: #24405f;
+      --accent-dim: rgba(36, 64, 95, 0.07);
+      --status-flag: #7a3733;
+      --status-flag-dim: rgba(122, 55, 51, 0.08);
+      --status-analysis: #8a6a2c;
+      --status-analysis-dim: rgba(138, 106, 44, 0.09);
+      --status-note: #3f6b4f;
+      --status-note-dim: rgba(63, 107, 79, 0.08);
+      --mono: 'JetBrains Mono', monospace;
+      --serif: 'Source Serif 4', Georgia, serif;
+      --sans: 'Inter', -apple-system, sans-serif;
+    }
+
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.85em;
+      color: var(--accent);
+      background: var(--bg-surface);
+      padding: 1px 6px;
+      border-radius: 2px;
+    }
+
+    .masthead {
+      border-bottom: 1px solid var(--border);
+      padding: 44px 0 32px;
+    }
+
+    .masthead-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .masthead-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .masthead-back {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: inline-block;
+    }
+
+    .masthead-back:hover {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .masthead-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+
+    .language-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      padding: 6px 10px;
+      min-height: 36px;
+    }
+
+    .language-toggle label {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    .language-toggle select {
+      appearance: none;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      padding: 4px 18px 4px 4px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .masthead-full-narrative {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 9px 12px;
+      border-radius: 3px;
+      border: 1px solid var(--border-strong);
+      color: var(--accent);
+      background: var(--bg-card);
+      text-decoration: none;
+    }
+
+    .masthead-full-narrative:hover {
+      background: var(--accent-dim);
+      text-decoration: none;
+    }
+
+    .masthead-badge {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-strong);
+      padding: 5px 12px;
+      border-radius: 2px;
+      margin-bottom: 20px;
+    }
+
+    .masthead h1 {
+      font-family: var(--serif);
+      font-size: clamp(1.6rem, 3vw, 2.3rem);
+      font-weight: 600;
+      line-height: 1.25;
+      margin-bottom: 10px;
+      color: var(--text-primary);
+    }
+
+    .masthead-sub {
+      font-size: 0.96rem;
+      color: var(--text-secondary);
+      max-width: 700px;
+      line-height: 1.7;
+    }
+
+    .stats-bar {
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stats-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 32px;
+      display: flex;
+      gap: 0;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      flex: 1 1 180px;
+      padding: 18px 14px;
+      border-right: 1px solid var(--border);
+    }
+
+    .stat-item:last-child {
+      border-right: none;
+    }
+
+    .stat-val {
+      font-family: var(--mono);
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      word-break: break-word;
+    }
+
+    .stat-label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-top: 5px;
+    }
+
+    .main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .section-head {
+      padding: 44px 0 18px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 18px;
+    }
+
+    .section-head h2 {
+      font-family: var(--serif);
+      font-size: 1.4rem;
+      font-weight: 600;
+      padding-bottom: 14px;
+    }
+
+    .section-head p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      padding-bottom: 16px;
+      max-width: 700px;
+    }
+
+    /* transcript */
+    .transcript-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-bottom: 8px;
+    }
+
+    .transcript-segment {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--border-strong);
+      border-radius: 3px;
+      padding: 13px 18px;
+    }
+
+    .transcript-segment.seg-passenger {
+      border-left-color: var(--accent);
+    }
+
+    .transcript-segment.seg-other {
+      border-left-style: dashed;
+      border-left-color: var(--status-analysis);
+    }
+
+    .transcript-segment .seg-time {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      letter-spacing: 0.02em;
+    }
+
+    .transcript-segment .seg-datetime {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--status-analysis);
+      margin-bottom: 5px;
+    }
+
+    .transcript-segment .seg-speaker {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .transcript-segment .seg-text {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      font-style: italic;
+    }
+
+    .transcript-segment .seg-actions {
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .transcript-segment .seg-note-btn {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      padding: 3px 9px;
+      border-radius: 2px;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .transcript-segment .seg-note-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .transcript-segment .seg-mark-btn {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      padding: 3px 9px;
+      border-radius: 2px;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+    }
+
+    .transcript-segment .seg-mark-btn:hover,
+    .transcript-segment .seg-mark-btn.is-marked {
+      color: var(--status-analysis);
+      border-color: var(--status-analysis);
+      background: var(--status-analysis-dim);
+    }
+
+    .transcript-segment.is-marked {
+      background: var(--status-analysis-dim);
+      border-left-color: var(--status-analysis);
+    }
+
+    .transcript-segment .seg-play-btn {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      padding: 3px 9px;
+      border-radius: 2px;
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      cursor: pointer;
+      transition: background-color 0.15s, color 0.15s;
+      font-weight: 500;
+      margin-right: 8px;
+      line-height: 1.4;
+    }
+
+    .transcript-segment .seg-play-btn:hover {
+      background-color: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    /* evidence / violation cards */
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .evidence-card {
+      display: grid;
+      grid-template-columns: 100px 1fr 150px;
+      align-items: start;
+      gap: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--border-strong);
+      border-radius: 3px;
+      padding: 18px 22px;
+    }
+
+    .ev-time-col {
+      padding-top: 2px;
+    }
+
+    .ev-time {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .ev-duration {
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .ev-body h3 {
+      font-size: 0.94rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .ev-body .ev-summary {
+      font-size: 0.86rem;
+      color: var(--text-secondary);
+      line-height: 1.68;
+    }
+
+    .ev-provisions {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
+
+    .ev-meta-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      text-align: right;
+    }
+
+    .ev-type {
+      font-family: var(--mono);
+      font-size: 0.63rem;
+      padding: 4px 9px;
+      border-radius: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .type-primary {
+      background: var(--status-flag-dim);
+      color: var(--status-flag);
+    }
+
+    .type-procedural {
+      background: var(--status-analysis-dim);
+      color: var(--status-analysis);
+    }
+
+    .type-analysis {
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    .ev-open {
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .ev-open:hover {
+      color: var(--text-primary);
+    }
+
+    /* notes panel */
+    .notes-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 24px 28px;
+      margin-top: 12px;
+    }
+
+    .notes-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .notes-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+    }
+
+    .notes-count {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      padding: 3px 9px;
+      border-radius: 2px;
+      border: 1px solid var(--border-strong);
+      color: var(--text-muted);
+    }
+
+    .notes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .notes-empty {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      padding: 14px;
+      background: var(--bg-surface);
+      border: 1px dashed var(--border);
+      border-radius: 3px;
+      text-align: center;
+    }
+
+    .note-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--border-strong);
+      border-radius: 3px;
+      padding: 13px 16px;
+    }
+
+    .note-card.note-admission {
+      border-left-color: var(--status-flag);
+    }
+
+    .note-card.note-xref {
+      border-left-color: var(--accent);
+    }
+
+    .note-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 7px;
+    }
+
+    .note-type {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 7px;
+      border-radius: 2px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      color: var(--text-muted);
+    }
+
+    .note-card.note-admission .note-type {
+      color: var(--status-flag);
+      border-color: var(--status-flag);
+    }
+
+    .note-card.note-xref .note-type {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .note-author {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .note-seg {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    .note-body {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      white-space: pre-wrap;
+    }
+
+    /* modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 20, 18, 0.55);
+      z-index: 1000;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 20px;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      max-width: 760px;
+      width: 100%;
+      margin: auto 0;
+    }
+
+    .modal-header {
+      padding: 22px 28px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .modal-header-body {
+      flex: 1;
+    }
+
+    .modal-type-badge {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 4px 10px;
+      border-radius: 2px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+
+    .modal-title {
+      font-family: var(--serif);
+      font-size: 1.25rem;
+      font-weight: 600;
+      line-height: 1.3;
+      color: var(--text-primary);
+    }
+
+    .modal-audio-ref {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: 1px solid var(--border-strong);
+      color: var(--text-muted);
+      width: 30px;
+      height: 30px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 1.05rem;
+    }
+
+    .modal-close:hover {
+      color: var(--text-primary);
+      border-color: var(--text-primary);
+    }
+
+    .modal-body {
+      padding: 22px 28px;
+    }
+
+    .modal-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 22px;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+    }
+
+    .modal-status-text {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+    }
+
+    .modal-section {
+      margin-bottom: 22px;
+    }
+
+    .modal-section-label {
+      font-family: var(--mono);
+      font-size: 0.63rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .modal-segments {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .modal-segment {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 3px;
+      padding: 12px 16px;
+    }
+
+    .modal-segment-time {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .modal-segment-speaker {
+      font-size: 0.76rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text-primary);
+    }
+
+    .modal-segment-text {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      font-style: italic;
+    }
+
+    .modal-jurisdictions,
+    .modal-xrefs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .jurisdiction-pill {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 12px 16px;
+      min-width: 200px;
+      flex: 1;
+    }
+
+    .jurisdiction-name {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .jurisdiction-laws {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .jurisdiction-article {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-primary);
+      background: var(--bg-surface);
+      padding: 2px 6px;
+      border-radius: 2px;
+      display: inline-block;
+      margin: 2px 2px 2px 0;
+    }
+
+    .xref-tag {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      padding: 4px 10px;
+      border-radius: 2px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      color: var(--text-muted);
+    }
+
+    .modal-footer {
+      padding: 14px 28px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .modal-footer-note {
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      color: var(--text-muted);
+      flex: 1;
+    }
+
+    .modal-download-btn {
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      padding: 6px 14px;
+      border-radius: 3px;
+      background: transparent;
+      border: 1px solid var(--border-strong);
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .modal-download-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .page-footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 0;
+      text-align: center;
+      margin-top: 48px;
+    }
+
+    .page-footer p {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
+    .page-footer .mono {
+      font-family: var(--mono);
+    }
+
+    @media (max-width: 900px) {
+      .evidence-card {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .ev-meta-col {
+        flex-direction: row-reverse;
+        align-items: center;
+        text-align: left;
+        justify-content: flex-end;
+      }
+    }
+
+      .masthead {
+        padding: 28px 0 22px;
+      }
+
+      .masthead-inner,
+      .main {
+        padding: 0 16px;
+      }
+
+      .masthead-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .language-toggle {
+        flex: 1;
+      }
+
+      .modal-overlay {
+        padding: 16px 10px;
+      }
+
+      .pinned-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: rgba(248, 247, 244, 0.94);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 20px;
+        gap: 16px;
+      }
+
+      .pinned-nav-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--accent);
+        text-decoration: none;
+        padding: 5px 12px;
+        border-radius: 3px;
+        border: 1px solid var(--border-strong);
+      }
+
+      .pinned-nav-link:hover {
+        background: var(--accent-dim);
+        text-decoration: none;
+      }
+
+      .pinned-nav-label {
+        font-family: var(--mono);
+        font-size: 0.64rem;
+        color: var(--text-muted);
+        letter-spacing: 0.04em;
+      }
+
+      @media (max-width: 600px) {
+        .pinned-nav {
+          padding: 8px 14px;
+        }
+
+        .pinned-nav-label {
+          display: none;
+        }
+      }
+
+  </style>
+</head>
+<body data-audio-stem="latam_STG_4" data-audio-map-key="i_002_20_nar_latam_stg_4">
+  <div class="page">
+  <header class="masthead">
+    <div class="masthead-inner">
+      <div class="masthead-row">
+        <a class="masthead-back" href="../index.html">&larr; Evidence Archive &middot; Index</a>
+        <div class="masthead-actions">
+          <div class="language-toggle">
+      <label for="lang-select">Language</label>
+      <select id="lang-select" aria-label="Select language" onchange="if (this.value) window.location.href = this.value;">
+        <option value="n118_en_I-002_20_NAR_LATAM_STG_4.html" selected>English</option><option value="n118_es_I-002_20_NAR_LATAM_STG_4.html">Español</option><option value="n118_it_I-002_20_NAR_LATAM_STG_4.html">Italiano</option><option value="n118_pt-BR_I-002_20_NAR_LATAM_STG_4.html">Português (Brasil)</option><option value="n118_de_I-002_20_NAR_LATAM_STG_4.html">Deutsch</option><option value="n118_pl_I-002_20_NAR_LATAM_STG_4.html">Polski</option>
+      </select>
+    </div>
+          <a class="masthead-full-narrative" href="./I-002_04_NAR-06_STG_6_jetbridge_standoff.html">Full Narrative</a>
+        </div>
+      </div>
+      <div class="masthead-badge">Audio Evidence &middot; latam_STG_4</div>
+      <h1>latam_STG_4</h1>
+      <p class="masthead-sub">Extended Interaction — Antonela Confirms Document Has No Legal Validity</p>
+    </div>
+  </header>
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat-item">
+        <div class="stat-val">latam_STG_4.m4a</div>
+        <div class="stat-label">Audio File</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">6m 9.024s</div>
+        <div class="stat-label">Duration</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">July 05, 2024 &middot; 23:20:18</div>
+        <div class="stat-label">Date</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">3074.38 KB</div>
+        <div class="stat-label">File Size</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">Arturo Merino Benítez International Airport (SCL), Santiago, Chile</div>
+        <div class="stat-label">Location</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">es</div>
+        <div class="stat-label">Language</div>
+      </div>
+    </div>
+  </div>
+    <div class="main">
+      <div class="section-head">
+        <h2>Full Transcript</h2>
+        <p>Speaker-attributed segments in chronological order. Select <strong>+ add note</strong> on any segment to record an annotation against this audio.</p>
+      </div>
+      <div class="transcript-list">
+        <div class="transcript-segment seg-passenger" id="seg-0">
+          <div class="seg-datetime">5th July 2024 @ 11:20pm</div>
+          <div class="seg-time">18.95s &rarr; 21.02s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"¿Alguien puede me dar un posicionamiento?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="0" data-start="18.945" data-end="21.025">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="0" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('18.95s&ndash;21.02s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-1">
+          <div class="seg-datetime">5th July 2024 @ 11:20pm</div>
+          <div class="seg-time">23.12s &rarr; 25.02s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Porque estoy como..."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="1" data-start="23.125" data-end="25.025">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="1" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('23.12s&ndash;25.02s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-2">
+          <div class="seg-datetime">5th July 2024 @ 11:20pm</div>
+          <div class="seg-time">25.59s &rarr; 27.80s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Estoy dejando como un idiota por ahí."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="2" data-start="25.585" data-end="27.805">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="2" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('25.59s&ndash;27.80s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-3">
+          <div class="seg-datetime">5th July 2024 @ 11:20pm</div>
+          <div class="seg-time">27.95s &rarr; 29.30s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"ya se le entregó la carta"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="3" data-start="27.945" data-end="29.3">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="3" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('27.95s&ndash;29.30s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-staff" id="seg-4">
+          <div class="seg-datetime">5th July 2024 @ 11:20pm</div>
+          <div class="seg-time">27.84s &rarr; 29.41s</div>
+          <div class="seg-speaker">airline_staff_5</div>
+          <p class="seg-text">"Senor, ya se le entreg.."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="4" data-start="27.845" data-end="29.405">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="4" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('27.84s&ndash;29.41s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-5">
+          <div class="seg-datetime">5th July 2024 @ 11:20pm</div>
+          <div class="seg-time">29.41s &rarr; 32.24s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Sí, pero yo te dije que esta carta no tiene una firma."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="5" data-start="29.405" data-end="32.245">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="5" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('29.41s&ndash;32.24s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-staff" id="seg-6">
+          <div class="seg-datetime">5th July 2024 @ 11:20pm</div>
+          <div class="seg-time">31.65s &rarr; 33.92s</div>
+          <div class="seg-speaker">airline_staff</div>
+          <p class="seg-text">"Ese es nuestro formato. no va a tener una firma."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="6" data-start="31.65" data-end="33.925">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="6" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('31.65s&ndash;33.92s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-7">
+          <div class="seg-datetime">5th July 2024 @ 11:20pm</div>
+          <div class="seg-time">33.92s &rarr; 35.88s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"No va a tener una firma? un documento?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="7" data-start="33.925" data-end="35.885">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="7" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('33.92s&ndash;35.88s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-staff" id="seg-8">
+          <div class="seg-datetime">5th July 2024 @ 11:20pm</div>
+          <div class="seg-time">35.80s &rarr; 38.50s</div>
+          <div class="seg-speaker">airline_staff</div>
+          <p class="seg-text">"Este el el formato que tiene la compañía,"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="8" data-start="35.8" data-end="38.5">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="8" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('35.80s&ndash;38.50s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-9">
+          <div class="seg-datetime">5th July 2024 @ 11:20pm</div>
+          <div class="seg-time">37.97s &rarr; 50.00s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Y no tiene nadie para responsabilizar por esta información? Porque eso va a pasar. Este va a ser un documento que no va a ser válido después. Porque no hay nadie para ser responsabilizado."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="9" data-start="37.965" data-end="50.0">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="9" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('37.97s&ndash;50.00s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-10">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">46.00s &rarr; 48.50s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"Senor, por favor baje el .."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="10" data-start="46.0" data-end="48.5">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="10" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('46.00s&ndash;48.50s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-11">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">48.50s &rarr; 52.00s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">" De nuevo. Ya, está bien, de nuevo. Yo voy a estar hasta más lejos."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="11" data-start="48.5" data-end="52.0">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="11" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('48.50s&ndash;52.00s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-12">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">52.48s &rarr; 54.38s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ya, para que tu no se ofendas."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="12" data-start="52.485" data-end="54.385">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="12" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('52.48s&ndash;54.38s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-13">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">54.92s &rarr; 56.84s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ya, entonces, por favor."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="13" data-start="54.925" data-end="56.845">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="13" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('54.92s&ndash;56.84s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-14">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">57.05s &rarr; 59.10s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"¿Alguien asine (firme) eso?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="14" data-start="57.045" data-end="59.105">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="14" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('57.05s&ndash;59.10s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-15">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">59.34s &rarr; 60.73s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Se responsabiliza."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="15" data-start="59.345" data-end="60.725">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="15" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('59.34s&ndash;60.73s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-16">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">61.16s &rarr; 65.19s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"Sí, quieres la acepta, si quieres no."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="16" data-start="61.165" data-end="65.185">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="16" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('61.16s&ndash;65.19s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-17">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">62.19s &rarr; 63.23s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">""</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="17" data-start="62.185" data-end="63.225">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="17" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('62.19s&ndash;63.23s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-18">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">65.41s &rarr; 70.14s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Si yo quiero la acepto o no? Pero un documento legal no debería tener una asignatura, una firma?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="18" data-start="65.405" data-end="70.145">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="18" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('65.41s&ndash;70.14s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-19">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">71.14s &rarr; 72.03s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"!Eso un documento!"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="19" data-start="71.145" data-end="72.025">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="19" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('71.14s&ndash;72.03s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-20">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">72.14s &rarr; 74.03s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Eso es lo formato. No tienes firma."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="20" data-start="72.145" data-end="74.025">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="20" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('72.14s&ndash;74.03s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-21">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">74.00s &rarr; 74.80s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"No tiene firma?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="21" data-start="74.0" data-end="74.8">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="21" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('74.00s&ndash;74.80s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-22">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">74.80s &rarr; 77.69s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"NO! ninguno de nuestros documentos tiene firma"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="22" data-start="74.8" data-end="77.685">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="22" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('74.80s&ndash;77.69s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-23">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">79.36s &rarr; 81.20s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"¿Quién escribió eso?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="23" data-start="79.365" data-end="81.2">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="23" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('79.36s&ndash;81.20s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-24">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">80.77s &rarr; 81.17s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">""</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="24" data-start="80.765" data-end="81.165">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="24" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('80.77s&ndash;81.17s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-25">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">81.17s &rarr; 83.42s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"LATAM, Latam está siendo responsable de eso"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="25" data-start="81.165" data-end="83.425">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="25" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('81.17s&ndash;83.42s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-26">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">85.39s &rarr; 87.56s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"la compañía, porque tiene el logotipo"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="26" data-start="85.385" data-end="87.565">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="26" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('85.39s&ndash;87.56s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-27">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">87.86s &rarr; 88.36s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ah, va."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="27" data-start="87.865" data-end="88.365">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="27" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('87.86s&ndash;88.36s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-28">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">89.28s &rarr; 91.33s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ya, por favor, un timbre."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="28" data-start="89.285" data-end="91.325">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="28" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('89.28s&ndash;91.33s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-29">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">91.33s &rarr; 92.97s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"nadie se lo va a atender el señor"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="29" data-start="91.325" data-end="92.965">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="29" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('91.33s&ndash;92.97s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-30">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">93.53s &rarr; 94.70s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"va a perder mucho tiempo que yo"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="30" data-start="93.525" data-end="94.705">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="30" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('93.53s&ndash;94.70s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-31">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">94.70s &rarr; 97.78s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Yo ya perdí mi tiempo desde las 11 de la mañana que estoy acá."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="31" data-start="94.705" data-end="97.785">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="31" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('94.70s&ndash;97.78s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-32">
+          <div class="seg-datetime">5th July 2024 @ 11:21pm</div>
+          <div class="seg-time">98.61s &rarr; 101.28s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ya, ustedes me sacaron a fuerza del vuelo."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="32" data-start="98.605" data-end="101.285">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="32" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('98.61s&ndash;101.28s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-33">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">102.00s &rarr; 103.28s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"ahí tiene todos los motivos porque"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="33" data-start="102.005" data-end="103.285">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="33" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('102.00s&ndash;103.28s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-34">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">103.28s &rarr; 106.11s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Sí, claro. Y ese motivo ya fueron comprobados."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="34" data-start="103.285" data-end="106.105">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="34" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('103.28s&ndash;106.11s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-35">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">105.78s &rarr; 108.17s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"Nadie lo vas a poner ni un timbre ni una firma."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="35" data-start="105.785" data-end="108.165">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="35" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('105.78s&ndash;108.17s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-36">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">108.17s &rarr; 108.64s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"¿Por qué?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="36" data-start="108.165" data-end="108.645">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="36" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('108.17s&ndash;108.64s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-37">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">109.05s &rarr; 111.89s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"porque este es nuestro logotipo no podemos hacer nada más que eso"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="37" data-start="109.045" data-end="111.885">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="37" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('109.05s&ndash;111.89s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-38">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">111.89s &rarr; 112.36s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ah, no?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="38" data-start="111.885" data-end="112.365">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="38" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('111.89s&ndash;112.36s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-39">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">113.44s &rarr; 120.20s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Mira, me da vontade de ver un otro documento de usted para ver si no hay una firma o un timbre."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="39" data-start="113.445" data-end="120.205">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="39" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('113.44s&ndash;120.20s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-40">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">121.20s &rarr; 122.00s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Sí, por favor."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="40" data-start="121.205" data-end="122.005">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="40" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('121.20s&ndash;122.00s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-41">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">128.72s &rarr; 132.06s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Simplemente tú ya me ignoraste. Yo estaba esperando."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="41" data-start="128.725" data-end="132.065">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="41" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('128.72s&ndash;132.06s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-42">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">133.06s &rarr; 135.50s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"ya le informamos ya se le entregó toda la información"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="42" data-start="133.065" data-end="135.5">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="42" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('133.06s&ndash;135.50s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-staff" id="seg-43">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">135.50s &rarr; 137.34s</div>
+          <div class="seg-speaker">airline_staff_5</div>
+          <p class="seg-text">"No hay mas informacion que..."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="43" data-start="135.5" data-end="137.345">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="43" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('135.50s&ndash;137.34s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-44">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">137.34s &rarr; 139.62s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ah, ese tiene. No, ese no se puede mostrar?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="44" data-start="137.345" data-end="139.625">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="44" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('137.34s&ndash;139.62s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-45">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">144.41s &rarr; 146.59s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Esta chistoso todo. ta muy chistoso."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="45" data-start="144.405" data-end="146.585">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="45" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('144.41s&ndash;146.59s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-staff" id="seg-46">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">152.10s &rarr; 156.06s</div>
+          <div class="seg-speaker">airline_staff_5</div>
+          <p class="seg-text">"Alejandro, me acaba de llegar a la interdicción,"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="46" data-start="152.105" data-end="156.065">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="46" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('152.10s&ndash;156.06s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-47">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">155.87s &rarr; 159.72s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"certificado de contingencia ...?? y solamente nosotros lo llenamos"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="47" data-start="155.865" data-end="159.725">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="47" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('155.87s&ndash;159.72s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-48">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">159.72s &rarr; 161.47s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"¿Yah porque no llena ese entonces?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="48" data-start="159.725" data-end="161.465">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="48" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('159.72s&ndash;161.47s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-49">
+          <div class="seg-datetime">5th July 2024 @ 11:22pm</div>
+          <div class="seg-time">161.65s &rarr; 165.21s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"porque este no dice lo que a usted le pasó es solamente para cancelamientos de vuelo"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="49" data-start="161.645" data-end="165.205">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="49" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('161.65s&ndash;165.21s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-50">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">166.32s &rarr; 168.03s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"o cuando nuestro vuelo está retrasado"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="50" data-start="166.325" data-end="168.025">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="50" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('166.32s&ndash;168.03s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-51">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">170.25s &rarr; 174.20s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ya. ¿Alguien tiene se responsabilizar para esa información que está acá? Ah,"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="51" data-start="170.245" data-end="174.2">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="51" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('170.25s&ndash;174.20s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-52">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">174.00s &rarr; 175.47s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"Nadie lo vas hacer senor."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="52" data-start="174.0" data-end="175.465">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="52" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('174.00s&ndash;175.47s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-53">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">175.22s &rarr; 181.94s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"sí. Sí, tú ya me explicó eso. Yo ya perdí mucho tiempo. Sí, es que tú no entendió todavía."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="53" data-start="175.225" data-end="181.945">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="53" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('175.22s&ndash;181.94s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-54">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">182.31s &rarr; 183.31s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"si, ya lo entendí"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="54" data-start="182.305" data-end="183.305">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="54" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('182.31s&ndash;183.31s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-55">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">183.31s &rarr; 184.00s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Tú entendió?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="55" data-start="183.305" data-end="184.005">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="55" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('183.31s&ndash;184.00s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-56">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">184.43s &rarr; 188.06s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Pero, ¿y, y, y, y, entonces simplemente va a ignorar eso?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="56" data-start="184.425" data-end="188.065">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="56" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('184.43s&ndash;188.06s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-57">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">188.60s &rarr; 192.10s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"que quien quiere más que le diga que le siga repetiendo toda la noche lo mismo"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="57" data-start="188.605" data-end="192.105">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="57" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('188.60s&ndash;192.10s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-58">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">192.10s &rarr; 193.65s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"No, yo quiero que me firmen eso."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="58" data-start="192.105" data-end="193.645">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="58" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('192.10s&ndash;193.65s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-59">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">193.20s &rarr; 195.00s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"Nadie se lo va a hacer. nadie lo va hacer."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="59" data-start="193.2" data-end="195.0">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="59" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('193.20s&ndash;195.00s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-60">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">195.19s &rarr; 195.87s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"¿Por qué?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="60" data-start="195.185" data-end="195.865">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="60" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('195.19s&ndash;195.87s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-61">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">195.87s &rarr; 197.99s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"porque ese es nuestro formato ya le expliqué"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="61" data-start="195.865" data-end="197.985">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="61" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('195.87s&ndash;197.99s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-62">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">199.06s &rarr; 200.59s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">" le acabo de mostrar otro formato igual"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="62" data-start="199.065" data-end="200.585">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="62" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('199.06s&ndash;200.59s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-63">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">200.59s &rarr; 202.10s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ya, mira. Sara."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="63" data-start="200.585" data-end="202.105">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="63" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('200.59s&ndash;202.10s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-64">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">202.76s &rarr; 203.76s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Sara no, Antonella."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="64" data-start="202.765" data-end="203.765">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="64" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('202.76s&ndash;203.76s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-65">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">205.00s &rarr; 205.41s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Mira."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="65" data-start="205.005" data-end="205.405">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="65" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('205.00s&ndash;205.41s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-66">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">205.84s &rarr; 206.56s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Yo creo que"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="66" data-start="205.845" data-end="206.565">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="66" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('205.84s&ndash;206.56s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-67">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">207.31s &rarr; 209.88s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"que eso va a quedar un poco más complejo."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="67" data-start="207.305" data-end="209.885">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="67" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('207.31s&ndash;209.88s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-68">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">210.56s &rarr; 211.12s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"¿Entiendes?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="68" data-start="210.565" data-end="211.125">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="68" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('210.56s&ndash;211.12s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-69">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">211.91s &rarr; 215.06s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Mucho más complejo. Y todas las personas que están participando,"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="69" data-start="211.905" data-end="215.065">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="69" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('211.91s&ndash;215.06s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-70">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">215.97s &rarr; 220.44s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"yo creo que puede ser complicado para ustedes también. Ya simplemente informando porque"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="70" data-start="215.965" data-end="220.445">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="70" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('215.97s&ndash;220.44s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-71">
+          <div class="seg-datetime">5th July 2024 @ 11:23pm</div>
+          <div class="seg-time">220.66s &rarr; 222.19s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"eso no va a quedar así. "</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="71" data-start="220.665" data-end="222.185">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="71" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('220.66s&ndash;222.19s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-72">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">223.09s &rarr; 224.19s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Yo fui agredido,"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="72" data-start="223.085" data-end="224.185">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="72" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('223.09s&ndash;224.19s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-73">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">224.60s &rarr; 225.76s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"yo fui difamado,"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="73" data-start="224.605" data-end="225.765">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="73" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('224.60s&ndash;225.76s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-74">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">226.56s &rarr; 227.62s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"tiene pruebas."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="74" data-start="226.565" data-end="227.625">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="74" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('226.56s&ndash;227.62s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-75">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">227.71s &rarr; 229.21s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"y usted puede hacer todas las denuncias"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="75" data-start="227.705" data-end="229.205">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="75" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('227.71s&ndash;229.21s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-76">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">229.21s &rarr; 229.93s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Yo voy a hacer,"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="76" data-start="229.205" data-end="229.925">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="76" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('229.21s&ndash;229.93s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-77">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">230.22s &rarr; 236.09s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"yo voy a hacer, sí, totalmente, totalmente. Pero eso no es lo que fue pasado."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="77" data-start="230.225" data-end="236.085">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="77" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('230.22s&ndash;236.09s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-78">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">236.25s &rarr; 236.56s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"por eso"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="78" data-start="236.245" data-end="236.565">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="78" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('236.25s&ndash;236.56s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-79">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">236.56s &rarr; 237.44s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"A la PDI,"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="79" data-start="236.565" data-end="237.445">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="79" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('236.56s&ndash;237.44s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-80">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">237.44s &rarr; 238.71s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"es lo que vio la empresa"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="80" data-start="237.445" data-end="238.705">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="80" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('237.44s&ndash;238.71s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-81">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">238.71s &rarr; 239.66s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"no, espera que tú,"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="81" data-start="238.705" data-end="239.665">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="81" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('238.71s&ndash;239.66s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-82">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">239.66s &rarr; 241.50s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"Usted puede contar su versión de la realidad."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="82" data-start="239.665" data-end="241.5">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="82" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('239.66s&ndash;241.50s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-83">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">241.50s &rarr; 243.84s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"No, no estoy contando versión de la realidad."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="83" data-start="241.5" data-end="243.845">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="83" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('241.50s&ndash;243.84s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-84">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">243.80s &rarr; 246.03s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"eso es la realidad!"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="84" data-start="243.8" data-end="246.025">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="84" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('243.80s&ndash;246.03s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-85">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">244.62s &rarr; 245.65s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"es la realidad"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="85" data-start="244.625" data-end="245.645">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="85" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('244.62s&ndash;245.65s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-86">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">245.99s &rarr; 249.76s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"hay cámaras que lo muestran y usted cuando vaya..."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="86" data-start="245.985" data-end="249.765">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="86" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('245.99s&ndash;249.76s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-87">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">249.00s &rarr; 252.00s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ya, y, total, yo puedo tener acceso a las cameras?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="87" data-start="249.0" data-end="252.0">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="87" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('249.00s&ndash;252.00s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-88">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">251.00s &rarr; 254.76s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"Quando vea y obviamente vaya ajustando la realidad."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="88" data-start="251.0" data-end="254.765">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="88" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('251.00s&ndash;254.76s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-89">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">253.97s &rarr; 258.17s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ya, entonces yo puedo hablar ahora. Tú puedes, no me interrumpir."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="89" data-start="253.965" data-end="258.165">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="89" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('253.97s&ndash;258.17s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-90">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">257.17s &rarr; 258.17s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"uhum, hable."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="90" data-start="257.165" data-end="258.165">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="90" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('257.17s&ndash;258.17s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-91">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">258.56s &rarr; 263.26s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">""</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="91" data-start="258.565" data-end="263.265">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="91" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('258.56s&ndash;263.26s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-92">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">257.94s &rarr; 258.94s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ya, para acá."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="92" data-start="257.945" data-end="258.945">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="92" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('257.94s&ndash;258.94s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-93">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">261.73s &rarr; 262.17s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"La"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="93" data-start="261.725" data-end="262.165">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="93" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('261.73s&ndash;262.17s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-94">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">261.81s &rarr; 265.55s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"La carta de desembarque que fue dada"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="94" data-start="261.805" data-end="265.545">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="94" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('261.81s&ndash;265.55s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-95">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">265.93s &rarr; 267.52s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"por el piloto,"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="95" data-start="265.925" data-end="267.525">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="95" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('265.93s&ndash;267.52s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-96">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">270.31s &rarr; 271.52s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"allí explica"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="96" data-start="270.305" data-end="271.525">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="96" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('270.31s&ndash;271.52s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-97">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">272.05s &rarr; 272.70s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"también."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="97" data-start="272.045" data-end="272.705">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="97" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('272.05s&ndash;272.70s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-98">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">274.35s &rarr; 276.44s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"¿Esa información es la misma que está allá?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="98" data-start="274.345" data-end="276.445">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="98" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('274.35s&ndash;276.44s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-99">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">277.58s &rarr; 278.56s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"son todos los procesos que"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="99" data-start="277.585" data-end="278.565">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="99" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('277.58s&ndash;278.56s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-100">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">278.56s &rarr; 281.38s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"¿Esa información es la misma que está allá?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="100" data-start="278.565" data-end="281.385">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="100" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('278.56s&ndash;281.38s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-101">
+          <div class="seg-datetime">5th July 2024 @ 11:24pm</div>
+          <div class="seg-time">281.94s &rarr; 283.40s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Estoy te haciendo una pregunta."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="101" data-start="281.945" data-end="283.405">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="101" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('281.94s&ndash;283.40s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-102">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">282.80s &rarr; 284.23s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"Todo eso se lo van a explicar en el"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="102" data-start="282.8" data-end="284.225">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="102" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('282.80s&ndash;284.23s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-103">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">284.23s &rarr; 286.00s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Yo te estoy haciendo una pregunta."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="103" data-start="284.225" data-end="286.005">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="103" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('284.23s&ndash;286.00s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-104">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">286.00s &rarr; 288.58s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"No puedo responder a lo que yo no estuve presente eso es todo lo que"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="104" data-start="286.005" data-end="288.585">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="104" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('286.00s&ndash;288.58s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-105">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">288.58s &rarr; 290.32s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Pero tú, tú, tú lo escribiste eso?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="105" data-start="288.585" data-end="290.325">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="105" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('288.58s&ndash;290.32s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-106">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">290.37s &rarr; 290.82s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"no"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="106" data-start="290.365" data-end="290.825">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="106" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('290.37s&ndash;290.82s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-107">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">290.82s &rarr; 292.00s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Entonces, ¿quien lo escribiste?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="107" data-start="290.825" data-end="292.005">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="107" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('290.82s&ndash;292.00s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-108">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">292.00s &rarr; 293.25s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"es el formato"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="108" data-start="292.005" data-end="293.245">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="108" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('292.00s&ndash;293.25s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-109">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">293.46s &rarr; 295.00s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"El formato, el formato."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="109" data-start="293.465" data-end="295.0">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="109" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('293.46s&ndash;295.00s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-110">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">294.00s &rarr; 295.40s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"Yo solamente se lo entregue"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="110" data-start="294.0" data-end="295.4">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="110" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('294.00s&ndash;295.40s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-111">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">295.49s &rarr; 298.29s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ya, bacana. Porque lo que tengo grabado es"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="111" data-start="295.485" data-end="298.285">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="111" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('295.49s&ndash;298.29s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-112">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">298.81s &rarr; 300.56s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"que la otra persona"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="112" data-start="298.805" data-end="300.565">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="112" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('298.81s&ndash;300.56s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-113">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">301.93s &rarr; 305.19s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"te pidió a ti para escribir y modificar en la carta."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="113" data-start="301.925" data-end="305.185">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="113" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('301.93s&ndash;305.19s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-114">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">304.19s &rarr; 305.79s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"A mi me pedio a que entregarse"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="114" data-start="304.185" data-end="305.785">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="114" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('304.19s&ndash;305.79s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-115">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">305.79s &rarr; 306.82s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ya, mira, yo tengo..."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="115" data-start="305.785" data-end="306.825">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="115" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('305.79s&ndash;306.82s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-116">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">306.82s &rarr; 307.75s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"escucha su grabación,"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="116" data-start="306.825" data-end="307.745">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="116" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('306.82s&ndash;307.75s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-117">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">307.75s &rarr; 308.94s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ya, bueno, mira."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="117" data-start="307.745" data-end="308.945">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="117" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('307.75s&ndash;308.94s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-118">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">308.94s &rarr; 308.96s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">""</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="118" data-start="308.945" data-end="308.965">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="118" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('308.94s&ndash;308.96s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-119">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">313.20s &rarr; 314.40s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"¿Es eso que se va a quedar?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="119" data-start="313.205" data-end="314.405">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="119" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('313.20s&ndash;314.40s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-120">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">315.61s &rarr; 316.67s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"¿Va a quedar en eso?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="120" data-start="315.605" data-end="316.665">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="120" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('315.61s&ndash;316.67s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-121">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">316.76s &rarr; 320.99s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"señor, esa es la información, la que se le entregó, es la única información que hay, no hay más"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="121" data-start="316.765" data-end="320.985">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="121" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('316.76s&ndash;320.99s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-122">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">320.99s &rarr; 323.85s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Claramente que hay una carta de desembarque. ¿Dónde hay la...?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="122" data-start="320.985" data-end="323.845">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="122" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('320.99s&ndash;323.85s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-123">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">323.85s &rarr; 325.20s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"la carta de desembarque..."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="123" data-start="323.845" data-end="325.205">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="123" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('323.85s&ndash;325.20s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-124">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">324.20s &rarr; 326.11s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Déjame ver la carta de desembarque."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="124" data-start="324.205" data-end="326.105">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="124" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('324.20s&ndash;326.11s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-125">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">326.11s &rarr; 328.12s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"Señor, la carta de desembarque"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="125" data-start="326.105" data-end="328.125">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="125" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('326.11s&ndash;328.12s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-126">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">328.12s &rarr; 330.17s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"No grites con... mas bajo... Está ahí, sí."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="126" data-start="328.125" data-end="330.165">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="126" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('328.12s&ndash;330.17s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-127">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">330.17s &rarr; 330.75s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"la carta de"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="127" data-start="330.165" data-end="330.745">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="127" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('330.17s&ndash;330.75s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-128">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">330.75s &rarr; 331.87s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Está gritando, estás gritando."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="128" data-start="330.745" data-end="331.865">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="128" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('330.75s&ndash;331.87s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-129">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">331.30s &rarr; 332.60s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"Vas a me escuchar o no?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="129" data-start="331.3" data-end="332.6">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="129" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('331.30s&ndash;332.60s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-130">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">332.23s &rarr; 334.11s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Si habla un poco más bajo,"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="130" data-start="332.225" data-end="334.105">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="130" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('332.23s&ndash;334.11s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-131">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">333.11s &rarr; 334.50s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"Entonces no le doy mas información"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="131" data-start="333.105" data-end="334.505">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="131" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('333.11s&ndash;334.50s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-132">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">334.50s &rarr; 335.96s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"está haciendo agresiva conmigo."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="132" data-start="334.505" data-end="335.965">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="132" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('334.50s&ndash;335.96s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-133">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">335.37s &rarr; 337.19s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"No le voy dar información entonces,"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="133" data-start="335.365" data-end="337.185">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="133" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('335.37s&ndash;337.19s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-134">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">337.19s &rarr; 338.62s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Pero si habla más bajo, sí."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="134" data-start="337.185" data-end="338.625">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="134" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('337.19s&ndash;338.62s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-135">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">338.85s &rarr; 339.96s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"Quiere información o no?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="135" data-start="338.845" data-end="339.96">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="135" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('338.85s&ndash;339.96s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-136">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">339.82s &rarr; 340.73s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"¿Y? Por favor."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="136" data-start="339.825" data-end="340.725">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="136" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('339.82s&ndash;340.73s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-137">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">340.73s &rarr; 341.37s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"me va a escuchar?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="137" data-start="340.725" data-end="341.365">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="137" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('340.73s&ndash;341.37s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-138">
+          <div class="seg-datetime">5th July 2024 @ 11:25pm</div>
+          <div class="seg-time">341.37s &rarr; 343.00s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Estoy escuchando, si tú no grites..."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="138" data-start="341.365" data-end="343.0">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="138" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('341.37s&ndash;343.00s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-139">
+          <div class="seg-datetime">5th July 2024 @ 11:26pm</div>
+          <div class="seg-time">342.50s &rarr; 352.20s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"el personal de APSEC, que es la autoridad aeronáutica, ellos hacen la carta de desembarque, es un documento privado, no es para los pasajeros, ahora si usted requiere esa carta,"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="139" data-start="342.505" data-end="352.205">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="139" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('342.50s&ndash;352.20s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-140">
+          <div class="seg-datetime">5th July 2024 @ 11:26pm</div>
+          <div class="seg-time">352.81s &rarr; 357.43s</div>
+          <div class="seg-speaker">airline_supervisor_antonella</div>
+          <p class="seg-text">"vaya con PDI, solicita a ver si le permiten ingresar a APSEC y puede solicitar su carta."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="140" data-start="352.805" data-end="357.425">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="140" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('352.81s&ndash;357.43s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-141">
+          <div class="seg-datetime">5th July 2024 @ 11:26pm</div>
+          <div class="seg-time">357.61s &rarr; 360.64s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ya, puedo ir a la PDI, entonces, y pedir eso. Ya, muchas gracias."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="141" data-start="357.605" data-end="360.645">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="141" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('357.61s&ndash;360.64s')">+ add note</button>
+          </div>
+        </div>
+      </div>
+      <div class="section-head">
+        <h2>Related Violations</h2>
+        <p>Structured legal records linked to this audio. Each record identifies the violation, engaged provisions, and evidentiary anchor. <strong>Primary Evidence</strong> denotes an on-tape admission or directly observed fact; <strong>Legal Analysis</strong> denotes an inference drawn from the record and cross-referenced material.</p>
+      </div>
+      <div class="evidence-grid" id="relatedViolations">
+
+        <div class="evidence-card" style="border-left-color: var(--status-flag);">
+          <div class="ev-time-col">
+            <div class="ev-time">Entire recording</div>
+            <div class="ev-duration"></div>
+          </div>
+          <div class="ev-body">
+            <h3>False Accusation of Aggression (Calumnia) by LATAM [[SPK-stewardess-accuser]]</h3>
+            <p class="ev-summary">It is alleged that a LATAM [[SPK-stewardess-accuser]] on flight LA8159 falsely accused the passenger of aggression against airline personnel, triggering a chain of events including forcible removal by PDI, denial of boarding, and the subsequent imposition of a lifetime ban. The accusation of…</p>
+            <div class="ev-provisions">Codigo Penal de Chile, Art. 412 — Calumnia; Codigo Civil de Chile, Art. 2314 — Responsabilidad Extracontractual; Codigo Penal de Chile, Art. 211 — Denuncia Calumniosa; Codigo Aeronautico de Chile, Art. 133 — Denegacion de Embarque</div>
+          </div>
+          <div class="ev-meta-col">
+            <span class="ev-type type-primary">Primary Evidence</span>
+            <button type="button" class="ev-open" onclick="window.openViolation('CL-001')">View full record &rarr;</button>
+          </div>
+        </div>
+
+        <div class="evidence-card" style="border-left-color: var(--status-analysis);">
+          <div class="ev-time-col">
+            <div class="ev-time">Entire recording</div>
+            <div class="ev-duration"></div>
+          </div>
+          <div class="ev-body">
+            <h3>Rights Violation — Systematic Denial of Fundamental Passenger Rights</h3>
+            <p class="ev-summary">The LA8159 incident involved systematic denial of the passenger&#x27;s fundamental rights across multiple dimensions: (1) violation of inherent dignity and equality (CONST Art. 1), (2) violation of physical and mental integrity (CONST Art. 19 N°1), (3) denial of access to public information about the…</p>
+            <div class="ev-provisions">Constitución, Art. 1 — Dignidad, libertad e igualdad; Constitución, Art. 19 N°1 — Vida e integridad física y psíquica; Ley 20.285, Art. 3 — Transparencia y acceso a información pública; Ley 19.496, Art. 3(b) — Derecho a información veraz y oportuna; Ley 19.496, Art. 23 — Infracciones del proveedor</div>
+          </div>
+          <div class="ev-meta-col">
+            <span class="ev-type type-procedural">Procedural Finding</span>
+            <button type="button" class="ev-open" onclick="window.openViolation('CL-010')">View full record &rarr;</button>
+          </div>
+        </div>
+
+        <div class="evidence-card" style="border-left-color: var(--status-analysis);">
+          <div class="ev-time-col">
+            <div class="ev-time">Entire recording</div>
+            <div class="ev-duration"></div>
+          </div>
+          <div class="ev-body">
+            <h3>: &quot;Invalid Document — Unsigned &#x27;Carta de Desembarque&#x27; with Disproven Allegations&quot;</h3>
+            <p class="ev-summary">It is alleged that LATAM staff, under the direction of Supervisor [[SPK-diego-latam-supervisor]] and Supervisora [[SPK-antonela-latam-agent]], manufactured and delivered a false, unsigned, and unstamped &#x27;carta de desembarque&#x27; (disembarkation letter) containing three allegations of passenger…</p>
+            <div class="ev-provisions">Codigo Aeronautico de Chile, Art. 133 — Denegacion de Embarque por Sobreventa</div>
+          </div>
+          <div class="ev-meta-col">
+            <span class="ev-type type-procedural">Procedural Finding</span>
+            <button type="button" class="ev-open" onclick="window.openViolation('CL-016')">View full record &rarr;</button>
+          </div>
+        </div>
+
+        <div class="evidence-card" style="border-left-color: var(--status-analysis);">
+          <div class="ev-time-col">
+            <div class="ev-time">Entire recording</div>
+            <div class="ev-duration"></div>
+          </div>
+          <div class="ev-body">
+            <h3>Failure to Provide LPDC Art. 23 bis Mandatory Written Notice — All Subsections (a)–(e) Breached</h3>
+            <p class="ev-summary">LPDC Art. 23 bis requires that on denial of boarding the carrier deliver, AT THE MOMENT of denial and BEFORE any compensation, a written notice specifying (a) passenger rights, (b) indemnizations/compensations, (c) complaint mechanisms, (d) applicable fines, (e) using the uniform format. Here: the…</p>
+            <div class="ev-provisions">Ley 19.496, Art. 23 bis — Notificacion Escrita por Denegacion de Embarque</div>
+          </div>
+          <div class="ev-meta-col">
+            <span class="ev-type type-procedural">Procedural Finding</span>
+            <button type="button" class="ev-open" onclick="window.openViolation('CL-038')">View full record &rarr;</button>
+          </div>
+        </div>
+
+        <div class="evidence-card" style="border-left-color: var(--status-analysis);">
+          <div class="ev-time-col">
+            <div class="ev-time">Entire recording</div>
+            <div class="ev-duration"></div>
+          </div>
+          <div class="ev-body">
+            <h3>Failure to Offer CACH Art. 133(2) Compensation (10–20 UF) for Denied Boarding on SCL→BSB</h3>
+            <p class="ev-summary">CACH Art. 133(2) sets a minimum monetary compensation for denied boarding scaled by route distance. SCL (Santiago) → BSB (Brasilia) is approximately 2,950 km, placing it in the 15 UF tier (1,000–8,000 km bracket). LATAM never offered any compensation. STG-29 SEG 122–123 records SPEAKER_02 offering…</p>
+            <div class="ev-provisions">Codigo Aeronautico de Chile, Art. 133(2) — Compensacion Monetaria</div>
+          </div>
+          <div class="ev-meta-col">
+            <span class="ev-type type-procedural">Procedural Finding</span>
+            <button type="button" class="ev-open" onclick="window.openViolation('CL-039')">View full record &rarr;</button>
+          </div>
+        </div>
+      </div>
+      <div class="section-head">
+        <h2>Annotations &amp; Comments</h2>
+        <p>Key forensic annotations for this audio recording are documented below. These notes identify the legally significant moments captured in this evidence.</p>
+      </div>
+      <div class="notes-panel" id="notesPanel">
+        <div class="notes-head">
+          <span class="notes-label">Forensic Notes</span>
+          <span class="notes-count">6 annotations</span>
+        </div>
+        <div class="notes-list">
+
+          <div class="note-card">
+            <div class="note-meta">
+              <span class="note-type">Key Point</span>
+              <span class="note-author"></span>
+              <span class="note-seg"></span>
+            </div>
+            <div class="note-body">Antonela confirms the document has no signature: &#x27;ninguno de nuestros documentos tiene firma.&#x27; A document without a signature is not a valid legal instrument.</div>
+          </div>
+
+          <div class="note-card">
+            <div class="note-meta">
+              <span class="note-type">Key Point</span>
+              <span class="note-author"></span>
+              <span class="note-seg"></span>
+            </div>
+            <div class="note-body">Antonela refuses to stamp the document: &#x27;nadie se lo va a hacer, señor. Va a perder su tiempo aquí.&#x27; This is an active refusal to authenticate a document containing false allegations.</div>
+          </div>
+
+          <div class="note-card">
+            <div class="note-meta">
+              <span class="note-type">Key Point</span>
+              <span class="note-author"></span>
+              <span class="note-seg"></span>
+            </div>
+            <div class="note-body">The document’s author is unidentifiable. Antonela admits &#x27;yo solamente la entregue&#x27; and attributes responsibility only to &#x27;LATAM&#x27; as an entity, not an individual.</div>
+          </div>
+
+          <div class="note-card">
+            <div class="note-meta">
+              <span class="note-type">Key Point</span>
+              <span class="note-author"></span>
+              <span class="note-seg"></span>
+            </div>
+            <div class="note-body">Antonela reveals the wrong template was used: &#x27;esto no dice lo que a usted le pasó, es solamente para cancelamientos de vuelo.&#x27; The document is legally non‑compliant for denied boarding.</div>
+          </div>
+
+          <div class="note-card">
+            <div class="note-meta">
+              <span class="note-type">Key Point</span>
+              <span class="note-author"></span>
+              <span class="note-seg"></span>
+            </div>
+            <div class="note-body">LATAM staff control the document’s content: &#x27;solamente nosotros lo llenamos.&#x27; This connects directly to Diego’s instruction to &#x27;ajustar&#x27; the letter in STG‑29.</div>
+          </div>
+
+          <div class="note-card">
+            <div class="note-meta">
+              <span class="note-type">Key Point</span>
+              <span class="note-author"></span>
+              <span class="note-seg"></span>
+            </div>
+            <div class="note-body">Passenger confronts Antonela with his recording that another person asked her to &#x27;escribir y modificar&#x27; the letter. Antonela minimizes her role to &#x27;entregarse y,&#x27; attempting to disclaim authorship.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <footer class="page-footer">
+    <div class="main">
+      <p>Disconzi v. LATAM Airlines &mdash; Audio Evidence Archive</p>
+      <p class="mono">latam_STG_4.m4a &middot; 6m 9.024s &middot; July 05, 2024 &middot; 23:20:18</p>
+      <p style="margin-top:8px;">This page constitutes direct audio evidence for pending legal proceedings.</p>
+    </div>
+  </footer>
+  </div>
+  <!-- VIOLATION MODAL -->
+  <div class="modal-overlay" id="violationModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-header-body">
+          <div class="modal-type-badge" id="modalBadge"></div>
+          <div class="modal-title" id="modalTitle"></div>
+          <div class="modal-audio-ref" id="modalAudioRef">Evidence: latam_STG_4</div>
+        </div>
+        <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer">
+        <span class="modal-footer-note" id="modalFooterNote"></span>
+        <button class="modal-download-btn" onclick="downloadViolationJSON()">Download JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var modalData = {
+        'CL-001': {
+            badge: 'False Accusation',
+            badgeClass: 'type-primary',
+            title: 'False Accusation of Aggression (Calumnia) by LATAM [[SPK-stewardess-accuser]]',
+            body: '<div class="modal-section"><div class="modal-section-label">Reasoning<\/div><div class="modal-reasoning">It is alleged that a LATAM [[SPK-stewardess-accuser]] on flight LA8159 falsely accused the passenger of aggression against airline personnel, triggering a chain of events including forcible removal by PDI, denial of boarding, and the subsequent imposition of a lifetime ban. The accusation of aggression was subsequently disproven by PDI CCTV review (STG-7), where a DGAC official confirmed the passenger was right and the allegations would be investigated. Despite this, the false accusation was repeated in the fabricated &#x27;carta de desembarque&#x27; delivered 9+ hours later and in LATAM&#x27;s customer service communications. The false accusation constitutes calumnia under CP Art. 412, with criminal-reporting dimension under CP Art. 211 (denuncia calumniosa ante autoridad), and independently triggers civil liability under CC Art. 2314 (responsabilidad extracontractual). CACH Art. 133 serves as supporting/analogical framework: a removal predicated on false accusation cannot constitute lawful denied boarding.<\/div><\/div><div class="modal-section"><div class="modal-section-label">Engaged Provisions<\/div><div class="modal-jurisdictions"><div class="jurisdiction-pill"><div class="jurisdiction-name">Chile<\/div><div class="jurisdiction-laws"><span class="jurisdiction-article">Codigo Penal de Chile, Art. 412 — Calumnia; Codigo Civil de Chile, Art. 2314 — Responsabilidad Extracontractual; Codigo Penal de Chile, Art. 211 — Denuncia Calumniosa; Codigo Aeronautico de Chile, Art. 133 — Denegacion de Embarque<\/span><\/div><\/div><\/div><\/div><div class="modal-section"><div class="modal-section-label">Cross-References<\/div><div class="modal-xrefs"><span class="xref-tag">CL-005<\/span> <span class="xref-tag">CL-006<\/span> <span class="xref-tag">CL-007<\/span> <span class="xref-tag">CL-011<\/span> <span class="xref-tag">CL-016<\/span> <span class="xref-tag">CL-017<\/span><\/div><\/div>',
+            footer: 'It is alleged that a LATAM [[SPK-stewardess-accuser]] on flight LA8159 falsely…'
+          },
+        'CL-010': {
+            badge: 'Systematic Rights De',
+            badgeClass: 'type-procedural',
+            title: 'Rights Violation — Systematic Denial of Fundamental Passenger Rights',
+            body: '<div class="modal-section"><div class="modal-section-label">Reasoning<\/div><div class="modal-reasoning">The LA8159 incident involved systematic denial of the passenger&#x27;s fundamental rights across multiple dimensions: (1) violation of inherent dignity and equality (CONST Art. 1), (2) violation of physical and mental integrity (CONST Art. 19 N°1), (3) denial of access to public information about the removal decision (Ley 20.285 Art. 3), (4) denial of truthful consumer information (LPDC Art. 3.b), and (5) negligent service provision causing consumer harm (LPDC Art. 23). These violations were not isolated — they reflect an institutional pattern of rights negation.<\/div><\/div><div class="modal-section"><div class="modal-section-label">Engaged Provisions<\/div><div class="modal-jurisdictions"><div class="jurisdiction-pill"><div class="jurisdiction-name">Chile<\/div><div class="jurisdiction-laws"><span class="jurisdiction-article">Constitución, Art. 1 — Dignidad, libertad e igualdad; Constitución, Art. 19 N°1 — Vida e integridad física y psíquica; Ley 20.285, Art. 3 — Transparencia y acceso a información pública; Ley 19.496, Art. 3(b) — Derecho a información veraz y oportuna; Ley 19.496, Art. 23 — Infracciones del proveedor<\/span><\/div><\/div><\/div><\/div><div class="modal-section"><div class="modal-section-label">Cross-References<\/div><div class="modal-xrefs"><span class="xref-tag">CL-008<\/span> <span class="xref-tag">CL-001<\/span> <span class="xref-tag">CL-002<\/span> <span class="xref-tag">CL-003<\/span> <span class="xref-tag">CL-004<\/span> <span class="xref-tag">CL-005<\/span> <span class="xref-tag">CL-006<\/span> <span class="xref-tag">CL-007<\/span> <span class="xref-tag">CL-009<\/span> <span class="xref-tag">CL-016<\/span><\/div><\/div>',
+            footer: 'The LA8159 incident involved systematic denial of the passenger&#x27;s fundamental…'
+          },
+        'CL-016': {
+            badge: 'Document Fabrication',
+            badgeClass: 'type-procedural',
+            title: ': &quot;Invalid Document — Unsigned &#x27;Carta de Desembarque&#x27; with Disproven Allegations&quot;',
+            body: '<div class="modal-section"><div class="modal-section-label">Reasoning<\/div><div class="modal-reasoning">It is alleged that LATAM staff, under the direction of Supervisor [[SPK-diego-latam-supervisor]] and Supervisora [[SPK-antonela-latam-agent]], manufactured and delivered a false, unsigned, and unstamped &#x27;carta de desembarque&#x27; (disembarkation letter) containing three allegations of passenger misconduct — aggression against LATAM personnel, unauthorized entry into the aircraft, and failure to follow instructions — all of which had been disproven by PDI CCTV review hours earlier. The document was fabricated using a &#x27;certificado de contingencia&#x27; template designed for flight cancellations, routed through the Sales department (Ventas) for off-book printing, and delivered 9+ hours after the passenger&#x27;s removal without signature, stamp, or identifiable author. [[SPK-diego-latam-supervisor]] was recorded instructing that the letter be &#x27;adjusted&#x27; (&#x27;ajustar&#x27;) to his specifications, and explicitly admitted that nobody who wrote the document was present at the event (&#x27;nadie estuvo en el hecho&#x27;). The delivered document fails to meet any of the mandatory requirements of CACH Art. 133 or LPDC Art. 23 bis for denied boarding documentation.<\/div><\/div><div class="modal-section"><div class="modal-section-label">Engaged Provisions<\/div><div class="modal-jurisdictions"><div class="jurisdiction-pill"><div class="jurisdiction-name">Chile<\/div><div class="jurisdiction-laws"><span class="jurisdiction-article">Codigo Aeronautico de Chile, Art. 133 — Denegacion de Embarque por Sobreventa<\/span><\/div><\/div><\/div><\/div><div class="modal-section"><div class="modal-section-label">Cross-References<\/div><div class="modal-xrefs"><span class="xref-tag">CL-017<\/span> <span class="xref-tag">CL-011<\/span> <span class="xref-tag">CL-005<\/span> <span class="xref-tag">CL-007<\/span> <span class="xref-tag">CL-001<\/span> <span class="xref-tag">CL-005__deepseek<\/span> <span class="xref-tag">CL-016__opus47<\/span> <span class="xref-tag">CL-016__opus47version2<\/span> <span class="xref-tag">CL-016__opus46<\/span> <span class="xref-tag">CL-016__sonnet4<\/span><\/div><\/div>',
+            footer: 'It is alleged that LATAM staff, under the direction of Supervisor…'
+          },
+        'CL-038': {
+            badge: 'Statutory Notice',
+            badgeClass: 'type-procedural',
+            title: 'Failure to Provide LPDC Art. 23 bis Mandatory Written Notice — All Subsections (a)–(e) Breached',
+            body: '<div class="modal-section"><div class="modal-section-label">Reasoning<\/div><div class="modal-reasoning">LPDC Art. 23 bis requires that on denial of boarding the carrier deliver, AT THE MOMENT of denial and BEFORE any compensation, a written notice specifying (a) passenger rights, (b) indemnizations/compensations, (c) complaint mechanisms, (d) applicable fines, (e) using the uniform format. Here: the removal occurred at ~13:30; no notice was delivered; the fabricated document arrived 9+ hours later (json_latam_STG_2 22:59); it contains (i) false allegations rather than &#x27;razones objetivas&#x27;, (ii) no compensation table, (iii) no complaint mechanism, (iv) no fine schedule, and (v) uses a &#x27;certificado de contingencia&#x27; (flight cancellation/delay) template — the wrong format. All five subsections of Art. 23 bis are independently breached.<\/div><\/div><div class="modal-section"><div class="modal-section-label">Engaged Provisions<\/div><div class="modal-jurisdictions"><div class="jurisdiction-pill"><div class="jurisdiction-name">Chile<\/div><div class="jurisdiction-laws"><span class="jurisdiction-article">Ley 19.496, Art. 23 bis — Notificacion Escrita por Denegacion de Embarque<\/span><\/div><\/div><\/div><\/div><div class="modal-section"><div class="modal-section-label">Cross-References<\/div><div class="modal-xrefs"><span class="xref-tag">CL-037<\/span> <span class="xref-tag">CL-036<\/span> <span class="xref-tag">CL-035<\/span> <span class="xref-tag">CL-033<\/span> <span class="xref-tag">CL-034<\/span> <span class="xref-tag">CL-023<\/span> <span class="xref-tag">CL-020<\/span> <span class="xref-tag">CL-019<\/span> <span class="xref-tag">CL-028<\/span> <span class="xref-tag">CL-024<\/span><\/div><\/div>',
+            footer: 'LPDC Art. 23 bis requires that on denial of boarding the carrier deliver, AT…'
+          },
+        'CL-039': {
+            badge: 'Aviation Code',
+            badgeClass: 'type-procedural',
+            title: 'Failure to Offer CACH Art. 133(2) Compensation (10–20 UF) for Denied Boarding on SCL→BSB',
+            body: '<div class="modal-section"><div class="modal-section-label">Reasoning<\/div><div class="modal-reasoning">CACH Art. 133(2) sets a minimum monetary compensation for denied boarding scaled by route distance. SCL (Santiago) → BSB (Brasilia) is approximately 2,950 km, placing it in the 15 UF tier (1,000–8,000 km bracket). LATAM never offered any compensation. STG-29 SEG 122–123 records SPEAKER_02 offering only a re-routing on a different airline &#x27;para que no siga entrando aca&#x27; — framed as an exit incentive, not as the statutory compensation. The passenger&#x27;s refund request (SEG 124) was treated as a discretionary courtesy. None of the statutory options (rebook / refund / return) were offered at the moment of denial as required by CACH Art. 133(1).<\/div><\/div><div class="modal-section"><div class="modal-section-label">Engaged Provisions<\/div><div class="modal-jurisdictions"><div class="jurisdiction-pill"><div class="jurisdiction-name">Chile<\/div><div class="jurisdiction-laws"><span class="jurisdiction-article">Codigo Aeronautico de Chile, Art. 133(2) — Compensacion Monetaria<\/span><\/div><\/div><\/div><\/div><div class="modal-section"><div class="modal-section-label">Cross-References<\/div><div class="modal-xrefs"><span class="xref-tag">CL-019<\/span> <span class="xref-tag">CL-020<\/span> <span class="xref-tag">CL-021<\/span> <span class="xref-tag">CL-022<\/span> <span class="xref-tag">CL-023<\/span> <span class="xref-tag">CL-024<\/span> <span class="xref-tag">CL-025<\/span> <span class="xref-tag">CL-026<\/span> <span class="xref-tag">CL-027<\/span> <span class="xref-tag">CL-028<\/span><\/div><\/div>',
+            footer: 'CACH Art. 133(2) sets a minimum monetary compensation for denied boarding…'
+          }
+      };
+
+      var activeVid = null;
+
+      window.openModal = function (vid) {
+        var d = modalData[vid];
+        if (!d) return;
+        activeVid = vid;
+        var modal = document.getElementById('violationModal');
+        var badge = document.getElementById('modalBadge');
+        var title = document.getElementById('modalTitle');
+        var body = document.getElementById('modalBody');
+        var note = document.getElementById('modalFooterNote');
+        var audioRef = document.getElementById('modalAudioRef');
+
+        badge.textContent = d.badge;
+        badge.className = 'modal-type-badge ' + d.badgeClass;
+        title.textContent = d.title;
+        body.innerHTML = d.body;
+        note.textContent = d.footer;
+        if (audioRef) {
+          audioRef.textContent = 'Evidence: latam_STG_4';
+        }
+
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      };
+
+      window.closeModal = function () {
+        var modal = document.getElementById('violationModal');
+        if (modal) modal.classList.remove('open');
+        document.body.style.overflow = '';
+        activeVid = null;
+      };
+
+      window.downloadViolationJSON = function () {
+        if (!activeVid) return;
+        var blob = new Blob([JSON.stringify(modalData[activeVid] || {}, null, 2)], { type: 'application/json' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = activeVid + '.json';
+        a.click();
+      };
+
+      document.getElementById('violationModal').addEventListener('click', function (e) {
+        if (e.target === this) {
+          window.closeModal();
+        }
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') window.closeModal();
+      });
+    })();
+  </script>
+  <script src="/case_files/02-transcripts/transcripts_rendered/audio_player.js"></script>
+  <div class="pinned-nav"><a class="pinned-nav-link" href="../index.html">&larr; Case Index</a><span class="pinned-nav-label">Disconzi v. LATAM Airlines</span></div>
+</body>
+
+</html>

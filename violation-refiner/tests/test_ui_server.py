@@ -185,7 +185,13 @@ def test_get_api_health_is_ok(client):
 def test_discover_sources_matches_the_data_corpus():
     payload = discover_sources()
     assert payload["ok"] is True
-    assert len(payload["transcripts"]) == 27
+    # Parity with the render on disk, not a pinned count: the corpus grows
+    # (27 -> 29 on 2026-09-13) and a magic number fails on every new transcript
+    # while still missing a one-sided gap.
+    rendered = {
+        p.name for p in (REPO_ROOT / "data" / "transcripts" / "html").glob("*.html")
+    }
+    assert {t["name"] for t in payload["transcripts"]} == rendered
     assert len(payload["frameworks"]) >= 20
     stg7 = next(t for t in payload["transcripts"] if "STG_7" in t["name"])
     assert stg7["source_id"] == "STG-7"
@@ -250,10 +256,13 @@ def test_browse_workspace_rejects_escape_paths(client):
 
 
 def test_browse_workspace_follows_a_symlink_that_leaves_the_workspace():
-    """``data/law`` and ``data/transcripts/html`` are symlinks out of the workspace.
+    """``data/law`` is a symlink out of the workspace.
 
-    Resolving before checking containment made them unreachable — ``data/law`` was
-    refused silently for as long as it has existed, with no test covering it.
+    (The HTML render was vendored in-tree on 2026-09-13, so
+    ``data/transcripts/html`` is now a real directory; ``data/law`` still leaves
+    the repo.) Resolving before checking containment made the symlink
+    unreachable — ``data/law`` was refused silently for as long as it has
+    existed, with no test covering it.
     """
     law = browse_workspace("data/law")
     assert law is not None, "data/law is a symlink to ../transcription/data — must be browsable"
@@ -265,7 +274,10 @@ def test_browse_workspace_follows_a_symlink_that_leaves_the_workspace():
     assert html is not None
     assert html["path"] == "data/transcripts/html"
     assert html["parent"] == "data/transcripts"
-    assert len([e for e in html["entries"] if e["name"].endswith(".html")]) == 27
+    rendered = list((REPO_ROOT / "data" / "transcripts" / "html").glob("*.html"))
+    assert len([e for e in html["entries"] if e["name"].endswith(".html")]) == len(
+        rendered
+    )
     # Entries must stay workspace-relative, not resolve to the symlink's target.
     assert all(e["path"].startswith("data/transcripts/html/") for e in html["entries"])
 

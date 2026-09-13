@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="clean-professional">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disconzi v. LATAM — latam_STG_2</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+
+    :root {
+      --bg-primary: #f8f7f4;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f2f0ea;
+      --bg-surface: #f1efe8;
+      --border: #e1ddd1;
+      --border-strong: #c7c1b0;
+      --text-primary: #1b1c1e;
+      --text-secondary: #52555c;
+      --text-muted: #8a8b87;
+      --accent: #24405f;
+      --accent-dim: rgba(36, 64, 95, 0.07);
+      --status-flag: #7a3733;
+      --status-flag-dim: rgba(122, 55, 51, 0.08);
+      --status-analysis: #8a6a2c;
+      --status-analysis-dim: rgba(138, 106, 44, 0.09);
+      --status-note: #3f6b4f;
+      --status-note-dim: rgba(63, 107, 79, 0.08);
+      --mono: 'JetBrains Mono', monospace;
+      --serif: 'Source Serif 4', Georgia, serif;
+      --sans: 'Inter', -apple-system, sans-serif;
+    }
+
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.85em;
+      color: var(--accent);
+      background: var(--bg-surface);
+      padding: 1px 6px;
+      border-radius: 2px;
+    }
+
+    .masthead {
+      border-bottom: 1px solid var(--border);
+      padding: 44px 0 32px;
+    }
+
+    .masthead-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .masthead-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .masthead-back {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: inline-block;
+    }
+
+    .masthead-back:hover {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .masthead-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+
+    .language-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      padding: 6px 10px;
+      min-height: 36px;
+    }
+
+    .language-toggle label {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    .language-toggle select {
+      appearance: none;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      padding: 4px 18px 4px 4px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .masthead-full-narrative {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 9px 12px;
+      border-radius: 3px;
+      border: 1px solid var(--border-strong);
+      color: var(--accent);
+      background: var(--bg-card);
+      text-decoration: none;
+    }
+
+    .masthead-full-narrative:hover {
+      background: var(--accent-dim);
+      text-decoration: none;
+    }
+
+    .masthead-badge {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-strong);
+      padding: 5px 12px;
+      border-radius: 2px;
+      margin-bottom: 20px;
+    }
+
+    .masthead h1 {
+      font-family: var(--serif);
+      font-size: clamp(1.6rem, 3vw, 2.3rem);
+      font-weight: 600;
+      line-height: 1.25;
+      margin-bottom: 10px;
+      color: var(--text-primary);
+    }
+
+    .masthead-sub {
+      font-size: 0.96rem;
+      color: var(--text-secondary);
+      max-width: 700px;
+      line-height: 1.7;
+    }
+
+    .stats-bar {
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stats-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 32px;
+      display: flex;
+      gap: 0;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      flex: 1 1 180px;
+      padding: 18px 14px;
+      border-right: 1px solid var(--border);
+    }
+
+    .stat-item:last-child {
+      border-right: none;
+    }
+
+    .stat-val {
+      font-family: var(--mono);
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      word-break: break-word;
+    }
+
+    .stat-label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-top: 5px;
+    }
+
+    .main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .section-head {
+      padding: 44px 0 18px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 18px;
+    }
+
+    .section-head h2 {
+      font-family: var(--serif);
+      font-size: 1.4rem;
+      font-weight: 600;
+      padding-bottom: 14px;
+    }
+
+    .section-head p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      padding-bottom: 16px;
+      max-width: 700px;
+    }
+
+    /* transcript */
+    .transcript-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-bottom: 8px;
+    }
+
+    .transcript-segment {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--border-strong);
+      border-radius: 3px;
+      padding: 13px 18px;
+    }
+
+    .transcript-segment.seg-passenger {
+      border-left-color: var(--accent);
+    }
+
+    .transcript-segment.seg-other {
+      border-left-style: dashed;
+      border-left-color: var(--status-analysis);
+    }
+
+    .transcript-segment .seg-time {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      letter-spacing: 0.02em;
+    }
+
+    .transcript-segment .seg-datetime {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--status-analysis);
+      margin-bottom: 5px;
+    }
+
+    .transcript-segment .seg-speaker {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .transcript-segment .seg-text {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      font-style: italic;
+    }
+
+    .transcript-segment .seg-actions {
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .transcript-segment .seg-note-btn {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      padding: 3px 9px;
+      border-radius: 2px;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .transcript-segment .seg-note-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .transcript-segment .seg-mark-btn {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      padding: 3px 9px;
+      border-radius: 2px;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+    }
+
+    .transcript-segment .seg-mark-btn:hover,
+    .transcript-segment .seg-mark-btn.is-marked {
+      color: var(--status-analysis);
+      border-color: var(--status-analysis);
+      background: var(--status-analysis-dim);
+    }
+
+    .transcript-segment.is-marked {
+      background: var(--status-analysis-dim);
+      border-left-color: var(--status-analysis);
+    }
+
+    .transcript-segment .seg-play-btn {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      padding: 3px 9px;
+      border-radius: 2px;
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      cursor: pointer;
+      transition: background-color 0.15s, color 0.15s;
+      font-weight: 500;
+      margin-right: 8px;
+      line-height: 1.4;
+    }
+
+    .transcript-segment .seg-play-btn:hover {
+      background-color: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    /* evidence / violation cards */
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .evidence-card {
+      display: grid;
+      grid-template-columns: 100px 1fr 150px;
+      align-items: start;
+      gap: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--border-strong);
+      border-radius: 3px;
+      padding: 18px 22px;
+    }
+
+    .ev-time-col {
+      padding-top: 2px;
+    }
+
+    .ev-time {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .ev-duration {
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .ev-body h3 {
+      font-size: 0.94rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .ev-body .ev-summary {
+      font-size: 0.86rem;
+      color: var(--text-secondary);
+      line-height: 1.68;
+    }
+
+    .ev-provisions {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
+
+    .ev-meta-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      text-align: right;
+    }
+
+    .ev-type {
+      font-family: var(--mono);
+      font-size: 0.63rem;
+      padding: 4px 9px;
+      border-radius: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .type-primary {
+      background: var(--status-flag-dim);
+      color: var(--status-flag);
+    }
+
+    .type-procedural {
+      background: var(--status-analysis-dim);
+      color: var(--status-analysis);
+    }
+
+    .type-analysis {
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    .ev-open {
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .ev-open:hover {
+      color: var(--text-primary);
+    }
+
+    /* notes panel */
+    .notes-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 24px 28px;
+      margin-top: 12px;
+    }
+
+    .notes-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .notes-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+    }
+
+    .notes-count {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      padding: 3px 9px;
+      border-radius: 2px;
+      border: 1px solid var(--border-strong);
+      color: var(--text-muted);
+    }
+
+    .notes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .notes-empty {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      padding: 14px;
+      background: var(--bg-surface);
+      border: 1px dashed var(--border);
+      border-radius: 3px;
+      text-align: center;
+    }
+
+    .note-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--border-strong);
+      border-radius: 3px;
+      padding: 13px 16px;
+    }
+
+    .note-card.note-admission {
+      border-left-color: var(--status-flag);
+    }
+
+    .note-card.note-xref {
+      border-left-color: var(--accent);
+    }
+
+    .note-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 7px;
+    }
+
+    .note-type {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 7px;
+      border-radius: 2px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      color: var(--text-muted);
+    }
+
+    .note-card.note-admission .note-type {
+      color: var(--status-flag);
+      border-color: var(--status-flag);
+    }
+
+    .note-card.note-xref .note-type {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .note-author {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .note-seg {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    .note-body {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      white-space: pre-wrap;
+    }
+
+    /* modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 20, 18, 0.55);
+      z-index: 1000;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 20px;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      max-width: 760px;
+      width: 100%;
+      margin: auto 0;
+    }
+
+    .modal-header {
+      padding: 22px 28px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .modal-header-body {
+      flex: 1;
+    }
+
+    .modal-type-badge {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 4px 10px;
+      border-radius: 2px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+
+    .modal-title {
+      font-family: var(--serif);
+      font-size: 1.25rem;
+      font-weight: 600;
+      line-height: 1.3;
+      color: var(--text-primary);
+    }
+
+    .modal-audio-ref {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: 1px solid var(--border-strong);
+      color: var(--text-muted);
+      width: 30px;
+      height: 30px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 1.05rem;
+    }
+
+    .modal-close:hover {
+      color: var(--text-primary);
+      border-color: var(--text-primary);
+    }
+
+    .modal-body {
+      padding: 22px 28px;
+    }
+
+    .modal-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 22px;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+    }
+
+    .modal-status-text {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+    }
+
+    .modal-section {
+      margin-bottom: 22px;
+    }
+
+    .modal-section-label {
+      font-family: var(--mono);
+      font-size: 0.63rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .modal-segments {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .modal-segment {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 3px;
+      padding: 12px 16px;
+    }
+
+    .modal-segment-time {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .modal-segment-speaker {
+      font-size: 0.76rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text-primary);
+    }
+
+    .modal-segment-text {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      font-style: italic;
+    }
+
+    .modal-jurisdictions,
+    .modal-xrefs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .jurisdiction-pill {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 12px 16px;
+      min-width: 200px;
+      flex: 1;
+    }
+
+    .jurisdiction-name {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .jurisdiction-laws {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .jurisdiction-article {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-primary);
+      background: var(--bg-surface);
+      padding: 2px 6px;
+      border-radius: 2px;
+      display: inline-block;
+      margin: 2px 2px 2px 0;
+    }
+
+    .xref-tag {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      padding: 4px 10px;
+      border-radius: 2px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      color: var(--text-muted);
+    }
+
+    .modal-footer {
+      padding: 14px 28px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .modal-footer-note {
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      color: var(--text-muted);
+      flex: 1;
+    }
+
+    .modal-download-btn {
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      padding: 6px 14px;
+      border-radius: 3px;
+      background: transparent;
+      border: 1px solid var(--border-strong);
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .modal-download-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .page-footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 0;
+      text-align: center;
+      margin-top: 48px;
+    }
+
+    .page-footer p {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
+    .page-footer .mono {
+      font-family: var(--mono);
+    }
+
+    @media (max-width: 900px) {
+      .evidence-card {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .ev-meta-col {
+        flex-direction: row-reverse;
+        align-items: center;
+        text-align: left;
+        justify-content: flex-end;
+      }
+    }
+
+      .masthead {
+        padding: 28px 0 22px;
+      }
+
+      .masthead-inner,
+      .main {
+        padding: 0 16px;
+      }
+
+      .masthead-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .language-toggle {
+        flex: 1;
+      }
+
+      .modal-overlay {
+        padding: 16px 10px;
+      }
+
+      .pinned-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: rgba(248, 247, 244, 0.94);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 20px;
+        gap: 16px;
+      }
+
+      .pinned-nav-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--accent);
+        text-decoration: none;
+        padding: 5px 12px;
+        border-radius: 3px;
+        border: 1px solid var(--border-strong);
+      }
+
+      .pinned-nav-link:hover {
+        background: var(--accent-dim);
+        text-decoration: none;
+      }
+
+      .pinned-nav-label {
+        font-family: var(--mono);
+        font-size: 0.64rem;
+        color: var(--text-muted);
+        letter-spacing: 0.04em;
+      }
+
+      @media (max-width: 600px) {
+        .pinned-nav {
+          padding: 8px 14px;
+        }
+
+        .pinned-nav-label {
+          display: none;
+        }
+      }
+
+  </style>
+</head>
+<body data-audio-stem="latam_STG_2" data-audio-map-key="i_002_18_nar_latam_stg_2">
+  <div class="page">
+  <header class="masthead">
+    <div class="masthead-inner">
+      <div class="masthead-row">
+        <a class="masthead-back" href="../index.html">&larr; Evidence Archive &middot; Index</a>
+        <div class="masthead-actions">
+          <div class="language-toggle">
+      <label for="lang-select">Language</label>
+      <select id="lang-select" aria-label="Select language" onchange="if (this.value) window.location.href = this.value;">
+        <option value="n118_en_I-002_18_NAR_LATAM_STG_2.html" selected>English</option><option value="n118_es_I-002_18_NAR_LATAM_STG_2.html">Español</option><option value="n118_it_I-002_18_NAR_LATAM_STG_2.html">Italiano</option><option value="n118_pt-BR_I-002_18_NAR_LATAM_STG_2.html">Português (Brasil)</option><option value="n118_de_I-002_18_NAR_LATAM_STG_2.html">Deutsch</option><option value="n118_pl_I-002_18_NAR_LATAM_STG_2.html">Polski</option>
+      </select>
+    </div>
+          <a class="masthead-full-narrative" href="./I-002_01_NAR-01_STG_1_pre_boarding.html">Full Narrative</a>
+        </div>
+      </div>
+      <div class="masthead-badge">Audio Evidence &middot; latam_STG_2</div>
+      <h1>latam_STG_2</h1>
+      <p class="masthead-sub">Document Delivery — Supervisora Antonela delivers the irregular &quot;carta de desembarque&quot;</p>
+    </div>
+  </header>
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat-item">
+        <div class="stat-val">latam_STG_2.m4a</div>
+        <div class="stat-label">Audio File</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">2m 5.525s</div>
+        <div class="stat-label">Duration</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">July 05, 2024 &middot; 22:59:11</div>
+        <div class="stat-label">Date</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">1023.13 KB</div>
+        <div class="stat-label">File Size</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">Arturo Merino Benítez International Airport (SCL), Santiago, Chile</div>
+        <div class="stat-label">Location</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">es</div>
+        <div class="stat-label">Language</div>
+      </div>
+    </div>
+  </div>
+    <div class="main">
+      <div class="section-head">
+        <h2>Full Transcript</h2>
+        <p>Speaker-attributed segments in chronological order. Select <strong>+ add note</strong> on any segment to record an annotation against this audio.</p>
+      </div>
+      <div class="transcript-list">
+        <div class="transcript-segment seg-other" id="seg-0">
+          <div class="seg-datetime">5th July 2024 @ 10:59pm</div>
+          <div class="seg-time">8.85s &rarr; 11.32s</div>
+          <div class="seg-speaker">airline_supervisor</div>
+          <p class="seg-text">"Ta listo su carta don Leandro."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="0" data-start="8.845" data-end="11.325">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="0" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('8.85s&ndash;11.32s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-1">
+          <div class="seg-datetime">5th July 2024 @ 10:59pm</div>
+          <div class="seg-time">11.46s &rarr; 12.32s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Hay mi carta?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="1" data-start="11.465" data-end="12.325">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="1" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('11.46s&ndash;12.32s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-2">
+          <div class="seg-datetime">5th July 2024 @ 10:59pm</div>
+          <div class="seg-time">12.32s &rarr; 12.66s</div>
+          <div class="seg-speaker">airline_supervisor</div>
+          <p class="seg-text">"Sí,"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="2" data-start="12.325" data-end="12.665">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="2" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('12.32s&ndash;12.66s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-3">
+          <div class="seg-datetime">5th July 2024 @ 10:59pm</div>
+          <div class="seg-time">12.77s &rarr; 13.51s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Déjame leer."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="3" data-start="12.765" data-end="13.505">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="3" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('12.77s&ndash;13.51s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-4">
+          <div class="seg-datetime">5th July 2024 @ 10:59pm</div>
+          <div class="seg-time">16.93s &rarr; 21.84s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"LATAM declara que el día del vuelo operado hasta allá"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="4" data-start="16.925" data-end="21.845">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="4" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('16.93s&ndash;21.84s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-5">
+          <div class="seg-datetime">5th July 2024 @ 10:59pm</div>
+          <div class="seg-time">22.48s &rarr; 28.25s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"ocurrió un desvío a lo planificado. El motivo del desvío fue denegación de embarque."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="5" data-start="22.485" data-end="28.245">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="5" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('22.48s&ndash;28.25s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-6">
+          <div class="seg-datetime">5th July 2024 @ 10:59pm</div>
+          <div class="seg-time">29.84s &rarr; 34.55s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Se le niega embarque por la seguinte razon. Agresion al personal de LATAM."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="6" data-start="29.845" data-end="34.545">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="6" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('29.84s&ndash;34.55s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-7">
+          <div class="seg-datetime">5th July 2024 @ 10:59pm</div>
+          <div class="seg-time">34.88s &rarr; 38.70s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ingresa a la aeronave sin autorización. No respeta las instruciones."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="7" data-start="34.885" data-end="38.705">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="7" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('34.88s&ndash;38.70s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-8">
+          <div class="seg-datetime">5th July 2024 @ 10:59pm</div>
+          <div class="seg-time">39.16s &rarr; 42.38s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Tu sabes que eso fue comprobado por la PDI que eso no pasó?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="8" data-start="39.165" data-end="42.385">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="8" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('39.16s&ndash;42.38s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-9">
+          <div class="seg-datetime">5th July 2024 @ 10:59pm</div>
+          <div class="seg-time">43.27s &rarr; 44.56s</div>
+          <div class="seg-speaker">airline_supervisor</div>
+          <p class="seg-text">"esa es la carta que usted pedio."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="9" data-start="43.265" data-end="44.565">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="9" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('43.27s&ndash;44.56s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-10">
+          <div class="seg-datetime">5th July 2024 @ 10:59pm</div>
+          <div class="seg-time">45.09s &rarr; 46.27s</div>
+          <div class="seg-speaker">airline_supervisor</div>
+          <p class="seg-text">"Y por lo cual se le...(att she can&#x27;t finish the sentence)"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="10" data-start="45.085" data-end="46.265">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="10" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('45.09s&ndash;46.27s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-11">
+          <div class="seg-datetime">5th July 2024 @ 10:59pm</div>
+          <div class="seg-time">46.27s &rarr; 48.59s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"La carta yo pedí lo que pasó."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="11" data-start="46.265" data-end="48.585">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="11" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('46.27s&ndash;48.59s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-12">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">49.09s &rarr; 52.30s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Esas son las acusaciones que fueron desprovadas."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="12" data-start="49.085" data-end="52.305">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="12" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('49.09s&ndash;52.30s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-13">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">52.30s &rarr; 58.70s</div>
+          <div class="seg-speaker">airline_supervisor</div>
+          <p class="seg-text">"Señor, esa es la información que nosotros tenemos De lo sucedido, no podemos cambiar La información que tenemos..."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="13" data-start="52.305" data-end="58.705">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="13" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('52.30s&ndash;58.70s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-14">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">57.10s &rarr; 57.95s</div>
+          <div class="seg-speaker">airline_supervisor</div>
+          <p class="seg-text">""</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="14" data-start="57.105" data-end="57.945">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="14" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('57.10s&ndash;57.95s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-15">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">57.95s &rarr; 59.97s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Perfecto. ¿Tiene pruebas para eso?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="15" data-start="57.945" data-end="59.965">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="15" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('57.95s&ndash;59.97s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-16">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">59.97s &rarr; 61.15s</div>
+          <div class="seg-speaker">airline_supervisor</div>
+          <p class="seg-text">"Señor, esa es la información,"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="16" data-start="59.965" data-end="61.145">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="16" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('59.97s&ndash;61.15s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-17">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">61.15s &rarr; 63.06s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Yo estoy preguntando si tiene pruebas para eso."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="17" data-start="61.145" data-end="63.065">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="17" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('61.15s&ndash;63.06s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-18">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">63.06s &rarr; 64.56s</div>
+          <div class="seg-speaker">airline_supervisor</div>
+          <p class="seg-text">"no me grite porque yo no lo estoy"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="18" data-start="63.065" data-end="64.565">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="18" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('63.06s&ndash;64.56s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-19">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">64.56s &rarr; 65.50s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"No estoy de gritar."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="19" data-start="64.565" data-end="65.5">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="19" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('64.56s&ndash;65.50s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-20">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">65.31s &rarr; 66.50s</div>
+          <div class="seg-speaker">airline_supervisor</div>
+          <p class="seg-text">"Ta subiendo la voz..."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="20" data-start="65.305" data-end="66.5">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="20" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('65.31s&ndash;66.50s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-21">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">66.58s &rarr; 68.14s</div>
+          <div class="seg-speaker">airline_supervisor</div>
+          <p class="seg-text">"Le voy a pedir que no lo haga"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="21" data-start="66.585" data-end="68.145">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="21" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('66.58s&ndash;68.14s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-22">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">68.81s &rarr; 74.56s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Pero yo estoy preguntando si la agresion"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="22" data-start="68.805" data-end="74.565">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="22" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('68.81s&ndash;74.56s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-23">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">75.64s &rarr; 81.55s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"y la entrada, ingresar a la aeronave sin autorización si tiene alguna prueba para eso."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="23" data-start="75.645" data-end="81.545">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="23" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('75.64s&ndash;81.55s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-24">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">81.55s &rarr; 84.86s</div>
+          <div class="seg-speaker">airline_supervisor</div>
+          <p class="seg-text">"Eso lo tiene que ver después con el área legal Cuando lo contactan"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="24" data-start="81.545" data-end="84.865">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="24" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('81.55s&ndash;84.86s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-25">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">85.22s &rarr; 87.47s</div>
+          <div class="seg-speaker">airline_supervisor</div>
+          <p class="seg-text">"Eso no lo vemos nosotros, no lo vemos el área legal"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="25" data-start="85.225" data-end="87.465">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="25" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('85.22s&ndash;87.47s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-26">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">87.47s &rarr; 90.34s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Ah, entonces ¿quién llegó a esa conclusión entonces?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="26" data-start="87.465" data-end="90.345">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="26" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('87.47s&ndash;90.34s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-27">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">90.47s &rarr; 95.00s</div>
+          <div class="seg-speaker">airline_supervisor</div>
+          <p class="seg-text">"Eso lo vas a ver la área legal Ellos tienen en este momento las imágenes las cameras de agresion."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="27" data-start="90.465" data-end="95.0">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="27" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('90.47s&ndash;95.00s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-28">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">96.28s &rarr; 99.12s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Bacana. Y yo como pasajero?"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="28" data-start="96.285" data-end="99.125">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="28" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('96.28s&ndash;99.12s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-29">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">99.39s &rarr; 102.25s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"como cliente, me quedo botado"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="29" data-start="99.385" data-end="102.245">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="29" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('99.39s&ndash;102.25s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-30">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">102.62s &rarr; 105.72s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"sin mi pasaje. Prohibido de volar con la LATAM."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="30" data-start="102.625" data-end="105.725">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="30" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('102.62s&ndash;105.72s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-other" id="seg-31">
+          <div class="seg-datetime">5th July 2024 @ 11:00pm</div>
+          <div class="seg-time">106.00s &rarr; 110.84s</div>
+          <div class="seg-speaker">airline_supervisor</div>
+          <p class="seg-text">"Señor, con la informaciones que nosotros tenemos No le podemos dar otra opción"</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="31" data-start="106.0" data-end="110.845">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="31" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('106.00s&ndash;110.84s')">+ add note</button>
+          </div>
+        </div>
+        <div class="transcript-segment seg-passenger" id="seg-32">
+          <div class="seg-datetime">5th July 2024 @ 11:01pm</div>
+          <div class="seg-time">111.00s &rarr; 114.75s</div>
+          <div class="seg-speaker">passenger</div>
+          <p class="seg-text">"Muchas gracias. Buenas noches."</p>
+          <div class="seg-actions">
+            <button type="button" class="seg-play-btn" data-seg-index="32" data-start="111.0" data-end="114.745">▶ Play</button>
+            <button type="button" class="seg-mark-btn" data-seg-index="32" aria-pressed="false">Mark</button>
+            <button type="button" class="seg-note-btn" onclick="window._noteAt('111.00s&ndash;114.75s')">+ add note</button>
+          </div>
+        </div>
+      </div>
+      <div class="section-head">
+        <h2>Related Violations</h2>
+        <p>Structured legal records linked to this audio. Each record identifies the violation, engaged provisions, and evidentiary anchor. <strong>Primary Evidence</strong> denotes an on-tape admission or directly observed fact; <strong>Legal Analysis</strong> denotes an inference drawn from the record and cross-referenced material.</p>
+      </div>
+      <div class="evidence-grid" id="relatedViolations">
+
+        <div class="evidence-card" style="border-left-color: var(--status-flag);">
+          <div class="ev-time-col">
+            <div class="ev-time">Entire recording</div>
+            <div class="ev-duration"></div>
+          </div>
+          <div class="ev-body">
+            <h3>False Accusation of Aggression (Calumnia) by LATAM [[SPK-stewardess-accuser]]</h3>
+            <p class="ev-summary">It is alleged that a LATAM [[SPK-stewardess-accuser]] on flight LA8159 falsely accused the passenger of aggression against airline personnel, triggering a chain of events including forcible removal by PDI, denial of boarding, and the subsequent imposition of a lifetime ban. The accusation of…</p>
+            <div class="ev-provisions">Codigo Penal de Chile, Art. 412 — Calumnia; Codigo Civil de Chile, Art. 2314 — Responsabilidad Extracontractual; Codigo Penal de Chile, Art. 211 — Denuncia Calumniosa; Codigo Aeronautico de Chile, Art. 133 — Denegacion de Embarque</div>
+          </div>
+          <div class="ev-meta-col">
+            <span class="ev-type type-primary">Primary Evidence</span>
+            <button type="button" class="ev-open" onclick="window.openViolation('CL-001')">View full record &rarr;</button>
+          </div>
+        </div>
+
+        <div class="evidence-card" style="border-left-color: var(--status-analysis);">
+          <div class="ev-time-col">
+            <div class="ev-time">Entire recording</div>
+            <div class="ev-duration"></div>
+          </div>
+          <div class="ev-body">
+            <h3>Rights Violation — Systematic Denial of Fundamental Passenger Rights</h3>
+            <p class="ev-summary">The LA8159 incident involved systematic denial of the passenger&#x27;s fundamental rights across multiple dimensions: (1) violation of inherent dignity and equality (CONST Art. 1), (2) violation of physical and mental integrity (CONST Art. 19 N°1), (3) denial of access to public information about the…</p>
+            <div class="ev-provisions">Constitución, Art. 1 — Dignidad, libertad e igualdad; Constitución, Art. 19 N°1 — Vida e integridad física y psíquica; Ley 20.285, Art. 3 — Transparencia y acceso a información pública; Ley 19.496, Art. 3(b) — Derecho a información veraz y oportuna; Ley 19.496, Art. 23 — Infracciones del proveedor</div>
+          </div>
+          <div class="ev-meta-col">
+            <span class="ev-type type-procedural">Procedural Finding</span>
+            <button type="button" class="ev-open" onclick="window.openViolation('CL-010')">View full record &rarr;</button>
+          </div>
+        </div>
+
+        <div class="evidence-card" style="border-left-color: var(--status-analysis);">
+          <div class="ev-time-col">
+            <div class="ev-time">Entire recording</div>
+            <div class="ev-duration"></div>
+          </div>
+          <div class="ev-body">
+            <h3>: &quot;Invalid Document — Unsigned &#x27;Carta de Desembarque&#x27; with Disproven Allegations&quot;</h3>
+            <p class="ev-summary">It is alleged that LATAM staff, under the direction of Supervisor [[SPK-diego-latam-supervisor]] and Supervisora [[SPK-antonela-latam-agent]], manufactured and delivered a false, unsigned, and unstamped &#x27;carta de desembarque&#x27; (disembarkation letter) containing three allegations of passenger…</p>
+            <div class="ev-provisions">Codigo Aeronautico de Chile, Art. 133 — Denegacion de Embarque por Sobreventa</div>
+          </div>
+          <div class="ev-meta-col">
+            <span class="ev-type type-procedural">Procedural Finding</span>
+            <button type="button" class="ev-open" onclick="window.openViolation('CL-016')">View full record &rarr;</button>
+          </div>
+        </div>
+
+        <div class="evidence-card" style="border-left-color: var(--status-analysis);">
+          <div class="ev-time-col">
+            <div class="ev-time">Entire recording</div>
+            <div class="ev-duration"></div>
+          </div>
+          <div class="ev-body">
+            <h3>Failure to Provide LPDC Art. 23 bis Mandatory Written Notice — All Subsections (a)–(e) Breached</h3>
+            <p class="ev-summary">LPDC Art. 23 bis requires that on denial of boarding the carrier deliver, AT THE MOMENT of denial and BEFORE any compensation, a written notice specifying (a) passenger rights, (b) indemnizations/compensations, (c) complaint mechanisms, (d) applicable fines, (e) using the uniform format. Here: the…</p>
+            <div class="ev-provisions">Ley 19.496, Art. 23 bis — Notificacion Escrita por Denegacion de Embarque</div>
+          </div>
+          <div class="ev-meta-col">
+            <span class="ev-type type-procedural">Procedural Finding</span>
+            <button type="button" class="ev-open" onclick="window.openViolation('CL-038')">View full record &rarr;</button>
+          </div>
+        </div>
+
+        <div class="evidence-card" style="border-left-color: var(--status-analysis);">
+          <div class="ev-time-col">
+            <div class="ev-time">Entire recording</div>
+            <div class="ev-duration"></div>
+          </div>
+          <div class="ev-body">
+            <h3>Failure to Offer CACH Art. 133(2) Compensation (10–20 UF) for Denied Boarding on SCL→BSB</h3>
+            <p class="ev-summary">CACH Art. 133(2) sets a minimum monetary compensation for denied boarding scaled by route distance. SCL (Santiago) → BSB (Brasilia) is approximately 2,950 km, placing it in the 15 UF tier (1,000–8,000 km bracket). LATAM never offered any compensation. STG-29 SEG 122–123 records SPEAKER_02 offering…</p>
+            <div class="ev-provisions">Codigo Aeronautico de Chile, Art. 133(2) — Compensacion Monetaria</div>
+          </div>
+          <div class="ev-meta-col">
+            <span class="ev-type type-procedural">Procedural Finding</span>
+            <button type="button" class="ev-open" onclick="window.openViolation('CL-039')">View full record &rarr;</button>
+          </div>
+        </div>
+      </div>
+      <div class="section-head">
+        <h2>Annotations &amp; Comments</h2>
+        <p>Key forensic annotations for this audio recording are documented below. These notes identify the legally significant moments captured in this evidence.</p>
+      </div>
+      <div class="notes-panel" id="notesPanel">
+        <div class="notes-head">
+          <span class="notes-label">Forensic Notes</span>
+          <span class="notes-count">4 annotations</span>
+        </div>
+        <div class="notes-list">
+
+          <div class="note-card">
+            <div class="note-meta">
+              <span class="note-type">Key Point</span>
+              <span class="note-author"></span>
+              <span class="note-seg"></span>
+            </div>
+            <div class="note-body">Supervisora Antonela delivers the &#x27;carta de desembarque&#x27; containing three written allegations, all disproven hours earlier by PDI CCTV review (STG‑7).</div>
+          </div>
+
+          <div class="note-card">
+            <div class="note-meta">
+              <span class="note-type">Key Point</span>
+              <span class="note-author"></span>
+              <span class="note-seg"></span>
+            </div>
+            <div class="note-body">Antonela refuses to acknowledge the PDI finding and claims &#x27;no podemos cambiar la información que tenemos&#x27; – directly contradicting Diego’s instruction to &#x27;ajustar&#x27; the letter (STG‑29).</div>
+          </div>
+
+          <div class="note-card">
+            <div class="note-meta">
+              <span class="note-type">Key Point</span>
+              <span class="note-author"></span>
+              <span class="note-seg"></span>
+            </div>
+            <div class="note-body">The document’s allegation of &#x27;agresiona al personal de la latam&#x27; constitutes a false imputation of a crime (calumnia) after PDI confirmed no aggression occurred.</div>
+          </div>
+
+          <div class="note-card">
+            <div class="note-meta">
+              <span class="note-type">Key Point</span>
+              <span class="note-author"></span>
+              <span class="note-seg"></span>
+            </div>
+            <div class="note-body">Delivery of the falsified document completes the fabrication pipeline orchestrated by Diego in STG‑29, establishing the full evidentiary chain for CPCL Art. 197.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <footer class="page-footer">
+    <div class="main">
+      <p>Disconzi v. LATAM Airlines &mdash; Audio Evidence Archive</p>
+      <p class="mono">latam_STG_2.m4a &middot; 2m 5.525s &middot; July 05, 2024 &middot; 22:59:11</p>
+      <p style="margin-top:8px;">This page constitutes direct audio evidence for pending legal proceedings.</p>
+    </div>
+  </footer>
+  </div>
+  <!-- VIOLATION MODAL -->
+  <div class="modal-overlay" id="violationModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-header-body">
+          <div class="modal-type-badge" id="modalBadge"></div>
+          <div class="modal-title" id="modalTitle"></div>
+          <div class="modal-audio-ref" id="modalAudioRef">Evidence: latam_STG_2</div>
+        </div>
+        <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer">
+        <span class="modal-footer-note" id="modalFooterNote"></span>
+        <button class="modal-download-btn" onclick="downloadViolationJSON()">Download JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var modalData = {
+        'CL-001': {
+            badge: 'False Accusation',
+            badgeClass: 'type-primary',
+            title: 'False Accusation of Aggression (Calumnia) by LATAM [[SPK-stewardess-accuser]]',
+            body: '<div class="modal-section"><div class="modal-section-label">Reasoning<\/div><div class="modal-reasoning">It is alleged that a LATAM [[SPK-stewardess-accuser]] on flight LA8159 falsely accused the passenger of aggression against airline personnel, triggering a chain of events including forcible removal by PDI, denial of boarding, and the subsequent imposition of a lifetime ban. The accusation of aggression was subsequently disproven by PDI CCTV review (STG-7), where a DGAC official confirmed the passenger was right and the allegations would be investigated. Despite this, the false accusation was repeated in the fabricated &#x27;carta de desembarque&#x27; delivered 9+ hours later and in LATAM&#x27;s customer service communications. The false accusation constitutes calumnia under CP Art. 412, with criminal-reporting dimension under CP Art. 211 (denuncia calumniosa ante autoridad), and independently triggers civil liability under CC Art. 2314 (responsabilidad extracontractual). CACH Art. 133 serves as supporting/analogical framework: a removal predicated on false accusation cannot constitute lawful denied boarding.<\/div><\/div><div class="modal-section"><div class="modal-section-label">Engaged Provisions<\/div><div class="modal-jurisdictions"><div class="jurisdiction-pill"><div class="jurisdiction-name">Chile<\/div><div class="jurisdiction-laws"><span class="jurisdiction-article">Codigo Penal de Chile, Art. 412 — Calumnia; Codigo Civil de Chile, Art. 2314 — Responsabilidad Extracontractual; Codigo Penal de Chile, Art. 211 — Denuncia Calumniosa; Codigo Aeronautico de Chile, Art. 133 — Denegacion de Embarque<\/span><\/div><\/div><\/div><\/div><div class="modal-section"><div class="modal-section-label">Cross-References<\/div><div class="modal-xrefs"><span class="xref-tag">CL-005<\/span> <span class="xref-tag">CL-006<\/span> <span class="xref-tag">CL-007<\/span> <span class="xref-tag">CL-011<\/span> <span class="xref-tag">CL-016<\/span> <span class="xref-tag">CL-017<\/span><\/div><\/div>',
+            footer: 'It is alleged that a LATAM [[SPK-stewardess-accuser]] on flight LA8159 falsely…'
+          },
+        'CL-010': {
+            badge: 'Systematic Rights De',
+            badgeClass: 'type-procedural',
+            title: 'Rights Violation — Systematic Denial of Fundamental Passenger Rights',
+            body: '<div class="modal-section"><div class="modal-section-label">Reasoning<\/div><div class="modal-reasoning">The LA8159 incident involved systematic denial of the passenger&#x27;s fundamental rights across multiple dimensions: (1) violation of inherent dignity and equality (CONST Art. 1), (2) violation of physical and mental integrity (CONST Art. 19 N°1), (3) denial of access to public information about the removal decision (Ley 20.285 Art. 3), (4) denial of truthful consumer information (LPDC Art. 3.b), and (5) negligent service provision causing consumer harm (LPDC Art. 23). These violations were not isolated — they reflect an institutional pattern of rights negation.<\/div><\/div><div class="modal-section"><div class="modal-section-label">Engaged Provisions<\/div><div class="modal-jurisdictions"><div class="jurisdiction-pill"><div class="jurisdiction-name">Chile<\/div><div class="jurisdiction-laws"><span class="jurisdiction-article">Constitución, Art. 1 — Dignidad, libertad e igualdad; Constitución, Art. 19 N°1 — Vida e integridad física y psíquica; Ley 20.285, Art. 3 — Transparencia y acceso a información pública; Ley 19.496, Art. 3(b) — Derecho a información veraz y oportuna; Ley 19.496, Art. 23 — Infracciones del proveedor<\/span><\/div><\/div><\/div><\/div><div class="modal-section"><div class="modal-section-label">Cross-References<\/div><div class="modal-xrefs"><span class="xref-tag">CL-008<\/span> <span class="xref-tag">CL-001<\/span> <span class="xref-tag">CL-002<\/span> <span class="xref-tag">CL-003<\/span> <span class="xref-tag">CL-004<\/span> <span class="xref-tag">CL-005<\/span> <span class="xref-tag">CL-006<\/span> <span class="xref-tag">CL-007<\/span> <span class="xref-tag">CL-009<\/span> <span class="xref-tag">CL-016<\/span><\/div><\/div>',
+            footer: 'The LA8159 incident involved systematic denial of the passenger&#x27;s fundamental…'
+          },
+        'CL-016': {
+            badge: 'Document Fabrication',
+            badgeClass: 'type-procedural',
+            title: ': &quot;Invalid Document — Unsigned &#x27;Carta de Desembarque&#x27; with Disproven Allegations&quot;',
+            body: '<div class="modal-section"><div class="modal-section-label">Reasoning<\/div><div class="modal-reasoning">It is alleged that LATAM staff, under the direction of Supervisor [[SPK-diego-latam-supervisor]] and Supervisora [[SPK-antonela-latam-agent]], manufactured and delivered a false, unsigned, and unstamped &#x27;carta de desembarque&#x27; (disembarkation letter) containing three allegations of passenger misconduct — aggression against LATAM personnel, unauthorized entry into the aircraft, and failure to follow instructions — all of which had been disproven by PDI CCTV review hours earlier. The document was fabricated using a &#x27;certificado de contingencia&#x27; template designed for flight cancellations, routed through the Sales department (Ventas) for off-book printing, and delivered 9+ hours after the passenger&#x27;s removal without signature, stamp, or identifiable author. [[SPK-diego-latam-supervisor]] was recorded instructing that the letter be &#x27;adjusted&#x27; (&#x27;ajustar&#x27;) to his specifications, and explicitly admitted that nobody who wrote the document was present at the event (&#x27;nadie estuvo en el hecho&#x27;). The delivered document fails to meet any of the mandatory requirements of CACH Art. 133 or LPDC Art. 23 bis for denied boarding documentation.<\/div><\/div><div class="modal-section"><div class="modal-section-label">Engaged Provisions<\/div><div class="modal-jurisdictions"><div class="jurisdiction-pill"><div class="jurisdiction-name">Chile<\/div><div class="jurisdiction-laws"><span class="jurisdiction-article">Codigo Aeronautico de Chile, Art. 133 — Denegacion de Embarque por Sobreventa<\/span><\/div><\/div><\/div><\/div><div class="modal-section"><div class="modal-section-label">Cross-References<\/div><div class="modal-xrefs"><span class="xref-tag">CL-017<\/span> <span class="xref-tag">CL-011<\/span> <span class="xref-tag">CL-005<\/span> <span class="xref-tag">CL-007<\/span> <span class="xref-tag">CL-001<\/span> <span class="xref-tag">CL-005__deepseek<\/span> <span class="xref-tag">CL-016__opus47<\/span> <span class="xref-tag">CL-016__opus47version2<\/span> <span class="xref-tag">CL-016__opus46<\/span> <span class="xref-tag">CL-016__sonnet4<\/span><\/div><\/div>',
+            footer: 'It is alleged that LATAM staff, under the direction of Supervisor…'
+          },
+        'CL-038': {
+            badge: 'Statutory Notice',
+            badgeClass: 'type-procedural',
+            title: 'Failure to Provide LPDC Art. 23 bis Mandatory Written Notice — All Subsections (a)–(e) Breached',
+            body: '<div class="modal-section"><div class="modal-section-label">Reasoning<\/div><div class="modal-reasoning">LPDC Art. 23 bis requires that on denial of boarding the carrier deliver, AT THE MOMENT of denial and BEFORE any compensation, a written notice specifying (a) passenger rights, (b) indemnizations/compensations, (c) complaint mechanisms, (d) applicable fines, (e) using the uniform format. Here: the removal occurred at ~13:30; no notice was delivered; the fabricated document arrived 9+ hours later (json_latam_STG_2 22:59); it contains (i) false allegations rather than &#x27;razones objetivas&#x27;, (ii) no compensation table, (iii) no complaint mechanism, (iv) no fine schedule, and (v) uses a &#x27;certificado de contingencia&#x27; (flight cancellation/delay) template — the wrong format. All five subsections of Art. 23 bis are independently breached.<\/div><\/div><div class="modal-section"><div class="modal-section-label">Engaged Provisions<\/div><div class="modal-jurisdictions"><div class="jurisdiction-pill"><div class="jurisdiction-name">Chile<\/div><div class="jurisdiction-laws"><span class="jurisdiction-article">Ley 19.496, Art. 23 bis — Notificacion Escrita por Denegacion de Embarque<\/span><\/div><\/div><\/div><\/div><div class="modal-section"><div class="modal-section-label">Cross-References<\/div><div class="modal-xrefs"><span class="xref-tag">CL-037<\/span> <span class="xref-tag">CL-036<\/span> <span class="xref-tag">CL-035<\/span> <span class="xref-tag">CL-033<\/span> <span class="xref-tag">CL-034<\/span> <span class="xref-tag">CL-023<\/span> <span class="xref-tag">CL-020<\/span> <span class="xref-tag">CL-019<\/span> <span class="xref-tag">CL-028<\/span> <span class="xref-tag">CL-024<\/span><\/div><\/div>',
+            footer: 'LPDC Art. 23 bis requires that on denial of boarding the carrier deliver, AT…'
+          },
+        'CL-039': {
+            badge: 'Aviation Code',
+            badgeClass: 'type-procedural',
+            title: 'Failure to Offer CACH Art. 133(2) Compensation (10–20 UF) for Denied Boarding on SCL→BSB',
+            body: '<div class="modal-section"><div class="modal-section-label">Reasoning<\/div><div class="modal-reasoning">CACH Art. 133(2) sets a minimum monetary compensation for denied boarding scaled by route distance. SCL (Santiago) → BSB (Brasilia) is approximately 2,950 km, placing it in the 15 UF tier (1,000–8,000 km bracket). LATAM never offered any compensation. STG-29 SEG 122–123 records SPEAKER_02 offering only a re-routing on a different airline &#x27;para que no siga entrando aca&#x27; — framed as an exit incentive, not as the statutory compensation. The passenger&#x27;s refund request (SEG 124) was treated as a discretionary courtesy. None of the statutory options (rebook / refund / return) were offered at the moment of denial as required by CACH Art. 133(1).<\/div><\/div><div class="modal-section"><div class="modal-section-label">Engaged Provisions<\/div><div class="modal-jurisdictions"><div class="jurisdiction-pill"><div class="jurisdiction-name">Chile<\/div><div class="jurisdiction-laws"><span class="jurisdiction-article">Codigo Aeronautico de Chile, Art. 133(2) — Compensacion Monetaria<\/span><\/div><\/div><\/div><\/div><div class="modal-section"><div class="modal-section-label">Cross-References<\/div><div class="modal-xrefs"><span class="xref-tag">CL-019<\/span> <span class="xref-tag">CL-020<\/span> <span class="xref-tag">CL-021<\/span> <span class="xref-tag">CL-022<\/span> <span class="xref-tag">CL-023<\/span> <span class="xref-tag">CL-024<\/span> <span class="xref-tag">CL-025<\/span> <span class="xref-tag">CL-026<\/span> <span class="xref-tag">CL-027<\/span> <span class="xref-tag">CL-028<\/span><\/div><\/div>',
+            footer: 'CACH Art. 133(2) sets a minimum monetary compensation for denied boarding…'
+          }
+      };
+
+      var activeVid = null;
+
+      window.openModal = function (vid) {
+        var d = modalData[vid];
+        if (!d) return;
+        activeVid = vid;
+        var modal = document.getElementById('violationModal');
+        var badge = document.getElementById('modalBadge');
+        var title = document.getElementById('modalTitle');
+        var body = document.getElementById('modalBody');
+        var note = document.getElementById('modalFooterNote');
+        var audioRef = document.getElementById('modalAudioRef');
+
+        badge.textContent = d.badge;
+        badge.className = 'modal-type-badge ' + d.badgeClass;
+        title.textContent = d.title;
+        body.innerHTML = d.body;
+        note.textContent = d.footer;
+        if (audioRef) {
+          audioRef.textContent = 'Evidence: latam_STG_2';
+        }
+
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      };
+
+      window.closeModal = function () {
+        var modal = document.getElementById('violationModal');
+        if (modal) modal.classList.remove('open');
+        document.body.style.overflow = '';
+        activeVid = null;
+      };
+
+      window.downloadViolationJSON = function () {
+        if (!activeVid) return;
+        var blob = new Blob([JSON.stringify(modalData[activeVid] || {}, null, 2)], { type: 'application/json' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = activeVid + '.json';
+        a.click();
+      };
+
+      document.getElementById('violationModal').addEventListener('click', function (e) {
+        if (e.target === this) {
+          window.closeModal();
+        }
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') window.closeModal();
+      });
+    })();
+  </script>
+  <script src="/case_files/02-transcripts/transcripts_rendered/audio_player.js"></script>
+  <div class="pinned-nav"><a class="pinned-nav-link" href="../index.html">&larr; Case Index</a><span class="pinned-nav-label">Disconzi v. LATAM Airlines</span></div>
+</body>
+
+</html>
