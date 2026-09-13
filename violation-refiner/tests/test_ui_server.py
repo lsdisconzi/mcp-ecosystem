@@ -27,6 +27,7 @@ pytest.importorskip("httpx", reason="needs httpx for the Starlette TestClient")
 
 from starlette.testclient import TestClient  # noqa: E402
 
+from violation_pack.config import Settings  # noqa: E402
 from violation_pack.mcp_server import build_server  # noqa: E402
 from violation_pack.ui_server import (  # noqa: E402
     UI_FILENAME,
@@ -417,10 +418,20 @@ def test_get_api_schema_and_settings(client):
     assert res.status_code == 200
     body = res.json()
     assert body["ok"] is True
-    # Defaults come from config.Settings, so they match what tools actually see.
-    assert body["settings"]["qdrant_collection_prefix"] == "violationrefiner_v1"
-    assert body["settings"]["neo4j_database"] == "agent.violation.refiner"
-    assert body["settings"]["authority_verification_floor"] == 0.85
+    # The endpoint must report the SAME resolved values the tools use, so
+    # compare against Settings rather than literals: these keys are all
+    # env-overridable, so a literal pins whatever this machine's .env happens
+    # to hold (the Aura deployment renames neo4j_database to the instance id).
+    settings = Settings.from_env()
+    assert body["settings"]["qdrant_collection_prefix"] == settings.qdrant_collection_prefix
+    assert body["settings"]["neo4j_database"] == settings.neo4j_database
+    assert (
+        body["settings"]["authority_verification_floor"]
+        == settings.authority_verification_floor
+    )
+    # ...but a bare echo is worthless, so pin the code defaults that hold when
+    # nothing overrides them.
+    assert settings.qdrant_collection_prefix == "violationrefiner_v1"
     # Secrets never round-trip; only their configured-ness does.
     assert set(body["secrets"]) == {"qdrant_api_key", "neo4j_password", "llm_api_key"}
     assert all(isinstance(v, bool) for v in body["secrets"].values())

@@ -1,13 +1,14 @@
-"""Batch refiner CLI for CL violation folders.
+"""Batch refiner CLI for violation bundles.
 
 Loads each violation bundle (legacy or canonical schema), anchors segments
 against the real transcript HTML, verifies article excerpts against the real
 framework cache, re-derives confidence, runs V01-V11 validation, and writes
-normalized outputs in place.
+normalized outputs in place. Any jurisdiction (CL/BR/INT/...) is accepted:
+bundles are discovered structurally, not by filename prefix.
 
 Usage:
-    python3 examples/refine_batch.py --input /path/to/CL
-    python3 examples/refine_batch.py --input /path/to/CL --only CL-005
+    python3 examples/refine_batch.py --input /path/to/build
+    python3 examples/refine_batch.py --input /path/to/build --only CL-005
 """
 from __future__ import annotations
 
@@ -20,11 +21,11 @@ from violation_pack.refine_batch_core import run
 
 
 def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Batch-refine CL violation folders")
-    p.add_argument("--input", required=True, type=Path, help="Path containing CL-* folders")
+    p = argparse.ArgumentParser(description="Batch-refine violation bundles (all jurisdictions)")
+    p.add_argument("--input", required=True, type=Path, help="Path containing violation bundle folders")
     p.add_argument(
         "--include-extra", action="store_true",
-        help="Also include non-numeric CL-* folders (e.g. CL-F7DD941E)",
+        help="Also include non-numeric bundle folders (e.g. CL-f7dd941e)",
     )
     p.add_argument(
         "--only", nargs="*", default=[], help="Process only the named folders (e.g. CL-005 CL-007)",

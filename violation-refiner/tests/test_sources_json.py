@@ -265,7 +265,10 @@ def test_discovery_returns_the_whole_canonical_corpus() -> None:
     assert {s.path.stem for s in sources.values()} == on_disk
     # Magnitude check — a deliberate snapshot, bumped when the corpus grows.
     assert sum(s.segment_count() for s in sources.values()) == 3576
-    assert sum(len(s.reviewed_segments()) for s in sources.values()) == 3163
+    # The reviewed count moves without the segment count when the transcription
+    # pipeline republishes the two Guarulhos transcripts (3163 -> 3532 on
+    # 2026-09-13), so it detects review-flag drift rather than growth.
+    assert sum(len(s.reviewed_segments()) for s in sources.values()) == 3532
     assert all(s.is_canonical for s in sources.values())
     assert all(s.source_id() == s.transcript_id for s in sources.values())
 

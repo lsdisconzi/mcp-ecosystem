@@ -59,9 +59,11 @@ from __future__ import annotations
 
 import argparse
 import difflib
+import hashlib
 import json
 import os
 import re
+import statistics
 import sys
 import unicodedata
 from pathlib import Path
@@ -102,6 +104,15 @@ _AUDIO_ID_RULES: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"^aeropuerto_STG_(\d+)$"), "STG-{0}"),
     (re.compile(r"^latam_STG_(\d+)$"), "LATAM-{0}"),
     (re.compile(r"^carabineros_ppdartnel_(\d+)$"), "CARABINEROS-{0}"),
+    # Guarulhos (BR) incident audio; 1105 vault segments cite ``BDM.seg-N``.
+    # Pinned by evidence, not by name: 19 of the 44 BDM verbatims longer than 12
+    # chars appear verbatim in this document and none appear in
+    # ``Terminal_2_full`` (the lost-phone report, a different recording). Note
+    # the vault's declared offsets (0.37-193.25 s) are relative to the original
+    # clip, not to this "Full Consolidated" recording where the same speech sits
+    # at 878-1071 s, so the offset fallback cannot anchor these segments and
+    # they are recovered by text alone.
+    (re.compile(r"^(GRU_Airport_Full)$"), "BDM"),
 )
 
 #: Enum domains enforced by ``violation_pack.refine_batch_core._normalize``.
@@ -245,6 +256,18 @@ _LEGACY_CODE_ALIASES: dict[tuple[str, str], str | None] = {
     ("CL", "LEY20285"): "L20285",
     # Ley 19.880 (bases del procedimiento administrativo) is NOT in the corpus.
     ("CL", "LEY19880"): None,
+    # BR.CF.Art.N -> Constituição Federal de 1988 (registry ``CONST`` -> BR/CF88.md).
+    # Pinned by evidence, not name similarity: BR-014's own contract resolves
+    # ``CONST`` while its ``CF`` entry fails, i.e. the vault spells one document
+    # two ways.
+    ("BR", "CF"): "CONST",
+    # BR.LEI9784.Art.N -> Lei 9.784 (administrative procedure), registry ``L9784``
+    # -> BR/L9784.md. Same ``LEI<n>`` vs ``L<n>`` spelling gap as the CL entries
+    # above; BR-014 again carries both spellings at once.
+    ("BR", "LEI9784"): "L9784",
+    # INT.BR-CL.Art.N -> the Brazil-Chile Joint Declaration 2024, whose registry
+    # code is ``BRCL`` (the dash is dropped in the ELI). INT-018 is the only citer.
+    ("INT", "BR-CL"): "BRCL",
 }
 
 
@@ -366,6 +389,12 @@ def _nearest_by_offset(segments: list[dict], offset: float | None) -> int | None
     )
 
 
+#: Shortest normalised quote worth scoring. Below this, similarity is dominated
+#: by filler ("ah!", "como?") and the ratio says nothing about which segment is
+#: meant, so such a needle is never allowed to *choose* an anchor.
+_MIN_TEXT_MATCH_LEN = 12
+
+
 def _best_by_text(segments: list[dict], needle: str) -> tuple[int | None, float, float]:
     """Return ``(index, best_ratio, runner_up_ratio)`` for the closest segment.
 
@@ -374,7 +403,7 @@ def _best_by_text(segments: list[dict], needle: str) -> tuple[int | None, float,
     a long quote, which silently anchors a 3-minute utterance to a one-word
     segment.
     """
-    if not needle or len(needle) < 12:
+    if not needle or len(needle) < _MIN_TEXT_MATCH_LEN:
         return None, 0.0, 0.0
     scored = [
         (difflib.SequenceMatcher(None, needle, _norm_text(seg.get("text"))).ratio(), i)
@@ -387,7 +416,105 @@ def _best_by_text(segments: list[dict], needle: str) -> tuple[int | None, float,
     return scored[0][1], scored[0][0], runner_up
 
 
-def reanchor_segment(seg: dict, transcripts: dict[str, dict]) -> dict | None:
+def _best_in_window(
+    segments: list[dict], needle: str, center: int, window: int = 2
+) -> tuple[int, float]:
+    """Return ``(index, ratio)`` for the best match within ``window`` of ``center``.
+
+    Used to correct a calibrated clip offset, which is only good to about a
+    second and so can swap neighbouring segments. Ties resolve toward
+    ``center``: when the transcript repeats a phrase, proximity to the timing
+    prediction keeps the two occurrences apart instead of collapsing both onto
+    whichever copy scores a hair higher.
+    """
+    low = max(0, center - window)
+    high = min(len(segments), center + window + 1)
+    best_index, best_ratio = center, -1.0
+    for i in range(low, high):
+        ratio = difflib.SequenceMatcher(
+            None, needle, _norm_text(segments[i].get("text"))
+        ).ratio()
+        if ratio > best_ratio or (
+            abs(ratio - best_ratio) <= 0.05
+            and abs(i - center) < abs(best_index - center)
+        ):
+            best_index, best_ratio = i, ratio
+    return best_index, best_ratio
+
+
+#: Text similarity at or above which a match is treated as decisive evidence
+#: rather than a hint. Duplicated from the branch below so the calibration pass
+#: and the anchoring pass agree on what counts as proof.
+_TEXT_DECISIVE = 0.90
+
+#: Clip-offset calibration bounds. A clip cut from a longer recording produces a
+#: constant offset between its own timings and the consolidated transcript, and
+#: these keep the inference from engaging on noise: enough samples to be robust,
+#: a magnitude that is unmistakably not "already aligned", and a cluster tight
+#: enough that a bimodal spread (the signature of a wrong transcript) fails.
+_DELTA_MIN_SAMPLES = 3
+_DELTA_MIN_MAGNITUDE = 30.0
+_DELTA_TOLERANCE = 3.0
+_DELTA_MIN_AGREEMENT = 0.6
+
+
+def estimate_clip_offset_delta(
+    violation: dict, transcripts: dict[str, dict]
+) -> dict[str, float]:
+    """Infer a per-source constant offset between a vault clip and its audio.
+
+    Some vault clips are excerpts of a longer session, so ``audio_offset_start``
+    is relative to the clip while the canonical transcript runs over the whole
+    recording. ``BDM`` is the worked example: its 65 segments declare 0.37-193
+    s, but the speech they quote sits 878 s into ``GRU_Airport_Full``. Raw
+    offset lookup therefore resolves to unrelated audio, and every segment too
+    short to clear the text gate gets dropped.
+
+    Decisive text matches recover the delta without needing the offset at all,
+    because ``transcript_start - vault_offset`` is constant across the clip.
+    Returns ``{source_token: delta}`` for tokens that calibrate cleanly, so
+    :func:`reanchor_segment` can shift the offset instead of trusting it.
+    """
+    samples: dict[str, list[float]] = {}
+    for seg in violation.get("full_segments") or []:
+        if not isinstance(seg, dict):
+            continue
+        raw = str(seg.get("segment_id") or "")
+        if "." not in raw:
+            continue
+        entry = transcripts.get(raw.split(".", 1)[0])
+        offset = seg.get("audio_offset_start")
+        if entry is None or not isinstance(offset, (int, float)):
+            continue
+        needle = _norm_text(seg.get("verbatim_es") or seg.get("translation_en"))
+        index, ratio, _ = _best_by_text(entry["doc"]["segments"], needle)
+        if index is None or ratio < _TEXT_DECISIVE:
+            continue
+        start = entry["doc"]["segments"][index].get("start")
+        if isinstance(start, (int, float)):
+            samples.setdefault(raw.split(".", 1)[0], []).append(float(start) - float(offset))
+
+    deltas: dict[str, float] = {}
+    for token, observed in samples.items():
+        if len(observed) < _DELTA_MIN_SAMPLES:
+            continue
+        # Median, not mean: a handful of matches land on a neighbouring segment
+        # and inflate the mean by seconds.
+        median = statistics.median(observed)
+        if abs(median) < _DELTA_MIN_MAGNITUDE:
+            continue
+        agreeing = sum(1 for d in observed if abs(d - median) <= _DELTA_TOLERANCE)
+        if agreeing / len(observed) < _DELTA_MIN_AGREEMENT:
+            continue
+        deltas[token] = median
+    return deltas
+
+
+def reanchor_segment(
+    seg: dict,
+    transcripts: dict[str, dict],
+    deltas: dict[str, float] | None = None,
+) -> dict | None:
     """Resolve a vault segment to the current canonical transcript index.
 
     Neither signal is sufficient alone: the vault index is stale, the timings
@@ -395,6 +522,11 @@ def reanchor_segment(seg: dict, transcripts: dict[str, dict]) -> dict | None:
     Text identity wins when it is decisive; otherwise the audio offset decides,
     and the confidence is reported so a weak anchor is reviewable instead of
     being indistinguishable from a byte-exact one.
+
+    ``deltas`` (see :func:`estimate_clip_offset_delta`) rescues clips whose
+    offsets are relative to the original recording: for those, the raw offset
+    cannot be trusted at all, so the calibrated one replaces it rather than
+    merely corroborating it.
     """
     raw = str(seg.get("segment_id") or "")
     if "." not in raw:
@@ -409,14 +541,30 @@ def reanchor_segment(seg: dict, transcripts: dict[str, dict]) -> dict | None:
     offset = seg.get("audio_offset_start")
     offset = float(offset) if isinstance(offset, (int, float)) else None
     by_time = _nearest_by_offset(segments, offset)
+    delta = (deltas or {}).get(source_token)
+    by_delta = (
+        _nearest_by_offset(segments, offset + delta)
+        if delta is not None and offset is not None
+        else None
+    )
 
     needle = _norm_text(seg.get("verbatim_es") or seg.get("translation_en"))
     by_text, ratio, runner_up = _best_by_text(segments, needle)
 
-    if by_text is not None and ratio >= 0.90:
+    if by_text is not None and ratio >= _TEXT_DECISIVE:
         index, method, confidence = by_text, "text", "high"
     elif by_text is not None and ratio >= 0.65 and (ratio - runner_up) >= 0.10:
         index, method, confidence = by_text, "text-weak", "medium"
+    elif by_delta is not None:
+        index, method, confidence = by_delta, f"clip-delta{delta:+.1f}s", "medium"
+        # A calibrated offset lands within a second or so, which is enough to
+        # pick the wrong neighbour; where the quote is long enough to be
+        # informative, let it pick among the nearby candidates.
+        if len(needle) >= _MIN_TEXT_MATCH_LEN:
+            snapped, snapped_ratio = _best_in_window(segments, needle, by_delta)
+            if snapped != by_delta and snapped_ratio >= 0.40:
+                index = snapped
+                method = f"clip-delta{delta:+.1f}s+text"
     elif by_time is not None:
         index, method, confidence = by_time, "offset", "low"
     elif by_text is not None:
@@ -426,14 +574,18 @@ def reanchor_segment(seg: dict, transcripts: dict[str, dict]) -> dict | None:
 
     # Two independent signals agreeing is the strongest evidence available.
     notes: list[str] = []
-    if by_time is not None and index == by_time:
-        method = f"{method}+offset"
-        confidence = "high" if method.startswith("text") else confidence
-    elif by_time is not None and offset is not None:
-        drift = abs(float(segments[index].get("start") or 0.0) - offset)
-        notes.append(
-            f"offset would pick seg-{by_time} (drift {drift:.2f}s)"
-        )
+    if by_delta is not None:
+        notes.append(f"vault offset read as clip-relative ({delta:+.1f}s)")
+        if index == by_delta and method.startswith("text"):
+            confidence = "high"
+    elif by_time is not None:
+        if index == by_time:
+            method = f"{method}+offset"
+            if method.startswith("text"):
+                confidence = "high"
+        elif offset is not None:
+            drift = abs(float(segments[index].get("start") or 0.0) - offset)
+            notes.append(f"offset would pick seg-{by_time} (drift {drift:.2f}s)")
     if confidence == "low" and needle:
         notes.append("no decisive text match")
 
@@ -717,6 +869,7 @@ def build_segments_manifest(
     violation: dict,
     transcripts: dict[str, dict],
     allow_weak: bool = False,
+    deltas: dict[str, float] | None = None,
 ) -> tuple[dict, list[str]]:
     """Build segments_manifest.json, re-anchoring every segment id.
 
@@ -724,7 +877,14 @@ def build_segments_manifest(
     the audio offset alone) is a warning, not a silent success: the old ids are
     known to be wrong, so an unverifiable anchor can point at the wrong
     utterance and nothing downstream would notice.
+
+    ``deltas`` are the calibrated clip offsets for this violation; pass ``None``
+    (the default) to calibrate them here, or ``{}`` to switch the correction
+    off. Calibrating by default keeps the fix from depending on every caller
+    remembering to ask for it.
     """
+    if deltas is None:
+        deltas = estimate_clip_offset_delta(violation, transcripts)
     warnings: list[str] = []
     segments: list[dict] = []
     seen: set[str] = set()
@@ -748,7 +908,7 @@ def build_segments_manifest(
         ).strip():
             placeholders += 1
             continue
-        anchor = reanchor_segment(raw_segment, transcripts)
+        anchor = reanchor_segment(raw_segment, transcripts, deltas)
         if anchor is None:
             warnings.append(f"{raw_id or '<no segment_id>'}: no canonical transcript matched")
             continue
@@ -801,6 +961,10 @@ def build_segments_manifest(
         "matched_audio_sources": sorted({s["segment_id"].split(".", 1)[0] for s in segments}),
         "total_segments_matched": len(segments),
         "segments": segments,
+        # Non-empty only for clips whose vault timings are relative to a
+        # different cut of the audio. Recorded so a reviewer can see that an
+        # anchor was shifted rather than taken at face value.
+        "clip_offset_deltas": deltas or {},
         # Recorded so a consumer can symlink the right transcript files (and
         # cross-check them) instead of re-deriving the audio_id -> transcript_id
         # bridge that ``build_segments_manifest`` resolves above.
@@ -1470,7 +1634,9 @@ def convert_one(
         json.dumps(contract, indent=2, ensure_ascii=False), encoding="utf-8"
     )
 
-    manifest, manifest_warnings = build_segments_manifest(violation, transcripts, allow_weak)
+    manifest, manifest_warnings = build_segments_manifest(
+        violation, transcripts, allow_weak
+    )
     (bundle_dir / "segments_manifest.json").write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8"
     )
@@ -1498,6 +1664,99 @@ def find_violation_path(violation_id: str, source_root: Path) -> Path | None:
     """Locate ``<violation_id>.json`` directly under ``source_root``."""
     path = source_root / f"{violation_id}.json"
     return path if path.is_file() else None
+
+
+def _vault_confidence_value(path: Path) -> float:
+    """Declared vault confidence, or ``-1.0`` when absent/unreadable."""
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:  # pylint: disable=broad-except
+        return -1.0
+    snapshot = raw.get("confidence")
+    if isinstance(snapshot, dict) and isinstance(snapshot.get("value"), (int, float)):
+        return float(snapshot["value"])
+    return -1.0
+
+
+def _revision_sort_key(path: Path) -> tuple[float, int, str]:
+    """Rank competing revisions of one violation.
+
+    Highest declared vault confidence first, then the plainest filename (so
+    ``BR-030.json`` beats a decorated ``BR-030-updated.json``), then alphabetical
+    so the result never depends on glob order. Equal confidence is the normal
+    case for the byte-identical copies in this vault.
+    """
+    return (-_vault_confidence_value(path), len(path.name), path.name)
+
+
+def _prefer_authoritative_revisions(paths: list[Path]) -> list[Path]:
+    """Reduce vault files to one authoritative revision per ``violation_id``.
+
+    ``convert_one`` keys the bundle directory off the *declared* violation id,
+    so two files declaring the same id write the same ``build/<VID>`` and the
+    survivor depends on glob order. The LA8159 vault really does this: ``BR-001``
+    is declared by ``BR-001.json`` (confidence 0.68), ``BR-030.json`` (0.98) and
+    a byte-identical ``BR-030-updated.json``. Byte-identical copies are dropped
+    by content hash (pure redundancy), then the highest confidence wins, and
+    every discarded file is named so the choice is auditable rather than
+    incidental.
+    """
+    groups: dict[str, list[Path]] = {}
+    order: list[str] = []
+    for path in paths:
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+            vid = str(raw.get("violation_id") or path.stem)
+        except Exception:  # pylint: disable=broad-except
+            vid = path.stem
+        if vid not in groups:
+            groups[vid] = []
+            order.append(vid)
+        groups[vid].append(path)
+
+    kept: list[Path] = []
+    for vid in order:
+        candidates = groups[vid]
+        # Byte-identical copies are pure redundancy; collapse them by content,
+        # keeping the representative the ranking rule would have picked anyway.
+        by_hash: dict[str, list[Path]] = {}
+        hash_order: list[str] = []
+        for path in candidates:
+            try:
+                digest = hashlib.sha256(path.read_bytes()).hexdigest()
+            except OSError:
+                digest = f"unreadable:{path}"
+            if digest not in by_hash:
+                by_hash[digest] = []
+                hash_order.append(digest)
+            by_hash[digest].append(path)
+
+        unique: list[Path] = []
+        for digest in hash_order:
+            siblings = by_hash[digest]
+            best = min(siblings, key=_revision_sort_key)
+            unique.append(best)
+            if len(siblings) > 1:
+                others = ", ".join(p.name for p in siblings if p is not best)
+                print(
+                    f"{others} is byte-identical to {best.name}; skipping",
+                    file=sys.stderr,
+                )
+
+        winner = min(unique, key=_revision_sort_key)
+        kept.append(winner)
+        if len(candidates) > 1:
+            discarded = ", ".join(
+                f"{p.name} (vault confidence {_vault_confidence_value(p)})"
+                for p in candidates
+                if p is not winner
+            )
+            print(
+                f"Duplicate violation_id {vid!r}: keeping {winner.name} "
+                f"(vault confidence {_vault_confidence_value(winner)}); discarded {discarded}",
+                file=sys.stderr,
+            )
+    return kept
 
 
 def _resolve_inputs(args: argparse.Namespace) -> list[Path]:
@@ -1529,7 +1788,7 @@ def _resolve_inputs(args: argparse.Namespace) -> list[Path]:
         if resolved not in seen:
             seen.add(resolved)
             unique.append(path)
-    return unique
+    return _prefer_authoritative_revisions(unique)
 
 
 def main(argv: Iterable[str] | None = None) -> int:

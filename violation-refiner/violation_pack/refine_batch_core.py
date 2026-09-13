@@ -60,8 +60,30 @@ def _read_json(path: Path) -> dict | None:
         return None
 
 
+def _bundle_local_id(name: str) -> str:
+    """The part of a bundle name after the jurisdiction prefix.
+
+    ``CL-001`` -> ``001``, ``BR-030`` -> ``030``, ``INT-001`` -> ``001``.
+    Splitting on the last ``-`` instead of slicing a fixed width keeps
+    two- and three-letter jurisdictions working: ``name[3:]`` turns
+    ``INT-001`` into ``-001`` and silently drops it.
+    """
+    return name.rsplit("-", 1)[-1]
+
+
 def _iter_violation_dirs(root: Path) -> list[Path]:
-    dirs = [p for p in root.iterdir() if p.is_dir() and p.name.startswith("CL-")]
+    """Bundle directories, discovered structurally rather than by prefix.
+
+    A violation bundle is any directory carrying its own ``<dirname>.json``
+    payload. The previous ``startswith("CL-")`` filter mirrored a jurisdiction
+    list that drifts silently: the BR and INT bundles produced by
+    ``vault_to_bundle.py`` were invisible to the validator and skipped with no
+    warning at all.
+    """
+    dirs = [
+        p for p in root.iterdir()
+        if p.is_dir() and _find_violation_json(p) is not None
+    ]
     return sorted(dirs, key=lambda p: p.name)
 
 
@@ -640,7 +662,7 @@ def run(
 
     dirs = _iter_violation_dirs(root)
     if not include_extra:
-        dirs = [d for d in dirs if d.name[3:].isdigit()]
+        dirs = [d for d in dirs if _bundle_local_id(d.name).isdigit()]
     # Collect known_ids from ALL discovered bundles BEFORE --only filtering,
     # so cross-reference enrichment can see sibling violations even when
     # processing a single bundle.
