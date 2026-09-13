@@ -28,7 +28,8 @@ from .models import (
     Violation,
 )
 from .pack import build_manifest, zip_bundle
-from .sources import HtmlTranscriptSource, MarkdownFrameworkSource
+from .sources import HtmlTranscriptSource, MarkdownFrameworkSource, TranscriptSource
+from .sources_json import JsonTranscriptSchemaError, JsonTranscriptSource
 from .validation import run_pipeline
 
 
@@ -106,11 +107,32 @@ def _parse_time_seconds(value: str | float | int | None) -> float:
 # Fixture discovery
 # ---------------------------------------------------------------------------
 
-def _discover_transcripts(bundle_dir: Path) -> dict[str, HtmlTranscriptSource]:
-    transcripts: dict[str, HtmlTranscriptSource] = {}
+def _discover_transcripts(bundle_dir: Path) -> dict[str, TranscriptSource]:
+    """Discover transcript sources in a bundle directory.
+
+    Two forms are supported and may coexist:
+
+    ``*.json``
+        Canonical transcript documents. Keyed by ``transcript_id``, which makes
+        the composed segment ids identical to ``reviewed_transcripts``.
+    ``*.html``
+        Vendored renders. The source id is inferred from the legacy filenames
+        because the render itself carries no identifier.
+    """
+    transcripts: dict[str, TranscriptSource] = {}
     tdir = bundle_dir / "Transcripts"
     if not tdir.is_dir():
         return transcripts
+    for json_path in sorted(tdir.glob("*.json")):
+        try:
+            source = JsonTranscriptSource(
+                path=json_path,
+                bundle_uri=f"Transcripts/{json_path.name}",
+                speaker_index_path=_speaker_index_path(bundle_dir),
+            )
+        except JsonTranscriptSchemaError:
+            continue
+        transcripts[source.transcript_id] = source
     for html in sorted(tdir.glob("*.html")):
         m = _TRANSCRIPT_SOURCE_ID.search(html.name)
         if m:
@@ -131,6 +153,14 @@ def _discover_transcripts(bundle_dir: Path) -> dict[str, HtmlTranscriptSource]:
             bundle_uri=f"Transcripts/{html.name}",
         )
     return transcripts
+
+
+def _speaker_index_path(bundle_dir: Path) -> Path | None:
+    """Locate ``speaker_index.json`` for a bundle, if one ships with it."""
+    for candidate in (bundle_dir / "speaker_index.json", bundle_dir.parent / "speaker_index.json"):
+        if candidate.is_file():
+            return candidate
+    return None
 
 
 def _discover_frameworks(bundle_dir: Path) -> dict[str, MarkdownFrameworkSource]:

@@ -4,11 +4,17 @@
   ruling, indexed by `index.json`) and pushes each ready ruling into the
   `<prefix>_jurisprudence` Qdrant collection with full provenance payload.
 * `TranscriptIngester`     — walks an OliviaLegal incident bundle's
-  `transcripts/raw/` segmented JSONs and pushes every utterance into the
+  `transcripts/raw/` segmented JSONs (legacy `content[]` schema) *or* a
+  canonical `segments[]` document, and pushes every utterance into the
   `<prefix>_segments` collection, anchored to its audio offsets. Unlike
   `QdrantVectorIndex.upsert_segment`, this does NOT require an upstream
   Violation: the whole transcript is indexed for retrieval and analysis
   pattern matching, not just the segments cited in the bundle.
+
+  Note: writing the canonical corpus is `transcription`'s job. Use this
+  ingester only for private/prefix-scoped working collections; to *read* the
+  shared `reviewed_transcripts` / `transcription_law` collections, use
+  `violation_pack.shared_corpora.SharedCorpusReader` (read-only).
 * `FrameworkIngester`      — walks a Markdown framework file and pushes
   every `### Art. N — title` block into `<prefix>_articles`.
 
@@ -316,12 +322,20 @@ class TranscriptIngester:
         content: [{speaker, start, end, text, id}, ...]
         metadata.fileInfo.fileName  -> audio file basename
 
+    A *canonical* transcript document (top-level ``segments[]``, as produced by
+    ``transcription``) is also accepted. It is read through
+    :class:`~violation_pack.sources_json.JsonTranscriptSource`, so the emitted
+    ``segment_id`` is ``"<transcript_id>.seg-<index>"`` — the exact identifier
+    shape stored in the shared ``reviewed_transcripts`` collection. Prefer the
+    canonical form: it is the only one whose ids join to the reviewed corpus.
+
     Each utterance becomes one point in `<prefix>_segments` with payload
     keyed so that retrieval results can be re-anchored in audio:
         violation_id     — "TRANSCRIPT:<filename>" (synthetic; not a real
                            Violation. Filter by has_violation_id=False or by
                            prefix when surfacing in MCP tools.)
-        segment_id       — "<filename>.seg-<id>"
+        segment_id       — "<filename>.seg-<id>" (legacy schema)
+                           "<transcript_id>.seg-<index>" (canonical schema)
         audio_uri        — relative path to the m4a, if discoverable
         audio_offset_start/end, speaker, source_uri
         verbatim_es, translation_en (translation absent in raw → '')
@@ -345,12 +359,13 @@ class TranscriptIngester:
         bundle_root: str | Path,
         bundle_id: str | None = None,
         limit_segments: int | None = None,
+        segment_spec: str | None = None,
     ) -> IngestStats:
         bundle_root = Path(bundle_root)
         if bundle_id is None:
             bundle_id = bundle_root.name
         jsons = self._discover_json_transcripts(bundle_root)
-        return self._ingest_paths(jsons, bundle_id, bundle_root, limit_segments)
+        return self._ingest_paths(jsons, bundle_id, bundle_root, limit_segments, segment_spec)
 
     def ingest_paths(
         self,
@@ -358,12 +373,14 @@ class TranscriptIngester:
         bundle_id: str,
         bundle_root: str | Path | None = None,
         limit_segments: int | None = None,
+        segment_spec: str | None = None,
     ) -> IngestStats:
         return self._ingest_paths(
             [Path(p) for p in json_paths],
             bundle_id,
             Path(bundle_root) if bundle_root else None,
             limit_segments,
+            segment_spec,
         )
 
     # --------------------------------------------------------------- private
@@ -406,6 +423,7 @@ class TranscriptIngester:
         bundle_id: str,
         bundle_root: Path | None,
         limit_segments: int | None,
+        segment_spec: str | None = None,
     ) -> IngestStats:
         stats = IngestStats()
         self.index.ensure_collections()
@@ -414,7 +432,7 @@ class TranscriptIngester:
         for p in paths:
             stats.scanned += 1
             try:
-                items = self._build_segment_points(p, bundle_id, bundle_root)
+                items = self._build_segment_points(p, bundle_id, bundle_root, segment_spec)
             except Exception as exc:  # noqa: BLE001
                 stats.failed += 1
                 stats.failures.append({"path": str(p), "error": str(exc)})
@@ -443,9 +461,91 @@ class TranscriptIngester:
         json_path: Path,
         bundle_id: str,
         bundle_root: Path | None,
+        segment_spec: str | None = None,
     ) -> list[tuple[str, dict, str]]:
         with json_path.open("r", encoding="utf-8") as f:
             doc = json.load(f)
+        if isinstance(doc.get("segments"), list):
+            return self._build_canonical_points(
+                json_path, doc, bundle_id, bundle_root, segment_spec
+            )
+        return self._build_legacy_points(json_path, doc, bundle_id, bundle_root)
+
+    def _build_canonical_points(
+        self,
+        json_path: Path,
+        doc: dict,
+        bundle_id: str,
+        bundle_root: Path | None,
+        segment_spec: str | None = None,
+    ) -> list[tuple[str, dict, str]]:
+        """Emit points for a canonical transcript document.
+
+        ``segment_spec`` accepts the same grammar as
+        :func:`~violation_pack.sources_json.expand_segment_index_spec`
+        (``"1,3-5"``) and is resolved to ``seg-N`` ids before reading.
+        """
+        source = JsonTranscriptSource(json_path, bundle_uri=str(json_path))
+        wanted: set[str] | None = None
+        if segment_spec:
+            wanted = set(expand_segment_index_spec(segment_spec))
+
+        try:
+            source_rel = (
+                str(json_path.relative_to(bundle_root)) if bundle_root else str(json_path)
+            )
+        except ValueError:
+            source_rel = str(json_path)
+
+        audio_name = (
+            (doc.get("metadata") or {}).get("fileInfo", {}).get("fileName")
+            or doc.get("source_file")
+            or f"{source.transcript_id}.m4a"
+        )
+        synthetic_vid = f"TRANSCRIPT:{source.transcript_id}"
+        out: list[tuple[str, dict, str]] = []
+        for segment in source.all_segments():
+            segment_id = segment["segment_id"]
+            if wanted is not None and segment_id not in wanted:
+                continue
+            text = (segment.get("verbatim") or "").strip()
+            if not text:
+                continue
+            pid = _stable_point_id("segment", synthetic_vid, segment_id)
+            payload = {
+                "violation_id": synthetic_vid,
+                "segment_id": segment_id,
+                "segment_index": segment.get("index"),
+                "role_in_argument": "transcript_corpus",
+                "speaker": segment.get("speaker") or "unknown",
+                "speaker_id": segment.get("speaker_id"),
+                "reviewed": bool(segment.get("reviewed", False)),
+                "audio_offset_start": float(segment.get("audio_offset_start") or 0.0),
+                "audio_offset_end": float(segment.get("audio_offset_end") or 0.0),
+                "source_uri": f"{source_rel}#{segment_id}",
+                "audio_uri": audio_name,
+                "verbatim_es": text,
+                "translation_en": "",
+                "bundle_id": bundle_id,
+                "recording_datetime": doc.get("recording_datetime"),
+                "location": doc.get("location"),
+                "case_id": doc.get("case_id"),
+                "narrative_id": doc.get("narrative_id"),
+                "transcript_id": source.transcript_id,
+                "transcript_filename": json_path.name,
+                "source_sha256": source.source_sha256(),
+            }
+            out.append((pid, payload, text))
+        return out
+
+    def _build_legacy_points(
+        self,
+        json_path: Path,
+        doc: dict,
+        bundle_id: str,
+        bundle_root: Path | None,
+    ) -> list[tuple[str, dict, str]]:
+        """Emit points for a legacy OliviaLegal forensics export (``content[]``)."""
         content = doc.get("content") or []
         if not isinstance(content, list) or not content:
             return []

@@ -10,6 +10,9 @@ the MCP protocol, so `./start.sh` gives you both on one port:
     POST /api/tool      invoke one tool: {"name": ..., "args": {...}}
     GET  /api/catalog   the mcp_catalog payload
     GET  /api/sources   rendered transcripts and law caches under data/
+    GET  /api/shared-collections
+                        owner/dim/payload contracts for the shared Qdrant
+                        collections (``?live=1`` adds a live drift check)
     GET  /health        (already present — unchanged)
 
 Design notes
@@ -74,11 +77,21 @@ def find_ui_path() -> Path | None:
 
 
 def find_data_root() -> Path | None:
-    """Locate the workspace data directory next to the UI repository."""
+    """Locate the workspace data directory next to the UI repository.
+
+    A candidate must contain ``law/`` and a transcript directory — either
+    ``transcripts/json/`` (the canonical, symlinked corpus) or
+    ``transcripts/html/`` (the vendored render). The JSON corpus is the
+    authoritative one, so requiring HTML here would couple source discovery to
+    a snapshot directory that the ownership contract intends to retire.
+    """
     here = Path(__file__).resolve().parent
     for base in (here, *here.parents):
         candidate = base / "data"
-        if (candidate / "transcripts" / "html").is_dir() and (candidate / "law").is_dir():
+        transcripts = candidate / "transcripts"
+        if not (candidate / "law").is_dir():
+            continue
+        if (transcripts / "json").is_dir() or (transcripts / "html").is_dir():
             return candidate
     return None
 
@@ -141,17 +154,24 @@ def discover_bundles() -> dict[str, Any]:
 
 
 def _resolve_transcript_uri(uri: str) -> Path | None:
-    """Resolve a discovered transcript URI without allowing path traversal."""
+    """Resolve a discovered transcript URI without allowing path traversal.
+
+    Accepts both corpus forms: ``data/transcripts/json/*.json`` (canonical,
+    authoritative) and ``data/transcripts/html/*.html`` (vendored render).
+    """
     data_root = find_data_root()
     if data_root is None:
         return None
     candidate = Path(uri)
     if candidate.is_absolute():
         return None
-    if candidate.parts[:2] != ("data", "transcripts") or candidate.suffix.lower() != ".html":
+    if candidate.parts[:2] != ("data", "transcripts"):
         return None
+    suffix = candidate.suffix.lower()
+    if suffix not in {".json", ".html"}:
+        return None
+    transcript_root = (data_root / "transcripts" / suffix.lstrip(".")).resolve()
     resolved = (data_root.parent / candidate).resolve()
-    transcript_root = (data_root / "transcripts" / "html").resolve()
     try:
         resolved.relative_to(transcript_root)
     except ValueError:
@@ -159,13 +179,62 @@ def _resolve_transcript_uri(uri: str) -> Path | None:
     return resolved if resolved.is_file() else None
 
 
+def _source_id_from_stem(stem: str) -> str:
+    """Derive a display source id from a filename stem (HTML corpus convention)."""
+    match = re.search(r"(?:^|_)STG[_-](\d+)(?:_|$)", stem)
+    return f"STG-{match.group(1)}" if match else stem
+
+
 def discover_transcript(uri: str) -> dict[str, Any] | None:
     """Return parsed segment data for one safe, discovered transcript URI."""
     path = _resolve_transcript_uri(uri)
     if path is None:
         return None
-    match = re.search(r"(?:^|_)STG[_-](\d+)(?:_|$)", path.stem)
-    source_id = f"STG-{match.group(1)}" if match else path.stem
+
+    if path.suffix.lower() == ".json":
+        from .sources_json import JsonTranscriptSchemaError, JsonTranscriptSource
+
+        try:
+            source = JsonTranscriptSource(path, bundle_uri=uri)
+        except (JsonTranscriptSchemaError, OSError):
+            return None
+        segments = [
+            {
+                "segment_id": segment["segment_id"],
+                "audio_offset_start": segment["audio_offset_start"],
+                "audio_offset_end": segment["audio_offset_end"],
+                "speaker": segment["speaker"],
+                "speaker_id": segment.get("speaker_id"),
+                "verbatim": segment["verbatim"],
+                "reviewed": segment.get("reviewed", False),
+            }
+            for segment in source.all_segments()
+        ]
+        return {
+            "ok": True,
+            "name": path.name,
+            "uri": uri,
+            "kind": "json",
+            "authoritative": True,
+            "source_id": source.source_id(),
+            "transcript_id": source.transcript_id,
+            "segment_count": len(segments),
+            "reviewed_count": len(source.reviewed_segments()),
+            "sha256": source.source_sha256(),
+            "metadata": {
+                key: source.get(key)
+                for key in (
+                    "title", "subtitle", "case_id", "narrative_id",
+                    "language", "location", "recording_datetime",
+                    "source_file", "chronological_order", "prior_stage",
+                    "next_stage", "violations_cited", "tags",
+                )
+            },
+            "participants": source.participants(),
+            "segments": segments,
+        }
+
+    source_id = _source_id_from_stem(path.stem)
     from .sources import HtmlTranscriptSource
 
     source = HtmlTranscriptSource(path, source_id, uri)
@@ -183,6 +252,8 @@ def discover_transcript(uri: str) -> dict[str, Any] | None:
         "ok": True,
         "name": path.name,
         "uri": uri,
+        "kind": "html",
+        "authoritative": False,
         "source_id": source_id,
         "segment_count": len(segments),
         "segments": segments,
@@ -190,20 +261,39 @@ def discover_transcript(uri: str) -> dict[str, Any] | None:
 
 
 def discover_sources() -> dict[str, Any]:
-    """Describe source files the browser can use for evidence and norms."""
+    """Describe source files the browser can use for evidence and norms.
+
+    Returns both transcript corpora when present:
+
+    ``transcripts``
+        The vendored ``data/transcripts/html/*.html`` render. Kept first for
+        backward compatibility with existing callers.
+    ``transcripts_json``
+        The canonical ``data/transcripts/json/*.json`` corpus, keyed by
+        ``transcript_id``. This is the *authoritative* form: ``layers.py``
+        composes ``f"{source_id()}.{segment_id}"``, and only this corpus yields
+        ids byte-identical to ``reviewed_transcripts.segment_id``.
+    ``shared_collections``
+        The declared owner/dim/payload contract for the Qdrant collections
+        violation-refiner reads but never writes.
+    """
     data_root = find_data_root()
     if data_root is None:
-        return {"ok": True, "root": None, "transcripts": [], "frameworks": []}
+        return {
+            "ok": True,
+            "root": None,
+            "transcripts": [],
+            "transcripts_json": [],
+            "frameworks": [],
+            "shared_collections": _declared_contracts(),
+        }
 
     from .sources import HtmlTranscriptSource, MarkdownFrameworkSource
 
     transcript_root = data_root / "transcripts" / "html"
     transcripts: list[dict[str, Any]] = []
     for path in sorted(transcript_root.glob("*.html")):
-        source_id = path.stem
-        match = re.search(r"(?:^|_)STG[_-](\d+)(?:_|$)", path.stem)
-        if match:
-            source_id = f"STG-{match.group(1)}"
+        source_id = _source_id_from_stem(path.stem)
         source = HtmlTranscriptSource(path, source_id, str(path.relative_to(data_root.parent)))
         transcripts.append({
             "name": path.name,
@@ -212,6 +302,33 @@ def discover_sources() -> dict[str, Any]:
             "source_id": source_id,
             "segment_count": len(source.all_segments()),
         })
+
+    transcripts_json: list[dict[str, Any]] = []
+    json_root = data_root / "transcripts" / "json"
+    if json_root.is_dir():
+        from .sources_json import JsonTranscriptSource
+
+        speaker_index = data_root / "speaker_index.json"
+        for path in sorted(json_root.glob("*.json")):
+            try:
+                source = JsonTranscriptSource(
+                    path,
+                    bundle_uri=str(path.relative_to(data_root.parent)),
+                    speaker_index_path=speaker_index if speaker_index.is_file() else None,
+                )
+            except Exception:  # pragma: no cover - a bad file must not kill discovery
+                continue
+            first = source.get_segment("seg-0")
+            transcripts_json.append({
+                "name": path.name,
+                "path": str(path.relative_to(data_root.parent)),
+                "uri": str(path.relative_to(data_root.parent)),
+                "transcript_id": source.transcript_id,
+                "segment_count": source.segment_count(),
+                "reviewed_count": len(source.reviewed_segments()),
+                "segment_id_example": first["segment_id"] if first else None,
+                "participants": source.participants(),
+            })
 
     framework_root = data_root / "law"
     frameworks: list[dict[str, Any]] = []
@@ -233,8 +350,67 @@ def discover_sources() -> dict[str, Any]:
         "ok": True,
         "root": str(data_root),
         "transcripts": transcripts,
+        "transcripts_json": transcripts_json,
         "frameworks": frameworks,
+        "shared_collections": _declared_contracts(),
+        "precedence": {
+            "evidence": "transcripts_json",
+            "evidence_reason": (
+                "segment ids compose to the same form stored in "
+                "reviewed_transcripts.segment_id; the html render only carries "
+                "bare speaker labels and stale snapshots"
+            ),
+            "fallback": "transcripts",
+        },
     }
+
+
+def _declared_contracts() -> list[dict[str, Any]]:
+    """Offline description of the shared collections (no network access)."""
+    from .shared_corpora import SHARED_COLLECTIONS
+
+    return [
+        {
+            "name": contract.name,
+            "owner": contract.owner,
+            "dim": contract.dim,
+            "embed_model": contract.embed_model,
+            "keyed_by": contract.keyed_by,
+            "point_id": contract.point_id_description,
+            "required_payload_keys": list(contract.required_payload_keys),
+            "notes": contract.notes,
+            "violation_refiner_access": "read-only",
+        }
+        for contract in SHARED_COLLECTIONS.values()
+    ]
+
+
+def discover_shared_collections(live: bool = False) -> dict[str, Any]:
+    """Report the shared-collection contracts, optionally against live Qdrant.
+
+    ``live=False`` (the default) is a pure offline description, so the UI and
+    tests never need credentials. ``live=True`` adds a ``check`` block and is
+    skipped with an explanatory ``reason`` when ``QDRANT_URL`` is unset.
+    """
+    contracts = _declared_contracts()
+    payload: dict[str, Any] = {"ok": True, "live": False, "collections": contracts}
+    if not live:
+        return payload
+
+    if not os.environ.get("QDRANT_URL"):
+        payload["reason"] = "QDRANT_URL is not set; live contract check skipped."
+        return payload
+
+    from .shared_corpora import SharedCorpusReader
+
+    try:
+        reader = SharedCorpusReader()
+        payload["check"] = reader.verify_contract()
+        payload["live"] = True
+    except Exception as exc:  # pragma: no cover - network/permission failure
+        payload["ok"] = False
+        payload["reason"] = f"{type(exc).__name__}: {exc}"
+    return payload
 
 
 # ---------------------------------------------------------------------------
@@ -432,10 +608,24 @@ def build_ui_routes(mcp):
         payload = discover_transcript(uri)
         if payload is None:
             return json_response(
-                {"ok": False, "error": "uri must reference a discovered data/transcripts/html/*.html file."},
+                {
+                    "ok": False,
+                    "error": (
+                        "uri must reference a discovered transcript under "
+                        "data/transcripts/json/*.json (canonical) or "
+                        "data/transcripts/html/*.html (vendored render)."
+                    ),
+                },
                 status_code=400,
             )
         return json_response(payload)
+
+    @mcp.custom_route("/api/shared-collections", methods=["GET", "OPTIONS"])
+    async def api_shared_collections(request) -> Response:
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+        live = request.query_params.get("live", "") in {"1", "true", "yes"}
+        return json_response(discover_shared_collections(live=live))
 
     @mcp.custom_route("/api/browse", methods=["GET", "OPTIONS"])
     async def api_browse(request) -> Response:

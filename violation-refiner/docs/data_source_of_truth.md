@@ -17,14 +17,17 @@ project in `mcp-ecosystem`.
 |---|---|---|---|
 | `transcription/data/law/` — legal framework Markdown | `transcription` | violation-refiner, others | directory symlink |
 | `transcription/data/transcripts/*.json` — 27 transcripts | `transcription` | violation-refiner, others | per-file symlinks |
-| `transcription/data/audio/`, `speakers/`, `speaker_index.json` | `transcription` | violation-refiner (not currently) | not linked |
-| Qdrant `la8159_law`, `la8159_law_bm25` | `transcription` | *(none yet — see §4)* | not linked |
+| `transcription/data/speaker_index.json` — segment→`SPK-…` map | `transcription` | violation-refiner | file symlink |
+| `transcription/data/audio/`, `speakers/` | `transcription` | violation-refiner (not currently) | not linked |
+| Qdrant `transcription_law`, `reviewed_transcripts` | `transcription` | violation-refiner — **read-only** via `violation_pack/shared_corpora.py` | API, not files (see §4) |
+| Qdrant `la8159_law`, `la8159_law_bm25`, `transcription_transcripts` | `transcription` | *(none — see §4)* | not read |
 
 The canonical location therefore is, and must remain:
 
 ```
 transcription/data/law/**/*.md
 transcription/data/transcripts/*.json
+transcription/data/speaker_index.json
 ```
 
 ---
@@ -73,7 +76,26 @@ From `violation-refiner/data/transcripts/json/`, for each of the 27 files:
 Targets are resolved relative to the **link's own directory**, so the four `..`
 levels are exactly `json → transcripts → data → violation-refiner → mcp-ecosystem`.
 
-### 3.3 Two hard requirements
+### 3.3 `speaker_index.json` — file symlink
+
+From `violation-refiner/data/`:
+
+```
+speaker_index.json -> ../../transcription/data/speaker_index.json
+```
+
+This file is **not optional**. It is priority 1 of `transcription`'s own speaker
+resolution: `QdrantTranscriptIndex` builds its `_spk_by_seg` map from it, so it is what
+determines the `speaker_id` actually stored in `reviewed_transcripts`. Resolving
+speakers any other way here produces payloads that disagree with the collection.
+
+`JsonTranscriptSource` mirrors that precedence exactly:
+
+1. exact `(transcript_id, segment_index)` lookup in `speaker_index.json`;
+2. `segment_labels` / `role` / `speaker_label` on the document's `participants`;
+3. `None`.
+
+### 3.4 Two hard requirements
 
 1. **Symlink targets MUST be relative.** An absolute target embeds the developer's
    checkout path, so the repository only works on one machine and at one location.
@@ -94,9 +116,9 @@ Two different law stores exist. Do not confuse them.
 |---|---|---|---|---|
 | `la8159_law` | `transcription` | 768-d (opaque, read-only) | canonical law article payloads, 1119 articles | **No** |
 | `la8159_law_bm25` | `transcription` | sparse `text` (`qdrant/bm25`) | lexical BM25 over the same articles | **No** |
-| `transcription_law` | `transcription` | 384-d (`all-MiniLM-L6-v2`) | repo-owned semantic law index; safe to drop/rebuild | No |
-| `transcription_transcripts` | `transcription` | 384-d | one point per transcript segment | No |
-| `reviewed_transcripts` | `transcription` | 384-d | curated/reviewed segments | No |
+| `transcription_law` | `transcription` | 384-d (`all-MiniLM-L6-v2`) | repo-owned semantic law index; safe to drop/rebuild | **Yes — read-only** (§4.2) |
+| `transcription_transcripts` | `transcription` | 384-d | one point per transcript segment | No — superseded by the next row |
+| `reviewed_transcripts` | `transcription` | 384-d | curated/reviewed segments | **Yes — read-only** (§4.2) |
 | `violationrefiner_v1_*` | **violation-refiner** | per embedder | `_segments`, `_articles`, `_authorities`, `_jurisprudence` | Yes (own namespace) |
 
 **violation-refiner does not query `la8159_law`.** It reads the law corpus as
@@ -123,6 +145,78 @@ curl -X POST 'http://localhost:8000/api/transcripts/index-all'
 There is **no law-ingestion and no transcript-ingestion script in violation-refiner.**
 Its `FrameworkIngester` parses a *single* Markdown framework file into its own
 `_articles` collection; it does not walk `data/law/` and does not touch `la8159_law`.
+
+`TranscriptIngester` can read a canonical `segments[]` document
+(`JsonTranscriptSource`) as well as a legacy OliviaLegal `content[]` export, but it
+writes only to `<prefix>_segments` — a private working collection. It never writes a
+shared collection.
+
+### 4.2 Reading the shared collections — `violation_pack/shared_corpora.py`
+
+The executable form of the §4 table. It is **read-only by construction**: there is no
+`upsert` method, and the module exposes no collection-creation call.
+
+```python
+from violation_pack.shared_corpora import SharedCorpusReader, MiniLmEmbedder
+
+reader = SharedCorpusReader()                      # QDRANT_URL / QDRANT_API_KEY from env
+
+# --- exact reads: no embedder required, no cross-embedder risk ----------------
+reader.law_article("CL.CHIPENCOD.T4.C3.Art.193")
+reader.iter_law_articles(framework_code="CHIPENCOD", language="en")
+reader.reviewed_segment("I-002_01_NAR-01_STG_1_pre_boarding", 0)
+reader.reviewed_segments("I-002_01_NAR-01_STG_1_pre_boarding")
+
+# --- contract / drift check -------------------------------------------------
+reader.verify_contract()                           # {"ok": bool, "collections": [...]}
+
+# --- semantic search: needs a matching 384-d embedder ------------------------
+reader = SharedCorpusReader(embedder=MiniLmEmbedder())
+reader.search_law("detención arbitraria", top_k=10)
+reader.search_reviewed_segments("boarding gate confrontation", top_k=10,
+                                case_id="I-002")   # payload filters are keyword args
+```
+
+The result-count argument is **``top_k``, not ``limit``**. Any keyword argument
+other than ``top_k`` is treated as a payload filter, so a misspelled one used to build a
+filter on a non-existent key and quietly return zero rows. Unknown filter keys now
+raise ``SharedCorpusError`` and list the valid ones.
+
+**Point ids are derivable, so exact reads never need a vector search** — which is what
+makes read-only access cheap and deterministic:
+
+| Collection | Point id |
+|---|---|
+| `transcription_law` | `uuid5(NAMESPACE_DNS, original_id)` — `law_point_id()` |
+| `reviewed_transcripts` | `uuid.UUID(md5(f"{transcript_id}:{segment_index}"))` — `transcript_point_id()` |
+
+Both live in the payload too (`original_id`, and `transcript_id` + `segment_index`), so
+a payload filter reaches the same point without knowing a uuid.
+
+> **The dashed-uuid trap.** `transcript_point_id()` returns the **dashed** form
+> (`uuid.UUID(...)`), matching `str(point.id)`. Comparing it against the bare
+> `hashlib.md5(...).hexdigest()` matches **nothing, silently**. This false negative
+> was hit once during verification; it is now covered by a test.
+
+> **The embedder trap.** Both collections are **384-d** (`all-MiniLM-L6-v2`).
+> violation-refiner's own default embedder is **Voyage `voyage-3-large`, 1024-d**.
+> Querying a 384-d collection with a 1024-d query vector returns meaningless
+> neighbours and raises no error. The reader therefore guards every semantic-search
+> path and raises `EmbedderMismatch` when the embedder is `None` or has a different
+> `dim`. Use `MiniLmEmbedder` (which lazily imports `sentence_transformers`).
+
+### 4.3 Known collection gaps
+
+Verified 2026-09-13, reported rather than silently fixed:
+
+- **`I-002_07_NAR-06_STG_13_post_PDI_corridor` is entirely absent from
+  `reviewed_transcripts`** — 195 canonical reviewed segments, 0 indexed points. It
+  accounts for the whole 3163 → 2968 point shortfall (the other 26 transcripts match
+  exactly). Re-run the transcript ingestion in `transcription/` to repair it.
+- **`transcription_transcripts` (2272 points) lacks `speaker_id` and `segment_id` in
+  its payload.** `reviewed_transcripts` (2968 points) carries both, so it is a strict
+  superset and the correct read target. New code should not read
+  `transcription_transcripts`.
 
 ---
 
@@ -173,11 +267,36 @@ PY
 
 Expected: 27 links checked, `mismatches: 0`.
 
+```bash
+# 4. Shared-collection contract drift (owner / dim / payload keys / point ids)
+#    Exit 0 = clean, 1 = drift, 2 = QDRANT_URL unset.  Needs only QDRANT_URL.
+cd violation-refiner
+.venv/bin/python -m violation_pack.shared_corpora
+
+# 5. Segment ids line up with the reviewed corpus
+#    (the JSON corpus is the only form whose ids join — see §8)
+.venv/bin/python - <<'PY'
+from violation_pack.sources_json import discover_json_transcripts
+srcs = discover_json_transcripts("data/transcripts/json",
+                                 speaker_index_path="data/speaker_index.json")
+print("transcripts:", len(srcs))
+print("segments   :", sum(s.segment_count() for s in srcs.values()))
+print("reviewed   :", sum(len(s.reviewed_segments()) for s in srcs.values()))
+s = srcs["I-002_01_NAR-01_STG_1_pre_boarding"]
+print("example id :", s.get_segment("seg-0")["segment_id"])
+print("speaker_id :", s.get_segment("seg-0")["speaker_id"])
+PY
+```
+
+Expected for step 5: `transcripts: 27`, `segments: 3207`, `reviewed: 3163`, and
+`example id: I-002_01_NAR-01_STG_1_pre_boarding.seg-0` — the same string that is stored
+as `reviewed_transcripts.segment_id`.
+
 ---
 
 ## 7. Known traps
 
-- **Absolute symlinks.** Fixed 2026-09-13 (§3.3). Re-introduced easily by `ln -s`
+- **Absolute symlinks.** Fixed 2026-09-13 (§3.4). Re-introduced easily by `ln -s`
   with an absolute path — always pass the relative target.
 - **A symlink is not a copy, but a snapshot directory can look like one.**
   `data/transcripts/html/` is *real vendored content*, not a symlink, and can drift
@@ -193,21 +312,55 @@ Expected: 27 links checked, `mismatches: 0`.
 
 ---
 
-## 8. Open item — `data/transcripts/html/`
+## 8. Corpus form and `data/transcripts/html/`
 
 `violation-refiner/data/transcripts/html/` holds **27 real HTML files (no symlinks)**.
 They are a second copy of the transcript corpus and can drift from the canonical JSON.
 
-Two consequences:
+**Observed drift, then observed repair (2026-09-13).** Mid-session,
+`test_rendered_transcripts_match_json_segment_counts` failed on `I-002_05B` (6
+rendered segments against 4 canonical). Ten minutes later, with **no change to this
+repo**, it passed: every file in `html/` had been regenerated at 07:29 by another
+process (`transcription/`). Two conclusions, both load-bearing:
 
-1. They are **the reason this project can find a data root at all.**
-   `violation_pack/ui_server.py::find_data_root()` walks upward looking for a `data/`
-   containing **both** `transcripts/html/` and `law/`. Removing the directory without
-   changing that function breaks source discovery.
-2. They are the input to the S2 HTML evidence parser, `tests/test_ui_server.py`
-   asserts `len(transcripts) == 27` against them, and there is **no canonical
-   counterpart directory** in `transcription/data/transcripts/` to link against.
+1. `html/` is a **live, externally-rewritten cache**. It changes under you, with no
+   commit, no symlink, and no notification. Never treat it as a source of truth, and
+   never make a test's meaning depend on it staying put.
+2. The stale-segment failure is **not** a reliable signal. It appears and vanishes on
+   someone else's schedule, so it cannot gate this repo's correctness.
 
-**Decision pending** — the directory must not be deleted or symlinked until a
-replacement for its two roles (data-root marker, rendered evidence source) is defined
-and `find_data_root()` is updated accordingly.
+### 8.1 JSON is now the wired, authoritative transcript source
+
+`violation_pack/sources_json.py::JsonTranscriptSource` reads a canonical document and
+implements the same `TranscriptSource` protocol as `HtmlTranscriptSource`, so the two
+are interchangeable everywhere `layers.py` consumes a source. It is wired into:
+
+- `ui_server.discover_sources()` → new `transcripts_json` list (keyed by
+  `transcript_id`, with `segment_id_example`), plus a `precedence` block;
+- `ui_server.discover_transcript()` → accepts `data/transcripts/json/*.json`;
+- `refine_batch_core._discover_transcripts()` → reads `Transcripts/*.json`;
+- `ingesters.TranscriptIngester` → accepts canonical `segments[]` documents.
+
+**This is the technical point of the wiring.** `layers.py` composes
+`EvidenceSegment.segment_id = f"{source_id()}.{local_id}"`. For an HTML source,
+`source_id()` is a *display* label (`STG-1`) that joins to nothing. For a canonical JSON
+source, `source_id()` returns the `transcript_id`, so the composed id is **byte-identical
+to `reviewed_transcripts.segment_id`**. That join is what lets a refiner finding be
+traced back to an indexed, speaker-resolved, human-reviewed segment.
+
+### 8.2 What is still open
+
+The HTML directory still serves a second role that JSON does not replace:
+
+| Role | Status |
+|---|---|
+| Rendered evidence source for the S2 HTML parser | **Superseded** by `JsonTranscriptSource` |
+| Input to `len(transcripts) == 27` in `tests/test_ui_server.py` | Still HTML (the assertion was deliberately left intact) |
+| Data-root marker for `find_data_root()` | **Relaxed**: now accepts `transcripts/json/` **or** `transcripts/html/`, so neither directory is load-bearing alone |
+| `tests/test_sources.py` segment-count parity check | Passes *today* because the render was just regenerated (§8) — it is a smoke test over a cache, not a guarantee |
+
+**Partial decision taken 2026-09-13:** `find_data_root()` no longer *requires* HTML, so
+removing or symlinking `html/` is no longer blocked on that function. The remaining
+blocker is the test assertion above — decide whether it should assert against the
+canonical JSON (27 sources, no drift possible) or keep covering the render.
+Until that is decided, **do not delete or symlink `data/transcripts/html/`.**

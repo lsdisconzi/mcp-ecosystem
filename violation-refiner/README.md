@@ -67,8 +67,9 @@ violation-pack/
 ├── .env.example              # every Settings.from_env() var + the MCP_* transport vars
 ├── start.sh / stop.sh        # MCP server lifecycle (stdio or streamable-http)
 ├── data/                      # shared corpora are SYMLINKS owned by ../transcription
-│   ├── transcripts/html/      # rendered HTML sources used by S2 evidence anchoring (real files — see docs/data_source_of_truth.md §8)
-│   ├── transcripts/json/      # 27 symlinks → ../../transcription/data/transcripts/*.json
+│   ├── transcripts/html/      # rendered HTML sources (real files — see docs/data_source_of_truth.md §8)
+│   ├── transcripts/json/      # 27 symlinks → ../../transcription/data/transcripts/*.json (canonical)
+│   ├── speaker_index.json     # symlink → ../../transcription/data/speaker_index.json
 │   └── law/                   # symlink → ../../transcription/data/law (Markdown, grouped by jurisdiction)
 ├── docs/
 │   ├── data_source_of_truth.md    # who owns data/law + data/transcripts; read before touching data/
@@ -77,7 +78,9 @@ violation-pack/
 ├── violation_pack/
 │   ├── __init__.py           # public API surface + get_* factory helpers
 │   ├── models.py             # Pydantic models for every layer
-│   ├── sources.py            # TranscriptSource/FrameworkSource Protocols + filesystem impls
+│   ├── sources.py            # TranscriptSource/FrameworkSource Protocols + HTML impls
+│   ├── sources_json.py       # JsonTranscriptSource — the canonical schema-v1 source
+│   ├── shared_corpora.py     # read-only access to the transcription-owned Qdrant collections
 │   ├── _utils.py             # shared helpers (sha256_text)
 │   ├── layers.py             # build_evidence_layer, build_norms_layer, ...
 │   ├── confidence.py         # derive_confidence; configurable verification floor
@@ -111,6 +114,8 @@ violation-pack/
     ├── test_verifier.py      # V11 failure modes
     ├── test_extensions.py    # Qdrant/Neo4j/jurisprudence contracts (in-memory fakes)
     ├── test_ingesters.py     # bulk ingestion
+    ├── test_sources_json.py  # JsonTranscriptSource + segment-id composition vs the collection
+    ├── test_shared_corpora.py # collection contracts, point-id derivation, embedder guard
     ├── test_catalog_sync.py  # fails if mcp_catalog.py drifts from the server
     └── test_end_to_end.py    # rebuild CL-005, assert 0 fails
 ```
@@ -135,22 +140,71 @@ The UI discovers rendered transcripts and law caches through `GET /api/sources`
 and uses `GET /api/browse?path=...&kind=directory|file` for the Settings and
 S0 Browse controls. Browser paths are constrained to this workspace and are
 never treated as arbitrary server filesystem paths.
-Transcript entries are relative URIs under `data/transcripts/html/`; the bridge
-resolves them server-side and rejects paths outside that directory. The raw
-JSON transcripts under `data/transcripts/json/` remain the structured ingestion
-source and are not passed directly to the HTML evidence parser.
 
-> **Shared data — read-only.** `data/law/` and every file in
-> `data/transcripts/json/` are **symlinks into `../transcription/`**, which owns and
-> generates them. The transcripts are ingested into Qdrant by `transcription/`, not
-> here. Editing a file through either path edits that other project's corpus, and
-> nothing in this repo will warn you. See
-> [`docs/data_source_of_truth.md`](docs/data_source_of_truth.md).
+`GET /api/sources` returns, in addition to the pre-existing keys:
+
+| Key | Contents |
+| --- | --- |
+| `transcripts` | the `data/transcripts/html/` renders (kept first for back-compat) |
+| `transcripts_json` | the canonical `data/transcripts/json/*.json` sources, with `transcript_id`, `segment_count`, `reviewed_count`, `segment_id_example` |
+| `shared_collections` | declared Qdrant contracts (`transcription_law`, `reviewed_transcripts`), all `read-only` |
+| `precedence` | which source is authoritative, and why |
+
+`GET /api/shared-collections?live=1` runs the same contracts against the live
+Qdrant instance (needs `QDRANT_URL`; skipped offline).
+
+The bridge serves both transcript forms: `/api/source-transcript` accepts a URI
+under `data/transcripts/json/*.json` (**canonical**, authoritative) or
+`data/transcripts/html/*.html` (a rendered render-only view) and rejects
+anything else.
+
+> **Prefer the JSON sources for evidence.** `JsonTranscriptSource.source_id()`
+> returns the `transcript_id`, so `layers.py` composes
+> `"<transcript_id>.seg-<index>"` — **byte-identical** to
+> `reviewed_transcripts.segment_id`. The HTML render yields only bare speaker
+> labels and its `source_id()` is a stage code (`"STG-1"`), which composes to
+> `"STG-1.seg-0"` and joins to nothing. See
+> [`docs/data_source_of_truth.md`](docs/data_source_of_truth.md) §8.
+
+> **Shared data — read-only.** `data/law/`, every file in
+> `data/transcripts/json/` and `data/speaker_index.json` are **symlinks into
+> `../transcription/`**, which owns and generates them. The transcripts are
+> ingested into Qdrant by `transcription/`, not here. Editing a file through
+> either path edits that other project's corpus, and nothing in this repo will
+> warn you. See [`docs/data_source_of_truth.md`](docs/data_source_of_truth.md).
+
+> **Shared Qdrant collections — read-only.** `transcription_law` and
+> `reviewed_transcripts` are also owned by `transcription/` and are read through
+> `violation_pack/shared_corpora.py` (`SharedCorpusReader`), which exposes no
+> write path. Both are **384-d** (`all-MiniLM-L6-v2`) — the default Voyage
+> embedder is 1024-d, and querying across embedders returns silently meaningless
+> neighbours, so semantic search is guarded by `EmbedderMismatch`. Exact reads
+> (`law_article`, `reviewed_segment`) need no embedder.
+>
+> ```bash
+> python -m violation_pack.shared_corpora   # drift check; exit 0 = both contracts ok
+> ```
 
 > Use the `all` extra, not just `test`. Without `qdrant-client` and `neo4j` the
-> eight extension and ingester tests **skip silently** instead of failing, so a
-> `.[test]`-only install reports green while exercising less. Expected: `38
-> passed` in about two seconds.
+eight extension and ingester tests **skip silently** instead of failing, so a
+`.[test]`-only install reports green while exercising less.
+
+### Known test failures
+
+`pytest` should report **135 passed, 2 failed**. Both failures are environmental,
+not code regressions — neither touches the library:
+
+| Test | Cause | Resolution |
+| --- | --- | --- |
+| `test_ui_server.py::test_discover_bundles_reads_real_build_directories` | a stray **empty** `build/CL-001/` directory (leftover from an interrupted run) is discovered as a bundle | delete the empty dir, or make `discover_bundles()` skip bundle dirs with no files |
+| `test_ui_server.py::test_get_api_bundles_returns_real_build_directories` | same stray directory | same |
+
+> **`data/transcripts/html/` is a live, externally-rewritten artifact.** On
+> 2026-09-13 07:29 every file in it was regenerated by another process, which
+> flipped `tests/test_sources.py::test_rendered_transcripts_match_json_segment_counts`
+> from failing (a stale `I-002_05B` render carrying 6 segments against 4 canonical)
+> to passing — with no change to this repo. Treat the render as a cache, never as
+> a source of truth; the JSON is the contract.
 
 Expected end-to-end output (and what the tests assert):
 
