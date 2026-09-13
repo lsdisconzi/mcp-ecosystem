@@ -144,7 +144,8 @@ REGLAS CRÍTICAS DEL BUSCADOR DEL TC:
 2. Los filtros de catálogo (competencia, ministro, cuerpo_legal, palabra_clave, tipo_resolucion, resultado) se resuelven contra un catálogo oficial del TC. Si no estás seguro del nombre exacto, usa el término más genérico posible; el sistema intentará resolverlo de forma aproximada.
 3. Solo hay documentos descargables para las fichas marcadas con "exist_file". Las marcadas como reservadas no se incluyen salvo que se pida explícitamente.
 4. Para buscar dentro del texto completo de las sentencias usa "search_index": "texto_libre"; para buscar solo en las fichas resumen usa "acordao".
-5. El identificador de descarga es el FOLIO (no el ROL ni el id interno). Si el usuario cita una sentencia, pide o extrae el folio cuando sea posible."""
+5. El identificador de descarga es el FOLIO (no el ROL ni el id interno). Si el usuario cita una sentencia, pide o extrae el folio cuando sea posible.
+6. IMPORTANTE: el índice de fichas ("acordao") solo cubre metadatos (ROL, ministro, materia, doctrina). Nombres de partes, empresas o expresiones que solo aparecen en el cuerpo del texto (p. ej. "LATAM Airlines", "daño moral") NO se encuentran ahí: usa "search_index": "texto_libre" y explícalo al usuario. Si la búsqueda no arroja resultados, dilo con claridad — es preferible informar cero coincidencias que sugerir documentos que no tienen relación con la consulta."""
 
 
 SYSTEM_PROMPT = _build_system_prompt("TJRS")

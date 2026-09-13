@@ -30,9 +30,60 @@ UI. These corrections **supersede** the corresponding statements in §3–§5.
 | `/extended/sentencias` accepts the full filter set | It **ignores every filter except `search`** (and `literal`). Any given search term always returns the same total; adding `competencia`, `ministro`, `fecha_sentencia`, etc. changes nothing. |
 | Catalog filters take **catalog item IDs** | They take **exact catalog NAMES** (strings) for `competencia`, `cuerpo_legal`, `ministro`, `palabra_clave`, `tipo_resolucion`, `resultado`. Only `articulo_constitucion` appears to accept IDs — and it is ignored anyway. |
 | `per_page` / `rowsPerPage` is overridable | **Hard-fixed at 5** on `/buscadorexterno/ficha`. `per_page`, `rowsPerPage` and `rows` are all ignored. |
+| `/buscadorexterno/ficha` filters on `search` | It filters **only if the term matches something**. When the term matches *nothing* it does **not** return 0 — it silently drops the filter and returns the **entire corpus** (12.329 fichas). See "The silent-corpus trap" below. |
 | Catalog 27 "Decisión" has 5 items, incl. "Empate" | Actual values: **Acoge, Rechaza, Empate de Votos, Acoge parcial, Rechaza parcial**. |
 | API sets no `Content-Disposition` | It **does**: `attachment; filename="2012-04-30 16622.pdf"`, and the backend exposes it via `access-control-expose-headers: Content-Disposition`. The date in that filename is a portal-internal date, **not** the sentencia date — do not use it as `fecha`. |
 | Single `fecha_sentencia` date returned 0 results | Worked (`"2026-03-19"` → 1). The earlier "0" was from a bad combination, not from single dates being unsupported. |
+
+### The silent-corpus trap (why free text needs the full-text index)
+
+`/buscadorexterno/ficha` **does not tell the truth about "no matches"**. Probed
+live with an otherwise empty filter:
+
+| `search` | `ficha` total | meaning |
+|---|---|---|
+| *(absent)* | **12329** | whole corpus |
+| `latam airlines` | **12329** | ❌ whole corpus — filter dropped |
+| `latam` | **12329** | ❌ whole corpus — filter dropped |
+| `airlines` | **12329** | ❌ whole corpus — filter dropped |
+| `LAN` | **12329** | ❌ whole corpus — filter dropped |
+| `vida` | 952 | ✅ real matches |
+| `banco` | 101 | ✅ real matches |
+| `aviacion` | 2 | ✅ real matches |
+
+Only catalog filters (`competencia`, `ministro`, …) fail *loudly* (0 results)
+when wrong; a free-text `search` that matches nothing fails **silently** by
+returning everything. A UI that trusts it will confidently show — and download
+— thousands of unrelated documentos.
+
+The **ground truth** is `/extended/sentencias`, which respects `search` and
+reports `data.count` honestly:
+
+| `search` | `sentencias` `data.count` |
+|---|---|
+| `latam` | **0** |
+| `airlines` | **0** |
+| `vida` | 486 |
+| `banco` | 167 |
+
+So searching the TC for **"latam airlines" has exactly one correct answer: 0
+documents.** There is no LATAM/aviation jurisprudence in the corpus.
+
+Rule enforced in `tc_chile_scraper.search_with_criteria`:
+
+1. If `_use_fulltext_endpoint(criteria)` is true → `/extended/sentencias`, and a
+   page-1 `data.count == 0` short-circuits to `[]` (no paging).
+2. Otherwise, before trusting `/buscadorexterno/ficha`, compare the filtered
+   `meta.total` with the cached unfiltered `meta.total` for the same residual
+   filters (`search` removed). **If they are equal, the filter was dropped**, so
+   the query is retried on the full-text index instead of returning the corpus.
+3. Every result carries `search_endpoint` so the endpoint actually used is
+   visible in the saved history.
+
+Corollary for callers: `search_index: "acordao"` (the default) is a *metadata*
+search — party names and body text are invisible to it. Use
+`search_index: "texto_libre"` / `buscar_en_texto: true` for anything that is not
+part of the ficha (`ROL`, ministro, materia, doctrina).
 
 ### The id-namespace trap (why `folio` matters)
 
@@ -146,6 +197,9 @@ GET /buscadorexterno/ficha?page={n}&filter={json}
 - `filter` — URL-encoded JSON object of search criteria (see §4).
 - **Page size is fixed at 5** (`per_page: 5`); `rowsPerPage`/`per_page` are ignored.
   Iterate pages until `current_page >= last_page`.
+- ⚠️ `search` only filters when it **matches** something; otherwise the filter is
+  silently dropped and `meta.total` is the whole corpus (12.329). See §0 — *The
+  silent-corpus trap*.
 
 Verified example:
 

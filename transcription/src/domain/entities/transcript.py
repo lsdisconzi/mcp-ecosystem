@@ -52,11 +52,12 @@ class Transcript:
     segments: list[Segment] = field(default_factory=list)
 
     source_file: str = ""
+    source_path: str = ""
     language: str = "es"
     metadata: dict = field(default_factory=dict)
     timestamp: str = ""
     provider: str = ""
-    original_transcript_id: str = ""
+    original_transcript_id: str | None = None
 
     # metadata fields used by frontend
     title: str = ""
@@ -80,6 +81,10 @@ class Transcript:
     forensic_clusters: dict = field(default_factory=dict)
     key_evidentiary_findings: list = field(default_factory=list)
     corrections_applied: list = field(default_factory=list)
+
+    # Set once a human has signed off on this transcript.  Distinct from the
+    # segment-level ``Segment.reviewed``, which tracks per-segment review.
+    reviewed: bool = False
 
 
 @dataclass(frozen=True)

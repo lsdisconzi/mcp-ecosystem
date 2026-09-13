@@ -38,6 +38,14 @@ Notas importantes verificadas contra el API en vivo
    parciales (p. ej. "INA" -> "Inaplicabilidad de Precepto Legal (Art. 93 N° 6 - INA) ").
 5. ``articulo_constitucion`` es aceptado pero ignorado por el backend en
    ``/buscadorexterno/ficha`` (se envía igual por fidelidad con el SPA).
+6. Peligro verificado: ``/buscadorexterno/ficha`` **descarta el filtro ``search``
+   en silencio cuando el término no coincide con nada** y devuelve el corpus
+   completo (12.329 fichas) en lugar de cero. Buscar "latam airlines" devolvía
+   12.329 fichas ajenas al caso. Antes de confiar en ese endpoint,
+   ``search_with_criteria()`` compara el total filtrado con el total sin término
+   (cacheado) y, si coinciden, reintenta la consulta en ``/extended/sentencias``,
+   que sí respeta ``search`` y reporta la verdad vía ``data.count``.
+   Ver ``docs/tc-chile-source.md`` §0 — *The silent-corpus trap*.
 
 Uso
 ---
@@ -272,6 +280,11 @@ class TCChileJurisprudenciaScraper:
 
     BASE = TC_API_BASE
     COURT = TC_COURT_KEY
+
+    # Totales de ``/buscadorexterno/ficha`` sin término de búsqueda, por
+    # combinación de filtros residuales. Compartido entre instancias porque el
+    # API crea un scraper nuevo por búsqueda; ver ``_baseline_total``.
+    _BASELINE_CACHE: Dict[str, int] = {}
 
     HEADERS = {
         "Accept": "application/json",
@@ -575,9 +588,79 @@ class TCChileJurisprudenciaScraper:
         if criteria.literal:
             return True
         index = _norm_text(criteria.search_index)
-        if index in {"texto libre", "texto_libre", "fulltext", "sentencias"}:
+        if index in {
+            "texto libre", "texto_libre", "texto completo", "texto_completo",
+            "fulltext", "full text", "sentencias",
+            # Alias heredados del formulario brasileño.
+            "inteiro teor", "inteiro_teor",
+        }:
             return True
         return False
+
+    # ── Detección de filtro descartado ────────────────────────────────────
+
+    def _ficha_total(self, payload: Dict[str, Any]) -> Optional[int]:
+        """Total de coincidencias según ``ficha`` para un filtro dado."""
+        try:
+            data = self._fetch_ficha_page(payload, 1)
+        except Exception as exc:  # noqa: BLE001 - sondeo best-effort
+            logger.warning("TC Chile: no se pudo sondear el total de ficha: %s", exc)
+            return None
+        meta = data.get("meta") or {}
+        total = meta.get("total")
+        try:
+            return int(total) if total is not None else None
+        except (TypeError, ValueError):
+            return None
+
+    def _baseline_total(self, payload: Dict[str, Any]) -> Optional[int]:
+        """Total sin término de búsqueda, manteniendo el resto de filtros.
+
+        Se cachea a **nivel de clase** porque el API crea un scraper nuevo por
+        cada búsqueda (`routes_search.py`), así que una caché de instancia nunca
+        sobreviviría. El total del corpus sin filtro es una propiedad global
+        estable, y ahorra un sondeo (~0,35 s de `request_delay`) por búsqueda.
+
+        Los sondeos fallidos **no** se cachean: guardar un `None` desactivaría la
+        guarda para siempre en este proceso.
+        """
+        baseline_payload = dict(payload)
+        baseline_payload["search"] = ""
+        baseline_payload.pop("literal", None)
+        key = json.dumps(baseline_payload, sort_keys=True, ensure_ascii=False)
+        if key in self._BASELINE_CACHE:
+            return self._BASELINE_CACHE[key]
+        total = self._ficha_total(baseline_payload)
+        if total is not None and total > 0:
+            self._BASELINE_CACHE[key] = total
+        return total
+
+    def _search_refused_free_text(self, payload: Dict[str, Any]) -> bool:
+        """¿El endpoint de metadatos ignoró el término de búsqueda?
+
+        ``/buscadorexterno/ficha`` devuelve el corpus COMPLETO cuando el término
+        no coincide con ningún registro, en lugar de devolver cero. Es decir,
+        una consulta sin coincidencias degenera en "dame todo": buscar
+        ``latam airlines`` devolvía 12.329 fichas (el total sin filtro).
+
+        Detectarlo comparando el total filtrado con el total sin término permite
+        redirigir la consulta al índice de texto completo, que sí respeta el
+        término y responde 0 de forma honesta.
+
+        La comparación usa ``>=`` (no ``==``) a propósito: el corpus crece con el
+        tiempo, así que una caché ligeramente desactualizada debe seguir
+        detectando el fallo, y un total filtrado nunca puede superar el total sin
+        filtro salvo que el filtro se haya descartado.
+        """
+        if not _norm_text(payload.get("search")):
+            return False
+        filtered_total = self._ficha_total(payload)
+        if filtered_total is None:
+            return False
+        baseline_total = self._baseline_total(payload)
+        if baseline_total is None or baseline_total <= 0:
+            return False
+        return filtered_total >= baseline_total
 
     # ── Búsqueda ──────────────────────────────────────────────────────────
 
@@ -673,6 +756,22 @@ class TCChileJurisprudenciaScraper:
                 last_page = int(meta.get("last_page") or 1)
                 corrected_query = block.get("corrected_query")
 
+                # ``count`` es la verdad del índice: a diferencia de ``/ficha``,
+                # este endpoint sí respeta el término y devuelve 0 en lugar de
+                # volcar el corpus cuando no hay coincidencias.
+                total = block.get("count")
+                try:
+                    total = int(total) if total is not None else None
+                except (TypeError, ValueError):
+                    total = None
+                if total == 0 and _norm_text(payload.get("search")):
+                    logger.info(
+                        "TC Chile: el índice de texto completo no tiene "
+                        "coincidencias para %r (count=0).",
+                        payload.get("search"),
+                    )
+                    return []
+
             if not rows:
                 break
 
@@ -713,6 +812,13 @@ class TCChileJurisprudenciaScraper:
         payload = self._build_filter(criteria)
 
         use_fulltext = self._use_fulltext_endpoint(criteria, payload)
+        if not use_fulltext and self._search_refused_free_text(payload):
+            logger.warning(
+                "TC Chile: el índice de metadatos ignoró el término %r (devolvió "
+                "el corpus completo). Se repite la búsqueda en texto completo.",
+                payload.get("search"),
+            )
+            use_fulltext = True
         exact_date = _parse_date(criteria.fecha_sentencia)
         start = _parse_date(criteria.fecha_inicio or criteria.data_julgamento_inicio)
         end = _parse_date(criteria.fecha_fin or criteria.data_julgamento_fim)
@@ -737,6 +843,14 @@ class TCChileJurisprudenciaScraper:
             return fetcher(day_payload, max_results, include_reserved)
 
         if start or end:
+            if use_fulltext:
+                # ``/extended/sentencias`` sólo respeta ``search`` y ``literal``:
+                # iterar día por día repetiría la misma consulta N veces.
+                logger.info(
+                    "TC Chile: el índice de texto completo ignora las fechas; "
+                    "se omite el recorrido día por día."
+                )
+                return self._search_sentencias(payload, max_results, include_reserved)
             return self._search_date_range(
                 payload, start, end, max_results, include_reserved, use_fulltext
             )
@@ -906,6 +1020,7 @@ class TCChileJurisprudenciaScraper:
             "download_url": f"{self.BASE}/extended/{folio}/download",
             "url_detalle": f"{TC_PUBLIC_BASE}/#/ficha/{folio}",
             "search_terms": payload.get("search", ""),
+            "search_endpoint": "/buscadorexterno/ficha",
             "source": "tc_chile",
             "metadata": metadata,
         }
@@ -967,6 +1082,7 @@ class TCChileJurisprudenciaScraper:
             "download_url": f"{self.BASE}/extended/{folio}/download",
             "url_detalle": f"{TC_PUBLIC_BASE}/#/ficha/{folio}",
             "search_terms": payload.get("search", ""),
+            "search_endpoint": "/extended/sentencias",
             "source": "tc_chile",
             "metadata": metadata,
         }

@@ -261,6 +261,29 @@ def is_placeholder(value: str | None, also: set[str] | None = None) -> bool:
     return bool(also) and v in {x.lower() for x in also}
 
 
+def pick_index_value(candidate: str | None, fallback: str) -> str:
+    """Prefer a real value from the index, else infer it from the id slug.
+
+    The index emits ``organization: "Unknown"`` / ``identification_confidence:
+    "unknown"`` whenever the speaker has no profile file yet. Those strings are
+    **truthy**, so a plain ``or`` would adopt them and bake the placeholder into
+    the file being created — and every later index run would then read it back,
+    making the placeholder permanent. Treat placeholder values as absent.
+
+    >>> pick_index_value("PDI (Policía de Investigaciones de Chile)", "inferred")
+    'PDI (Policía de Investigaciones de Chile)'
+    >>> pick_index_value("Unknown", "inferred")
+    'inferred'
+    >>> pick_index_value("unknown", "inferred")
+    'inferred'
+    >>> pick_index_value(None, "inferred")
+    'inferred'
+    >>> pick_index_value("", "inferred")
+    'inferred'
+    """
+    return fallback if is_placeholder(candidate) else str(candidate)
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # Managed block builders
 # ══════════════════════════════════════════════════════════════════════════════
@@ -361,12 +384,17 @@ def build_md(
     appearances: list[dict] | None = None,
 ) -> str:
     display = slug_to_display(spk_id)
-    org = (index_entry or {}).get("organization") or infer_org(spk_id)
-    conf = (index_entry or {}).get("identification_confidence") or infer_conf(spk_id)
+    org = pick_index_value((index_entry or {}).get("organization"), infer_org(spk_id))
+    conf = pick_index_value(
+        (index_entry or {}).get("identification_confidence"), infer_conf(spk_id)
+    )
 
     # Collect canonical names from participants
     canon_names = list({p.get("canonical_name", "") for p in participants if p.get("canonical_name")})
-    display_name = (index_entry or {}).get("display_name") or (canon_names[0] if canon_names else display)
+    display_name = pick_index_value(
+        (index_entry or {}).get("display_name"),
+        canon_names[0] if canon_names else display,
+    )
 
     # Collect roles
     roles = list({p.get("role", "") for p in participants if p.get("role")})

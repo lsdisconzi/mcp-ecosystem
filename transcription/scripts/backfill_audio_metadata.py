@@ -31,6 +31,9 @@ Deliberately NOT done here:
     ``_verified`` sibling instead, so both survive.
   * ``metadata.ontology_node_id`` is never blanked when it already holds a
     real identifier -- existing values are preserved.
+  * The recordings listed in ``TIME_OVERRIDES`` keep their stored time.  That
+    is not a general escape hatch: it exists for one file whose own tag is
+    provably a duplicate of a different recording's tag.
 
 Timezone note: July 2024 in Chile is UTC-4 (DST runs Sep->Apr).  The QuickTime
 ``creation_time`` tag is true UTC, so the local wall clock is that instant
@@ -64,6 +67,22 @@ CHILE_OFFSET = "-04:00"
 CHILE_TZ = timezone(timedelta(hours=-4))
 
 ONTOLOGY_SCHEMA_VERSION = "2.5"
+
+# Manual exceptions to the "trust the file" rule, keyed by transcript_id.
+# Each one is a deliberate, documented decision -- see
+# docs/AUDIO_SOURCE_MAPPING.md section 6 before changing or removing it.
+#
+#   I-002_11 (barraza counter, 20.m4a)
+#       Its QuickTime ``creation_time`` is byte-identical to the one on
+#       ``Terminal Internacional - T2.m4a``.  Two different recordings cannot
+#       have been created at the same instant, so at least one tag was copied
+#       by an export step; ``20.m4a`` is the weaker case (T2's metadata block
+#       is already known to hold values copied from other files).  The
+#       hand-entered 18:20:00 also sits a sensible 34 minutes after the T2
+#       counter recording, so it is kept.
+TIME_OVERRIDES = {
+    "I-002_11_NAR-13_STG_20_barraza_counter": "2024-07-05T18:20:00" + CHILE_OFFSET,
+}
 
 # Alphabetical, matching the convention already used by the existing files.
 METADATA_ORDER = [
@@ -287,11 +306,13 @@ def main() -> None:
             data["provider"] = "local"
 
         # --- timestamps: the device header is authoritative ---------------- #
-        local = local_stamp(rec["created"])
+        override = TIME_OVERRIDES.get(tid)
+        local = override or local_stamp(rec["created"])
         for key in ("recording_datetime", "timestamp"):
             old = data.get(key)
             if local and old != local:
-                notes.append(f"{key}: {old!r} -> {local!r}{describe_shift(old, local)}")
+                why = "   [manual override, not the file tag]" if override else ""
+                notes.append(f"{key}: {old!r} -> {local!r}{describe_shift(old, local)}{why}")
                 data[key] = local
 
         # --- metadata ------------------------------------------------------ #

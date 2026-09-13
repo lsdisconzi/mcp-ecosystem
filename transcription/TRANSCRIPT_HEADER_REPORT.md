@@ -2,18 +2,31 @@
 
 **Target:** `transcription/data/transcripts/*.json` — 27 canonical transcripts
 **Scope:** every top-level key **except** `segments[]` (the "header"), plus the nested blocks it contains (`metadata`, `participants[]`, `forensic_clusters{}`, `key_evidentiary_findings[]`, `corrections_applied[]`)
-**Method:** direct programmatic measurement of all 27 files (JSON parse + field/type/emptiness censuses + cross-file set comparisons). No file was modified.
-**Date:** 2026-09-13
+**Method:** direct programmatic measurement of all 27 files (JSON parse + field/type/emptiness censuses + cross-file set comparisons). The corpus was not modified for this report; the repairs described in the banner were applied afterwards by the scripts under `scripts/`.
+**Date:** 2026-09-13 (repaired 2026-09-13)
 **Classification:** Attorney Work Product — Privileged and Confidential
 
 > **Status of repairs.** This report describes the corpus as first measured.
-> The **provenance and temporal defects are now fixed** — see
-> `docs/AUDIO_SOURCE_MAPPING.md` and `scripts/backfill_audio_metadata.py`. Fixed:
-> `source_file`, `source_path`, `provider`, `recording_datetime`, `timestamp`,
-> and the whole `metadata` block (§4.1, §4.2, §4.12). Everything else in
-> this report — violations, tags, `strength`, cluster/finding/correction
-> schemas, `reviewed`, the ordering breaks — is **still open**. Corrected
-> sections are marked inline.
+> **Every defect class below has since been addressed** (2026-09-13), except the ones
+> explicitly marked *still open*. Fixed:
+>
+> | Area | Was | Now | Where |
+> |---|---|---|---|
+> | Pro provenance + `metadata` | 7/27, `2.3.1` | 27/27, `2.5` | `docs/AUDIO_SOURCE_MAPPING.md` |
+> | Temporal agreement | 3 axes disagreed | 27/27 `-04:00` from media | same |
+> | `violations_cited` | 91 strings, 29 codes | 35 registry IDs, 0 non-conforming | `docs/VIOLATIONS_CROSSWALK.md` |
+> | Findings/clusters/corrections | 6/3/3 shapes, 7 `strength` values | 1 shape each, `High`/`Medium`/`Low` | `docs/SCHEMA_NORMALIZATION.md` |
+> | `tags`, `location`, `audio_id` | mixed case, 16 variants | kebab-case, 14 variants | `docs/VOCABULARY_NORMALIZATION.md` |
+> | `speaker_id` | 48 values, 8 null | 43 values, 0 null | `docs/SPEAKER_ID_CONSOLIDATION.md` |
+> | `title` | 4 conventions, `FINAL v2`×20 | imported from the overview doc | `scripts/import_overview_titles.py` |
+> | `reviewed`, chain, lineage | 18 absent, 3 breaks, self-refs | explicit, 0 breaks, `null` | `scripts/fix_header_lineage.py` |
+> | `speaker_index.json`, `speaker_patch.json`, `data/speakers/*.md` | keyed by 46 raw ids | rebuilt on 43 canonical ids | `docs/SPEAKER_ID_CONSOLIDATION.md` |
+>
+> **Still open:** violations anchoring (H1), finding `segments` coverage (H4),
+> the `tags` 97-value spread (H10), 9 participants missing `segment_labels`,
+> `classification` having no per-file meaning (H16), and 915 `speaker_patch.json`
+> suggestions awaiting human review.
+> Corrected sections are marked inline.
 
 ---
 
@@ -21,18 +34,23 @@
 
 The header block is **structurally stable but semantically loose**.
 
-* **Structure is excellent.** All 27 files carry the same header keys in a consistent shape — 24 inspected here, plus out-of-scope `segments`. The provenance backfill added `source_path`, and 9 files also carry `reviewed`, so current files hold 26 or 27 top-level keys. `chronological_order` is 1–27 with no duplicates, `case_id` is uniformly `I-002`, `classification` is byte-identical in all 27, and `recording_datetime` is strictly monotonic with the chronological spine. As a machine-readable envelope, the header works.
-* **Completeness is poor and bimodal.** Content-bearing fields are populated in roughly a third of the corpus: `violations_cited[]` is non-empty in **14/27**, `forensic_clusters{}` in **11/27**, `corrections_applied[]` in **6/27**, and the top-level `reviewed` flag exists on only **9/27**. There is no partial-credit middle: files are either rich or empty. *(`metadata` was the extreme case — non-empty in only 13/27 — and is now complete in 27/27, see §4.12.)*
-* **Consistency is the real defect.** The same information is encoded in different shapes, duplicated across fields, or expressed in inconsistent vocabularies:
-  * `violations_cited[]` mixes **three incompatible kinds of value** (registry codes, statutory article references, prose assertions) — 101 citations, 91 distinct strings, only 29 distinct real codes.
-  * `forensic_clusters{}.<key>` has **three different value schemas**, and one file mixes two of them internally.
-  * `corrections_applied[]` has **three different record shapes** (4-key object, 2-key object, bare string).
-  * `key_evidentiary_findings[]` has **six different record shapes**, and `strength` is drawn from **7 values**, two of which are literal star strings.
+* **Structure is excellent.** All 27 files carry the same header keys in a consistent shape — 24 inspected here, plus out-of-scope `segments`. The provenance backfill added `source_path`, and 9 files also carried `reviewed`, so at first measurement the files held 26 or 27 top-level keys; the lineage repair then added `original_transcript_id` and `reviewed` everywhere, and the corpus is now a **single uniform 27-key shape across all 27 files**. `chronological_order` is 1–27 with no duplicates, `case_id` is uniformly `I-002`, `classification` is byte-identical in all 27, and `recording_datetime` is strictly monotonic with the chronological spine. As a machine-readable envelope, the header works.
+* **Completeness is poor and bimodal.** Content-bearing fields are populated in roughly a third of the corpus: `violations_cited[]` is non-empty in **14/27**, `forensic_clusters{}` in **11/27**, `corrections_applied[]` in **6/27**. There is no partial-credit middle: files are either rich or empty. *(`metadata` was the extreme case — non-empty in only 13/27 — and is now complete in 27/27; `reviewed` now exists on 27/27 with 18 explicitly `false`.)* Annotation **density** was deliberately not changed: the empty fields are a transcription-coverage fact, not a schema defect.
+* **Consistency is the real defect — and it is now normalized.** The same information was encoded in different shapes, duplicated across fields, or expressed in inconsistent vocabularies:
+  * `violations_cited[]` mixed **three incompatible kinds of value** (registry codes, statutory article references, prose assertions) — 101 citations, 91 distinct strings, only 29 distinct real codes. **Now: 35 distinct registry IDs, 0 non-conforming.**
+  * `forensic_clusters{}.<key>` had **three different value schemas**, and one file mixed two of them internally. **Now: one 5-key schema.**
+  * `corrections_applied[]` had **three different record shapes** (4-key object, 2-key object, bare string). **Now: one 5-key schema.**
+  * `key_evidentiary_findings[]` had **six different record shapes**, and `strength` was drawn from **7 values**, two of which were literal star strings. **Now: one schema, `High`/`Medium`/`Low`.**
+  * `speaker_id` had **48 values, one per transcript-role pair, plus 8 nulls**. **Now: 43 canonical values, 0 nulls.**
   * `timestamp`, `recording_datetime`, and `metadata.timestamps.QuickTime_Movie_Header_Created` all described the same moment but disagreed — the stored header was **+3 h** wrong in all 9 files that had it, and `recording_datetime` had drifted in 15 of 27. **Now fixed** (§4.2) by deriving all three from the media file itself.
 * **Provenance was thin** *(now fixed — §4.1, §4.12)*. `source_file` was populated in **7/27**, `provider` in **4/27** (with `local` and `unknown` used as the same field's vocabulary). One `source_file` pointed at a *transcript* JSON rather than audio.
-* **Ordering has 3 concrete breaks** isolating the two near-empty fragment files (`05B`, `07`) from the prior/next chain.
+* **Ordering had 3 concrete breaks** isolating the two near-empty fragment files (`05B`, `07`) from the prior/next chain. **Now: 0 breaks.**
 
-The header is therefore usable today as an index, but not yet as a reliable evidentiary index. The dominant fixes are **normalization** (violations, tags, strength, cluster/finding/correction schemas) and **backfill** (metadata, reviewed), not restructuring.
+The header is usable today as an index, and after the 2026-09-13 normalization pass it is
+usable as a reliable evidentiary index for everything except **segment anchoring** (H1, H4),
+which needs new content rather than new rules. The dominant fixes were therefore
+**normalization** (violations, tags, strength, cluster/finding/correction schemas, speaker_ids)
+and **backfill** (metadata, provenance, `reviewed`, titles), not restructuring.
 
 ---
 
@@ -104,6 +122,8 @@ review and is not counted above.)
 
 ### 4.1 Identity & provenance
 
+> **FIXED 2026-09-13.** `source_file`, `source_path`, `provider` are now populated 27/27; `original_transcript_id` is `null` 27/27. See `docs/AUDIO_SOURCE_MAPPING.md`.
+
 > **Status: provenance part FIXED 2026-09-13** (`source_file`, `source_path`,
 > `provider`). Identity fields (`transcript_id`, `narrative_id`, `audio_id`,
 > `original_transcript_id`, `classification`, `language`) are **unchanged** and
@@ -158,6 +178,8 @@ metadata.file_info.file_name = Aeropuerto Arturo Merino Benítez 15.m4a
 * `pt` files (`01`, `05B`) are flagged `Portuguese` in `tags[]` (English name) — the two fields use different vocabularies for the same concept.
 
 ### 4.2 Temporal fields
+
+> **FIXED 2026-09-13.** All 27 `recording_datetime` and `timestamp` values are the media file's own `creation_time` in Chile local time (`-04:00`) and agree with each other. See §4.1 and `docs/AUDIO_SOURCE_MAPPING.md`.
 
 > **Status: FIXED 2026-09-13** by `scripts/backfill_audio_metadata.py`. All three
 > fields now derive from the recording's own QuickTime tag, converted to Chile
@@ -227,6 +249,8 @@ not recording time — left as-is, but it should not be read as provenance.
 
 ### 4.3 Location
 
+> **FIXED 2026-09-13.** `location` is now 14 canonical values on a facility + ` — <place>` pattern; `Artnel` no longer appears in any file. See `docs/VOCABULARY_NORMALIZATION.md`.
+
 27/27 present, but **16 distinct strings** for a corpus that has only ~4 real places. The variation is granularity and punctuation, not substance:
 
 | Occurrences | Value |
@@ -244,6 +268,8 @@ Defects:
 
 ### 4.4 Ordering (`chronological_order`, `prior_stage`, `next_stage`)
 
+> **FIXED 2026-09-13.** The 3 broken links were repaired and `05B`/`07` are reconnected; a re-check reports 0 chain issues.
+
 `chronological_order` is exemplary: **1–27, all unique, no gaps**. `prior_stage` is blank only at order 1 and `next_stage` only at order 27 — the intended boundary convention is respected.
 
 However, the prior/next links **do not form an unbroken chain**. Three links disagree with the chronological spine:
@@ -257,6 +283,8 @@ However, the prior/next links **do not form an unbroken chain**. Three links dis
 Effect: **two files are orphaned from the chain** — `05B` (`NAR-11_STG_11_waiting_area`, order 6) and `07` (`NAR-06_STG_13_post_PDI_corridor`, order 8). Both are inserted at a chronological position but neither is referenced by its predecessor nor points back to it. Notably, **both are also empty for `forensic_clusters` and `key_evidentiary_findings`** — the orphans are the same files that carry no analytic content. A traversal of the prior/next chain will silently skip them.
 
 ### 4.5 Descriptive fields (`title`, `subtitle`)
+
+> **FIXED 2026-09-13.** `title` and `subtitle` were replaced from `transcription/docs/LA8159-Overview.html`. See `scripts/import_overview_titles.py`.
 
 **`title`** — 27/27, unique, but four different conventions are in use:
 
@@ -275,11 +303,21 @@ Two further problems:
 
 ### 4.6 `participants[]`
 
-**Schema is stable**: every participant record, in every file, has exactly the same **5 keys** — `canonical_name`, `role`, `segment_labels`, `speaker_id`, `speaker_label`. This is the best-normalized nested block in the header. Content, however, has issues.
+> **RESOLVED 2026-09-13 (Task E).** `speaker_id` is now **43 canonical values over 85 records,
+> with 0 nulls**, and `canonical_name` no longer embeds the transcript identity. The two
+> non-person rows were removed. Script: `scripts/fix_speaker_ids.py`; audit trail:
+> `docs/SPEAKER_ID_CONSOLIDATION.md`. The pre-fix analysis is retained below for the record.
 
-**Volume:** 87 records, 1–10 per file. **6 files have exactly one participant**, and in every case that participant is the passenger alone: `05B`, `10B`, `13`, `15`, `16`, `19`. Those files also have 1–2 findings and no clusters — they are the thin fragments.
+**Schema is nearly stable**: of 85 participant records, **76 carry all 5 keys**
+(`canonical_name`, `role`, `segment_labels`, `speaker_id`, `speaker_label`) and **9 carry 4** —
+the 8 minted ids plus the surviving `SPK-pdi-female` row in `06` lack `segment_labels`.
+An earlier revision of this report claimed 5 keys on every record; that was never true of the
+8 records that had no `speaker_id` at all. `add_participant_segment_labels.py` can close the gap.
 
-**`speaker_id` is null/absent in 8 records** (spread over 3 files):
+**Volume:** 85 records, 1–10 per file. **6 files have exactly one participant**, and in every case that participant is the passenger alone: `05B`, `10B`, `13`, `15`, `16`, `19`. Those files also have 1–2 findings and no clusters — they are the thin fragments.
+
+**`speaker_id` was null/absent in 8 records** (spread over 3 files) — **now minted**
+(`SPK-unknown-stg-<N>-speaker-<NN>`, a form that cannot be re-suffixed):
 
 | File | Participants with no `speaker_id` |
 |---|---|
@@ -287,22 +325,38 @@ Two further problems:
 | `17` | `SPEAKER_00`, `SPEAKER_01`, `SPEAKER_02` |
 | `24` | `SPEAKER_00` |
 
-A null `speaker_id` breaks any join keyed on speaker, and there is no compensating identifier.
+A null `speaker_id` broke any join keyed on speaker, and there was no compensating identifier.
 
-**Identifier fragmentation.** 48 distinct `speaker_id` values for a much smaller cast. Two mechanisms cause this:
+**Identifier fragmentation — FIXED.** The pre-fix space was 46 raw `speaker_id` values for a much
+smaller cast. Two mechanisms caused it, and **both are now removed**:
 
-1. *Stage/narrative scoping baked into the ID.* The same role recurring across stages gets a new ID, e.g. a PDI officer as `SPK-pdi-female-nar-stg-8-pdi-identity-control` (which is then **reused in `CARABINEROS_1` and `CARABINEROS_2`** — i.e. a stage-scoped ID leaking across unrelated stages), and the DGAC official "Don Nicolás" appearing as three different identifiers across files while `canonical_name` is sometimes `Nicolás` and sometimes `DGAC - Don Nicolas (NAR-14_Terminal_Internacional_T2_counter)` / `(NAR-16_STG_23_DGAC_don_nicolas)`.
-2. *Stage/narrative scoping baked into the display name.* `canonical_name` values such as `Latam Pilot Ruiz (NAR-01_STG_1_pre_boarding)`, `PDI (NAR-07_STG_7_post_removal_investigation)` and `DGAC - Don Nicolas (NAR-14_…)` embed the transcript identity into the person's name, so the "canonical" name is not canonical.
+1. *Stage/narrative scoping baked into the ID.* The same role recurring across stages got a new ID, e.g. a PDI officer as `SPK-pdi-female-nar-stg-8-pdi-identity-control` (which was then **reused in `CARABINEROS_1` and `CARABINEROS_2`** — a stage-scoped ID leaking across unrelated stages), and the DGAC official "Don Nicolás" appearing as three different identifiers across files.
+2. *Stage/narrative scoping baked into the display name.* `canonical_name` values such as `Latam Pilot Ruiz (NAR-01_STG_1_pre_boarding)`, `PDI (NAR-07_STG_7_post_removal_investigation)` and `DGAC - Don Nicolas (NAR-14_…)` embedded the transcript identity into the person's name, so the "canonical" name was not canonical. The `(NAR-…)` suffix is now stripped from **40** names, and where a canonical id still carried several names, the majority name won so that one id maps to exactly one name (4 such corrections, including `Piloto (RUIZ)` / `Ruiz` → `Latam Pilot Ruiz`).
 
-Legitimate reuse does occur — `SPK-passenger-leandro` appears in **27/27**, `SPK-joaquin-barraza-latam-security` in 4, `SPK-stewardess-accuser` in 2, `SPK-antonela-latam-agent` in 2 — which proves person-level IDs exist and work; the fragmented ones are avoidable.
+The consolidation is **35 canonical + 8 minted = 43 values**, and it records *why* each
+collision was merged: **identity** merges join a named person (`SPK-pilot-ruiz` 3→1,
+`SPK-dgac-don-nicolas` 3→1, `SPK-dgac-edgardo-ortiz` 2→1, `SPK-female-carabinero-2` 3→1),
+while **role** merges join a generic label that had been suffixed per stage (`SPK-dgac` 2→1,
+`SPK-pdi` 3→1, `SPK-computer-officer` 2→1).
 
-**Unresolved identity is encoded inconsistently:**
-* `canonical_name: "Unknown"` in **6 records** (`03`, `04` for the stewardess; `06` ×4 for `SPEAKER_02–05`, whose `role` is also `Unknown speaker`).
-* In `17` and `24`, `canonical_name` is simply the **raw ASR label** (`SPEAKER_00`, `SPEAKER_01`, `SPEAKER_02`, `SPEAKER_00 (English speaker)`) — the field is unused rather than marked unknown. So "unknown person" has two different representations (`"Unknown"` vs the raw diarization token), and neither is machine-distinguishable from a real name.
+Legitimate reuse does occur — `SPK-passenger-leandro` appears in **27/27**, `SPK-joaquin-barraza-latam-security` in 4, `SPK-stewardess-accuser` in 2, `SPK-antonela-latam-agent` in 2 — which proves person-level IDs exist and work; the fragmented ones were avoidable.
 
-`segment_labels[]` is present on all 87 records but its values were not reconciled against the `segment_labels` used in `segments[]` in this pass; it is the correct place for per-transcript speaker labels, so any consolidation of `speaker_id` must preserve it.
+**Two non-person rows were removed from `06`:** `SPK-review-important-nar-stg-8-…`
+(`canonical_name: "Review-Important"`, `role: "Unknown speaker"` — a mis-parsed diarization
+label) and a duplicate `SPK-pdi-female` row (`"PDI - Female"` / `Possible PDI Officer`; the
+`"PDI Female"` / `PDI Female Officer` row was kept). `speaker_index.json` had already recorded
+only one appearance, so index and transcript disagreed before the fix.
+
+**Unresolved identity** is still encoded inconsistently at the *name* level: `canonical_name: "Unknown"`
+in 6 records, and in `17`/`24` the raw ASR label (`SPEAKER_00`, `SPEAKER_00 (English speaker)`).
+Consolidation gave these ids a stable join key but deliberately did not invent a display name —
+`SPEAKER_00` is not machine-distinguishable from a real name.
+
+`segment_labels[]` is present on 76 of 85 records; its values were not reconciled against the `segment_labels` used in `segments[]` in this pass; it is the correct place for per-transcript speaker labels, so any consolidation of `speaker_id` must preserve it — Task E did.
 
 ### 4.7 `violations_cited[]` — the largest single defect
+
+> **FIXED 2026-09-13.** Now 35 distinct registry IDs over 85 entries, 0 non-conforming. Unmappable strings were dropped, not relocated. See `docs/VIOLATIONS_CROSSWALK.md`.
 
 101 citations across 14/27 files (13 files empty). The list holds **three incompatible kinds of value**:
 
@@ -330,6 +384,8 @@ Legitimate reuse does occur — `SPK-passenger-leandro` appears in **27/27**, `S
 
 ### 4.8 `tags[]`
 
+> **FIXED 2026-09-13 (casing only).** All 202 tags are lowercase kebab-case, 0 non-conforming. The 97 distinct values are inherent to the corpus and were left alone. See `docs/VOCABULARY_NORMALIZATION.md`.
+
 27/27 non-empty (3–14 per file), **202 instances, 97 distinct** — i.e. a **long tail**: only 9 tags appear 3+ times, and **~70 tags appear exactly once**.
 
 Universal/near-universal tags: `transcript` (27), `evidence` (27), `narrative` (26 — missing only in `I-002_06_NAR-STG_8_pdi_identity_control.json`).
@@ -342,6 +398,8 @@ There is **no controlled vocabulary**, and the inconsistency is visible on sever
 * **Type**: tags duplicate information already held in dedicated fields — stage tags duplicate `narrative_id`/`chronological_order`; `false-aggression-allegation` duplicates content in `key_evidentiary_findings`; and the 4 pseudo-tags that should logically live here (`PATTERN-OF-FAILURE`, `TOTAL-SERVICE-BLOCK`, `WRONGFUL-USE-OF-INTERNAL-CHANNEL`, `EVIDENCE-PRESERVATION-DUTY`) are instead in `violations_cited` (§4.7).
 
 ### 4.9 `forensic_clusters{}`
+
+> **FIXED 2026-09-13.** One schema: `{summary, reasoning, provisions_engaged, violation_linkage, segments}`. See `docs/SCHEMA_NORMALIZATION.md`.
 
 **Coverage: 11/27 non-empty; 16 empty.** 62 clusters total, 2–10 per file. Key naming is consistent (`cluster_A_…`, `cluster_B_…`, …, up to `cluster_J_…`), which makes the block easy to traverse.
 
@@ -360,6 +418,8 @@ Two consequences:
 * This is a **third place** where violation/provision information is encoded (after `violations_cited[]` and `key_evidentiary_findings[]`), with no cross-reference between them. Whether `violation_linkage` values are registry codes or prose was not normalized, so a legal-concept census of the corpus is currently impossible.
 
 ### 4.10 `key_evidentiary_findings[]`
+
+> **PARTLY FIXED 2026-09-13.** Schema unified to `{id, finding, strength, segments, cross_reference}` and `strength` reduced to `High`/`Medium`/`Low`; `segments` is still optional, so the 101 unanchored findings remain open (H4).
 
 **153 findings; 23/27 non-empty; 4 empty** — and those 4 (`05B`, `07`, `10A`, `10B`) are the same files that are empty for `forensic_clusters`.
 
@@ -382,6 +442,8 @@ Field census across all 153 findings: `id` 153, `finding` 153, `strength` 153, `
 * **`strength` uses 7 unconverted values**: `High` (83), `Medium` (31), `Critical` (26), `Low` (2), `Remarkable` (1), `★★★★★★` (3), `★★★★★` (7). Two values are literal Unicode star strings. There is no ordinal mapping, so `Critical` vs `★★★★★★` vs `High` cannot be compared, sorted, or filtered.
 
 ### 4.11 `corrections_applied[]`
+
+> **FIXED 2026-09-13.** One schema: `{segment, original, corrected, reason, type}`; 9 legacy records coerced. See `docs/SCHEMA_NORMALIZATION.md`.
 
 **47 records; only 6/27 files non-empty** (`02` 9, `03` 10, `04` 1, `08` 19, `12` 5, `14` 3); 21 files empty. **Three record shapes**:
 
@@ -462,6 +524,8 @@ replaced by `sample_rate` (int); and `file_info.file_size` went from the string
 
 ### 4.13 `reviewed`
 
+> **FIXED 2026-09-13.** Present on 27/27 — `true` in 9, explicit `false` in the other 18, so absent no longer means unknown.
+
 * Present on **9/27**, always with value `true` (`06`, `09`, `12`, `15`, `16`, `21`, `22`, `23`, `24`).
 * **Absent on 18/27.** No file has `reviewed: false`.
 * Consequence: **"absent" is ambiguous** — it could mean "not reviewed", "not applicable", or "the flag is optional". Because `true` is the only value ever written, the flag currently conveys nothing beyond "this file passed through a pass that writes `reviewed: true`".
@@ -516,20 +580,20 @@ Observations from the matrix:
 | ID | Defect | Evidence | Impact |
 |---|---|---|---|
 | **H1** | Unanchored violations: no `violations_cited` entry carries `segment`, `confidence`, or `trust_tier` | 101/101 citations lack anchoring | Violations cannot be verified against the transcript; the field is assertion-only |
-| **H2** | `violations_cited[]` mixes codes, article references and prose | 32 / 45 / 24 split; 91 strings for 29 concepts | Set operations, counts and registry joins are wrong |
+| **H2** | `violations_cited[]` mixes codes, article references and prose | 32 / 45 / 24 split; 91 strings for 29 concepts | Set operations, counts and registry joins are wrong — **FIXED 2026-09-13** (35 distinct registry IDs, 0 non-conforming) |
 | **H3** | Three-way time disagreement | stored QuickTime header **+3 h** wrong in all 9 files that had it; the remaining gap to `recording_datetime` was ~4 h; 15 of 27 `recording_datetime` values had drifted (up to ~+2 h); `timestamp` empty in 1 and seconds-drifted in 2; 5 files end in `Z` (mislabel), 21 naive | No single trustworthy time axis; sorting/merging across files is unreliable — **FIXED 2026-09-13** |
-| **H4** | `key_evidentiary_findings[]` largely unanchored + uncontrolled `strength` | 101/153 findings lack `segments`; 7 `strength` values incl. `★★★★★★` | 66% of the key analytic output is untraceable and unsortable |
-| **H5** | Three different schemas for `forensic_clusters` values (one file mixes two) | 48 / 13 / 1 | Legal-provision content in clusters is unreadable in 9 of 11 files that have clusters |
+| **H4** | `key_evidentiary_findings[]` largely unanchored + uncontrolled `strength` | 101/153 findings lack `segments`; was 7 `strength` values incl. `★★★★★★` | 66% of the key analytic output is untraceable and unsortable — `strength` **FIXED** (`High`/`Medium`/`Low`); anchoring still open |
+| **H5** | Three different schemas for `forensic_clusters` values (one file mixes two) | was 48 / 13 / 1 | Legal-provision content in clusters was unreadable in 9 of 11 files — **FIXED 2026-09-13** (one 5-key schema) |
 | **H6** | Bimodal completeness: analytic fields empty in ~40–75% of files | clusters 16 empty, corrections 21, violations 13, `metadata` 14 (`{}`), `reviewed` absent 18 | Corpus-level aggregates silently under-count (`metadata` part **FIXED**) |
-| **H7** | `reviewed` semantics undefined; 18 files lack it; `false` never occurs | 9× `true`, 18 absent | Cannot distinguish "not reviewed" from "not applicable" |
-| **H8** | Broken `prior_stage`/`next_stage` chain | 3 wrong links; `05B` and `07` orphaned — and both are analytic-empty | Any chain traversal silently drops two files |
-| **H9** | `speaker_id` fragmentation and 8 null IDs | 48 distinct IDs; stage-scoped slugs; `SPEAKER_00–05`; `canonical_name: "Unknown"` and raw ASR labels | Person-level aggregation and per-speaker attribution are unreliable |
-| **H10** | `tags[]` has no controlled vocabulary | 97 distinct / 202 instances; ~70 singletons; casing, language and granularity mixed | Tags unusable as a query facet; duplicates content held elsewhere |
-| **H11** | Provenance thrift: `source_file` was 7/27, `provider` 4/27, `original_transcript_id` redundant self-ref 22/27 | one `source_file` even pointed at a transcript JSON (`aeropuerto_STG_23.json`) | No reliable link back to the source media — `source_file`/`source_path`/`provider` **FIXED**; `original_transcript_id` still open |
-| **H12** | `corrections_applied` has 3 shapes; 6 records are bare strings | 38 / 3 / 6 | Corrections cannot be audited or replayed uniformly |
+| **H7** | `reviewed` semantics undefined; 18 files lack it; `false` never occurs | was 9× `true`, 18 absent | Cannot distinguish "not reviewed" from "not applicable" — **FIXED 2026-09-13** (explicit `false` in the other 18) |
+| **H8** | Broken `prior_stage`/`next_stage` chain | was 3 wrong links; `05B` and `07` orphaned — and both are analytic-empty | Any chain traversal silently drops two files — **FIXED 2026-09-13** (0 issues) |
+| **H9** | `speaker_id` fragmentation and 8 null IDs | was 48 distinct IDs; stage-scoped slugs; `SPEAKER_00–05`; `canonical_name: "Unknown"` and raw ASR labels | Person-level aggregation and per-speaker attribution are unreliable — **FIXED 2026-09-13** (43 values, 0 null, suffix-free) |
+| **H10** | `tags[]` has no controlled vocabulary | 97 distinct / 202 instances; ~70 singletons; casing, language and granularity mixed | Tags unusable as a query facet; duplicates content held elsewhere — casing **FIXED 2026-09-13** (0 non-kebab values); the 97-value spread is inherent to the corpus |
+| **H11** | Provenance thrift: `source_file` was 7/27, `provider` 4/27, `original_transcript_id` redundant self-ref 22/27 | one `source_file` even pointed at a transcript JSON (`aeropuerto_STG_23.json`) | No reliable link back to the source media — **FIXED 2026-09-13** (`source_file`/`source_path`/`provider` `local` ×27; `original_transcript_id` now `null` ×27) |
+| **H12** | `corrections_applied` has 3 shapes; 6 records are bare strings | was 38 / 3 / 6 | Corrections cannot be audited or replayed uniformly — **FIXED 2026-09-13** (one 5-key schema, 9 coercions) |
 | **H13** | `metadata` sub-blocks partition the corpus; ontology stuck at `2.3.1` | media trio 9, ontology 3 (`2.3.1`), process pair 3; 14 files `{}`; 3 empty-string timestamps | No file had a complete media/ontology record — **FIXED 2026-09-13** (27/27; `2.3.1` → `2.5`) |
-| **H14** | Free-text descriptors: `location` 16 variants for ~4 places; `title` 4 conventions with `FINAL v2` in 20; `subtitle` mixed register | see §4.3/§4.5 | Grouping, filtering and title-based lookup fail |
-| **H15** | Internal contradictions inside single files | Carabineros titles say **Artnel** while subtitle/location say **Dartnell**; `audio_id` `aeropuerto_stg_12` casing; non-breaking hyphen in `sub‑station` | Text search misses |
+| **H14** | Free-text descriptors: `location` 16 variants for ~4 places; `title` 4 conventions with `FINAL v2` in 20; `subtitle` mixed register | see §4.3/§4.5 | Grouping, filtering and title-based lookup fail — `location` (`14` variants) and `title` **FIXED 2026-09-13** |
+| **H15** | Internal contradictions inside single files | Carabineros titles said **Artnel** while subtitle/location say **Dartnell**; `audio_id` `aeropuerto_stg_12` casing; non-breaking hyphen in `sub‑station` | Text search misses — **FIXED 2026-09-13** (0 files contain `Artnel`; `audio_id` `STG` upper-cased; hyphens normalised) |
 | **H16** | `classification` identical ×27 | 1 distinct string | Field carries no information; suggests missing per-file status |
 
 ---
@@ -540,7 +604,7 @@ Observations from the matrix:
 2. **A usable code registry does survive** at `discovery/_files_which_will_be_used_in_pipeline/violations/*.json` (**81 codes**). Cross-check result: **all 29 distinct cited codes resolve; 0 unresolved; 52 registry codes never cited.**
 3. **The registry's own titles are defective** and must not be imported into headers: three titles begin with a stray `: "` (`CL-016`, `CL-035`, `CL-037`) and `CL-001`'s title embeds a `[[SPK-stewardess-accuser]]` wikilink. Any code→title copy needs cleaning first.
 4. **Legal concepts are encoded in four places** with no cross-links: `violations_cited[]`, `forensic_clusters[].provisions_engaged` / `violation_linkage`, `key_evidentiary_findings[].finding`, and `corrections_applied`. Until these are reconciled, a corpus-wide "which norms are engaged" answer is not derivable.
-5. **`speaker_index.json`** (`transcription/data/speaker_index.json`) is the natural place to source `speaker_id` consolidation, `display_name`, `organization`, `identification_confidence`, and `md_file`; that reconciliation is out of scope for this header-only review but the participants defects in §4.6 are exactly its input.
+5. **`speaker_index.json`** (`transcription/data/speaker_index.json`) is the natural place to source `speaker_id` consolidation, `display_name`, `organization`, `identification_confidence`, and `md_file`; the participants defects in §4.6 were exactly its input, and both the index and `data/speakers/*.md` have since been rebuilt against the canonical ids (`docs/SPEAKER_ID_CONSOLIDATION.md`). One profile, `SPK-carabinero-dartnell-female-1.md`, is retained without an index entry by explicit decision — it is unreconciled vault material whose id never existed in the corpus. See that document before citing it.
 
 ---
 
@@ -548,15 +612,15 @@ Observations from the matrix:
 
 ### 8.1 Normalization (highest value — no new data required)
 
-1. **`violations_cited[]` → bare registry codes only.** Map every string to a code (exact code → registry title → article id → `related_violations`). Emit `["CL-008","CL-014"]`. Preserve the original strings in a side mapping report (`violations_mapping.csv`) rather than in the header. Target: **0 non-code values in the field**; the 29 distinct codes become the whole vocabulary.
-2. **Move non-code, non-legal strings out.** `PATTERN-OF-FAILURE`, `TOTAL-SERVICE-BLOCK`, `WRONGFUL-USE-OF-INTERNAL-CHANNEL`, `EVIDENCE-PRESERVATION-DUTY` belong in `tags[]` (or a new `case_assertions[]`), never in `violations_cited`.
-3. **Standardize `strength`** to a closed ordinal set (e.g. `low | medium | high | critical`) and map `Remarkable`→`high`, `★★★★★`→`medium`?, `★★★★★★`→`critical`? — decide explicitly and record the mapping. Remove star glyphs.
-4. **One cluster schema.** Adopt `{segments, summary, provisions_engaged?, reasoning?, violation_linkage?}`. Migrate the 48 two-key clusters; `provisions_engaged`/`violation_linkage` values must be registry codes.
-5. **One finding schema.** `{id, finding, strength, segments?, cross_reference?, note?}` with `segments` **required** wherever a segment exists (101 findings currently omit it).
-6. **One correction schema.** `{segment, original, corrected, reason}`; convert the 6 bare strings by looking up their segment (or quarantine them if unlocatable). Drop `{type, note}` or extend it to the full schema.
-7. **`reviewed`:** make it explicit on all 27 (`reviewed: bool`) and set it from actual review state, so absent ≠ unknown. Consider a sibling `review_scope` / `segments_reviewed` count.
+1. ~~**`violations_cited[]` → bare registry codes only.**~~ — **DONE 2026-09-13**: 35 distinct registry IDs, 0 non-conforming values. The resolution route and every dropped citation are recorded in `docs/VIOLATIONS_CROSSWALK.md`.
+2. ~~**Move non-code, non-legal strings out.**~~ — **DONE** with #1 (`PATTERN-OF-FAILURE`, `TOTAL-SERVICE-BLOCK`, the 8 unmappable strings) — dropped rather than relocated, since each was redundant with a registry code that is cited anyway.
+3. ~~**Standardize `strength`** to a closed ordinal set and map `Remarkable`/`★★★★★`/`★★★★★★`~~ — **DONE 2026-09-13**: `High` / `Medium` / `Low`, stars removed. `Critical`→`High`, `Remarkable`→`High`, `★★★★★★`→`High`, `★★★★★`→`Medium`. See `docs/SCHEMA_NORMALIZATION.md`.
+4. ~~**One cluster schema.**~~ — **DONE 2026-09-13**: `{summary, reasoning, provisions_engaged, violation_linkage, segments}`.
+5. ~~**One finding schema.**~~ — **DONE 2026-09-13**: `{id, finding, strength, segments, cross_reference}`; `segments` is still optional (anchoring remains open — see H4).
+6. ~~**One correction schema.**~~ — **DONE 2026-09-13**: `{segment, original, corrected, reason, type}`; the 6 bare strings and 3 `{type, note}` objects were coerced (9 total).
+7. **`reviewed`:** ~~make it explicit on all 27~~ — **DONE 2026-09-13** (`true` 9, explicit `false` 18). A sibling `review_scope` / `segments_reviewed` count was not added.
 8. **`provider`:** ~~either populate it properly for all 27 or remove the key~~ — **DONE** (`local` ×27). Note `unknown` should never be a value.
-9. **`original_transcript_id`:** if there is no prior version, set `null` for all 27 (save a genuine lineage). A self-reference carries no information.
+9. ~~**`original_transcript_id`:** if there is no prior version, set `null` for all 27~~ — **DONE 2026-09-13** (`null` ×27).
 10. **`metadata`:** normalize to one sub-object set `{timestamps, audio_properties, file_info, ontology_node_id, ontology_schema_version, saved_audio_file, processed_audio_file}` — **DONE**, in alphabetical order. Still open: replace the 3 empty-string timestamp values with `null`. The target schema version was set to **`2.5`** per instruction (not `2.4`).
 
 ### 8.2 Backfill (requires the media / index sources)
@@ -565,10 +629,10 @@ Observations from the matrix:
 12. ~~**Resolve the ~7 h offset**~~ — **DONE**. It was two stacked errors: a **+3 h** bad conversion in the stored QuickTime header, plus a genuine ~4 h UTC-vs-Chile-local gap. All 27 `recording_datetime` and `timestamp` values are now the media file's own `creation_time` in Chile local time (`-04:00`), identical to each other. The wrong stored header value was preserved verbatim as evidence and the true value added as `QuickTime_Movie_Header_Created_verified`. Not normalized to UTC, as this recommendation originally suggested.
 13. **`metadata.timestamps` / `audio_properties` / `file_info`** — **DONE** to 27/27 from the audio files (duration, byte size, sample rate, channels, brands, encoder, voice-memo UUID). Still open: the 3 empty-string `QuickTime_Movie_Header_Created` values were preserved, not nulled.
 13b. **Still open from this group:** the 9 recordings in `data/audio/` that match no transcript were left untranscribed by decision, and `Terminal Internacional - T2.m4a` plus `Aeropuerto Arturo Merino Benítez 20.m4a` share one identical `creation_time` tag, so their two transcripts now carry the same timestamp.
-14. **`location`** to a small closed vocabulary (: airport base, boarding gate, aircraft/jetbridge, PDI office, DGAC office, LATAM counter, Carabineros Dartnell). Use a consistent separator (plain hyphen, not U+2011) and add a separate `location_detail` if venue precision is needed.
-15. **`speaker_id`** consolidation from `speaker_index.json`; keep transcript-scoped slugs only where identity is genuinely unknown; never embed stage names in `canonical_name`.
+14. ~~**`location`** to a small closed vocabulary~~ — **DONE 2026-09-13**: 14 values, built on the canonical facility name plus a ` — <place>` suffix (see `docs/VOCABULARY_NORMALIZATION.md`). A separate `location_detail` key was not added; the separator is an em dash, not a plain hyphen.
+15. ~~**`speaker_id`** consolidation from `speaker_index.json`~~ — **DONE 2026-09-13**: consolidated in the transcripts from the participant records themselves, which were more complete than the index (the index had already lost the duplicate `SPK-pdi-female` row). `speaker_index.json`, `speaker_patch.json` and `data/speakers/*.md` were then regenerated against the canonical ids — the index now holds 43 canonical keys with 85 appearances, the patch holds no non-canonical suggestions, and the profile set is 43 canonical files plus the one retained orphan (`SPK-carabinero-dartnell-female-1.md`, kept by decision as unreconciled vault material). See `docs/SPEAKER_ID_CONSOLIDATION.md`.
 16. **`violations_cited[]`** — extend the 13 empty files from segment-level citations once anchoring exists, so coverage is driven by content, not by who transcribed the file.
-17. **`tags[]`** — define a controlled vocabulary (recommend lowercase kebab-case, English keys, with a separate `tags_es[]` or a `lang` suffix for Spanish-language tags).
+17. ~~**`tags[]`** — define a controlled vocabulary (recommend lowercase kebab-case, English keys, with a separate `tags_es[]` or a `lang` suffix for Spanish-language tags).~~ — **DONE 2026-09-13** for the casing/separator half (lowercase kebab-case, 0 non-conforming values; see `docs/VOCABULARY_NORMALIZATION.md`). The English/Spanish split was not adopted: `tags` remains a single bilingual list.
 
 ### 8.3 Proposed canonical header (target shape)
 
@@ -667,27 +731,29 @@ not comparable by naive string sort against any future UTC-form timestamps.
 
 ## 9. Appendix — measured counts
 
-| Quantity | Value |
-|---|---|
-| Transcripts | 27 |
-| Segments | 3,207 |
-| Top-level header keys (universal) | 24 (`reviewed` on 9 only) |
-| `source_file` populated | 7 · `provider` populated 4 |
-| `original_transcript_id` = self | 22 (5 empty) |
-| `metadata` non-empty | 13 (14 × `{}`) — **now 27/27** |
-| `metadata` sub-key coverage | file_info 10, timestamps 9, audio_properties 9, ontology_node_id 3, ontology_schema_version 3, saved_audio_file 3, processed_audio_file 3 — **all 27/27 now** |
-| `participants` records | 87, over 48 distinct `speaker_id` (8 null) |
-| `violations_cited` entries | 101 in 14 files (13 empty) |
-| … codes / articles / prose | 32 / 45 / 24 |
-| … distinct clean codes | 29 cited vs 81 in registry (52 never cited, 0 unresolved) |
-| `tags` entries | 202, 97 distinct |
-| `forensic_clusters` | 62 in 11 files (16 empty); schemas 48 / 13 / 1 |
-| `key_evidentiary_findings` | 153 in 23 files (4 empty); 101 lack `segments`; 7 `strength` values |
-| `corrections_applied` | 47 in 6 files (21 empty); shapes 38 / 3 / 6 |
-| `location` distinct | 16 |
-| `title` distinct | 27 (20 contain `FINAL v2`) |
-| QuickTime-vs-`recording_datetime` offset | stored header was **+3 h 00 m** in all 9 files carrying one; 3 of those held an empty string. `recording_datetime` had drifted in **15 of 27** — **fixed 2026-09-13** |
-| `chronological_order` duplicates | 0 |
-| Broken prior/next links | 3 (orphans: `05B`, `07`) |
+| Quantity | As measured | After repair (2026-09-13) |
+|---|---|---|
+| Transcripts | 27 | 27 |
+| Segments | 3,207 | 3,207 |
+| Top-level header keys | 24 universal (`reviewed` on 9 only) | **27 on all 27 files** |
+| `source_file` / `provider` populated | 7 / 4 | **27 / 27** (`local`) |
+| `original_transcript_id` | self 22, empty 5 | **`null` ×27** |
+| `metadata` non-empty | 13 (14 × `{}`) | **27/27** |
+| `metadata` sub-key coverage | file_info 10, timestamps 9, audio_properties 9, ontology_node_id 3, ontology_schema_version 3, saved/processed_audio_file 3 | **all 7 sub-keys on 27/27** (`2.5`) |
+| `participants` records | 87 over 48 distinct `speaker_id` (8 null) | **85 over 43 canonical ids (0 null)** |
+| … records missing `segment_labels` | 0 claimed | **9** (the 8 minted + `SPK-pdi-female` in `06`) |
+| `violations_cited` entries | 101 in 14 files (13 empty) | **85 in 14 files (13 empty)** |
+| … codes / articles / prose | 32 / 45 / 24 | **85 / 0 / 0** |
+| … distinct codes | 29 cited vs 81 in registry (52 never cited, 0 unresolved) | **35 cited vs 81, 0 unresolved** |
+| `tags` entries | 202, 97 distinct | 202, 97 distinct, **0 non-kebab-case** |
+| `forensic_clusters` | 62 in 11 files (16 empty); schemas 48 / 13 / 1 | 62 in 11 files; **1 schema** |
+| `key_evidentiary_findings` | 153 in 23 files (4 empty); 101 lack `segments`; 7 `strength` values | 153 in 23 files; **101 still lack `segments`**; **`strength` ∈ {High, Medium, Low}** |
+| `corrections_applied` | 47 in 6 files (21 empty); shapes 38 / 3 / 6 | 47 in 6 files; **1 schema** |
+| `location` distinct | 16 | **14** |
+| `title` distinct | 27 (20 contain `FINAL v2`) | 27, **imported from `docs/LA8159-Overview.html`** |
+| `reviewed` | 9 × `true`, 18 absent | **9 × `true`, 18 × `false`** |
+| QuickTime-vs-`recording_datetime` offset | stored header **+3 h 00 m** in all 9 that had one (3 held `""`); `recording_datetime` drifted in 15/27 | **0** — all 27 derive from the media file, `-04:00` |
+| `chronological_order` duplicates | 0 | 0 |
+| Broken prior/next links | 3 (orphans: `05B`, `07`) | **0** |
 
 *End of report.*

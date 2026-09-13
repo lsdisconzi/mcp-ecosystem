@@ -15,11 +15,60 @@ Schema per entry:
 """
 
 import json
+import sys
 from pathlib import Path
 
 repo_root = Path(__file__).resolve().parent.parent
 transcripts_dir = repo_root / "data" / "transcripts"
 output_file = repo_root / "data" / "speaker_patch.json"
+
+# ---------------------------------------------------------------------------
+# Canonicalisation of suggested ids
+# ---------------------------------------------------------------------------
+# The MAPPING_RULES below were authored against the *pre-consolidation* speaker
+# vocabulary. ``fix_speaker_ids.py`` has since collapsed 46 raw ids into 35
+# canonical ones, so a raw suggestion emitted verbatim would either miss the
+# target profile or re-introduce the very fragmentation that was removed.
+# Import the authoritative table rather than duplicating it.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from fix_speaker_ids import CANONICAL  # noqa: E402
+
+# Scoped ids that never appeared in any transcript, so CANONICAL has no entry
+# for them. Each one is resolved explicitly:
+#
+#   SPK-dgac-official-2-angry-one-…  the `dgac_official 2` label (space) is a
+#       typo of `dgac_official_2`, the segment label owned by
+#       SPK-dgac-official-2 in I-002_12; "angry one" is a free-text descriptor.
+#
+#   SPK-dgac-of-…  the generic `dgac_official` label in I-002_12 is contested:
+#       participant SPK-dgac-edgardo-ortiz already declares it, and no canonical
+#       "unattributed DGAC official" bucket exists. Guessing here would silently
+#       mis-attribute evidence, so the rule is sent for human review.
+LEGACY_SCOPED = {
+    "SPK-dgac-official-2-angry-one-nar-15-stg-22-dgac-office": "SPK-dgac-official-2",
+    "SPK-dgac-of-nar-15-stg-22-dgac-office": "NEEDS_HUMAN_REVIEW",
+}
+
+
+def canonicalise(suggested_id: str, confidence: str) -> tuple[str, str]:
+    """Return ``(suggested_id, confidence)`` with the id mapped to canonical form.
+
+    >>> canonicalise("SPK-dgac-nar-06-stg-6-jetbridge-standoff", "auto")
+    ('SPK-dgac', 'auto')
+    >>> canonicalise("SPK-dgac-official-2-angry-one-nar-15-stg-22-dgac-office", "auto")
+    ('SPK-dgac-official-2', 'auto')
+    >>> canonicalise("SPK-dgac-of-nar-15-stg-22-dgac-office", "auto")
+    ('NEEDS_HUMAN_REVIEW', 'review')
+    >>> canonicalise("SPK-pdi-female", "auto")
+    ('SPK-pdi-female', 'auto')
+    """
+    if suggested_id in LEGACY_SCOPED:
+        suggested_id = LEGACY_SCOPED[suggested_id]
+    else:
+        suggested_id = CANONICAL.get(suggested_id, suggested_id)
+    if suggested_id == "NEEDS_HUMAN_REVIEW":
+        confidence = "review"
+    return suggested_id, confidence
 
 # ---------------------------------------------------------------------------
 # Mapping table derived from .dev/speaker-map-updates.md (section 2 onwards)
@@ -197,6 +246,8 @@ def main():
                     seg = segments[idx]
 
             actual_speaker = seg.get("speaker", "") if seg else None
+
+            suggested_id, confidence = canonicalise(suggested_id, confidence)
 
             patch = {
                 "transcript_id": tid,

@@ -54,14 +54,22 @@ TRANSCRIPT_FIELDS: dict[str, FieldSpec] = {
     "original_transcript_id": FieldSpec(
         "original_transcript_id", STR,
         description="ID of the transcript this one was derived from (patch/refine).",
+        nullable=True,
     ),
     "source_file": FieldSpec(
         "source_file", STR,
         description="Filename of the source audio recording (e.g. 'Aeropuerto ... 29.m4a').",
     ),
+    "source_path": FieldSpec(
+        "source_path", STR,
+        description="Workspace-relative path to the source audio recording.",
+    ),
     "audio_id": FieldSpec(
         "audio_id", STR,
-        description="Short audio identifier used for source-audio mapping (e.g. 'aeropuerto_STG_29').",
+        description=(
+            "Short audio identifier used for source-audio mapping (e.g. "
+            "'aeropuerto_STG_29'). The stage component is upper case."
+        ),
     ),
 
     # -- provenance / stages ------------------------------------------------
@@ -82,7 +90,14 @@ TRANSCRIPT_FIELDS: dict[str, FieldSpec] = {
     # -- descriptive metadata -----------------------------------------------
     "title": FieldSpec("title", STR, description="Human-readable transcript title."),
     "subtitle": FieldSpec("subtitle", STR, description="Short descriptive subtitle."),
-    "location": FieldSpec("location", STR, description="Where the recording took place."),
+    "location": FieldSpec(
+        "location", STR,
+        description=(
+            "Where the recording took place. Canonical form is the facility "
+            "'Arturo Merino Benítez International Airport (SCL), Santiago, Chile', "
+            "optionally followed by ' — <place>'."
+        ),
+    ),
     "case_id": FieldSpec("case_id", STR, description="Case identifier (e.g. 'I-002')."),
     "narrative_id": FieldSpec("narrative_id", STR, description="Narrative identifier (e.g. 'NAR-21_STG_29')."),
     "classification": FieldSpec(
@@ -119,17 +134,22 @@ TRANSCRIPT_FIELDS: dict[str, FieldSpec] = {
     ),
     "violations_cited": FieldSpec(
         "violations_cited", LIST,
-        description="List of cited legal provisions (e.g. 'LPDC Art. 23 bis').",
+        description=(
+            "Registry IDs of cited violations (e.g. 'CL-038', 'INT-003'). "
+            "IDs resolve against the incident violation registry."
+        ),
         item_type=STR,
     ),
     "tags": FieldSpec(
         "tags", LIST,
-        description="List of tags applied to the transcript.",
+        description="List of tags applied to the transcript, each 'lower-kebab-case'.",
         item_type=STR,
     ),
     "forensic_clusters": FieldSpec(
         "forensic_clusters", DICT,
-        description="Forensic cluster key/value map.",
+        description=(
+            "Named forensic clusters; each value follows CLUSTER_FIELDS."
+        ),
     ),
     "key_evidentiary_findings": FieldSpec(
         "key_evidentiary_findings", LIST,
@@ -138,7 +158,7 @@ TRANSCRIPT_FIELDS: dict[str, FieldSpec] = {
     ),
     "corrections_applied": FieldSpec(
         "corrections_applied", LIST,
-        description="List of corrections applied during review.",
+        description="List of corrections applied during review (see CORRECTION_FIELDS).",
         item_type=DICT,
     ),
     "segments": FieldSpec(
@@ -146,6 +166,14 @@ TRANSCRIPT_FIELDS: dict[str, FieldSpec] = {
         description="List of transcript segments (see SEGMENT_FIELDS).",
         required=True,
         item_type=DICT,
+    ),
+    "reviewed": FieldSpec(
+        "reviewed", BOOL,
+        description=(
+            "Whether a human has reviewed this transcript as a whole. "
+            "Distinct from the per-segment 'reviewed' flag in SEGMENT_FIELDS."
+        ),
+        default=False,
     ),
 }
 
@@ -178,11 +206,70 @@ PARTICIPANT_FIELDS: dict[str, FieldSpec] = {
     "speaker_id": FieldSpec("speaker_id", STR, description="Stable speaker identifier (enriched)."),
 }
 
+# Controlled vocabularies.  Values outside these sets are reported as warnings
+# so vocabulary drift is caught at ingest rather than silently accumulating.
+STRENGTH_VALUES: tuple[str, ...] = ("High", "Medium", "Low")
+
 # Evidentiary finding sub-schema.
 FINDING_FIELDS: dict[str, FieldSpec] = {
     "id": FieldSpec("id", STR, description="Finding ID (e.g. 'S29-1')."),
     "finding": FieldSpec("finding", STR, description="Finding description."),
-    "strength": FieldSpec("strength", STR, description="Finding strength (e.g. 'Medium', 'High')."),
+    "strength": FieldSpec(
+        "strength", STR,
+        description="Finding strength.",
+        allowed_values=STRENGTH_VALUES,
+    ),
+    "segments": FieldSpec(
+        "segments", LIST,
+        description="Segment references supporting the finding (index or 'a-b' range).",
+        item_type=STR,
+    ),
+    "cross_reference": FieldSpec(
+        "cross_reference", STR,
+        description="Free-text cross-reference to related findings or stages.",
+    ),
+}
+
+# Forensic cluster sub-schema.  Every key is optional: thin clusters carry only
+# ``summary`` and ``segments``, richer ones add the analytical keys.
+CLUSTER_FIELDS: dict[str, FieldSpec] = {
+    "summary": FieldSpec("summary", STR, description="Narrative summary of the cluster."),
+    "reasoning": FieldSpec("reasoning", STR, description="Analytical reasoning behind the cluster."),
+    "provisions_engaged": FieldSpec(
+        "provisions_engaged", LIST,
+        description="Legal provisions engaged by the cluster.",
+        item_type=STR,
+    ),
+    "violation_linkage": FieldSpec(
+        "violation_linkage", STR,
+        description="How the cluster links to the cited violations.",
+    ),
+    "segments": FieldSpec(
+        "segments", LIST,
+        description="Segment references spanned by the cluster.",
+        item_type=STR,
+    ),
+}
+
+# Correction sub-schema.  ``type`` distinguishes a description of curator
+# process (``"process_note"``) from an ``original`` -> ``corrected`` rewrite.
+CORRECTION_FIELDS: dict[str, FieldSpec] = {
+    "segment": FieldSpec("segment", STR, description="Segment the correction applies to.", default=""),
+    "original": FieldSpec("original", STR, description="Text as originally transcribed.", default=""),
+    "corrected": FieldSpec("corrected", STR, description="Text after correction.", default=""),
+    "reason": FieldSpec("reason", STR, description="Why the correction was made.", default=""),
+    "type": FieldSpec(
+        "type", STR,
+        description="Correction category; used when the entry describes process rather than a rewrite.",
+    ),
+}
+
+# Container key -> sub-schema applied to each contained object.
+_NESTED_SCHEMAS: dict[str, dict[str, FieldSpec]] = {
+    "segments": SEGMENT_FIELDS,
+    "key_evidentiary_findings": FINDING_FIELDS,
+    "corrections_applied": CORRECTION_FIELDS,
+    "forensic_clusters": CLUSTER_FIELDS,
 }
 
 
@@ -317,22 +404,45 @@ def validate_transcript(data: dict) -> ValidationReport:
 
         report.normalized[key] = coerced
 
-    # Validate segments as a nested schema when present.
-    segments = report.normalized.get("segments")
-    if isinstance(segments, list):
-        for i, seg in enumerate(segments):
-            if not isinstance(seg, dict):
-                report.errors.append(f"segments[{i}]: expected object, got {type(seg).__name__}")
-                continue
-            for skey, sspec in SEGMENT_FIELDS.items():
-                sval = seg.get(skey, sspec.default)
-                if skey not in seg and sspec.required:
-                    report.ok = False
-                    report.errors.append(f"segments[{i}]: missing required field {skey}")
-                    continue
-                if sval is not None and not _matches_type(sval, sspec.type):
-                    report.warnings.append(
-                        f"segments[{i}].{skey}: expected {sspec.type}, got {type(sval).__name__}"
-                    )
+    # Validate the nested object containers against their declared sub-schemas.
+    for key, sub in _NESTED_SCHEMAS.items():
+        value = report.normalized.get(key)
+        if isinstance(value, list):
+            for i, item in enumerate(value):
+                _check_nested(item, sub, f"{key}[{i}]", report)
+        elif isinstance(value, dict):
+            for name, item in value.items():
+                _check_nested(item, sub, f"{key}.{name}", report)
 
     return report
+
+
+def _check_nested(
+    value: Any,
+    sub: dict[str, FieldSpec],
+    path: str,
+    report: ValidationReport,
+) -> None:
+    """Check one nested object against ``sub``, recording errors and warnings."""
+    if not isinstance(value, dict):
+        report.ok = False
+        report.errors.append(f"{path}: expected object, got {type(value).__name__}")
+        return
+
+    for name, spec in sub.items():
+        if name not in value:
+            if spec.required:
+                report.ok = False
+                report.errors.append(f"{path}: missing required field {name}")
+            continue
+
+        item = value[name]
+        if item is not None and not _matches_type(item, spec.type):
+            report.warnings.append(
+                f"{path}.{name}: expected {spec.type}, got {type(item).__name__}"
+            )
+            continue
+        if spec.allowed_values and item not in spec.allowed_values:
+            report.warnings.append(
+                f"{path}.{name}: {item!r} not in allowed values {spec.allowed_values}"
+            )

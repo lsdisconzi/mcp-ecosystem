@@ -37,10 +37,11 @@ class JSONTranscriptStore:
         data = {
             "transcript_id": transcript.transcript_id,
             "source_file": transcript.source_file or "",
+            "source_path": getattr(transcript, "source_path", "") or "",
             "language": transcript.language or "",
             "timestamp": transcript.timestamp or "",
             "provider": transcript.provider or "",
-            "original_transcript_id": transcript.original_transcript_id or "",
+            "original_transcript_id": transcript.original_transcript_id,
             "metadata": transcript.metadata or {},
             "title": transcript.title or "",
             "subtitle": transcript.subtitle or "",
@@ -60,6 +61,7 @@ class JSONTranscriptStore:
             "key_evidentiary_findings": transcript.key_evidentiary_findings or [],
             "corrections_applied": transcript.corrections_applied or [],
             "segments": segments,
+            "reviewed": bool(getattr(transcript, "reviewed", False)),
         }
         # Atomic write: dump to a temp file in the same directory, fsync, then
         # os.replace() (atomic on POSIX). A crash mid-write can therefore never
@@ -99,7 +101,7 @@ class JSONTranscriptStore:
             language = "es"
             timestamp = ""
             provider = ""
-            original_transcript_id = ""
+            original_transcript_id = None
         else:
             items = raw.get("segments", []) or []
             meta = raw.get("metadata", {}) or {}
@@ -107,7 +109,7 @@ class JSONTranscriptStore:
             language = raw.get("language", "es") or "es"
             timestamp = raw.get("timestamp", "") or ""
             provider = raw.get("provider", "") or ""
-            original_transcript_id = raw.get("original_transcript_id", "") or ""
+            original_transcript_id = raw.get("original_transcript_id") or None
 
         segments = []
         for i, item in enumerate(items):
@@ -139,6 +141,7 @@ class JSONTranscriptStore:
             transcript_id=transcript_id,
             segments=segments,
             source_file=source_file,
+            source_path=raw.get("source_path", "") or "",
             language=language,
             metadata=meta,
             timestamp=timestamp,
@@ -161,6 +164,7 @@ class JSONTranscriptStore:
             forensic_clusters=raw.get("forensic_clusters", {}),
             key_evidentiary_findings=raw.get("key_evidentiary_findings", []),
             corrections_applied=raw.get("corrections_applied", []),
+            reviewed=bool(raw.get("reviewed", False)),
         )
 
     def list_ids(self) -> list[str]:

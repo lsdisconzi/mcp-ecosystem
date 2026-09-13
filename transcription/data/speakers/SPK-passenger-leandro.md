@@ -3,7 +3,7 @@ note_type: speaker
 speaker_id: SPK-passenger-leandro
 display_name: "Leandro Disconzi"
 role: "Passenger / Claimant"
-organization: "passenger-self"
+organization: "self (Leandro Disconzi)"
 identification_confidence: confirmed
 incidents:
   - "I-001"

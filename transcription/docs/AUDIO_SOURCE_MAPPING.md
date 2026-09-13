@@ -267,13 +267,18 @@ The four consecutive `STG_26/27/28/29` transcripts are all off by a consistent
 
 ### 5.2 Resolution applied
 
-Per decision, **all 27** transcripts now take their `recording_datetime` and
+Per decision, **26 of 27** transcripts take their `recording_datetime` and
 `timestamp` from the file's own QuickTime tag, converted to Chile time. One rule
-covers the whole corpus, so the sub-minute rounding in the 12 "good" files is
-gone too, and the `02`/`03` divergence between `recording_datetime` and
-`timestamp` (they differed by a few seconds) is resolved — those two were the
-only files where `timestamp` already held the tag-derived instant, which shows
-`timestamp` was always intended to be the device time.
+covers the corpus, so the sub-minute rounding in the 12 "good" files is gone
+too, and the `02`/`03` divergence between `recording_datetime` and `timestamp`
+(they differed by a few seconds) is resolved — those two were the only files
+where `timestamp` already held the tag-derived instant, which shows `timestamp`
+was always intended to be the device time.
+
+The single exception is `I-002_11_NAR-13_STG_20_barraza_counter`, whose file tag
+is provably a duplicate of another recording's (§6). It keeps its original
+`2024-07-05T18:20:00-04:00`; the exception is encoded as a `TIME_OVERRIDES`
+entry in the backfill script so it persists across runs.
 
 Notable shifts:
 
@@ -285,7 +290,7 @@ Notable shifts:
 | `I-002_17_NAR-21_STG_29` | `2024-07-05T19:45:00-04:00` | `2024-07-05T21:51:11-04:00` | +2h6m11s |
 | `I-002_24_NAR-19_STG_12` | `2024-07-06T09:13:00-04:00` | `2024-07-06T10:13:54-04:00` | +1h0m54s |
 | `I-002_10B_NAR-18_STG_18_counter_fragment` | `2024-07-05T17:58:00-04:00` | `2024-07-05T16:57:15-04:00` | −1h0m45s |
-| `I-002_11_NAR-13_STG_20_barraza_counter` | `2024-07-05T18:20:00-04:00` | `2024-07-05T17:46:00-04:00` | −34m |
+| ~~`I-002_11_NAR-13_STG_20_barraza_counter`~~ | `2024-07-05T18:20:00-04:00` | `2024-07-05T18:20:00-04:00` | **0 — reverted** (file tag rejected, §6) |
 | `I-002_06_NAR-STG_8_pdi_identity_control` | `2024-07-05T15:50:23-04:00` | `2024-07-05T15:19:01-04:00` | −31m22s |
 | `I-002_22_NAR_CARABINEROS_2` | `2024-07-06T07:05:00-04:00` | `2024-07-06T07:26:08-04:00` | +21m8s |
 | `I-002_23_NAR_CARABINEROS_3` | `2024-07-06T07:20:00-04:00` | `2024-07-06T07:41:15-04:00` | +21m15s |
@@ -302,8 +307,11 @@ is the sole no-op, because its stored value already matched its tag exactly
 The relative chronological order of the 27 transcripts was preserved — the
 shifts are small relative to the gaps between recordings.
 
-**Collision introduced deliberately.** Transcript `11` (`STG_20`, `20.m4a`) now
-carries the **same** `recording_datetime` as transcript `10` (T2) — see §6.
+**One collision, resolved against the file.** Transcript `11` (`STG_20`,
+`20.m4a`) shares its file tag with transcript `10` (T2) — see §6. `10` keeps the
+file value; `11` was **reverted** to its original `18:20:00-04:00`. That revert
+lives in the script as a documented `TIME_OVERRIDES` entry, so re-running the
+backfill does not re-apply the shared tag.
 
 ---
 
@@ -338,13 +346,32 @@ rewritten by an export/transcode step. `T2`'s metadata block is already known
 to be partly copied from other files (its duration came from `23.m4a`), which
 does not help its case.
 
-**Decision: trust the file for both.** The value really is present in both
-headers, so both transcript `10` (T2) and transcript `11` (`20.m4a`) now carry
-`2024-07-05T17:46:00-04:00`. This is a deliberate, recorded collision rather
-than an invented resolution. If the device becomes available, re-derive both
-from it, and treat `20.m4a` (`I-002_11`, barraza counter) as the more doubtful
-of the two — its stored `recording_datetime` was `18:20:00`, a plausible
-34-minute gap after the T2 incident, which the shared tag collapses.
+**Decision: the tag is treated as T2's, and rejected for `20.m4a`.** `T2`
+(`I-002_10`) carries `2024-07-05T17:46:00-04:00` because its file really does
+say so, and its mapping is confirmed independently by duration and byte size.
+`20.m4a` (`I-002_11`, barraza counter) does **not** get the shared tag: its
+QuickTime `creation_time` is byte-identical to T2's, which cannot be genuine for
+two different recordings, and `T2` is the file whose metadata block is already
+known to hold values copied from other recordings (its `duration` came from
+`23.m4a`). So the copy is attributed to `20.m4a`, and transcript `11` keeps its
+original hand-entered `2024-07-05T18:20:00-04:00` — a plausible 34-minute gap
+after the T2 counter incident.
+
+The revert is not silent: `scripts/backfill_audio_metadata.py` carries it as an
+explicit `TIME_OVERRIDES` entry with the reasoning inline, so the exception
+survives every future run and cannot be mistaken for staleness.
+
+```
+  * recording_datetime: '2024-07-05T17:46:00-04:00' -> '2024-07-05T18:20:00-04:00'   (shift +34m)   [manual override, not the file tag]
+  * timestamp:          '2024-07-05T17:46:00-04:00' -> '2024-07-05T18:20:00-04:00'   (shift +34m)   [manual override, not the file tag]
+```
+
+Caveat: the value is now *unverifiable from the corpus*. It is an assertion of
+plausibility, not an observation. Only the original device can settle which file
+owns the `21:46:00Z` instant; until then transcript `11` is the only file in the
+corpus whose `recording_datetime` deliberately disagrees with its own audio
+header, and `metadata.timestamps.QuickTime_Movie_Header_Created_verified` still
+records the rejected `21:46:00Z` value for audit.
 
 ---
 
@@ -381,7 +408,7 @@ real dialogue — but they are out of scope by decision.
 
 | # | question | outcome |
 |---|---|---|
-| 1 | Which `recording_datetime` values to trust? | All 27 now derive from the device QuickTime tag. |
+| 1 | Which `recording_datetime` values to trust? | 26 derive from the device QuickTime tag; `I-002_11` is a documented exception (§6). |
 | 2 | Scope: only the wrong ones, or all? | All 27, one uniform rule. |
 | 3 | Preserve the wrong stored QuickTime value? | Yes — kept verbatim, true value in `..._verified`. |
 | 4 | `provider: "unknown"` (files 10, 12, 14) | Set to `"local"`; all 27 are now `"local"`. |
@@ -389,18 +416,20 @@ real dialogue — but they are out of scope by decision.
 | 6 | `ontology_schema_version` | `"2.5"` on all 27 (was `2.3.1` on three). |
 | 7 | `ontology_node_id` | `""` where absent; three real IDs preserved. |
 | 8 | The 9 unreferenced recordings | Out of scope for now. |
-| 9 | The duplicate T2 / `20.m4a` tag | File value used for both, collision documented (§6). |
+| 9 | The duplicate T2 / `20.m4a` tag | T2 keeps the file value; `20.m4a` reverts to `18:20:00` via `TIME_OVERRIDES` (§6). |
 
 ### Still open
 
 1. **`Terminal Internacional - T2.m4a` and `20.m4a` share one `creation_time`**
-   (§6). Both now read `17:46:00-04:00`, so transcripts `10` and `11` have
-   identical timestamps. Only a check against the original device can settle
-   which file owns that instant.
-2. **`I-002_11` (barraza counter) is the likelier casualty.** Its previous
-   `18:20:00` sat a sensible 34 minutes after the T2 counter; collapsing it onto
-   `17:46:00` puts two counter incidents at the same moment. Worth a sanity read
-   of the two transcripts together before publication.
+   (§6). The shared tag is now used only for `10` (T2); `11` was reverted to
+   `18:20:00-04:00`. The two incidents no longer collide, but the underlying
+   question stands: **two headers claim the same instant**, and only a check
+   against the original device can say which recording actually owns it.
+2. **`I-002_11` (barraza counter) is now the corpus's only unverified time.**
+   It was reverted because `18:20:00` is the plausible reading — 34 minutes after
+   the T2 counter — but plausibility is not evidence. Its
+   `QuickTime_Movie_Header_Created_verified` still says `21:46:00Z`, so a future
+   audit will see the disagreement; that is intended, not a leftover bug.
 3. **The `STG_26/27/28/29` group moved by ~+2 h.** The shift is now applied, but
    
    *why* the source values were ~2 h early is unexplained. If the originals were
@@ -428,11 +457,14 @@ python3 scripts/backfill_audio_metadata.py --dry-run   # review
 python3 scripts/backfill_audio_metadata.py             # apply
 ```
 
-The script is idempotent: re-running it reports zero change lines, because every
-field it writes already holds the file-derived value. (It still rewrites all 27
-files, but produces no diff.) It writes JSON with
-`json.dumps(data, indent=2, ensure_ascii=False) + "\n"`, which was verified to
-round-trip all 27 files byte-for-byte.
+The script is idempotent: re-running it produces no diff, because every field it
+writes already holds either the file-derived value or an explicit
+`TIME_OVERRIDES` value. It does still rewrite all 27 files, so its progress
+output always says *"would update 27 transcripts"* — that line is **not** a
+change signal. Judge idempotency by the diff (`git diff --stat`), or by the
+per-field change counters, never by that summary line.
+It writes JSON with `json.dumps(data, indent=2, ensure_ascii=False) + "\n"`,
+which was verified to round-trip all 27 files byte-for-byte.
 
 Pre-change snapshots are in git (`git show HEAD:transcription/data/transcripts/<file>`).
 The backfill itself touched only these top-level keys — `source_file`,
@@ -453,7 +485,7 @@ Everything else was confirmed by a strict before/after key-and-value diff agains
 a snapshot of the 27 files taken immediately before the run: **0 unexpected
 changes**, and `stored QuickTime_Movie_Header_Created unchanged: 27/27`.
 
-> **Note on `data/transcripts/bak/`** — that directory holds 28 files dated
+> **Note on `data/transcripts/bak/`** — that directory holds 27 files dated
 > 2024-09-12 21:29 that **predate both backfill passes** and still use the older
 > filename convention. Do not treat it as the pre-backfill snapshot; use git.
 
@@ -461,8 +493,12 @@ changes**, and `stored QuickTime_Movie_Header_Created unchanged: 27/27`.
 
 ```bash
 cd transcription
-python3 scripts/backfill_audio_metadata.py --dry-run   # expect "would update 0"
+python3 scripts/backfill_audio_metadata.py --dry-run   # expect no diff
 ```
+
+A correct post-repair run leaves the corpus byte-identical. Confirm with
+`git diff --stat transcription/data/transcripts` (expect no output) rather than
+the script's own "would update N" line, which always reports all 27 files.
 
 Then confirm the invariants:
 
@@ -473,7 +509,9 @@ Then confirm the invariants:
 | `metadata.processed_audio_file == source_file` | 27/27 |
 | `metadata.saved_audio_file == source_file` | 27/27 |
 | `provider == "local"` | 27/27 |
-| `recording_datetime == local(QuickTime_verified)` | 27/27 |
+| `recording_datetime == local(QuickTime_verified)` | 26/27 |
+| `recording_datetime == TIME_OVERRIDES[id]` | 1/27 (`I-002_11`, §6) |
+| `metadata.timestamps.QuickTime_Movie_Header_Created_verified` present | 27/27 |
 | `timestamp == recording_datetime` | 27/27 |
 | real `TRNS_*` ontology ids preserved | 3 (`02`, `03`, `05`) |
 

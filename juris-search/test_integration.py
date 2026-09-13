@@ -756,6 +756,160 @@ except Exception as exc:
     check("Chile field definitions section ran without exception", False,
           f"{type(exc).__name__}: {exc}")
 
+# ── 17. CLTC free-text guard ("no match" must not mean "return everything") ─
+#
+# /buscadorexterno/ficha does NOT filter on tokens it cannot match: it silently
+# returns the ENTIRE corpus (12.329 fichas) instead of zero. So searching for
+# "latam airlines" returned 100 unrelated documents (just the newest pages of
+# the corpus). The scraper now detects the fall-through — filtered total ==
+# unfiltered total — and retries in the full-text index, which reports the
+# truth through data.count. All of this is offline: the HTTP layer is stubbed.
+
+test_section("17. CLTC free-text guard")
+
+_orig_ficha = _orig_sentencias = None
+
+try:
+    from tc_chile_scraper import TCChileJurisprudenciaScraper, SearchCriteria
+
+    scraper = TCChileJurisprudenciaScraper(request_delay=0.0)
+    CORPUS_TOTAL = 12329
+    BASELINE_CACHE = TCChileJurisprudenciaScraper._BASELINE_CACHE
+    # The API builds a fresh scraper per search (routes_search.py), so the stub
+    # must live on the CLASS - patching one instance would let the instances
+    # created below issue real HTTP requests.
+    _orig_ficha = TCChileJurisprudenciaScraper._fetch_ficha_page
+    _orig_sentencias = TCChileJurisprudenciaScraper._fetch_sentencias_page
+
+    ficha_calls = []
+    sentencias_calls = []
+
+    def fake_ficha(payload, page=1):
+        term = str(payload.get("search") or "").strip()
+        ficha_calls.append(term)
+        # Unmatched terms degenerate into "no filter at all".
+        total = CORPUS_TOTAL if term in ("", "latam airlines", "zzz") else 952
+        rows = [{"folio": "16622"}] if total else []
+        return {
+            "data": rows,
+            "meta": {"total": total, "last_page": 1, "current_page": 1, "per_page": 5},
+        }
+
+    def fake_sentencias(payload, page=1):
+        term = str(payload.get("search") or "").strip()
+        sentencias_calls.append(term)
+        count = 486 if term == "vida" else 0
+        rows = [{"id": "7001", "content": "texto"}] if count else []
+        return {
+            "data": {"results": rows, "count": count, "corrected_query": None},
+            "meta": {"last_page": 1},
+        }
+
+    TCChileJurisprudenciaScraper._fetch_ficha_page = lambda self, payload, page=1: fake_ficha(payload, page)
+    TCChileJurisprudenciaScraper._fetch_sentencias_page = lambda self, payload, page=1: fake_sentencias(payload, page)
+
+    # 17.1 Endpoint selection: which criteria route to the full-text index.
+    base = SearchCriteria()
+    check("17.1a buscar_en_texto -> full text",
+          scraper._use_fulltext_endpoint(
+              SearchCriteria(buscar_en_texto=True), {"search": "x"}) is True)
+    check("17.1b literal -> full text",
+          scraper._use_fulltext_endpoint(
+              SearchCriteria(literal=True), {"search": "x"}) is True)
+    check("17.1c search_index='texto_libre' -> full text",
+          scraper._use_fulltext_endpoint(
+              SearchCriteria(search_index="texto_libre"), {"search": "x"}) is True)
+    check("17.1d search_index='inteiro_teor' -> full text",
+          scraper._use_fulltext_endpoint(
+              SearchCriteria(search_index="inteiro_teor"), {"search": "x"}) is True)
+    check("17.1e search_index='acordao' -> metadata index",
+          scraper._use_fulltext_endpoint(
+              SearchCriteria(search_index="acordao"), {"search": "x"}) is False)
+    check("17.1f default criteria -> metadata index",
+          scraper._use_fulltext_endpoint(base, {"search": "x"}) is False,
+          f"got search_index={base.search_index!r}")
+
+    # 17.2 The reported bug: an unmatched term must return ZERO results, not the
+    # whole corpus.
+    fall_through = scraper.search_with_criteria(
+        SearchCriteria(search_text="latam airlines", search_index="acordao",
+                       max_results=10, categoria="civiles"))
+    check("17.2a unmatched free text returns 0 results (was: whole corpus)",
+          fall_through == [], f"got {len(fall_through)} result(s)")
+    check("17.2b the fall-through is retried in the full-text index",
+          "latam airlines" in sentencias_calls, f"got {sentencias_calls!r}")
+
+    # 17.3 A term the metadata index genuinely matches keeps using it.
+    ficha_calls.clear()
+    matched = scraper.search_with_criteria(
+        SearchCriteria(search_text="vida", search_index="acordao", max_results=10))
+    check("17.3a matched metadata search still returns results",
+          len(matched) > 0, f"got {len(matched)}")
+    check("17.3b matched metadata search stays on /buscadorexterno/ficha",
+          all(r.get("search_endpoint") == "/buscadorexterno/ficha" for r in matched),
+          f"got {[r.get('search_endpoint') for r in matched]!r}")
+    check("17.3c matched metadata search never hits the full-text index",
+          sentencias_calls.count("vida") == 0, f"got {sentencias_calls!r}")
+
+    # 17.4 The unfiltered baseline probe is cached, and the cache is shared
+    # across scraper instances (the API builds one scraper per search).
+    ficha_calls.clear()
+    sentencias_calls.clear()
+    BASELINE_CACHE.clear()
+    for term in ("zzz", "latam airlines"):
+        TCChileJurisprudenciaScraper(request_delay=0.0).search_with_criteria(
+            SearchCriteria(search_text=term, search_index="acordao", max_results=5))
+    check("17.4a unfiltered baseline probed once, not per search",
+          ficha_calls.count("") == 1, f"got {ficha_calls!r}")
+    check("17.4b baseline cache survives a new scraper instance",
+          len(BASELINE_CACHE) == 1, f"got {BASELINE_CACHE!r}")
+    check("17.4c failed probes are not memoized",
+          all(v and v > 0 for v in BASELINE_CACHE.values()),
+          f"got {BASELINE_CACHE!r}")
+
+    # 17.5 count==0 short-circuit and count>0 passthrough on the full-text path.
+    sentencias_calls.clear()
+    zero = scraper.search_with_criteria(
+        SearchCriteria(search_text="latam", search_index="texto_libre", max_results=5))
+    check("17.5a full-text count=0 -> 0 results", zero == [], f"got {zero!r}")
+    check("17.5b full-text count=0 -> single request (no paging)",
+          len(sentencias_calls) == 1, f"got {sentencias_calls!r}")
+
+    hits = scraper.search_with_criteria(
+        SearchCriteria(search_text="vida", search_index="texto_libre", max_results=5))
+    check("17.5c full-text count>0 -> results returned",
+          len(hits) > 0, f"got {len(hits)}")
+    check("17.5d full-text results are tagged with their endpoint",
+          all(r.get("search_endpoint") == "/extended/sentencias" for r in hits),
+          f"got {[r.get('search_endpoint') for r in hits]!r}")
+
+    # 17.6 The full-text index ignores dates, so a range must not be scanned
+    # day by day (it would repeat the same query N times).
+    sentencias_calls.clear()
+    ranged = scraper.search_with_criteria(
+        SearchCriteria(search_text="vida", search_index="texto_libre", max_results=5,
+                       fecha_inicio="2024-01-01", fecha_fin="2024-03-01"))
+    check("17.6 range + full text issues a single query",
+          len(sentencias_calls) == 1, f"got {len(sentencias_calls)} request(s)")
+    check("17.6b ranged full-text search still returns results", len(ranged) > 0)
+
+    # 17.7 Empty search term never triggers the guard path.
+    ficha_calls.clear()
+    BASELINE_CACHE.clear()
+    check("17.7a no search term -> guard is inert (no extra probe)",
+          scraper._search_refused_free_text({"search": "", "folio": ""}) is False
+          and ficha_calls == [], f"got {ficha_calls!r}")
+    check("17.7b no search term -> no baseline is cached",
+          BASELINE_CACHE == {}, f"got {BASELINE_CACHE!r}")
+except Exception as exc:
+    check("CLTC free-text guard section ran without exception", False,
+          f"{type(exc).__name__}: {exc}")
+finally:
+    # Never leave the class patched: later sections import the same module.
+    if _orig_ficha is not None:
+        TCChileJurisprudenciaScraper._fetch_ficha_page = _orig_ficha
+        TCChileJurisprudenciaScraper._fetch_sentencias_page = _orig_sentencias
+
 # ── Summary ──────────────────────────────────────────────────────────────
 
 test_section("SUMMARY")

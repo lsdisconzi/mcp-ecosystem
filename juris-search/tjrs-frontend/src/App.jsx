@@ -325,6 +325,14 @@ const CHILE_ORDEN_OPTIONS = [
   { value: "relevancia", label: "Relevancia" },
 ];
 
+// Which index the TC Chile backend queries. The metadata index ("acordao")
+// only covers fichas (rol, ministro, materia, doctrina...), so party names and
+// body text are invisible to it — "texto_libre" searches the OCR full text.
+const CLTC_SEARCH_INDEX_OPTIONS = [
+  { value: "acordao", label: "Metadados (fichas) — padrão" },
+  { value: "texto_libre", label: "Texto completo (OCR)" },
+];
+
 const DEFAULT_CHILE_FIELDS = {
   search_text: "",
   categoria: "civiles",
@@ -345,6 +353,7 @@ const DEFAULT_CHILE_FIELDS = {
   palabra_clave: "",
   cuerpo_legal: "",
   fecha_sentencia: "",
+  search_index: "acordao",
 };
 
 /** Field set for the dedicated Chilean form, per source. */
@@ -356,6 +365,11 @@ function getChileFields(courtKey) {
   if (courtKey === "CLTC") {
     return [
       { key: "search_text", label: "Termos de Busca", placeholder: "Ex: vida, debido proceso..." },
+      {
+        key: "search_index", label: "Buscar em", type: "select",
+        options: CLTC_SEARCH_INDEX_OPTIONS,
+        hint: "Nomes de partes ou trechos do texto só aparecem no índice de texto completo.",
+      },
       { key: "folio", label: "Folio", placeholder: "Ex: 16622" },
       { key: "competencia", label: "Competencia", placeholder: "Ex: INA, ROL..." },
       { key: "ministro", label: "Ministro", placeholder: "Nome do ministro..." },
@@ -584,6 +598,9 @@ function WorkspaceApp() {
   const [historyStatus, setHistoryStatus] = useState("idle");
   const [historyFilePath, setHistoryFilePath] = useState("");
   const [historySavedAt, setHistorySavedAt] = useState("");
+  // Remembers what the in-flight/last search asked for, so empty states can
+  // explain *why* nothing came back (e.g. the TC Chile index that was used).
+  const [lastSearchContext, setLastSearchContext] = useState(null);
   const [storageSync, setStorageSync] = useState(null);
   const [searchBreakdown, setSearchBreakdown] = useState([]);
   const [searchCourtErrors, setSearchCourtErrors] = useState([]);
@@ -852,6 +869,11 @@ function WorkspaceApp() {
     setSearchStatus("running"); setSearchError(null); setResults([]);
     setSearchBreakdown([]);
     setSearchCourtErrors([]);
+    setLastSearchContext({
+      courts: activeCourts,
+      searchText: String(searchPayload.search_text || "").trim(),
+      searchIndex: String(searchPayload.search_index || "").trim(),
+    });
     setHistoryFilePath("");
     setHistorySavedAt("");
     setSelectedResultKeys(new Set());
@@ -1277,6 +1299,12 @@ function WorkspaceApp() {
                 placeholder={f.placeholder}
                 style={inputStyle} />
             )}
+            {f.hint && (
+              <div style={{
+                marginTop: "5px", fontSize: "11.5px", color: T.textMuted,
+                fontFamily: T.fontSans, lineHeight: 1.45,
+              }}>{f.hint}</div>
+            )}
           </div>
         );
       })}
@@ -1440,6 +1468,29 @@ function WorkspaceApp() {
           <div style={{ fontSize: "13px" }}>
             {searchStatus === "completed" ? "Ajuste os termos de busca." : "Configure os campos e execute a busca."}
           </div>
+          {searchStatus === "completed" && lastSearchContext
+            && (lastSearchContext.courts || []).includes("CLTC")
+            && lastSearchContext.searchText && (
+            <div style={{
+              maxWidth: "520px", margin: "18px auto 0", textAlign: "left",
+              background: T.warningLight, border: `1px solid ${T.warning}33`,
+              borderRadius: T.radiusSm, padding: "11px 13px",
+              fontSize: "12.5px", color: T.warning, lineHeight: 1.6,
+            }}>
+              <strong>TC Chile — nenhuma coincidência</strong> para
+              {" "}&ldquo;{lastSearchContext.searchText}&rdquo; no índice
+              {" "}<strong>
+                {lastSearchContext.searchIndex === "texto_libre"
+                  ? "de texto completo"
+                  : "de metadados (fichas)"}
+              </strong>.
+              {lastSearchContext.searchIndex === "texto_libre"
+                ? " Nada foi retornado — o índice de texto completo não encontrou esse termo."
+                : " O índice de metadados cobre apenas ficha (ROL, ministro, materia, doctrina);"
+                  + " nomes de partes e trechos do texto só aparecem em \"Texto completo\". Tente"
+                  + " trocar \"Buscar em\" para \"Texto completo (OCR)\"."}
+            </div>
+          )}
         </div>
       )}
 
