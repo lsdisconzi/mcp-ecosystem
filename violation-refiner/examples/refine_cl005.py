@@ -37,7 +37,8 @@ from violation_pack import (
 )
 
 HERE = Path(__file__).parent
-SOURCE_DIR = HERE / "cl005_source"
+TRANSCRIPT_SOURCE = HERE.parent / "data" / "transcripts" / "html" / "I-002_05_NAR-07_STG_7_post_removal_investigation.html"
+FRAMEWORK_SOURCE = HERE.parent / "data" / "law" / "CL" / "CHIPENCOD_CP.md"
 BUILD_ROOT = HERE.parent / "build"
 BUNDLE_ROOT = BUILD_ROOT / "CL-005"
 
@@ -90,16 +91,16 @@ violation = Violation(
 # Copy source-of-truth files into the bundle FIRST so the URIs reflect their
 # final location.
 BUNDLE_ROOT.mkdir(parents=True, exist_ok=True)
-copy_source_into_bundle(SOURCE_DIR / "timeline_aeropuerto_STG_7.html", BUNDLE_ROOT, "transcripts_dir")
-copy_source_into_bundle(SOURCE_DIR / "CHIPENCOD_CP.md", BUNDLE_ROOT, "framework_dir")
+copy_source_into_bundle(TRANSCRIPT_SOURCE, BUNDLE_ROOT, "transcripts_dir")
+copy_source_into_bundle(FRAMEWORK_SOURCE, BUNDLE_ROOT, "framework_dir")
 
 transcript = HtmlTranscriptSource(
-    path=BUNDLE_ROOT / "Transcripts" / "timeline_aeropuerto_STG_7.html",
+    path=BUNDLE_ROOT / "Transcripts" / TRANSCRIPT_SOURCE.name,
     source_id="STG-7",
-    bundle_uri="Transcripts/timeline_aeropuerto_STG_7.html",
+    bundle_uri=f"Transcripts/{TRANSCRIPT_SOURCE.name}",
 )
 framework = MarkdownFrameworkSource(
-    path=BUNDLE_ROOT / "Legal framework" / "CHIPENCOD_CP.md",
+    path=BUNDLE_ROOT / "Legal framework" / FRAMEWORK_SOURCE.name,
     framework_code="CHIPENCOD",
     bundle_uri="Legal framework/CHIPENCOD_CP.md",
 )

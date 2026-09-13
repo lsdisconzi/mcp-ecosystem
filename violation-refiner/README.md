@@ -130,7 +130,10 @@ Start the browser UI and MCP HTTP server with:
 open http://127.0.0.1:8124/
 ```
 
-The UI discovers rendered transcripts and law caches through `GET /api/sources`.
+The UI discovers rendered transcripts and law caches through `GET /api/sources`
+and uses `GET /api/browse?path=...&kind=directory|file` for the Settings and
+S0 Browse controls. Browser paths are constrained to this workspace and are
+never treated as arbitrary server filesystem paths.
 Transcript entries are relative URIs under `data/transcripts/html/`; the bridge
 resolves them server-side and rejects paths outside that directory. The raw
 JSON transcripts under `data/transcripts/json/` remain the structured ingestion

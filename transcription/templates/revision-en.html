@@ -1444,6 +1444,27 @@
         saved in the browser and applied to the per-segment transcribe button and to "Run Transcription".</p>
         </div>
       </details>
+
+      <!-- Batch ingest all transcripts from data/transcripts/ -->
+      <details class="cfg-section" open>
+        <summary><i class="fas fa-layer-group" style="color:var(--accent);"></i> Batch Ingest (Queue)</summary>
+        <div class="cfg-section-body">
+          <p class="cfg-hint">Process all transcripts in <code>data/transcripts/</code> incrementally. Each file is indexed and ingested in sequence.</p>
+          <div class="field">
+            <label for="batchCollection">Qdrant Collection</label>
+            <input type="text" id="batchCollection" value="reviewed_transcripts" style="font-size:0.7rem;">
+          </div>
+          <div class="field">
+            <label for="batchScope">Scope</label>
+            <select id="batchScope" style="font-size:0.7rem;">
+              <option value="reviewed" selected>Reviewed only</option>
+              <option value="all">All segments</option>
+            </select>
+          </div>
+          <button id="runBatchIngestBtn" class="btn small primary" style="margin-top:4px;"><i class="fas fa-play"></i> Start Batch Ingest</button>
+          <div id="batchStatus" style="font-size:0.62rem;color:var(--text-muted);font-family:var(--mono);margin-top:6px;line-height:1.5;">Ready — queue will process files one at a time.</div>
+        </div>
+      </details>
     </div>
   </div>
 
@@ -3092,6 +3113,35 @@
     }
     applyTranscribeConfig(loadTranscribeConfig());
     loadReviewLists();
+
+    // Batch ingest: process all transcripts in data/transcripts/ incrementally
+    document.getElementById('runBatchIngestBtn')?.addEventListener('click', async () => {
+      const btn = document.getElementById('runBatchIngestBtn');
+      const status = document.getElementById('batchStatus');
+      const collection = document.getElementById('batchCollection')?.value || 'reviewed_transcripts';
+      const scope = document.getElementById('batchScope')?.value || 'reviewed';
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+      status.textContent = 'Starting batch ingest...';
+      try {
+        const res = await fetch('/api/transcripts/batch_ingest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ source_dir: 'data/transcripts/', qdrant_collection: collection, mode: scope })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+        const errCount = (data.errors || []).length;
+        status.textContent = `✅ Completed: ${data.processed || 0}/${data.transcripts_found || 0} transcripts, ${data.segments_indexed || 0} segments${errCount ? `, ${errCount} error(s)` : ''}.`;
+        showToast(`Batch ingest complete (${data.processed || 0} files)`);
+      } catch (e) {
+        status.textContent = '❌ Error: ' + e.message;
+        showToast('Batch ingest error: ' + e.message, 'error', 6000);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-play"></i> Start Batch Ingest';
+      }
+    });
   </script>
 
 </body>

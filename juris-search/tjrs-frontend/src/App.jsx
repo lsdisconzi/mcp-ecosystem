@@ -155,6 +155,8 @@ const FIELDS = [
   { key: "relator", label: "Relator", placeholder: "Nome do Desembargador..." },
   { key: "orgao_julgador", label: "Órgão Julgador", placeholder: "Câmara, Turma..." },
   { key: "tipo_decisao", label: "Tipo de Decisão", placeholder: "Acórdão, Monocrática..." },
+  { key: "data_julgamento_inicio", label: "Data de Julgamento — Início", type: "date" },
+  { key: "data_julgamento_fim", label: "Data de Julgamento — Fim", type: "date" },
   { key: "search_index", label: "Buscar em", placeholder: "acórdão / inteiro_teor" },
   { key: "max_results", label: "Máx. Resultados", placeholder: "20", type: "number" },
 ];
@@ -162,6 +164,7 @@ const FIELDS = [
 const DEFAULT_FIELDS = {
   search_text: "", tipo_processo: "", classe_cnj: "", assunto_cnj: "",
   comarca_origem: "", relator: "", orgao_julgador: "", tipo_decisao: "",
+  data_julgamento_inicio: "", data_julgamento_fim: "",
   tribunal: "", search_index: "acórdão", max_results: 20,
 };
 
@@ -691,6 +694,20 @@ function WorkspaceApp() {
   // ── Search ─────────────────────────────────────────────────────────────
   const runSearch = async () => {
     if (!fields.search_text && !Object.values(fields).some((v) => v)) return;
+
+    // Normalize an inverted date range. <input type="date"> yields "YYYY-MM-DD",
+    // so a plain string comparison is a valid chronological comparison.
+    let dataInicio = fields.data_julgamento_inicio;
+    let dataFim = fields.data_julgamento_fim;
+    if (dataInicio && dataFim && dataInicio > dataFim) {
+      [dataInicio, dataFim] = [dataFim, dataInicio];
+    }
+    const searchPayload = {
+      ...fields,
+      data_julgamento_inicio: dataInicio,
+      data_julgamento_fim: dataFim,
+    };
+
     setSearchStatus("running"); setSearchError(null); setResults([]);
     setSearchBreakdown([]);
     setSearchCourtErrors([]);
@@ -703,7 +720,7 @@ function WorkspaceApp() {
       const res = await fetch(apiUrl("/api/search"), {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...fields,
+          ...searchPayload,
           court: primaryCourt,
           courts: normalizedSelection,
           tribunal: normalizedSelection.length === 1 ? normalizedSelection[0] : "ALL",

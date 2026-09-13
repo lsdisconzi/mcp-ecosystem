@@ -33,6 +33,8 @@ from violation_pack.ui_server import (  # noqa: E402
     describe_tools,
     discover_sources,
     discover_transcript,
+    browse_workspace,
+    discover_bundles,
     find_ui_path,
     probe_runtime,
 )
@@ -41,7 +43,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 HTML_PATH = REPO_ROOT / "ui" / UI_FILENAME
 
 #: API routes the bridge promises. `/health` is MCP-owned and asserted too.
-EXPECTED_API_ROUTES = {"/", "/api/health", "/api/tools", "/api/tool", "/api/catalog", "/api/sources", "/api/source-transcript"}
+EXPECTED_API_ROUTES = {"/", "/api/health", "/api/tools", "/api/tool", "/api/catalog", "/api/sources", "/api/source-transcript", "/api/browse", "/api/bundles"}
 
 
 @pytest.fixture(scope="module")
@@ -222,6 +224,32 @@ def test_get_api_source_transcript_rejects_unknown_uri(client):
     assert res.status_code == 400
 
 
+def test_browse_workspace_lists_real_project_entries():
+    payload = browse_workspace("data/transcripts/html")
+    assert payload is not None
+    assert payload["kind"] == "directory"
+    assert any(entry["name"].endswith(".html") for entry in payload["entries"])
+
+
+def test_browse_workspace_rejects_escape_paths(client):
+    assert browse_workspace("../../") is None
+    res = client.get("/api/browse", params={"path": "../../", "kind": "directory"})
+    assert res.status_code == 400
+
+
+def test_discover_bundles_reads_real_build_directories():
+    payload = discover_bundles()
+    assert payload["root"] == "build"
+    assert {bundle["id"] for bundle in payload["bundles"]} == {"CL-005"}
+    assert payload["bundles"][0]["file_count"] > 0
+
+
+def test_get_api_bundles_returns_real_build_directories(client):
+    res = client.get("/api/bundles")
+    assert res.status_code == 200
+    assert res.json()["bundles"][0]["id"] == "CL-005"
+
+
 def test_build_evidence_rejects_untrusted_transcript_paths(client):
     for path in ("/etc/passwd", "data/transcripts/html/../../../../etc/passwd"):
         res = client.post(
@@ -317,7 +345,7 @@ def test_step_tools_cover_every_wizard_step():
 
 def test_ui_calls_the_documented_endpoints():
     html = HTML_PATH.read_text(encoding="utf-8")
-    for endpoint in ("/api/health", "/api/tools", "/api/sources", "/api/tool"):
+    for endpoint in ("/api/health", "/api/tools", "/api/sources", "/api/bundles", "/api/tool"):
         assert f"'{endpoint}'" in html, f"UI never calls {endpoint}"
     assert "'/api/source-transcript?uri='" in html
 

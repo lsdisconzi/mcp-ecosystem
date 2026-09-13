@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ViolationRefiner — CL-005</title>
+<title>ViolationRefiner — Active bundle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -83,20 +83,10 @@ code {
 .note-type { font-family: var(--mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 2px; background: var(--bg-card); border: 1px solid var(--border-strong); color: var(--text-muted); }
 .note-author { font-size: 0.84rem; font-weight: 600; color: var(--text-primary); }
 .note-seg { font-family: var(--mono); font-size: 0.66rem; color: var(--text-muted); margin-left: auto; }
-.note-body { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
-
-/* transcript segment (as supplied, reused verbatim for the S2 segment browser) */
-.transcript-list { display: flex; flex-direction: column; gap: 6px; }
-.transcript-segment { background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--border-strong); border-radius: 3px; padding: 12px 16px; }
-.transcript-segment.seg-passenger { border-left-color: var(--accent); }
-.transcript-segment.seg-other { border-left-style: dashed; border-left-color: var(--status-analysis); }
-.transcript-segment.is-marked { background: var(--accent-dim); border-left-color: var(--accent); }
-.transcript-segment .seg-time { font-family: var(--mono); font-size: 0.68rem; color: var(--text-muted); margin-bottom: 4px; }
-.transcript-segment .seg-speaker { font-size: 0.78rem; font-weight: 600; color: var(--text-primary); margin-bottom: 5px; }
-.transcript-segment .seg-text { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; font-style: italic; font-family: var(--serif); }
-.transcript-segment .seg-actions { margin-top: 9px; display: flex; gap: 8px; }
-.transcript-segment .seg-mark-btn { font-family: var(--mono); font-size: 0.63rem; padding: 4px 10px; border-radius: 2px; background: transparent; color: var(--text-muted); border: 1px solid var(--border-strong); cursor: pointer; }
-.transcript-segment .seg-mark-btn:hover, .transcript-segment .seg-mark-btn.is-marked { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
+.note-body { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; font-style: italic; font-family: var(--serif); }
+.note-actions { margin-top: 9px; display: flex; gap: 8px; }
+.note-mark-btn { font-family: var(--mono); font-size: 0.63rem; padding: 4px 10px; border-radius: 2px; background: transparent; color: var(--text-muted); border: 1px solid var(--border-strong); cursor: pointer; }
+.note-mark-btn:hover, .note-mark-btn.is-marked { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
 
 /* ============================================================
    2. APP SHELL — extends the system above for the wizard
@@ -409,6 +399,10 @@ code {
 .log-line.log-ok   { color: var(--status-note); }
 .log-line.log-warn { color: var(--status-analysis); }
 .log-line.log-err  { color: var(--status-flag); }
+.browse-path { font-family: var(--mono); font-size: 0.7rem; color: var(--text-muted); margin-bottom: 12px; word-break: break-all; }
+.browse-list { display: flex; flex-direction: column; gap: 5px; max-height: 45vh; overflow-y: auto; }
+.browse-entry { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; }
+.browse-entry .browse-icon { color: var(--accent); width: 18px; }
 </style>
 </head>
 <body>
@@ -431,9 +425,7 @@ code {
         <div class="switcher">
           <label>Bundle</label>
           <select id="bundleSelect">
-            <option>CL-005</option>
-            <option>CL-007</option>
-            <option>CL-011</option>
+            <option>Loading bundles…</option>
           </select>
         </div>
       </div>
@@ -450,7 +442,7 @@ code {
   <!-- ===================== STATS BAR ===================== -->
   <div class="stats-bar">
     <div class="stats-inner">
-      <div class="stat-item"><div class="stat-val" id="statBundle">CL-005</div><div class="stat-label">Active bundle</div></div>
+      <div class="stat-item"><div class="stat-val" id="statBundle">—</div><div class="stat-label">Active bundle</div></div>
       <div class="stat-item"><div class="stat-val" id="statStage">S2 · Evidence</div><div class="stat-label">Current step</div></div>
       <div class="stat-item"><div class="stat-val accent" id="statConfidence">—</div><div class="stat-label">Confidence</div></div>
       <div class="stat-item"><div class="stat-val" id="statValidation">not run</div><div class="stat-label">Validation (V01–V11)</div></div>
@@ -506,17 +498,17 @@ code {
     <div class="settings-section">
       <h3>Project &amp; paths</h3>
       <p class="sec-desc">Resolved once here; every step derives its file pickers from these.</p>
-      <div class="settings-row"><div><div class="settings-row-label">Project root</div><div class="settings-row-sub">workspace/violation-refiner</div></div><button class="btn">Browse</button></div>
-      <div class="settings-row"><div><div class="settings-row-label">Bundles root</div><div class="settings-row-sub">build/</div></div><button class="btn">Browse</button></div>
-      <div class="settings-row"><div><div class="settings-row-label">Active bundle</div><div class="settings-row-sub">build/CL-005</div></div><button class="btn">Browse</button></div>
-      <div class="settings-row"><div><div class="settings-row-label">Output / build root</div><div class="settings-row-sub">build/</div></div><button class="btn">Browse</button></div>
-      <div class="settings-row"><div><div class="settings-row-label">Transcripts source dir</div><div class="settings-row-sub">data/transcripts/ (structured JSON)</div></div><button class="btn">Browse</button></div>
-      <div class="settings-row"><div><div class="settings-row-label">Legal framework source dir</div><div class="settings-row-sub">data/law/CL/</div></div><button class="btn">Browse</button></div>
+      <div class="settings-row"><div><div class="settings-row-label">Project root</div><div class="settings-row-sub" data-setting-value="projectRoot">workspace/violation-refiner</div></div><button class="btn" data-action="browse" data-setting="projectRoot" data-browse-kind="directory" data-browse-path=".">Browse</button></div>
+      <div class="settings-row"><div><div class="settings-row-label">Bundles root</div><div class="settings-row-sub" data-setting-value="bundlesRoot">build/</div></div><button class="btn" data-action="browse" data-setting="bundlesRoot" data-browse-kind="directory" data-browse-path="build">Browse</button></div>
+      <div class="settings-row"><div><div class="settings-row-label">Active bundle</div><div class="settings-row-sub" data-setting-value="bundleRoot">build/CL-005</div></div><button class="btn" data-action="browse" data-setting="bundleRoot" data-browse-kind="directory" data-browse-path="build">Browse</button></div>
+      <div class="settings-row"><div><div class="settings-row-label">Output / build root</div><div class="settings-row-sub" data-setting-value="buildRoot">build/</div></div><button class="btn" data-action="browse" data-setting="buildRoot" data-browse-kind="directory" data-browse-path="build">Browse</button></div>
+      <div class="settings-row"><div><div class="settings-row-label">Transcripts source dir</div><div class="settings-row-sub" data-setting-value="transcriptsRoot">data/transcripts/html/</div></div><button class="btn" data-action="browse" data-setting="transcriptsRoot" data-browse-kind="directory" data-browse-path="data/transcripts/html">Browse</button></div>
+      <div class="settings-row"><div><div class="settings-row-label">Legal framework source dir</div><div class="settings-row-sub" data-setting-value="frameworkRoot">data/law/CL/</div></div><button class="btn" data-action="browse" data-setting="frameworkRoot" data-browse-kind="directory" data-browse-path="data/law/CL">Browse</button></div>
       <button class="advanced-toggle" data-action="toggle-advanced" data-target="#adv-paths">Show interpreter &amp; log paths ▾</button>
       <div class="advanced-block" id="adv-paths">
-        <div class="settings-row"><div><div class="settings-row-label">.env file</div><div class="settings-row-sub">project-root/.env</div></div><button class="btn">Browse</button></div>
-        <div class="settings-row"><div><div class="settings-row-label">Python interpreter</div><div class="settings-row-sub">.venv/bin/python</div></div><button class="btn">Browse</button></div>
-        <div class="settings-row"><div><div class="settings-row-label">Log directory</div><div class="settings-row-sub">.dev-logs/violation-refiner/</div></div><button class="btn">Browse</button></div>
+        <div class="settings-row"><div><div class="settings-row-label">.env file</div><div class="settings-row-sub" data-setting-value="envFile">project-root/.env</div></div><button class="btn" data-action="browse" data-setting="envFile" data-browse-kind="file" data-browse-path=".env">Browse</button></div>
+        <div class="settings-row"><div><div class="settings-row-label">Python interpreter</div><div class="settings-row-sub" data-setting-value="pythonPath">.venv/bin/python</div></div><button class="btn" data-action="browse" data-setting="pythonPath" data-browse-kind="file" data-browse-path=".venv/bin/python">Browse</button></div>
+        <div class="settings-row"><div><div class="settings-row-label">Log directory</div><div class="settings-row-sub" data-setting-value="logRoot">.dev-logs/violation-refiner/</div></div><button class="btn" data-action="browse" data-setting="logRoot" data-browse-kind="directory" data-browse-path=".dev-logs">Browse</button></div>
       </div>
     </div>
 
@@ -604,7 +596,7 @@ code {
   </div>
 
   <div class="block">
-    <div class="drop-zone">Drag files here, or <strong>browse</strong> to add them to the bundle</div>
+    <div class="drop-zone" data-action="browse" data-setting="sourceFile" data-browse-kind="file" data-browse-path="data/transcripts/html">Drag files here, or <strong>browse</strong> to choose a source file<div class="field-hint" id="s0SourceFile"></div></div>
     <div class="field-row" style="margin-top:16px;">
       <div class="field">
         <label>Destination <span class="req">*</span></label>
@@ -622,7 +614,7 @@ code {
       </div>
       <div class="field readonly">
         <label>Bundle root</label>
-        <input value="build/CL-005" readonly>
+        <input id="s0BundleRoot" value="" readonly>
       </div>
     </div>
   </div>
@@ -630,7 +622,7 @@ code {
   <div class="block">
     <div class="block-title">Staged files</div>
     <div class="block-sub">The hash shown here is what S2/S3 and V02/V03 will compare against later.</div>
-    <div class="record-list">
+    <div class="record-list" id="s0StagedFiles">
       <div class="record-row verified">
         <div class="rr-main">
           <div class="rr-id">timeline_aeropuerto_STG_7.html</div>
@@ -659,7 +651,7 @@ code {
 
   <div class="block">
     <div class="field-row cols-3">
-      <div class="field readonly"><label>Violation ID</label><input value="CL-005" readonly></div>
+      <div class="field readonly"><label>Violation ID</label><input id="s1ViolationId" value="" readonly></div>
       <div class="field"><label>Title <span class="req">*</span></label><input value="Detención irregular en pista, Aeropuerto Arturo Merino Benítez"></div>
       <div class="field">
         <label>Severity <span class="req">*</span></label>
@@ -736,7 +728,7 @@ code {
   </div>
 
   <div class="field-row">
-    <div class="field"><label>Framework file <span class="req">*</span></label><select><option>build/CL-005/Legal framework/CHIPENCOD_CP.md</option></select></div>
+    <div class="field"><label>Framework file <span class="req">*</span></label><select id="s3FrameworkFile"><option></option></select></div>
     <div class="field"><label>Framework code <span class="req">*</span></label><input value="CHIPENCOD"></div>
   </div>
 
@@ -1084,8 +1076,8 @@ code {
 
   <div class="tab-panel active" data-tabgroup="s11" data-tab="single">
     <div class="field-row">
-      <div class="field readonly"><label>Bundle root</label><input value="build/CL-005" readonly></div>
-      <div class="field readonly"><label>Output zip</label><input value="build/CL-005_refined_pack.zip" readonly></div>
+      <div class="field readonly"><label>Bundle root</label><input id="s11BundleRoot" value="" readonly></div>
+      <div class="field readonly"><label>Output zip</label><input id="s11OutputZip" value="" readonly></div>
     </div>
     <div class="btn-row"><button class="btn btn-primary" data-action="run" data-tool="write_violation_json_tool" data-step="S11">Build package</button></div>
   </div>
@@ -1195,8 +1187,8 @@ code {
   <div class="block">
     <div class="block-title">Ingest transcript bundle</div>
     <div class="field-row">
-      <div class="field"><label>Bundle root</label><input value="examples/CL-005"></div>
-      <div class="field"><label>Bundle ID</label><input value="CL-005"></div>
+      <div class="field"><label>Bundle root</label><input id="s13BundleRoot" value=""></div>
+      <div class="field"><label>Bundle ID</label><input id="s13BundleId" value=""></div>
     </div>
     <div class="btn-row"><button class="btn" data-action="run" data-tool="transcript_ingest_tool" data-step="S13">Start ingest</button></div>
   </div>
@@ -1369,7 +1361,7 @@ const STEP_META = [
 const STAGE_TITLES = {
   s0:'S0 · Stage', s1:'S1 · Init', s2:'S2 · Evidence', s3:'S3 · Norms', s4:'S4 · Elements',
   s5:'S5 · Nexus', s6:'S6 · Authorities', s7:'S7 · Verify', s8:'S8 · Confidence',
-  s9:'S9 · Enrich', s10:'S10 · Validate', s11:'S11 · Package', s12:'S12 · Stores',
+  s9:'S9 · Enrichment', s10:'S10 · Validate', s11:'S11 · Package', s12:'S12 · Stores',
   s13:'S13 · Ingest', s14:'S14 · Introspect'
 };
 
@@ -1380,6 +1372,7 @@ let state = {
   sources: { transcripts: [], frameworks: [] },
   activeTranscript: null,
   segmentSpecs: {},
+  settings: {},
 };
 
 /* ==========================================================================
@@ -1391,7 +1384,9 @@ const API = {
   health:  () => fetchJson('/api/health'),
   tools:   () => fetchJson('/api/tools'),
   sources: () => fetchJson('/api/sources'),
+  bundles: () => fetchJson('/api/bundles'),
   transcript: uri => fetchJson('/api/source-transcript?uri=' + encodeURIComponent(uri)),
+  browse: (path, kind) => fetchJson('/api/browse?path=' + encodeURIComponent(path) + '&kind=' + kind),
   catalog: () => fetchJson('/api/catalog'),
 };
 
@@ -1488,10 +1483,12 @@ function switchStep(id) {
   canvas.classList.remove('fade-in'); void canvas.offsetWidth; canvas.classList.add('fade-in');
   canvas.innerHTML = '';
   if (tpl) canvas.appendChild(tpl.content.cloneNode(true));
+  associateLabels(canvas);
   document.getElementById('statStage').textContent = STAGE_TITLES[id];
   document.getElementById('sidebar').classList.remove('open');
   applyIntroState();
   hydrateSourceSelectors();
+  if (id === 's0') loadS0StagedFiles();
   renderToolStrip(id);
   pushLog('Opened step', STAGE_TITLES[id]);
 }
@@ -1531,6 +1528,7 @@ function pushLog(message, step, kind) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  associateLabels(document);
   renderSidebar();
   switchStep(state.activeStep);
   renderDrawer();
@@ -1547,17 +1545,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // bundle switcher drives the id every tool call is scoped to
   const bundleSelect = document.getElementById('bundleSelect');
-  bundleSelect.value = state.bundleId;
-  bundleSelect.addEventListener('change', () => {
-    state.bundleId = bundleSelect.value;
-    state.violation = null;
-    localStorage.removeItem('vp.violation');
-    document.getElementById('statBundle').textContent = state.bundleId;
-    document.getElementById('statConfidence').textContent = '—';
-    document.getElementById('statSegments').textContent = '0';
-    document.getElementById('statAuthorities').textContent = '0';
-    pushLog(`Switched active bundle to ${state.bundleId}`, null, 'warn');
-  });
+  bundleSelect.addEventListener('change', () => switchBundle(bundleSelect.value));
 
   // capture S1 identity fields so init_violation can pre-fill from the form
   document.addEventListener('change', (e) => {
@@ -1574,6 +1562,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const t = e.target.closest('[data-action]');
     if (!t) return;
     const action = t.dataset.action;
+
+    if (action === 'browse') {
+      e.preventDefault();
+      openBrowsePicker(t);
+    }
+    if (action === 'browse-entry') {
+      e.preventDefault();
+      renderBrowsePicker(t.dataset.browsePath, t.dataset.browseKind, t.dataset.setting);
+    }
+    if (action === 'browse-choose') {
+      e.preventDefault();
+      chooseSetting(t.dataset.setting, t.dataset.browsePath);
+    }
 
     if (action === 'toggle-drawer') {
       state.drawerOpen = !state.drawerOpen;
@@ -1703,6 +1704,19 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 }
 
+function associateLabels(root) {
+  root.querySelectorAll('label').forEach(label => {
+    if (label.htmlFor) return;
+    const control = label.parentElement?.querySelector('input, select, textarea');
+    if (!control) return;
+    if (!control.id) {
+      const base = (label.textContent || 'field').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      control.id = `field-${base || 'control'}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+    label.htmlFor = control.id;
+  });
+}
+
 async function bootstrap() {
   if (location.protocol === 'file:') {
     setHealthPill('warn', 'opened from disk — run ./start.sh');
@@ -1734,6 +1748,14 @@ async function bootstrap() {
     pushLog(`Could not load /api/sources — ${e.message}`, null, 'warn');
   }
 
+  try {
+    const bundles = await API.bundles();
+    hydrateBundleSelector(bundles.bundles);
+    pushLog(`Discovered ${bundles.bundles.length} build bundle(s)`, null, 'ok');
+  } catch (e) {
+    pushLog(`Could not load /api/bundles — ${e.message}`, null, 'warn');
+  }
+
   // Runtime health.
   try {
     const h = await API.health();
@@ -1745,6 +1767,71 @@ async function bootstrap() {
     pushLog(`Could not load /api/health — ${e.message}`, null, 'err');
   }
 }
+
+function hydrateBundleSelector(bundles) {
+  const select = document.getElementById('bundleSelect');
+  if (!select) return;
+  const available = bundles || [];
+  if (!available.length) {
+    select.innerHTML = '<option value="">No build bundles</option>';
+    select.disabled = true;
+    return;
+  }
+  select.disabled = false;
+  select.innerHTML = available.map(bundle =>
+    `<option value="${escapeHtml(bundle.id)}">${escapeHtml(bundle.id)} · ${bundle.file_count} files</option>`
+  ).join('');
+  if (available.some(bundle => bundle.id === state.bundleId)) {
+    select.value = state.bundleId;
+  } else {
+    select.value = available[0].id;
+    switchBundle(select.value);
+  }
+}
+
+function switchBundle(bundleId) {
+  state.bundleId = bundleId;
+  state.settings.bundleRoot = `build/${bundleId}`;
+  state.violation = null;
+  localStorage.removeItem('vp.violation');
+  document.getElementById('statBundle').textContent = state.bundleId;
+  document.getElementById('statConfidence').textContent = '—';
+  document.getElementById('statSegments').textContent = '0';
+  document.getElementById('statAuthorities').textContent = '0';
+  const bundlePath = document.querySelector('[data-setting-value="bundleRoot"]');
+  if (bundlePath) bundlePath.textContent = state.settings.bundleRoot;
+  const bundleFields = {
+    s0BundleRoot: state.settings.bundleRoot,
+    s11BundleRoot: state.settings.bundleRoot,
+    s11OutputZip: `${state.settings.bundleRoot}_refined_pack.zip`,
+    s13BundleRoot: state.settings.bundleRoot,
+  };
+  Object.entries(bundleFields).forEach(([id, value]) => {
+    const field = document.getElementById(id);
+    if (field) field.value = value;
+  });
+  const bundleTrigger = document.querySelector('[data-setting="bundleRoot"][data-action="browse"]');
+  if (bundleTrigger) bundleTrigger.dataset.browsePath = 'build';
+  if (state.activeStep === 's0') loadS0StagedFiles();
+  pushLog(`Switched active bundle to ${state.bundleId}`, null, 'warn');
+}
+// Sync all hardcoded fields to the active bundle
+  const vidField = document.getElementById('s1ViolationId');
+  if (vidField) vidField.value = state.bundleId;
+  const s3Select = document.getElementById('s3FrameworkFile');
+  if (s3Select) s3Select.innerHTML = `<option>${state.settings.bundleRoot}/Legal framework/CHIPENCOD_CP.md</option>`;
+  const s0Bundle = document.getElementById('s0BundleRoot');
+  if (s0Bundle) s0Bundle.value = state.settings.bundleRoot;
+  const s11Bundle = document.getElementById('s11BundleRoot');
+  if (s11Bundle) s11Bundle.value = state.settings.bundleRoot;
+  const s11Zip = document.getElementById('s11OutputZip');
+  if (s11Zip) s11Zip.value = `${state.settings.bundleRoot}_refined_pack.zip`;
+  const s13Bundle = document.getElementById('s13BundleRoot');
+  if (s13Bundle) s13Bundle.value = state.settings.bundleRoot;
+  const s13Id = document.getElementById('s13BundleId');
+  if (s13Id) s13Id.value = state.bundleId;
+  pushLog(`Switched active bundle to ${state.bundleId}`, null, 'warn');
+
 
 function setHealthPill(kind, text) {
   const pill = document.getElementById('healthPill');
@@ -1980,6 +2067,76 @@ function selectedTranscript() {
     || null;
 }
 
+async function openBrowsePicker(button) {
+  const kind = button.dataset.browseKind || 'directory';
+  const setting = button.dataset.setting;
+  const path = button.dataset.browsePath || '.';
+  document.getElementById('modalBadge').textContent = kind === 'file' ? 'File picker' : 'Folder picker';
+  document.getElementById('modalTitle').textContent = `Choose ${setting}`;
+  document.getElementById('modalSub').textContent = 'Workspace files only';
+  document.getElementById('modalOverlay').classList.add('active');
+  await renderBrowsePicker(path, kind, setting);
+}
+
+async function renderBrowsePicker(path, kind, setting) {
+  const body = document.getElementById('modalBody');
+  body.innerHTML = '<p class="field-hint">Loading workspace…</p>';
+  try {
+    const data = await API.browse(path, kind);
+    if (kind === 'file') {
+      chooseSetting(setting, data.path);
+      return;
+    }
+    const entries = data.entries.map(entry =>
+      `<button class="btn browse-entry" data-action="browse-entry" data-browse-path="${escapeHtml(entry.path)}" data-browse-kind="${entry.kind}" data-setting="${escapeHtml(setting)}"><span class="browse-icon">${entry.kind === 'directory' ? '▣' : '□'}</span>${escapeHtml(entry.name)}</button>`
+    ).join('');
+    body.innerHTML = `<div class="browse-path">${escapeHtml(data.path)}</div><div class="btn-row" style="margin-top:0;"><button class="btn btn-primary" data-action="browse-choose" data-setting="${escapeHtml(setting)}" data-browse-path="${escapeHtml(data.path)}">Choose this folder</button>${data.parent !== null ? `<button class="btn" data-action="browse-entry" data-browse-path="${escapeHtml(data.parent)}" data-browse-kind="directory" data-setting="${escapeHtml(setting)}">Up</button>` : ''}</div><div class="browse-list" style="margin-top:14px;">${entries || '<div class="field-hint">No visible entries.</div>'}</div>`;
+  } catch (e) {
+    body.innerHTML = `<p class="field-hint">Could not browse workspace — ${escapeHtml(e.message)}</p><div class="btn-row"><button class="btn" data-action="close-modal">Close</button></div>`;
+  }
+}
+
+function chooseSetting(setting, path) {
+  state.settings[setting] = path;
+  const value = document.querySelector(`[data-setting-value="${setting}"]`);
+  if (value) value.textContent = path === '.' ? 'workspace root' : path + (setting.toLowerCase().includes('root') ? '/' : '');
+  if (setting === 'sourceFile') {
+    const source = document.getElementById('s0SourceFile');
+    if (source) source.textContent = `Selected: ${path}`;
+  }
+  const trigger = document.querySelector(`[data-setting="${setting}"][data-action="browse"]`);
+  if (trigger) trigger.dataset.browsePath = path;
+  if (setting === 'bundleRoot') {
+    const bundle = path.split('/').pop();
+    const select = document.getElementById('bundleSelect');
+    if (select && [...select.options].some(option => option.value === bundle)) select.value = bundle;
+  }
+  if (setting === 'transcriptsRoot') pushLog(`Transcript source root set to ${path}`, null, 'ok');
+  if (setting === 'frameworkRoot') pushLog(`Framework source root set to ${path}`, null, 'ok');
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+async function loadS0StagedFiles() {
+  const list = document.getElementById('s0StagedFiles');
+  if (!list) return;
+  const bundle = state.settings.bundleRoot || 'build/CL-005';
+  list.innerHTML = '<div class="field-hint">Loading bundle files…</div>';
+  try {
+    const files = [];
+    const walk = async path => {
+      const data = await API.browse(path, 'directory');
+      for (const entry of data.entries) {
+        if (entry.kind === 'file') files.push(entry);
+        else await walk(entry.path);
+      }
+    };
+    await walk(bundle);
+    list.innerHTML = files.length ? files.map(file => `<div class="record-row verified"><div class="rr-main"><div class="rr-id">${escapeHtml(file.name)}</div><div class="rr-detail">${escapeHtml(file.path)}</div></div><div class="rr-meta"><span class="badge badge-neutral">present</span></div></div>`).join('') : '<div class="field-hint">No files staged in this bundle.</div>';
+  } catch (e) {
+    list.innerHTML = `<div class="field-hint">Could not inspect ${escapeHtml(bundle)} — ${escapeHtml(e.message)}</div>`;
+  }
+}
+
 function defaultArgsFor(tool) {
   const args = {};
   const seeded = {
@@ -2067,6 +2224,7 @@ function openToolPanel(name) {
       <button class="btn btn-primary" id="argRun" data-tool="${name}" data-required="${escapeHtml(required.join(','))}">Run</button>
       <button class="btn" data-action="close-modal">Cancel</button>
     </div>`;
+  associateLabels(body);
   body.querySelector('#argRun').addEventListener('click', () => submitToolPanel(name));
   document.getElementById('modalOverlay').classList.add('active');
 }

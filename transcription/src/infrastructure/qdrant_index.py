@@ -3,8 +3,10 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import json
 import logging
 from datetime import datetime, timedelta
+from pathlib import Path
 from urllib.parse import urlparse
 
 from qdrant_client import QdrantClient
@@ -17,6 +19,9 @@ logger = logging.getLogger(__name__)
 COLLECTION = "transcription_transcripts"
 VECTOR_DIM = 384  # all-MiniLM-L6-v2 output dimension
 
+# Path to the speaker index produced by scripts/generate_speaker_index.py
+_SPEAKER_INDEX_PATH = Path(__file__).resolve().parents[2] / "data" / "speaker_index.json"
+
 
 class QdrantTranscriptIndex:
     """Index and search transcript segments in Qdrant. Implements TranscriptIndexPort."""
@@ -25,12 +30,70 @@ class QdrantTranscriptIndex:
         self,
         url: str = "http://localhost:6333",
         api_key: str | None = None,
+        speaker_index_path: Path | str | None = None,
     ):
         normalized_url = self._normalize_qdrant_url(url)
         normalized_key = self._normalize_qdrant_api_key(api_key)
         self._client = QdrantClient(url=normalized_url, api_key=normalized_key or None)
         self._encoder = None  # lazy-loaded
         self._ensure_collection()
+
+        # Build speaker lookup tables from speaker_index.json
+        # _spk_by_seg:   (transcript_id, segment_index) -> speaker_id
+        # _spk_by_label: (transcript_id, speaker_label_lower) -> speaker_id
+        index_path = Path(speaker_index_path) if speaker_index_path else _SPEAKER_INDEX_PATH
+        self._spk_by_seg: dict[tuple[str, int], str] = {}
+        self._spk_by_label: dict[tuple[str, str], str] = {}
+        self._load_speaker_index(index_path)
+
+    def _load_speaker_index(self, path: Path) -> None:
+        """Parse speaker_index.json and populate the two lookup dicts.
+
+        For each ``SPK-…`` key we look at every occurrence entry:
+        - If the entry has ``segment_indices`` we map each (transcript_id, idx) → spk_id.
+        - In all cases we map (transcript_id, speaker_label_lower) → spk_id so that
+          fallback label matching still benefits from the index.
+        """
+        if not path.exists():
+            logger.warning("[qdrant] speaker_index.json not found at %s — speaker IDs will rely on participant data only", path)
+            return
+
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("[qdrant] failed to load speaker_index.json: %s", exc)
+            return
+
+        mapped: dict = data.get("mapped_speakers", {})
+        for spk_id, speaker_meta in mapped.items():
+            # Support both v2 (list of appearances) and v3 (dict with appearances key)
+            if isinstance(speaker_meta, list):
+                occurrences = speaker_meta
+            else:
+                occurrences = speaker_meta.get("appearances", [])
+                
+            for occ in occurrences:
+                tid = occ.get("transcript_id", "")
+                if not tid:
+                    continue
+
+                # Exact segment-index mapping (highest priority)
+                seg_indices = occ.get("segment_indices")
+                if seg_indices:
+                    for idx in seg_indices:
+                        self._spk_by_seg[(tid, int(idx))] = spk_id
+
+                # Label-based fallback: use speaker_label (participant) or speaker (segment)
+                label = (occ.get("speaker_label") or occ.get("speaker") or "").strip().lower()
+                if label:
+                    # Only set if not already present (first match wins, preserving priority order)
+                    self._spk_by_label.setdefault((tid, label), spk_id)
+
+        logger.info(
+            "[qdrant] loaded speaker_index: %d segment-exact mappings, %d label mappings",
+            len(self._spk_by_seg),
+            len(self._spk_by_label),
+        )
 
     @staticmethod
     def _normalize_qdrant_url(raw_url: str) -> str:
@@ -156,15 +219,45 @@ class QdrantTranscriptIndex:
         points = []
         for seg, emb in zip(transcript.segments, embeddings, strict=False):
             point_id = self._make_point_id(transcript.transcript_id, seg.index)
+
+            # ------------------------------------------------------------------
+            # Resolve speaker_id — three-tier priority:
+            #   1. Exact (transcript_id, segment_index) hit from speaker_index.json
+            #   2. Label hit from speaker_index.json  (generic label → SPK-... key)
+            #   3. Transcript's own participants array (legacy fallback)
+            # ------------------------------------------------------------------
+            tid = transcript.transcript_id
+            seg_speaker = (seg.speaker.label or "").strip().lower()
+
+            speaker_id: str | None = (
+                # Priority 1 — segment-index exact match
+                self._spk_by_seg.get((tid, seg.index))
+                # Priority 2 — label match from index
+                or (self._spk_by_label.get((tid, seg_speaker)) if seg_speaker else None)
+            )
+
+            if speaker_id is None:
+                # Priority 3 — scan transcript's own participants (unchanged legacy logic)
+                participants = getattr(transcript, "participants", []) or []
+                for p in participants:
+                    p_role = (p.get("role") or "").strip().lower()
+                    p_label = (p.get("speaker_label") or "").strip().lower()
+                    if seg_speaker and (seg_speaker == p_role or seg_speaker == p_label):
+                        speaker_id = p.get("speaker_id")
+                        break
+
             payload = {
                 "transcript_id": transcript.transcript_id,
+                "segment_id": f"{transcript.transcript_id}.seg-{seg.index}",
                 "segment_index": seg.index,
                 "speaker": seg.speaker.label,
+                "speaker_id": speaker_id,
                 "start": seg.start,
                 "end": seg.end,
                 "text": seg.text,
                 "source_file": transcript.source_file,
                 "language": transcript.language,
+                "reviewed": getattr(seg, "reviewed", False),
                 "correction_note": getattr(seg, "correction_note", ""),
                 "backchannel_events": getattr(seg, "backchannel_events", ""),
             }
@@ -185,6 +278,8 @@ class QdrantTranscriptIndex:
                 else None
             )
             payload["chronological_order"] = getattr(transcript, "chronological_order", None)
+            payload["prior_stage"] = getattr(transcript, "prior_stage", None)
+            payload["next_stage"] = getattr(transcript, "next_stage", None)
             payload["tags"] = getattr(transcript, "tags", [])
             payload["violations_cited"] = getattr(transcript, "violations_cited", [])
             payload["participants"] = getattr(transcript, "participants", [])
@@ -256,18 +351,26 @@ class QdrantTranscriptIndex:
         return [
             {
                 "transcript_id": hit.payload["transcript_id"],
+                "segment_id": hit.payload.get("segment_id"),
                 "segment_index": hit.payload["segment_index"],
                 "speaker": hit.payload["speaker"],
+                "speaker_id": hit.payload.get("speaker_id"),
                 "start": hit.payload["start"],
                 "end": hit.payload["end"],
                 "text": hit.payload["text"],
                 "source_file": hit.payload.get("source_file", ""),
+                "language": hit.payload.get("language", ""),
                 "score": hit.score,
+                "reviewed": hit.payload.get("reviewed", False),
                 "correction_note": hit.payload.get("correction_note", ""),
                 "backchannel_events": hit.payload.get("backchannel_events", ""),
                 "case_id": hit.payload.get("case_id"),
+                "narrative_id": hit.payload.get("narrative_id"),
                 "location": hit.payload.get("location"),
+                "prior_stage": hit.payload.get("prior_stage"),
+                "next_stage": hit.payload.get("next_stage"),
                 "tags": hit.payload.get("tags"),
+                "violations_cited": hit.payload.get("violations_cited"),
                 "forensic_cluster_ids": hit.payload.get("forensic_cluster_ids"),
             }
             for hit in results.points
@@ -275,6 +378,7 @@ class QdrantTranscriptIndex:
 
     async def delete(self, transcript_id: str, collection_name: str = COLLECTION) -> None:
         """Remove all points for a given transcript."""
+        # pyrefly: ignore [missing-import]
         from qdrant_client.models import FieldCondition, Filter, MatchValue
 
         self._ensure_collection(collection_name)

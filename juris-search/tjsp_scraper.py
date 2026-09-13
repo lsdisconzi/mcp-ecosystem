@@ -152,6 +152,14 @@ class TJSPJurisprudenciaScraper:
             "tipoDecisaoSelecionados": self._resolve_tipo_decisao(filters.get("tipo_decisao")),
             "dados.ordenarPor": "dtPublicacao",
         }
+
+        # Diagnostic: only logs when a judgement-date window is actually applied.
+        if data["dados.dtJulgamentoInicio"] or data["dados.dtJulgamentoFim"]:
+            logger.info(
+                "TJSP form dates: julgamento %s .. %s",
+                data["dados.dtJulgamentoInicio"] or "-",
+                data["dados.dtJulgamentoFim"] or "-",
+            )
         return data
 
     def _parse_page_count(self, tipo_decisao: str = "A") -> int:
@@ -310,6 +318,57 @@ class TJSPJurisprudenciaScraper:
             logger.debug(f"Error parsing result block: {e}")
             return None
 
+    # Phrases the CJSG page shows when the POST ran but matched nothing.
+    _NO_RESULT_MARKERS = (
+        "nenhum resultado",
+        "não foi encontrado",
+        "nao foi encontrado",
+        "não foram encontrados",
+        "nao foram encontrados",
+    )
+
+    def _search_results_rendered(self, timeout: float = 8.0) -> bool:
+        """True once the results area rendered (hits, or an explicit 'no results')."""
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            try:
+                if self.driver.find_elements(By.CSS_SELECTOR, ".fundocinza1"):
+                    return True
+                body = (self.driver.find_element(By.TAG_NAME, "body").text or "").lower()
+                if any(marker in body for marker in self._NO_RESULT_MARKERS):
+                    return True
+            except Exception:
+                pass
+            time.sleep(0.5)
+        return False
+
+    def _submit_search_form(self) -> None:
+        """Submit the CJSG search form, falling back to JS submit if the click no-ops.
+
+        Clicking "Pesquisar" is unreliable: the form's onsubmit runs
+        BENV_isCamposValidos()/spwSubmit(), and when that returns false the POST is
+        cancelled *without raising an exception*. The click therefore "succeeds" while
+        the page silently stays on the search form, and we collect zero results.
+        document.forms[0].submit() bypasses onsubmit and always posts.
+        """
+        for selector in ("//input[@name='pbSubmit']", "//input[@value='Pesquisar']"):
+            try:
+                btn = self.driver.find_element(By.XPATH, selector)
+                if btn.is_displayed() and btn.is_enabled():
+                    btn.click()
+                    break
+            except Exception:
+                continue
+
+        if self._search_results_rendered():
+            return
+
+        logger.info(
+            "TJSP: 'Pesquisar' click did not submit the form — "
+            "falling back to document.forms[0].submit()"
+        )
+        self.driver.execute_script("document.forms[0].submit();")
+
     def get_inteiro_links(
         self,
         query: str,
@@ -348,30 +407,10 @@ class TJSPJurisprudenciaScraper:
                 except Exception:
                     pass
 
-            # Submit the form by clicking the search button
-            submit_selectors = [
-                "//input[@value='Pesquisar']",
-                "//button[contains(text(), 'Pesquisar')]",
-                "//input[@type='submit']",
-                "//button[@type='submit']",
-            ]
-            submitted = False
-            for selector in submit_selectors:
-                try:
-                    btn = self.driver.find_element(By.XPATH, selector)
-                    if btn.is_displayed():
-                        btn.click()
-                        submitted = True
-                        break
-                except Exception:
-                    continue
-
-            if not submitted:
-                # Try JavaScript form submission
-                self.driver.execute_script(
-                    "document.forms[0].submit()"
-                )
-                submitted = True
+            # Submit the form. A bare click on "Pesquisar" can be silently
+            # cancelled by the form's onsubmit validation, so _submit_search_form()
+            # verifies the results actually rendered and falls back to JS submit.
+            self._submit_search_form()
 
         except Exception as e:
             logger.warning(f"Form filling via Selenium failed: {e}, trying direct POST")

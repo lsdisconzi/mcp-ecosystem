@@ -37,9 +37,9 @@ def test_layer1_anchors_segment_with_real_offsets_and_hashes(transcript):
     assert len(v.segments) == 1
     s = v.segments[0]
     assert s.segment_id == "STG-7.seg-55"
-    assert s.audio_offset_start == 445.0
-    assert s.audio_offset_end == 450.1
-    assert "agresion a una persona" in s.verbatim_es
+    assert s.audio_offset_start == 467.5
+    assert s.audio_offset_end == 474.0
+    assert "las claves estan aca" in s.verbatim_es
     assert len(s.verbatim_sha256) == 64
     # The provenance trail should have been appended.
     assert any(p.layer == 1 for p in v.provenance)

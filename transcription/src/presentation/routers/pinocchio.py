@@ -29,6 +29,8 @@ _REVISION_TEMPLATE = _TEMPLATE_DIR / "revision.html"
 _CURADORIA_TEMPLATE = _TEMPLATE_DIR / "curadoria.html"
 _PINOCCIO_EN_TEMPLATE = _TEMPLATE_DIR / "pinocchio-en.html"
 _REVISION_EN_TEMPLATE = _TEMPLATE_DIR / "revision-en.html"
+_SPEAKERS_REGISTRY_TEMPLATE = _TEMPLATE_DIR / "speakers-registry.html"
+_LAW_REGISTRY_TEMPLATE = _TEMPLATE_DIR / "law-registry.html"
 
 
 def _first_existing(*candidates: Path) -> Path:
@@ -55,6 +57,20 @@ async def serve_revision() -> FileResponse:
 async def serve_curadorias() -> FileResponse:
     path = _CURADORIA_TEMPLATE if _CURADORIA_TEMPLATE.exists() else _PINOCCIO_TEMPLATE
     return FileResponse(str(path), media_type="text/html")
+
+@router.get("/speakers-registry", include_in_schema=False)
+async def serve_speakers_registry() -> FileResponse:
+    if not _SPEAKERS_REGISTRY_TEMPLATE.exists():
+        raise HTTPException(status_code=404, detail=f"UI template missing: {_SPEAKERS_REGISTRY_TEMPLATE}")
+    return FileResponse(str(_SPEAKERS_REGISTRY_TEMPLATE), media_type="text/html")
+
+
+@router.get("/law-registry", include_in_schema=False)
+async def serve_law_registry() -> FileResponse:
+    """Law corpus registry browser (backed by /api/law/*)."""
+    if not _LAW_REGISTRY_TEMPLATE.exists():
+        raise HTTPException(status_code=404, detail=f"UI template missing: {_LAW_REGISTRY_TEMPLATE}")
+    return FileResponse(str(_LAW_REGISTRY_TEMPLATE), media_type="text/html")
 
 
 # ── English UI variants ───────────────────────────────────────────────────

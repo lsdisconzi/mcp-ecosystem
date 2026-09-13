@@ -30,6 +30,8 @@ _BRAZIL_FIELD_MAP = {
     "assunto_cnj": "assunto_cnj",
     "comarca_origem": "comarca_origem",
     "tipo_decisao": "tipo_decisao",
+    "data_julgamento_inicio": "data_julgamento_inicio",
+    "data_julgamento_fim": "data_julgamento_fim",
     "search_index": "search_index",
     "max_results": "max_results",
 }
@@ -54,6 +56,8 @@ _USER_FIELD_KEYS = {
     "assunto_cnj",
     "comarca_origem",
     "tipo_decisao",
+    "data_julgamento_inicio",
+    "data_julgamento_fim",
     "search_index",
     "max_results",
     # Chile-specific fields sent by the Spanish system prompt

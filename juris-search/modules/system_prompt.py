@@ -37,6 +37,8 @@ Quando você tiver informação suficiente para sugerir uma busca, responda com 
   "relator": "nome do relator/desembargador (ou null)",
   "orgao_julgador": "Câmara/Turma (ou null)",
   "tipo_decisao": "Acórdão / Monocrática / etc (ou null)",
+  "data_julgamento_inicio": "AAAA-MM-DD (ou null)",
+  "data_julgamento_fim": "AAAA-MM-DD (ou null)",
   "tribunal": "{court_name}",
   "search_index": "acordao ou inteiro_teor",
   "max_results": 20

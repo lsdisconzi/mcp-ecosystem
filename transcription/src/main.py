@@ -20,12 +20,14 @@ from .presentation.routers.diarization import router as diarization_router
 
 # Presentation routers
 from .presentation.routers.health import router as health_router
+from .presentation.routers.law_registry import router as law_registry_router
 from .presentation.routers.parameters import router as parameters_router
 from .presentation.routers.pinocchio import router as pinocchio_router
 from .presentation.routers.projects import init_projects_router
 from .presentation.routers.projects import router as projects_router
 from .presentation.routers.references import init_references_router
 from .presentation.routers.references import router as references_router
+from .presentation.routers.speakers import router as speakers_router
 from .presentation.routers.transcription import init_transcription_router
 from .presentation.routers.transcription import router as transcription_router
 from .presentation.routers.transcripts import init_transcript_router
@@ -87,6 +89,8 @@ app.include_router(projects_router)
 app.include_router(references_router)
 app.include_router(pinocchio_router)
 app.include_router(llm_router)
+app.include_router(speakers_router)
+app.include_router(law_registry_router)
 
 # Serve frontend assets (shared LLM provider UI)
 _STATIC_DIR = Path(__file__).resolve().parents[1] / "static"
@@ -97,6 +101,7 @@ app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
 app.mount("/audio", StaticFiles(directory=settings.AUDIO_DIR), name="audio")
 app.mount("/originals", StaticFiles(directory=settings.ORIGINALS_DIR), name="originals")
 app.mount("/transcripts", StaticFiles(directory=settings.TRANSCRIPT_DIR), name="transcripts")
+app.mount("/speakers", StaticFiles(directory=settings.SPEAKERS_DIR), name="speakers")
 
 
 @app.on_event("startup")

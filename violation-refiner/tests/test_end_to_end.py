@@ -57,6 +57,6 @@ def test_endtoend_bundle_files_exist(example_module):
     root = example_module.BUNDLE_ROOT
     assert (root / "CL-005.json").exists()
     assert (root / "MANIFEST.txt").exists()
-    assert (root / "Transcripts" / "timeline_aeropuerto_STG_7.html").exists()
+    assert (root / "Transcripts" / "I-002_05_NAR-07_STG_7_post_removal_investigation.html").exists()
     assert (root / "Legal framework" / "CHIPENCOD_CP.md").exists()
     assert (root / "Validation" / "checks.json").exists()

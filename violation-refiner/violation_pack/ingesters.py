@@ -29,17 +29,18 @@ Design notes
 """
 from __future__ import annotations
 
-import hashlib
 import json
+from pathlib import Path
+
+from .qdrant_index import QdrantVectorIndex, _stable_point_id
+from .sources_json import JsonTranscriptSource, expand_segment_index_spec
+
+import hashlib
 import re
 import time
 from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any
-
-from .qdrant_index import QdrantVectorIndex, _stable_point_id
-
 
 # ---------------------------------------------------------------------------
 # Common helpers

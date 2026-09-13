@@ -83,6 +83,63 @@ def find_data_root() -> Path | None:
     return None
 
 
+def find_workspace_root() -> Path:
+    """Return the repository root used to constrain browser selections."""
+    here = Path(__file__).resolve().parent
+    for base in (here, *here.parents):
+        if (base / "pyproject.toml").is_file() and (base / "violation_pack").is_dir():
+            return base
+    return here.parent
+
+
+def browse_workspace(path: str = "", kind: str = "directory") -> dict[str, Any] | None:
+    """List a safe workspace directory or resolve one safe file selection."""
+    root = find_workspace_root().resolve()
+    requested = Path(path or ".")
+    if requested.is_absolute():
+        return None
+    candidate = (root / requested).resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError:
+        return None
+    if not candidate.exists() or (kind == "file" and not candidate.is_file()):
+        return None
+    if kind == "file":
+        return {"ok": True, "kind": "file", "path": str(candidate.relative_to(root))}
+    if not candidate.is_dir():
+        return None
+    entries = []
+    for entry in sorted(candidate.iterdir(), key=lambda item: (item.is_file(), item.name.lower())):
+        if entry.name.startswith("."):
+            continue
+        entries.append({
+            "name": entry.name,
+            "kind": "directory" if entry.is_dir() else "file",
+            "path": str(entry.relative_to(root)),
+        })
+    rel = str(candidate.relative_to(root)) if candidate != root else "."
+    parent = str(candidate.parent.relative_to(root)) if candidate != root else None
+    return {"ok": True, "kind": "directory", "path": rel, "parent": parent, "entries": entries}
+
+
+def discover_bundles() -> dict[str, Any]:
+    """List real CL-* bundle directories under the repository build root."""
+    root = find_workspace_root().resolve()
+    build_root = root / "build"
+    bundles = []
+    if build_root.is_dir():
+        for path in sorted(build_root.iterdir(), key=lambda item: item.name):
+            if not path.is_dir() or not re.fullmatch(r"CL-\d+", path.name):
+                continue
+            bundles.append({
+                "id": path.name,
+                "path": str(path.relative_to(root)),
+                "file_count": sum(1 for item in path.rglob("*") if item.is_file()),
+            })
+    return {"ok": True, "root": "build", "bundles": bundles}
+
+
 def _resolve_transcript_uri(uri: str) -> Path | None:
     """Resolve a discovered transcript URI without allowing path traversal."""
     data_root = find_data_root()
@@ -379,6 +436,25 @@ def build_ui_routes(mcp):
                 status_code=400,
             )
         return json_response(payload)
+
+    @mcp.custom_route("/api/browse", methods=["GET", "OPTIONS"])
+    async def api_browse(request) -> Response:
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+        path = request.query_params.get("path", "")
+        kind = request.query_params.get("kind", "directory")
+        if kind not in {"directory", "file"}:
+            return json_response({"ok": False, "error": "kind must be directory or file."}, status_code=400)
+        payload = browse_workspace(path, kind)
+        if payload is None:
+            return json_response({"ok": False, "error": "Path is outside the workspace or does not exist."}, status_code=400)
+        return json_response(payload)
+
+    @mcp.custom_route("/api/bundles", methods=["GET", "OPTIONS"])
+    async def api_bundles(request) -> Response:
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+        return json_response(discover_bundles())
 
     # -- tool invocation ----------------------------------------------------
 

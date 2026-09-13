@@ -50,6 +50,10 @@ fi
 
 "$SCRIPT_DIR/stop.sh" --quiet || true
 
+echo "Updating speaker indices and MD files..."
+"$PYTHON_BIN" "$SCRIPT_DIR/scripts/generate_speaker_index_v3.py" > /dev/null || true
+"$PYTHON_BIN" "$SCRIPT_DIR/scripts/generate_speaker_md_files.py" > /dev/null || true
+
 echo "Starting transcription API on ${HOST}:${PORT}"
 start_logging "transcription" "api" env PYTHONUNBUFFERED=1 "$UVICORN_BIN" src.main:app --host "$HOST" --port "$PORT"
 
@@ -62,7 +66,7 @@ start_logging "transcription" "mcp-meta" env PYTHONUNBUFFERED=1 MCP_TRANSPORT="$
     "$PYTHON_BIN" -m src.mcp.servers.meta_server
 
 echo "Waiting for API health endpoint"
-for _ in $(seq 1 30); do
+for _ in $(seq 1 120); do
     if curl -sf "http://${HOST}:${PORT}/health" >/dev/null 2>&1; then
         break
     fi
@@ -70,7 +74,7 @@ for _ in $(seq 1 30); do
 done
 
 for port in 8121 8122 8123; do
-    if ! wait_for_port "$port"; then
+    if ! wait_for_port "$port" 120; then
         echo "transcription MCP server failed to listen on port $port" >&2
         exit 1
     fi

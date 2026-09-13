@@ -281,6 +281,20 @@ class ReviewIndexPayload(BaseModel):
     create_if_missing: bool = True
 
 
+class BatchIngestPayload(BaseModel):
+    """Payload for the incremental batch-ingest queue.
+
+    ``mode`` controls what gets indexed:
+      * ``reviewed`` -> only segments flagged ``reviewed`` (default; mirrors the
+                        per-transcript "Index in Qdrant" button)
+      * ``all``      -> every segment of every transcript
+    """
+    source_dir: str = "data/transcripts/"
+    qdrant_collection: str = "reviewed_transcripts"
+    mode: str = "reviewed"
+    reindex: bool = True
+
+
 class ImportSegmentPayload(BaseModel):
     index: int | None = None
     speaker: str | None = None
@@ -565,6 +579,73 @@ async def index_all_transcripts():
         except Exception as e:
             errors.append({"transcript_id": tid, "error": str(e)})
     return {"transcripts_processed": len(ids), "segments_indexed": total, "errors": errors}
+
+
+@router.post("/batch_ingest")
+async def batch_ingest(payload: BatchIngestPayload):
+    """Index every transcript in the store, one at a time (queue).
+
+    Each transcript is loaded, (optionally) cleared from the target collection
+    and re-indexed before moving on to the next file. This keeps memory/CPU
+    bounded and produces a deterministic, resumable-ish ingestion order.
+    """
+    if _index is None:
+        raise HTTPException(status_code=503, detail="Vector indexing not configured")
+    if _store is None:
+        raise HTTPException(status_code=503, detail="Transcript store not configured")
+
+    collection = (payload.qdrant_collection or "").strip() or "reviewed_transcripts"
+    mode = (payload.mode or "reviewed").strip().lower()
+    only_reviewed = mode != "all"
+
+    ids = sorted(_store.list_ids())
+    processed = 0
+    skipped = 0
+    segments_indexed = 0
+    errors: list[dict] = []
+
+    for tid in ids:
+        transcript = _store.load(tid)
+        if transcript is None:
+            skipped += 1
+            continue
+
+        segments = transcript.segments
+        if only_reviewed:
+            segments = [s for s in segments if getattr(s, "reviewed", False)]
+
+        # Clear the transcript's existing points up-front so that a transcript
+        # whose reviewed segments were later un-reviewed does not leave stale
+        # vectors behind. Mirrors the per-transcript "Index in Qdrant" button.
+        if payload.reindex:
+            try:
+                await _index.delete(tid, collection_name=collection)
+            except Exception as del_exc:  # noqa: BLE001 — deletion is best-effort
+                logger.warning("[batch_ingest] delete failed for %s: %s", tid, del_exc)
+
+        if not segments:
+            skipped += 1
+            continue
+
+        target = _replace(transcript, segments=segments) if only_reviewed else transcript
+        try:
+            n = await _index.index(target, collection_name=collection)
+            segments_indexed += n
+            processed += 1
+        except Exception as e:  # noqa: BLE001 — keep the queue going
+            logger.exception("[batch_ingest] indexing failed for %s", tid)
+            errors.append({"transcript_id": tid, "error": str(e)})
+
+    return {
+        "collection": collection,
+        "source_dir": payload.source_dir,
+        "mode": mode,
+        "transcripts_found": len(ids),
+        "processed": processed,
+        "skipped": skipped,
+        "segments_indexed": segments_indexed,
+        "errors": errors,
+    }
 
 
 # ------------------------------------------------------------------

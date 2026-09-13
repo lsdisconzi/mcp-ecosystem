@@ -324,6 +324,9 @@ the selection changes. The returned parsed segments replace the segment list;
 marking a row builds the corresponding `segment_specs` entry without asking the
 user to retype offsets, speaker, or verbatim text.
 
+Settings and S0 Browse controls use `GET /api/browse?path=<workspace-relative-path>&kind=directory|file`.
+The server rejects absolute paths and traversal outside the repository root.
+
 **Filename → `source_id` inference** (mirror this in the UI so the field auto-fills):
 
 | Filename pattern | Inferred `source_id` |

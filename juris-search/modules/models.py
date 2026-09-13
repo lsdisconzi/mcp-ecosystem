@@ -25,6 +25,8 @@ class SearchFields(BaseModel):
     relator: Optional[str] = None
     orgao_julgador: Optional[str] = None
     tipo_decisao: Optional[str] = None
+    data_julgamento_inicio: Optional[str] = None  # ISO "YYYY-MM-DD"
+    data_julgamento_fim: Optional[str] = None     # ISO "YYYY-MM-DD"
     tribunal: Optional[str] = None
     court: Optional[str] = None
     courts: Optional[List[str]] = None
