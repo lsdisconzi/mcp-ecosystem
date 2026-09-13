@@ -325,6 +325,7 @@ expected_classes = {
     "TJRS": "TJRSJurisprudenciaScraper",
     "TJSP": "TJSPJurisprudenciaScraper",
     "STF": "STFJurisprudenciaScraper",
+    "CLTC": "TCChileJurisprudenciaScraper",
 }
 for court, expected_cls in expected_classes.items():
     cls, criteria_cls = _get_scraper_class(court)
@@ -337,7 +338,10 @@ test_section("11. System prompt is court-aware")
 
 from api import _build_system_prompt
 
-for court in COURTS_TO_TEST:
+# CLTC is offline-testable (no server needed), so include it here.
+PROMPT_COURTS = COURTS_TO_TEST + ["CL", "CLTC"]
+
+for court in PROMPT_COURTS:
     prompt = _build_system_prompt(court)
     court_full = API_COURT_NAMES[court]
     check(f"{court}: prompt mentions full name", court_full in prompt)
@@ -380,6 +384,99 @@ for court in COURTS_TO_TEST:
     job = resp.json()
     check(f"{court}: [3] search job_id", "job_id" in job)
     print(f"    [3] Search job: {job.get('job_id')} / {job.get('status')}")
+
+# ── 13. TC Chile (CLTC) scraper, offline ─────────────────────────────────
+# This court uses a plain REST API, so it can be exercised without Selenium
+# and without the FastAPI server running.
+
+test_section("13. TC Chile (CLTC) scraper")
+
+try:
+    from tc_chile_scraper import (
+        TCChileJurisprudenciaScraper,
+        SearchCriteria as TCSearchCriteria,
+        TC_COURT_KEY,
+    )
+
+    # 13.1 Court resolution variants all land on CLTC (not the PJud "CL")
+    for variant in ["CLTC", "cltc", "tc chile", "TCChile", "Tribunal Constitucional de Chile"]:
+        check(f"CLTC: resolve({variant!r})", _resolve_court(variant) == "CLTC",
+              f"got {_resolve_court(variant)}")
+    check("CLTC: does not shadow CL", _resolve_court("CL") == "CL")
+
+    # 13.2 SearchCriteria accepts every mapped route field
+    from modules.routes_search import _build_criteria_args
+    route_fields = {
+        "search_text": "vida",
+        "folio": "16622",
+        "rol": "1234-2025",
+        "competencia": "INA",
+        "ministro": "Maria Pia Silva Gallinato",
+        "cuerpo_legal": "Código Civil",
+        "palabra_clave": "Aborto",
+        "resultado": "Acoge",
+        "tipo_resolucion": "Sentencia",
+        "fecha_inicio": "2025-01-01",
+        "fecha_fin": "2025-03-31",
+        "max_results": 5,
+    }
+    criteria_args = _build_criteria_args(TCSearchCriteria, route_fields, "CLTC")
+    criteria = TCSearchCriteria(**criteria_args)
+    for key in ("folio", "competencia", "ministro", "cuerpo_legal",
+                "palabra_clave", "resultado", "tipo_resolucion",
+                "fecha_inicio", "fecha_fin"):
+        check(f"CLTC: criteria carries {key}", getattr(criteria, key) == route_fields[key],
+              f"got {getattr(criteria, key)!r}")
+
+    # 13.3 Live search + download (network)
+    scraper = TCChileJurisprudenciaScraper()
+    try:
+        results = scraper.search_with_criteria(
+            TCSearchCriteria(search_text="vida", max_results=3)
+        ) or []
+        check("CLTC: live search returns results", len(results) > 0,
+              f"got {len(results)}")
+        if results:
+            first = results[0]
+            check("CLTC: result court key", first.get("court") == TC_COURT_KEY,
+                  f"got {first.get('court')!r}")
+            check("CLTC: result has folio", bool(first.get("numero_processo")))
+            inteiro = first.get("inteiro_url") or ""
+            check("CLTC: result has download URL",
+                  "/extended/" in inteiro and inteiro.endswith("/download"),
+                  f"got {inteiro!r}")
+            print(f"    folio={first.get('numero_processo')} fecha={first.get('data_julgamento')}")
+
+            # 13.4 Canonicalize the download URL back to the folio
+            folio = scraper.canonicalize_download_id(inteiro)
+            check("CLTC: canonicalize_download_id(inteiro_url) == folio",
+                  folio == str(first.get("numero_processo")),
+                  f"got {folio!r} vs {first.get('numero_processo')!r}")
+
+            # 13.5 Download and verify it is a real PDF
+            save_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                    "jurisprudence_downloads", "ci_tc_chile")
+            path = scraper.download_inteiro_teor_url(
+                url=inteiro,
+                save_dir=save_dir,
+                metadata={"numero_processo": first.get("numero_processo"),
+                          "fecha": first.get("fecha")},
+                agent_id="ci",
+                folder_name="test",
+            )
+            check("CLTC: download returns a path", bool(path), f"got {path!r}")
+            if path and os.path.exists(path):
+                size = os.path.getsize(path)
+                with open(path, "rb") as fh:
+                    magic = fh.read(5)
+                check("CLTC: downloaded file is a PDF", magic == b"%PDF-", f"magic={magic!r}")
+                check("CLTC: downloaded file is non-trivial", size > 10000, f"size={size}")
+                print(f"    downloaded: {os.path.basename(path)} ({size} bytes)")
+    finally:
+        scraper.close()
+
+except Exception as exc:
+    check("CLTC: section ran without exception", False, f"{type(exc).__name__}: {exc}")
 
 # ── Summary ──────────────────────────────────────────────────────────────
 

@@ -44,6 +44,11 @@ SUPPORTED_COURTS = {
         "scraper_module": "chile_scraper",
         "scraper_class": "ChileJurisprudenciaScraper",
     },
+    "CLTC": {
+        "name": "CLTC",
+        "scraper_module": "tc_chile_scraper",
+        "scraper_class": "TCChileJurisprudenciaScraper",
+    },
 
     # ── e-SAJ courts (shared generic scraper via _shared.esaj_scrapers) ───
     # South
@@ -176,6 +181,7 @@ COURT_NAMES = {
     "STF":   "Supremo Tribunal Federal (STF)",
     # Chile
     "CL":    "Poder Judicial de Chile — Buscador Unificado de Fallos",
+    "CLTC":  "Tribunal Constitucional de Chile (TCChile)",
     # South
     "TJSC":  "Tribunal de Justiça de Santa Catarina (TJSC)",
     "TJPR":  "Tribunal de Justiça do Paraná (TJPR)",
@@ -207,11 +213,41 @@ COURT_NAMES = {
 }
 
 
+# Friendly names accepted in addition to the canonical court keys. The chat
+# layer echoes human-readable court names, so both the full COURT_NAMES value
+# and its leading label (without the trailing "(TJXX)") are resolvable.
+COURT_ALIASES: dict = {
+    # Tribunal Constitucional de Chile
+    "TC": "CLTC",
+    "TC CHILE": "CLTC",
+    "TCCHILE": "CLTC",
+    "TRIBUNAL CONSTITUCIONAL": "CLTC",
+    "TRIBUNAL CONSTITUCIONAL DE CHILE": "CLTC",
+    # Poder Judicial de Chile
+    "CHILE": "CL",
+    "PJUD": "CL",
+    "PODER JUDICIAL": "CL",
+    "PODER JUDICIAL DE CHILE": "CL",
+}
+
+for _key, _name in COURT_NAMES.items():
+    COURT_ALIASES.setdefault(_name.strip().upper(), _key)
+    _base = _name.split("(")[0].split("—")[0].strip().upper()
+    if _base:
+        COURT_ALIASES.setdefault(_base, _key)
+
+
 def _resolve_court(court: Optional[str] = None) -> str:
     """Resolve a court identifier to a supported court key."""
     raw = str(court or DEFAULT_COURT).strip().upper()
     if raw in SUPPORTED_COURTS:
         return raw
+
+    # Friendly aliases: direct match, then without any "(TJXX)" suffix.
+    for value in (raw, raw.split("(")[0].strip()):
+        if value in COURT_ALIASES:
+            return COURT_ALIASES[value]
+
     for key, info in SUPPORTED_COURTS.items():
         if raw in key or key in raw:
             return key

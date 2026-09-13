@@ -84,6 +84,32 @@ def summarize_schema(schema: Dict[str, Any] | None):
             "$ref": schema["$ref"]
         }
 
+    # `Optional[X]` renders as `anyOf: [{type: X}, {type: null}]`. Collapse it
+    # back to a single readable type instead of the useless "any".
+    any_of = schema.get("anyOf")
+
+    if isinstance(any_of, list) and any_of:
+
+        non_null = [
+            s for s in any_of
+            if isinstance(s, dict) and s.get("type") != "null"
+        ]
+
+        nullable = len(non_null) < len(any_of)
+
+        if len(non_null) == 1:
+            collapsed = summarize_schema(non_null[0])
+            if nullable and "type" in collapsed:
+                collapsed["type"] = f"{collapsed['type']} | null"
+            return collapsed
+
+        return {
+            "type": " | ".join(
+                str(summarize_schema(s).get("type", "any"))
+                for s in any_of
+            )
+        }
+
     result = {}
 
     for key in (
@@ -109,6 +135,66 @@ def summarize_schema(schema: Dict[str, Any] | None):
         result["items"] = summarize_schema(
             schema["items"]
         )
+
+    return result
+
+
+def summarize_request_body(
+    request_body: Dict[str, Any] | None,
+    components: Dict[str, Any] | None = None
+):
+    """Summarize an OpenAPI `requestBody` into a compact, tool-friendly shape.
+
+    FastAPI declares Pydantic request models under `requestBody`, not under
+    `parameters`, so ignoring this field hides every search/filter option from
+    the catalog (e.g. all of `SearchFields`).
+
+    When `components` is supplied, `$ref`s are resolved one level so the actual
+    field names/descriptions appear inline in the catalog.
+    """
+
+    if not request_body:
+        return {}
+
+    result: Dict[str, Any] = {
+        "required": request_body.get("required", False),
+        "content_types": {},
+    }
+
+    def resolve_ref(ref: str):
+
+        prefix = "#/components/schemas/"
+
+        if not components or not ref.startswith(prefix):
+            return None
+
+        return components.get(ref[len(prefix):])
+
+    for content_type, media in (request_body.get("content") or {}).items():
+
+        schema = summarize_schema(
+            media.get("schema") if isinstance(media, dict) else None
+        )
+
+        ref = schema.get("$ref")
+
+        if ref:
+
+            resolved = resolve_ref(ref)
+
+            entry: Dict[str, Any] = {
+                "$ref": ref,
+            }
+
+            if resolved:
+                entry.update(
+                    summarize_schema(resolved)
+                )
+
+            result["content_types"][content_type] = entry
+
+        else:
+            result["content_types"][content_type] = schema
 
     return result
 
@@ -210,6 +296,16 @@ def build_catalog(
                         ),
                     "parameters":
                         parameters,
+
+                    "request_body":
+                        summarize_request_body(
+                            operation.get(
+                                "requestBody"
+                            ),
+                            spec.get(
+                                "components", {}
+                            ).get("schemas", {}),
+                        ),
                 }
             )
 
@@ -286,6 +382,90 @@ def write_markdown(
             f"{tool['tool_name']} |"
         )
 
+
+    # ── Request body schemas ──────────────────────────────────────────────
+    # FastAPI puts Pydantic request models here (not in `parameters`), so
+    # without this the search/filter fields are invisible in the catalog.
+    bodies = [
+        t for t in catalog["tools"]
+        if (t.get("request_body") or {}).get("content_types")
+    ]
+
+    if bodies:
+
+        lines.append("")
+        lines.append("## Request Body Schemas")
+        lines.append("")
+
+        for tool in bodies:
+
+            lines.append(
+                f"### `{tool['method']} {tool['path']}`"
+            )
+            lines.append("")
+
+            for content_type, schema in (
+                tool["request_body"]["content_types"].items()
+            ):
+
+                lines.append(
+                    f"`{content_type}`"
+                    + (
+                        f" — `{schema['$ref']}`"
+                        if schema.get("$ref") else ""
+                    )
+                )
+                lines.append("")
+
+                props = schema.get("properties") or {}
+
+                if not props:
+                    lines.append(
+                        "_Schema could not be resolved._"
+                    )
+                    lines.append("")
+                    continue
+
+                required = set(
+                    schema.get("required") or []
+                )
+
+                lines.append(
+                    "| Field | Type | Required | Description |"
+                )
+                lines.append(
+                    "|---|---|---|---|"
+                )
+
+                for name, meta in props.items():
+
+                    ftype = meta.get("type") or "any"
+
+                    if not meta.get("type") and meta.get("anyOf"):
+                        ftype = "anyOf"
+
+                    enum = meta.get("enum")
+
+                    if enum:
+                        ftype += (
+                            " ("
+                            + ", ".join(
+                                f"`{e}`" for e in enum
+                            )
+                            + ")"
+                        )
+
+                    description = (
+                        meta.get("description") or ""
+                    ).replace("|", "\\|").replace("\n", " ")
+
+                    lines.append(
+                        f"| `{name}` | {ftype} | "
+                        f"{'yes' if name in required else ''} | "
+                        f"{description} |"
+                    )
+
+                lines.append("")
 
     output.write_text(
         "\n".join(lines),

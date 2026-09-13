@@ -45,6 +45,50 @@ _CHILE_FIELD_MAP = {
     "max_results": "max_results",
 }
 
+# TC Chile keeps the route names for the shared Brazilian columns and adds its
+# own native filters (folio, competencia, ministro, resultado, ...). Anything
+# not listed here is passed through unchanged and dropped if the dataclass
+# does not accept it, so this map is mostly for documentation and validation.
+_CLTC_FIELD_MAP = {
+    # Shared / Brazilian-compatible columns
+    "search_text": "search_text",
+    "tribunal": "tribunal",
+    "orgao_julgador": "orgao_julgador",
+    "relator": "relator",
+    "tipo_processo": "tipo_processo",
+    "classe_cnj": "classe_cnj",
+    "assunto_cnj": "assunto_cnj",
+    "comarca_origem": "comarca_origem",
+    "tipo_decisao": "tipo_decisao",
+    "data_julgamento_inicio": "data_julgamento_inicio",
+    "data_julgamento_fim": "data_julgamento_fim",
+    "search_index": "search_index",
+    "max_results": "max_results",
+    # TC Chile native filters
+    "folio": "folio",
+    "rol": "rol",
+    "competencia": "competencia",
+    "ministro": "ministro",
+    "juez": "juez",
+    "materia": "materia",
+    "categoria": "categoria",
+    "tipo_norma": "tipo_norma",
+    "tipo_resolucion": "tipo_resolucion",
+    "resultado": "resultado",
+    "cuerpo_legal": "cuerpo_legal",
+    "palabra_clave": "palabra_clave",
+    "articulo_constitucion": "articulo_constitucion",
+    "literal": "literal",
+    "exclusion": "exclusion",
+    "fecha_sentencia": "fecha_sentencia",
+    "fecha_inicio": "fecha_inicio",
+    "fecha_fin": "fecha_fin",
+    "buscar_en_texto": "buscar_en_texto",
+    "incluir_reservadas": "incluir_reservadas",
+    "resultados_por_pagina": "resultados_por_pagina",
+    "orden": "orden",
+}
+
 # Fields to extract from user request, independent of court
 _USER_FIELD_KEYS = {
     "search_text",
@@ -69,6 +113,21 @@ _USER_FIELD_KEYS = {
     "fecha_fin",
     "tipo_norma",
     "orden",
+    # TC Chile native filters
+    "folio",
+    "competencia",
+    "ministro",
+    "tipo_resolucion",
+    "resultado",
+    "cuerpo_legal",
+    "palabra_clave",
+    "articulo_constitucion",
+    "literal",
+    "exclusion",
+    "fecha_sentencia",
+    "buscar_en_texto",
+    "incluir_reservadas",
+    "resultados_por_pagina",
 }
 
 
@@ -91,12 +150,14 @@ def _build_criteria_args(
             raw[key] = val
 
     # Map route-level names -> court-specific names
+    field_map = _BRAZIL_FIELD_MAP
+    if court_key == "CL":
+        field_map = _CHILE_FIELD_MAP
+    elif court_key == "CLTC":
+        field_map = _CLTC_FIELD_MAP
+
     for route_name, value in raw.items():
-        court_name = route_name
-        if court_key == "CL":
-            court_name = _CHILE_FIELD_MAP.get(route_name, route_name)
-        else:
-            court_name = _BRAZIL_FIELD_MAP.get(route_name, route_name)
+        court_name = field_map.get(route_name, route_name)
         if court_name in acceptable:
             args[court_name] = value
 

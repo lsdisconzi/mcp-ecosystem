@@ -41,6 +41,23 @@ class SearchFields(BaseModel):
     fecha_fin: Optional[str] = None
     tipo_norma: Optional[str] = None
     orden: Optional[str] = None
+    # ── TC Chile (Tribunal Constitucional) native fields ─────────────
+    # Catalog-backed filters accept either the exact catalog name or its id;
+    # the scraper tries to resolve fuzzy values (e.g. "INA") on its own.
+    folio: Optional[str] = None
+    competencia: Optional[str] = None
+    ministro: Optional[str] = None
+    tipo_resolucion: Optional[str] = None
+    resultado: Optional[str] = None
+    cuerpo_legal: Optional[str] = None
+    palabra_clave: Optional[str] = None
+    articulo_constitucion: Optional[str] = None
+    literal: Optional[str] = None
+    exclusion: Optional[str] = None
+    fecha_sentencia: Optional[str] = None  # exact date only, "YYYY-MM-DD"
+    buscar_en_texto: Optional[bool] = None
+    incluir_reservadas: Optional[bool] = None
+    resultados_por_pagina: Optional[int] = None
 
 
 class DownloadRequest(BaseModel):

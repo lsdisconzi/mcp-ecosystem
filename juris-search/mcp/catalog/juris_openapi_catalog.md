@@ -2,7 +2,7 @@
 
 Source: http://127.0.0.1:8000/openapi.json
 
-Routes: 70
+Routes: 74
 
 | Method | Path | Tags | Tool |
 |---|---|---|---|
@@ -15,6 +15,8 @@ Routes: 70
 | POST | /api/download-batch |  | download_batch_compat_api_download_batch_post |
 | GET | /api/download/status/{job_id} |  | download_status_api_download_status_job_id_get |
 | GET | /api/health |  | health_api_health_get |
+| POST | /api/ingest-pdf/process |  | process_pdf_api_ingest_pdf_process_post |
+| POST | /api/ingest-pdf/upload |  | upload_pdf_api_ingest_pdf_upload_post |
 | GET | /api/json/index |  | json_index_api_json_index_get |
 | POST | /api/json/rebuild |  | json_rebuild_api_json_rebuild_post |
 | GET | /api/master-index/document/{doc_id} |  | master_index_document_api_master_index_document_doc_id_get |
@@ -49,6 +51,8 @@ Routes: 70
 | POST | /juris/api/download-batch |  | download_batch_compat_juris_api_download_batch_post |
 | GET | /juris/api/download/status/{job_id} |  | download_status_juris_api_download_status_job_id_get |
 | GET | /juris/api/health |  | health_juris_api_health_get |
+| POST | /juris/api/ingest-pdf/process |  | process_pdf_juris_api_ingest_pdf_process_post |
+| POST | /juris/api/ingest-pdf/upload |  | upload_pdf_juris_api_ingest_pdf_upload_post |
 | GET | /juris/api/json/index |  | json_index_juris_api_json_index_get |
 | POST | /juris/api/json/rebuild |  | json_rebuild_juris_api_json_rebuild_post |
 | GET | /juris/api/master-index/document/{doc_id} |  | master_index_document_juris_api_master_index_document_doc_id_get |
@@ -76,3 +80,231 @@ Routes: 70
 | GET | /juris/health |  | health_legacy_juris_health_get |
 | GET | /juris/stats |  | stats_compat_juris_stats_get |
 | GET | /stats |  | stats_compat_stats_get |
+
+## Request Body Schemas
+
+### `POST /api/chat`
+
+`application/json` — `#/components/schemas/ChatRequest`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `message` | string | yes |  |
+| `conversation` | array | null |  |  |
+| `file_text` | string | null |  |  |
+| `file_name` | string | null |  |  |
+| `model` | string | null |  |  |
+| `provider` | string | null |  |  |
+| `court` | string | null |  |  |
+
+### `POST /api/download`
+
+`application/json` — `#/components/schemas/DownloadRequest`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `results` | array | null |  |  |
+| `url` | string | null |  |  |
+| `numero_processo` | string | null |  |  |
+| `inteiro_url` | string | null |  |  |
+| `folder_name` | string | null |  |  |
+| `tribunal` | string | null |  |  |
+
+### `POST /api/download-batch`
+
+`application/json` — `#/components/schemas/BatchDownloadRequest`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `results` | array | yes |  |
+| `folder_name` | string | null |  |  |
+| `tribunal` | string | null |  |  |
+
+### `POST /api/ingest-pdf/process`
+
+`application/json` — `#/components/schemas/ProcessPdfRequest`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `fileId` | string | yes |  |
+| `tribunal` | string |  |  |
+
+### `POST /api/ingest-pdf/upload`
+
+`multipart/form-data` — `#/components/schemas/Body_upload_pdf_api_ingest_pdf_upload_post`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `pdf` | string | yes |  |
+
+### `POST /api/master-index/search`
+
+`application/json`
+
+_Schema could not be resolved._
+
+### `POST /api/search`
+
+`application/json` — `#/components/schemas/SearchFields`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `search_text` | string |  |  |
+| `tipo_processo` | string | null |  |  |
+| `classe_cnj` | string | null |  |  |
+| `assunto_cnj` | string | null |  |  |
+| `comarca_origem` | string | null |  |  |
+| `relator` | string | null |  |  |
+| `orgao_julgador` | string | null |  |  |
+| `tipo_decisao` | string | null |  |  |
+| `data_julgamento_inicio` | string | null |  |  |
+| `data_julgamento_fim` | string | null |  |  |
+| `tribunal` | string | null |  |  |
+| `court` | string | null |  |  |
+| `courts` | array | null |  |  |
+| `search_index` | string |  |  |
+| `max_results` | integer |  |  |
+| `categoria` | string | null |  |  |
+| `juez` | string | null |  |  |
+| `materia` | string | null |  |  |
+| `rol` | string | null |  |  |
+| `fecha_inicio` | string | null |  |  |
+| `fecha_fin` | string | null |  |  |
+| `tipo_norma` | string | null |  |  |
+| `orden` | string | null |  |  |
+| `folio` | string | null |  |  |
+| `competencia` | string | null |  |  |
+| `ministro` | string | null |  |  |
+| `tipo_resolucion` | string | null |  |  |
+| `resultado` | string | null |  |  |
+| `cuerpo_legal` | string | null |  |  |
+| `palabra_clave` | string | null |  |  |
+| `articulo_constitucion` | string | null |  |  |
+| `literal` | string | null |  |  |
+| `exclusion` | string | null |  |  |
+| `fecha_sentencia` | string | null |  |  |
+| `buscar_en_texto` | boolean | null |  |  |
+| `incluir_reservadas` | boolean | null |  |  |
+| `resultados_por_pagina` | integer | null |  |  |
+
+### `POST /api/upload`
+
+`multipart/form-data` — `#/components/schemas/Body_upload_file_api_upload_post`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `file` | string | yes |  |
+| `court` | string |  |  |
+
+### `POST /juris/api/chat`
+
+`application/json` — `#/components/schemas/ChatRequest`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `message` | string | yes |  |
+| `conversation` | array | null |  |  |
+| `file_text` | string | null |  |  |
+| `file_name` | string | null |  |  |
+| `model` | string | null |  |  |
+| `provider` | string | null |  |  |
+| `court` | string | null |  |  |
+
+### `POST /juris/api/download`
+
+`application/json` — `#/components/schemas/DownloadRequest`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `results` | array | null |  |  |
+| `url` | string | null |  |  |
+| `numero_processo` | string | null |  |  |
+| `inteiro_url` | string | null |  |  |
+| `folder_name` | string | null |  |  |
+| `tribunal` | string | null |  |  |
+
+### `POST /juris/api/download-batch`
+
+`application/json` — `#/components/schemas/BatchDownloadRequest`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `results` | array | yes |  |
+| `folder_name` | string | null |  |  |
+| `tribunal` | string | null |  |  |
+
+### `POST /juris/api/ingest-pdf/process`
+
+`application/json` — `#/components/schemas/ProcessPdfRequest`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `fileId` | string | yes |  |
+| `tribunal` | string |  |  |
+
+### `POST /juris/api/ingest-pdf/upload`
+
+`multipart/form-data` — `#/components/schemas/Body_upload_pdf_juris_api_ingest_pdf_upload_post`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `pdf` | string | yes |  |
+
+### `POST /juris/api/master-index/search`
+
+`application/json`
+
+_Schema could not be resolved._
+
+### `POST /juris/api/search`
+
+`application/json` — `#/components/schemas/SearchFields`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `search_text` | string |  |  |
+| `tipo_processo` | string | null |  |  |
+| `classe_cnj` | string | null |  |  |
+| `assunto_cnj` | string | null |  |  |
+| `comarca_origem` | string | null |  |  |
+| `relator` | string | null |  |  |
+| `orgao_julgador` | string | null |  |  |
+| `tipo_decisao` | string | null |  |  |
+| `data_julgamento_inicio` | string | null |  |  |
+| `data_julgamento_fim` | string | null |  |  |
+| `tribunal` | string | null |  |  |
+| `court` | string | null |  |  |
+| `courts` | array | null |  |  |
+| `search_index` | string |  |  |
+| `max_results` | integer |  |  |
+| `categoria` | string | null |  |  |
+| `juez` | string | null |  |  |
+| `materia` | string | null |  |  |
+| `rol` | string | null |  |  |
+| `fecha_inicio` | string | null |  |  |
+| `fecha_fin` | string | null |  |  |
+| `tipo_norma` | string | null |  |  |
+| `orden` | string | null |  |  |
+| `folio` | string | null |  |  |
+| `competencia` | string | null |  |  |
+| `ministro` | string | null |  |  |
+| `tipo_resolucion` | string | null |  |  |
+| `resultado` | string | null |  |  |
+| `cuerpo_legal` | string | null |  |  |
+| `palabra_clave` | string | null |  |  |
+| `articulo_constitucion` | string | null |  |  |
+| `literal` | string | null |  |  |
+| `exclusion` | string | null |  |  |
+| `fecha_sentencia` | string | null |  |  |
+| `buscar_en_texto` | boolean | null |  |  |
+| `incluir_reservadas` | boolean | null |  |  |
+| `resultados_por_pagina` | integer | null |  |  |
+
+### `POST /juris/api/upload`
+
+`multipart/form-data` — `#/components/schemas/Body_upload_file_juris_api_upload_post`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `file` | string | yes |  |
+| `court` | string |  |  |

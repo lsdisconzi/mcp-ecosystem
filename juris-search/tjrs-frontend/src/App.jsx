@@ -245,7 +245,8 @@ const COURTS = [
   { key: "TJRJ", name: "TJRJ", fullName: "Tribunal de Justiça do Rio de Janeiro", region: "Southeast", scraperType: "dedicated" },
 
   // ── Chile ───────────────────────────────────────────────────────────
-  { key: "CL", name: "Chile", fullName: "Poder Judicial de Chile — Buscador Unificado de Fallos", region: "Chile", scraperType: "chile" },
+  { key: "CL", name: "Chile PJud", fullName: "Poder Judicial de Chile — Buscador Unificado de Fallos", region: "Chile", scraperType: "chile" },
+  { key: "CLTC", name: "TC Chile", fullName: "Tribunal Constitucional de Chile — Buscador de Jurisprudencia", region: "Chile", scraperType: "chile" },
 
   // ── South ───────────────────────────────────────────────────────────
   { key: "TJSC", name: "TJSC", fullName: "Tribunal de Justiça de Santa Catarina", region: "South", scraperType: "esaj" },
@@ -347,6 +348,11 @@ function normalizeCourtLabel(value) {
     if (c.key.length >= 3 && upper.includes(c.key)) return c.key;
   }
 
+  // TC Chile must be matched before the generic Chile patterns below,
+  // otherwise "Tribunal Constitucional de Chile" would fall through to PJud.
+  if (upper.includes("CLTC") || upper.includes("TRIBUNAL CONSTITUCIONAL") ||
+    upper.includes("TCCHILE") || upper.includes("TC CHILE")) return "CLTC";
+
   // Chile-specific patterns (CL is too short for safe substring matching)
   if (upper.includes("CHILE") || upper.includes("CORTE SUPREMA") ||
     upper.includes("PODER JUDICIAL") || upper.includes("APELACIONES")) return "CL";
@@ -382,14 +388,15 @@ function normalizeResultForDisplay(result) {
   const assuntoCnj = String(result?.assunto_cnj || classeAssunto.assunto || "").trim();
   const tipoProcesso = String(result?.tipo_processo || classeCnj || "").trim();
 
-  // Chile-specific fields
-  const isChile = (result?.tribunal || result?.court || "").toUpperCase() === "CL";
+  // Chile-specific fields (both the PJud buscador and the TC Chile buscador)
+  const courtKey = (result?.tribunal || result?.court || "").toUpperCase();
+  const isChile = courtKey === "CL" || courtKey === "CLTC";
   const numeroProcesso = String(result?.numero_processo || result?.cdacordao || (isChile ? result?.rol : "") || "").trim();
   const ementaTrecho = String(
     result?.ementa_trecho || result?.ementa || result?.result_description || result?.texto_preview || ""
   ).trim();
   const relator = String(result?.relator || result?.relatora || (isChile ? result?.juez : "") || "").trim();
-  const orgaoJulgador = String(result?.orgao_julgador || (isChile ? result?.tribunal : "") || "").trim();
+  const orgaoJulgador = String(result?.orgao_julgador || (isChile ? (result?.sala || result?.tribunal) : "") || "").trim();
   const dataJulgamento = String(result?.data_julgamento || (isChile ? result?.fecha : "") || "").trim();
   const caratulado = String(result?.caratulado || "").trim();
   const materia = String(result?.materia || "").trim();
@@ -1135,7 +1142,7 @@ function WorkspaceApp() {
 
       {results.map((r, i) => {
         const normalized = normalizeResultForDisplay(r);
-        const isChile = normalized.tribunal === "CL";
+        const isChile = normalized.tribunal === "CL" || normalized.tribunal === "CLTC";
         const metaParts = isChile
           ? [
             normalized.caratulado ? `Caratulado: ${normalized.caratulado}` : "",
@@ -1715,7 +1722,7 @@ function WorkspaceApp() {
               {(() => {
                 const courts = courtData?.courts || COURTS.map(c => ({
                   key: c.key, name: c.fullName, short_name: c.name,
-                  scraper_type: c.scraperType, jurisdiction: c.key === "CL" ? "CL" : "BR",
+                  scraper_type: c.scraperType, jurisdiction: c.key === "CL" || c.key === "CLTC" ? "CL" : "BR",
                   region: c.region, document_count: 0,
                 }));
 
@@ -1729,7 +1736,7 @@ function WorkspaceApp() {
                   { label: "Brasil — e-SAJ Centro-Oeste", courts: courts.filter(c => c.region === "Center-West" && c.scraper_type === "esaj") },
                 ].filter(g => g.courts.length > 0);
 
-                const scraperLabels = { dedicated: "Portal próprio", esaj: "Portal e-SAJ", chile: "Poder Judicial CL" };
+                const scraperLabels = { dedicated: "Portal próprio", esaj: "Portal e-SAJ", chile: "Buscador Chile" };
 
                 return groups.map((group) => (
                   <div key={group.label} style={{ marginBottom: "20px" }}>
