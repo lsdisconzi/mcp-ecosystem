@@ -151,7 +151,13 @@ class HtmlTranscriptSource:
     # Extras for validation helpers ------------------------------------------
 
     def raw_text(self) -> str:
-        """Used by V02 to verify a verbatim quote appears byte-for-byte."""
+        """Whole-artifact text.
+
+        Kept for callers that need the raw render (troubleshooting, ad-hoc
+        tooling). Validation must *not* substring against this: preferring the
+        cited segment is stricter and escape-insensitive — see
+        ``v02_verbatim_quote_match``.
+        """
         return self._html
 
 

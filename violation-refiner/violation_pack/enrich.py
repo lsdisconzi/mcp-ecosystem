@@ -563,8 +563,10 @@ Return JSON of shape:
 """
 
 
-# Known framework prefixes — single source of truth for the candidate
-# namespace guardrail. Keep this in sync with stage_cl_batch.FRAMEWORK_MD_MAP.
+# Known framework prefixes — guardrail for the candidate namespace check.
+# ``data/law/_mapping/law_registry.json`` is the authority for which codes
+# exist; this set is only a coarse prefix test, so it silently drifts from the
+# registry and must not be treated as the list of supported frameworks.
 _KNOWN_FRAMEWORK_PREFIXES = {
     # Chilean
     "CHIPENCOD", "CPCL", "CP", "CONST", "CPR", "DAN17", "L18575", "DFL1",

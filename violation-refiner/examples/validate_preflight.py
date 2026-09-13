@@ -5,10 +5,18 @@ Checks that all required source data, transcripts, framework caches, and
 services are available before the pipeline starts. Designed to prevent the
 "source not found" class of failures documented in the CL-007 incident.
 
+Also compares each bundle's segment ids against the converter's
+``segments_manifest.json``, which catches a stale ``<VID>.json.bak`` shadowing
+the converted bundle (``refine_batch_core._load_violation`` prefers it) before
+refinement bakes the wrong content in.
+
+Reads the bundles the converter wrote (``build/<VID>/``), so run
+``examples/vault_to_bundle.py`` first.
+
 Usage:
-    python3 examples/validate_preflight.py --jurisdiction CL --id CL-007
-    python3 examples/validate_preflight.py --jurisdiction CL --ids CL-005 CL-007 CL-016
-    python3 examples/validate_preflight.py --jurisdiction CL --all   # scan all in --source
+    .venv/bin/python examples/validate_preflight.py --ids CL-007
+    .venv/bin/python examples/validate_preflight.py --ids CL-005 CL-007 CL-016
+    .venv/bin/python examples/validate_preflight.py --all   # scan all in --source
 
 Exit codes:
     0 — all checks pass
@@ -27,112 +35,26 @@ try:
 except ImportError:
     Settings = None  # type: ignore[assignment]
 
+
+# -- Default paths (override with CLI flags) ---------------------------------
+# The converter writes the final bundle under build/, and both data trees are
+# the repo's own, so a pre-flight run needs no server paths.
+DEFAULT_SOURCE = Path("build")
+DEFAULT_TRANSCRIPT_DIR = Path("data/transcripts/json")
+DEFAULT_LAW_ROOT = Path("data/law")
+
+
+# -- Framework code -> file resolution ---------------------------------------
+# Derived from the law registry at run time. A hand-maintained table drifts
+# silently: the retired FRAMEWORK_MD_MAP already mapped CL.CP to the Penal
+# Code's chip-encoding section, which is a different law.
 try:
-    from violation_pack.refine_batch_core import (
-        _TRANSCRIPT_SOURCE_ID,
-        _TRANSCRIPT_SOURCE_ID_LATAM,
-        _TRANSCRIPT_SOURCE_ID_SERVER,
+    from vault_to_bundle import FrameworkResolver, _LEGACY_CODE_ALIASES
+except ImportError:  # imported as ``examples.validate_preflight``
+    from examples.vault_to_bundle import (  # type: ignore[no-redef]
+        FrameworkResolver,
+        _LEGACY_CODE_ALIASES,
     )
-except ImportError:
-    _TRANSCRIPT_SOURCE_ID = None
-    _TRANSCRIPT_SOURCE_ID_LATAM = None
-    _TRANSCRIPT_SOURCE_ID_SERVER = None
-
-
-# -- Default paths (mirror staging defaults; override with CLI flags) --------
-DEFAULT_SOURCE = Path("/awareness/shared/violations")
-DEFAULT_RENDERED = Path("/awareness/shared/transcripts_rendered")
-DEFAULT_FRAMEWORK_MD_ROOT = Path("/awareness/shared/source_laws/law_md")
-
-
-# -- Framework MD map (mirrors stage_cl_batch.FRAMEWORK_MD_MAP) --------------
-FRAMEWORK_MD_MAP: dict[str, dict[str, str]] = {
-    "CL": {
-        "CHIPENCOD": "CHIPENCOD_CP.md",
-        "CPCL": "CodigoPenal.md",
-        "CP": "CHIPENCOD_CP.md",
-        "CONST": "Constitucion.md",
-        "CPR": "Constitucion.md",
-        "DAN17": "DAN17_DGAC.md",
-        "L18575": "DFL1_19653_L18575.md",
-        "DFL1": "DFL1_19653_L18575.md",
-        "DSO": "DGAC_DSO.md",
-        "IVAAF": "DGAC_IVAAF.md",
-        "DGAC_IVAAF": "DGAC_IVAAF.md",
-        "PREVAC": "DGAC_PREVAC.md",
-        "DGAC_PREVAC": "DGAC_PREVAC.md",
-        "DTO2421": "DTO2421_CGR.md",
-        "L16752": "L16752_DGAC.md",
-        "CACH": "L18916_CACH.md",
-        "L18916": "L18916_CACH.md",
-        "LPDC": "L19496_LPDC.md",
-        "LPC": "L19496_LPDC.md",
-        "L19496": "L19496_LPDC.md",
-        "L20285": "L20285_Transparencia.md",
-        "INDH": "L20405_INDH.md",
-        "L20405": "L20405_INDH.md",
-        "L20880": "L20880_Probidad.md",
-        "R218": "R218_JAC_DerechosPasajeros.md",
-        "CC": "CC_CodigoCivil.md",
-        "CCCL": "CC_CodigoCivil.md",
-        "L19628": "L19628_LPDP.md",
-        "LPDP": "L19628_LPDP.md",
-    },
-    "BR": {
-        "CBA": "L7565_CBA.md",
-        "L7565": "L7565_CBA.md",
-        "CDC": "L8078_CDC.md",
-        "L8078": "L8078_CDC.md",
-        "CC": "L10406_CC.md",
-        "L10406": "L10406_CC.md",
-        "CPB": "DL2848_CP.md",
-        "DL2848": "DL2848_CP.md",
-        "CF88": "CF88.md",
-        "CONST": "CF88.md",
-        "L9784": "L9784.md",
-        "L7716": "L7716_RacialCrime.md",
-        "L12527": "L12527_LAI.md",
-        "LAI": "L12527_LAI.md",
-        "L13460": "L13460_UsuarioServicoPublico.md",
-        "L8429": "L8429_Improbidade.md",
-        "L12846": "L12846_Anticorrupcao.md",
-        "L12813": "L12813_ConflitoInteresses.md",
-        "L8906": "L8906_OAB.md",
-        "OAB": "CodEtica_OAB.md",
-        "D11129": "D11129_PNDH3.md",
-        "D2181": "D2181_SNDC.md",
-        "D7203": "D7203_Nepotismo.md",
-        "D7724": "D7724_LAI_Regulamento.md",
-        "R400": "R400_ANAC.md",
-        "ANAC": "R400_ANAC.md",
-        "ABEAR": "ABEAR_Code.md",
-    },
-    "INT": {
-        "ACHR": "ACHR_1969.md",
-        "CHICAGO": "Chicago_1944.md",
-        "HAGUE": "Hague_1980.md",
-        "IATA": "IATA_GC.md",
-        "IATA_GC": "IATA_GC.md",
-        "AN6": "ICAO_Annex6.md",
-        "AN6I": "ICAO_Annex6.md",
-        "AN9": "ICAO_Annex9.md",
-        "AN10": "ICAO_Annex10.md",
-        "AN11": "ICAO_Annex11.md",
-        "AN13": "ICAO_Annex13.md",
-        "AN14": "ICAO_Annex14.md",
-        "AN17": "ICAO_Annex17.md",
-        "AN18": "ICAO_Annex18.md",
-        "DOC4444": "ICAO_DOC4444.md",
-        "DOC8168": "ICAO_DOC8168.md",
-        "DOC9284": "ICAO_DOC9284.md",
-        "ILC_ARSIWA": "ILC_ARSIWA.md",
-        "MC99": "MC99_1999.md",
-        "UNCRC": "UNCRC_1989.md",
-        "UNGCP": "UNGCP.md",
-        "VCCR": "VCCR_1963.md",
-        "VCLT": "VCLT_1969.md",
-    },
-}
 
 
 def _segment_src(seg_id: str) -> str | None:
@@ -141,18 +63,12 @@ def _segment_src(seg_id: str) -> str | None:
     return seg_id.split(".", 1)[0]
 
 
-def _src_to_html_candidates(src_id: str) -> list[str]:
-    """Candidate HTML filenames for a source ID (both macOS and server conventions)."""
-    candidates: list[str] = []
-    if src_id.startswith("LATAM-"):
-        n = src_id.split("-", 1)[1]
-        candidates.append(f"timeline_latam_STG_{n}.html")
-        candidates.append(f"timeline_latam_stg_{n}.html")
-    else:
-        candidates.append(f"timeline_aeropuerto_{src_id.replace('-', '_')}.html")
-        n = src_id.split("-", 1)[1] if "-" in src_id else src_id
-        candidates.append(f"timeline_aeropuerto_arturo_merino_benitez_{n}.html")
-    return candidates
+def _segment_index(seg_id: str) -> int | None:
+    """``"...seg-18"`` -> ``18``, the transcript JSON ``segments[].index`` field."""
+    if ".seg-" not in seg_id:
+        return None
+    tail = seg_id.rsplit(".seg-", 1)[1]
+    return int(tail) if tail.isdigit() else None
 
 
 def check_source_data(source_root: Path, vid: str) -> list[str]:
@@ -168,43 +84,131 @@ def check_source_data(source_root: Path, vid: str) -> list[str]:
     return errors
 
 
-def check_transcripts(
-    sm_path: Path, rendered_dirs: list[Path]
-) -> tuple[list[str], list[str]]:
-    """Check that all referenced transcript HTMLs exist somewhere in rendered_dirs.
+def check_bundle_segments(source_root: Path, vid: str) -> list[str]:
+    """Compare the bundle's segment ids against the converter's manifest.
 
-    Returns (errors, found_htmls).
+    ``segments_manifest.json`` records both the canonical id
+    (``<source>.seg-N``, what the converter writes into the bundle) and the
+    vault's ``legacy_segment_id`` (``STG-7.seg-44``). Those two sets are the
+    fingerprint of the one failure that is invisible downstream: a
+    ``<VID>.json.bak`` left behind by an earlier refiner run is preferred by
+    ``refine_batch_core._load_violation`` over the live JSON, so a stale bundle
+    silently replaces the converted one and every later check passes against
+    the wrong content (V01 resolves the legacy ids against the vendored HTML
+    render, so nothing complains). Catching it here costs one dict comparison.
     """
     errors: list[str] = []
-    found_htmls: list[str] = []
+    src = source_root / vid
+    sm_path = src / "segments_manifest.json"
+    json_path = src / f"{vid}.json"
     if not sm_path.exists():
-        return errors, found_htmls
+        return errors
+    if not json_path.exists():
+        return [f"[{vid}] Bundle violation JSON not found: {json_path}"]
+
+    manifest = (json.loads(sm_path.read_text(encoding="utf-8")).get("segments")) or []
+    if not manifest:
+        return errors  # segment-less violation: nothing to compare
+
+    canonical = {str(s.get("segment_id")) for s in manifest if isinstance(s, dict)}
+    legacy = {
+        str(s.get("legacy_segment_id"))
+        for s in manifest
+        if isinstance(s, dict) and s.get("legacy_segment_id")
+    }
+    try:
+        doc = json.loads(json_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return [f"[{vid}] {json_path.name} is not valid JSON: {exc}"]
+
+    actual = {
+        str(s.get("segment_id")) for s in doc.get("segments") or [] if isinstance(s, dict)
+    }
+    if actual == canonical:
+        return errors
+
+    stale = actual & legacy
+    if stale and not actual & canonical:
+        errors.append(
+            f"[{vid}] {json_path.name} holds the vault's legacy segment ids "
+            f"({sorted(stale)[:3]}…) instead of the converter's canonical ids — "
+            f"a stale {json_path.name}.bak shadowed the converted bundle. Delete "
+            "it and re-run examples/vault_to_bundle.py before refining."
+        )
+    else:
+        errors.append(
+            f"[{vid}] {json_path.name} segment ids disagree with segments_manifest.json "
+            f"({len(canonical)} canonical vs {len(actual)} in the bundle); "
+            f"missing={sorted(canonical - actual)[:3]} extra={sorted(actual - canonical)[:3]}"
+        )
+    return errors
+
+
+def check_transcripts(
+    sm_path: Path, transcript_dir: Path
+) -> tuple[list[str], list[str], list[str]]:
+    """Check the manifest's transcript files exist and hold every referenced segment.
+
+    ``segments_manifest.json`` carries the ``transcript_files`` map the converter
+    wrote (source id -> JSON filename), so nothing here has to guess a filename or
+    mirror a registry. Beyond existence this re-reads each transcript and confirms
+    the referenced ``seg-N`` indexes are present, which is the failure the refiner
+    would otherwise hit at ``JsonTranscriptSource.get_segment`` time.
+
+    A bundle with no segments is legitimate (the vault violation matched no audio),
+    so it reports nothing rather than failing.
+
+    Returns (errors, found_paths, warnings).
+    """
+    errors: list[str] = []
+    found: list[str] = []
+    warnings: list[str] = []
+    if not sm_path.exists():
+        return errors, found, warnings
 
     sm = json.loads(sm_path.read_text(encoding="utf-8"))
-    referenced_srcs: set[str] = set()
-    for s in sm.get("segments") or []:
-        sid = s if isinstance(s, str) else (s.get("segment_id") or s.get("id"))
-        src = _segment_src(str(sid)) if sid else None
-        if src:
-            referenced_srcs.add(src)
+    tmap = sm.get("transcript_files") or {}
 
-    for src in sorted(referenced_srcs):
-        candidates = _src_to_html_candidates(src)
-        found = False
-        for html_name in candidates:
-            for rdir in rendered_dirs:
-                if (rdir / html_name).exists():
-                    found_htmls.append(str(rdir / html_name))
-                    found = True
-                    break
-            if found:
-                break
-        if not found:
+    wanted: dict[str, set[int]] = {}
+    for seg in sm.get("segments") or []:
+        sid = str(seg.get("segment_id") or "") if isinstance(seg, dict) else str(seg)
+        src = _segment_src(sid)
+        idx = _segment_index(sid)
+        if not src or idx is None:
+            errors.append(f"[sm] Segment id '{sid}' is not of the form '<source>.seg-N'")
+            continue
+        wanted.setdefault(src, set()).add(idx)
+
+    if not wanted:
+        return errors, found, warnings
+    if not tmap:
+        return ["[sm] no transcript_files map, but segments reference sources"], found, warnings
+
+    for src in sorted(wanted):
+        fname = tmap.get(src)
+        if not fname:
             errors.append(
-                f"[sm] Transcript HTML not found for source '{src}'. "
-                f"Tried: {', '.join(candidates)} in {rendered_dirs}"
+                f"[sm] No transcript mapped for source '{src}'; re-run "
+                "examples/vault_to_bundle.py to regenerate the manifest"
             )
-    return errors, found_htmls
+            continue
+        path = transcript_dir / fname
+        if not path.exists():
+            errors.append(f"[sm] Transcript JSON not found: {path}")
+            continue
+        found.append(str(path))
+        try:
+            doc = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            errors.append(f"[sm] {path} is not valid JSON: {exc}")
+            continue
+        present = {
+            s.get("index") for s in doc.get("segments") or [] if isinstance(s, dict)
+        }
+        missing = sorted(wanted[src] - present)
+        if missing:
+            errors.append(f"[sm] {fname} is missing referenced segment index(es): {missing}")
+    return errors, found, warnings
 
 
 def _extract_framework_codes(contract: dict, jurisdiction: str) -> set[str]:
@@ -245,35 +249,59 @@ def _extract_framework_codes(contract: dict, jurisdiction: str) -> set[str]:
 
 def check_framework_md(
     contract_path: Path,
-    framework_md_root: Path,
+    law_root: Path,
     jurisdiction: str,
-) -> tuple[list[str], list[str]]:
-    """Check referenced framework MD files exist."""
+) -> tuple[list[str], list[str], list[str]]:
+    """Check that every framework code in the contract resolves to a corpus file.
+
+    A code listed in ``_LEGACY_CODE_ALIASES`` with a ``None`` target is a known
+    legacy code the corpus does not carry, so it is reported as a warning: the
+    refiner only fails (V04) if an established article cites an uncached framework.
+
+    Returns (errors, found_paths, warnings).
+    """
     errors: list[str] = []
     found_mds: list[str] = []
+    warnings: list[str] = []
     if not contract_path.exists():
-        return errors, found_mds
+        return errors, found_mds, warnings
+
+    vid = contract_path.parent.name
+    resolver = FrameworkResolver(law_root)
+    if not resolver.codes:
+        return [f"[law] no law registry at {law_root}/_mapping/law_registry.json"], found_mds, warnings
 
     contract = json.loads(contract_path.read_text(encoding="utf-8"))
-    md_map = FRAMEWORK_MD_MAP.get(jurisdiction, {})
-    md_root = framework_md_root / jurisdiction
-
     codes = _extract_framework_codes(contract, jurisdiction)
     if not codes:
-        errors.append("[contract] Could not extract any framework codes from legal_basis")
-        return errors, found_mds
+        errors.append(f"[{vid}] contract: could not extract any framework codes from legal_basis")
+        return errors, found_mds, warnings
 
     for code in sorted(codes):
-        md_name = md_map.get(code)
-        if not md_name:
-            errors.append(f"[contract] Framework '{code}' has no MD mapping for {jurisdiction}")
+        resolved_code, rel = resolver.resolve(code, jurisdiction)
+        if rel is None:
+            msg = (
+                f"[{vid}] Framework '{code}' resolves to no file in the corpus "
+                f"(registry code {resolved_code!r})"
+            )
+            if (jurisdiction, code.upper()) in _LEGACY_CODE_ALIASES:
+                warnings.append(
+                    msg + "; this is a deliberate _LEGACY_CODE_ALIASES -> None mapping, "
+                    "so the refiner will warn (V03) rather than fail unless an article "
+                    "of it becomes established"
+                )
+            else:
+                errors.append(
+                    msg + "; if this is a known legacy code add it to "
+                    "_LEGACY_CODE_ALIASES in examples/vault_to_bundle.py"
+                )
             continue
-        target = md_root / md_name
+        target = law_root / rel
         if target.exists():
             found_mds.append(str(target))
         else:
-            errors.append(f"[contract] Framework MD missing: {target}")
-    return errors, found_mds
+            errors.append(f"[{vid}] Framework file missing: {target}")
+    return errors, found_mds, warnings
 
 
 def check_services() -> tuple[list[str], list[str]]:
@@ -310,14 +338,15 @@ def check_services() -> tuple[list[str], list[str]]:
 
 def validate(
     source_root: Path,
-    rendered_roots: list[Path],
-    framework_md_root: Path,
+    transcript_dir: Path,
+    law_root: Path,
     jurisdiction: str,
     ids: list[str],
     check_services_flag: bool = True,
 ) -> int:
-    """Run all pre-flight checks. Returns exit code."""
+    """Run all pre-flight checks. Returns exit code (warnings do not fail the run)."""
     all_errors: list[str] = []
+    all_warnings: list[str] = []
     all_ok: list[str] = []
 
     for vid in ids:
@@ -330,19 +359,29 @@ def validate(
         sm_path = source_root / vid / "segments_manifest.json"
         contract_path = source_root / vid / "contract.json"
 
-        # 2. Transcript HTMLs
-        t_errs, t_found = check_transcripts(sm_path, rendered_roots)
-        if not t_errs:
-            all_ok.append(f"[{vid}] Transcript HTMLs: {len(t_found)} found")
+        # 2. Bundle segments vs the converter's manifest
+        b_errs = check_bundle_segments(source_root, vid)
+        if not b_errs:
+            all_ok.append(f"[{vid}] Bundle segments: ids match segments_manifest.json")
+        all_errors.extend(b_errs)
+
+        # 3. Transcripts
+        t_errs, t_found, t_warns = check_transcripts(sm_path, transcript_dir)
+        if not t_errs and t_found:
+            all_ok.append(f"[{vid}] Transcripts: {len(t_found)} file(s) cover every referenced segment")
+        elif not t_errs:
+            all_ok.append(f"[{vid}] Transcripts: no segments referenced")
         all_errors.extend(t_errs)
+        all_warnings.extend(t_warns)
 
-        # 3. Framework MD
-        f_errs, f_found = check_framework_md(contract_path, framework_md_root, jurisdiction)
+        # 4. Framework files
+        f_errs, f_found, f_warns = check_framework_md(contract_path, law_root, jurisdiction)
         if not f_errs:
-            all_ok.append(f"[{vid}] Framework MD: {len(f_found)} found")
+            all_ok.append(f"[{vid}] Framework files: {len(f_found)} found")
         all_errors.extend(f_errs)
+        all_warnings.extend(f_warns)
 
-    # 4. Services
+    # 5. Services
     if check_services_flag:
         s_errs, s_ok = check_services()
         all_errors.extend(s_errs)
@@ -351,14 +390,20 @@ def validate(
     # Report
     print(f"Pre-flight validation for {len(ids)} violation(s) in {jurisdiction}")
     print(f"  Source:        {source_root}")
-    print(f"  Rendered:      {rendered_roots}")
-    print(f"  Framework MD:  {framework_md_root}")
+    print(f"  Transcripts:   {transcript_dir}")
+    print(f"  Law root:      {law_root}")
     print()
 
     if all_errors:
         print(f"FAILURES ({len(all_errors)}):")
         for e in all_errors:
             print(f"  ✗ {e}")
+        print()
+
+    if all_warnings:
+        print(f"WARNINGS ({len(all_warnings)}):")
+        for w in all_warnings:
+            print(f"  ! {w}")
         print()
 
     if all_ok:
@@ -374,8 +419,8 @@ def validate(
 def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Pre-flight validation for CL pipeline")
     p.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
-    p.add_argument("--rendered", type=Path, nargs="+", default=[DEFAULT_RENDERED])
-    p.add_argument("--framework-md-root", type=Path, default=DEFAULT_FRAMEWORK_MD_ROOT)
+    p.add_argument("--transcript-dir", type=Path, default=DEFAULT_TRANSCRIPT_DIR)
+    p.add_argument("--law-root", type=Path, default=DEFAULT_LAW_ROOT)
     p.add_argument("--jurisdiction", choices=["CL", "BR", "INT"], default="CL")
     p.add_argument("--ids", nargs="+", help="e.g. CL-005 CL-007")
     p.add_argument("--all", action="store_true", help="Validate all violations under --source")
@@ -402,23 +447,10 @@ def main(argv: Iterable[str] | None = None) -> int:
         print("Specify --ids or --all", file=sys.stderr)
         return 2
 
-    # Expand rendered roots: if a root contains numbered subdirs (I-001, I-002),
-    # include all of them for transcript discovery.
-    expanded_rendered: list[Path] = []
-    for r in args.rendered:
-        if r.is_dir():
-            sub = sorted(d for d in r.iterdir() if d.is_dir())
-            if sub:
-                expanded_rendered.extend(sub)
-            else:
-                expanded_rendered.append(r)
-        else:
-            expanded_rendered.append(r)
-
     return validate(
         source_root=args.source,
-        rendered_roots=expanded_rendered,
-        framework_md_root=args.framework_md_root,
+        transcript_dir=args.transcript_dir,
+        law_root=args.law_root,
         jurisdiction=args.jurisdiction,
         ids=ids,
         check_services_flag=not args.no_services,

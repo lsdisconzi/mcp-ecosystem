@@ -101,7 +101,7 @@ def _remove_sha_line(path: Path) -> tuple[bool, bool]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Clean stale V03 SHA headers in bundle framework caches")
-    parser.add_argument("--input", default="build/cl_batch", help="Root folder containing CL-### bundle dirs")
+    parser.add_argument("--input", default="build", help="Root folder containing CL-### bundle dirs")
     parser.add_argument("--only", nargs="*", default=[], help="Optional bundle IDs to process")
     args = parser.parse_args()
 

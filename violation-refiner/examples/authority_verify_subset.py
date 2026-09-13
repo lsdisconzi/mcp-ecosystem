@@ -159,7 +159,7 @@ def _verify_one(bundle_dir: Path) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Verify statute authorities for a subset of bundles")
-    parser.add_argument("--input", default="build/cl_batch", help="Directory containing CL-### bundle folders")
+    parser.add_argument("--input", default="build", help="Directory containing CL-### bundle folders")
     parser.add_argument(
         "--only",
         nargs="+",

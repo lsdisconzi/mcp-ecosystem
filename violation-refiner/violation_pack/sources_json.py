@@ -285,7 +285,12 @@ class JsonTranscriptSource:
     # -- Extras for validation helpers ---------------------------------------
 
     def raw_text(self) -> str:
-        """Raw file text, for V02-style byte-exact quote checks."""
+        """Whole-file text as written.
+
+        Kept for callers that need the raw document (troubleshooting, ad-hoc
+        tooling). Validation compares quotes against the resolved segment
+        instead, which is stricter — see ``v02_verbatim_quote_match``.
+        """
         return self._raw_bytes.decode("utf-8")
 
     @property

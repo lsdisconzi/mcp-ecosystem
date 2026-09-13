@@ -15,12 +15,19 @@ def example_module(tmp_path_factory):
     example_path = repo_root / "examples" / "refine_cl005.py"
     spec = importlib.util.spec_from_file_location("refine_cl005", example_path)
     mod = importlib.util.module_from_spec(spec)
-    # Redirect BUILD_ROOT to a tmp path so tests don't pollute the repo.
-    tmp_build = tmp_path_factory.mktemp("build")
-    # Patch module attributes before exec by using a wrapper:
-    # easier: just exec and inspect.
+    # The module executes on exec. It defaults to a temp dir when imported, so
+    # nothing here can overwrite the converter's canonical build/CL-005 with
+    # this demo's HTML-sourced, legacy-id bundle.
     spec.loader.exec_module(mod)
     return mod
+
+
+def test_endtoend_does_not_write_the_repo_build_dir(example_module):
+    """The demo must stay out of the converter's output tree."""
+    repo_build = (Path(__file__).parent.parent / "build").resolve()
+    build_root = example_module.BUILD_ROOT.resolve()
+    assert build_root != repo_build
+    assert repo_build not in build_root.parents
 
 
 def test_endtoend_produces_a_bundle(example_module):

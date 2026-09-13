@@ -56,20 +56,46 @@ def v01_segment_resolution(v: Violation, sources: dict) -> CheckResult:
 
 
 def v02_verbatim_quote_match(v: Violation, sources: dict) -> CheckResult:
+    """Each quote must appear verbatim in the segment it claims to come from.
+
+    The comparison is intentionally scoped to the *cited* segment rather than
+    the whole transcript file. Substring-matching the raw artifact is unsound:
+    it passes when a quote was copied from a neighbouring segment (or from the
+    framework text), and it fails on quotes that are genuinely present but whose
+    escaping differs between the raw artifact and the parsed segment text
+    (``&amp;`` in HTML, ``\\u2014`` escapes in JSON). Verifying against the
+    resolved segment is strictly stricter — a quote that matches the segment
+    always matched the file — and it is what V01 already resolves for us.
+    """
     transcripts: dict[str, TranscriptSource] = sources.get("transcripts", {})
-    issues = []
+    issues: list[str] = []
+    checked = 0
+    skipped = 0
     for seg in v.segments:
-        src_id, _ = seg.segment_id.split(".", 1)
-        ts = transcripts.get(src_id)
-        if ts is None or not hasattr(ts, "raw_text"):
+        quote = seg.verbatim_es.strip()
+        if not quote:
+            skipped += 1
             continue
-        if seg.verbatim_es not in ts.raw_text():
+        src_id, local_id = seg.segment_id.split(".", 1)
+        ts = transcripts.get(src_id)
+        resolved = ts.get_segment(local_id) if ts is not None else None
+        if resolved is None:
+            # Unresolvable ids are V01's finding; a quote cannot be checked here.
+            skipped += 1
+            continue
+        checked += 1
+        if quote not in (resolved.get("verbatim") or ""):
             issues.append(f"{seg.segment_id}: verbatim mismatch against {src_id!r}")
     status = "pass" if not issues else "fail"
-    return _result(
-        "V02", "verbatim_quote_match", status,
-        "All verbatim quotes match source bytes." if not issues else f"{len(issues)} mismatches: {issues}",
-    )
+    note = f"{checked} quote(s) checked against their cited segment"
+    if skipped:
+        note += f", {skipped} skipped (unresolved id or empty quote)"
+    if issues:
+        return _result(
+            "V02", "verbatim_quote_match", status,
+            f"{len(issues)} mismatch(es): {issues}. {note}.",
+        )
+    return _result("V02", "verbatim_quote_match", status, f"All {note}.")
 
 
 def v03_article_text_hash(v: Violation, sources: dict) -> CheckResult:

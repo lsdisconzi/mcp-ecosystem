@@ -2,9 +2,9 @@
 """Summarize validator outcomes from bundle Validation/checks.json files.
 
 Examples:
-  python3 examples/validation_fail_matrix.py --input build/cl_batch
-  python3 examples/validation_fail_matrix.py --input build/cl_batch --only CL-008 CL-010
-  python3 examples/validation_fail_matrix.py --input build/cl_batch --include-warns
+  python3 examples/validation_fail_matrix.py --input build
+  python3 examples/validation_fail_matrix.py --input build --only CL-008 CL-010
+  python3 examples/validation_fail_matrix.py --input build --include-warns
 """
 
 from __future__ import annotations

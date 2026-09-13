@@ -5,11 +5,20 @@ Run from the repo root:
 
 Output goes to ./build/CL-005/ and a zip at ./build/CL-005_refined_pack.zip.
 
+``REFINE_CL005_BUILD_ROOT`` overrides the output root. Imported rather than run,
+the demo defaults to a temp dir instead of ``build/``: it builds CL-005 from the
+vendored HTML render with the vault's legacy ``STG-7.seg-N`` ids, so writing it
+over the converter's canonical ``build/CL-005`` destroys real output, silently —
+every later check passes against the stale bundle because V01 resolves those ids
+against the HTML reader. The test suite imports this module twice.
+
 This script doubles as the canonical reference for how each layer is invoked
 — each function call here is what an MCP tool would wrap on a 1:1 basis.
 """
 from __future__ import annotations
 
+import os
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -39,7 +48,17 @@ from violation_pack import (
 HERE = Path(__file__).parent
 TRANSCRIPT_SOURCE = HERE.parent / "data" / "transcripts" / "html" / "I-002_05_NAR-07_STG_7_post_removal_investigation.html"
 FRAMEWORK_SOURCE = HERE.parent / "data" / "law" / "CL" / "CHIPENCOD_CP.md"
-BUILD_ROOT = HERE.parent / "build"
+def _default_build_root() -> Path:
+    """``<repo>/build`` when run directly; a temp dir when imported."""
+    override = os.environ.get("REFINE_CL005_BUILD_ROOT")
+    if override:
+        return Path(override)
+    if __name__ == "__main__":
+        return HERE.parent / "build"
+    return Path(tempfile.mkdtemp(prefix="refine_cl005_build_"))
+
+
+BUILD_ROOT = _default_build_root()
 BUNDLE_ROOT = BUILD_ROOT / "CL-005"
 
 

@@ -279,9 +279,11 @@ The project is a well-layered Python library with clear separation of concerns:
 |------|-------|------|
 | `examples/refine_cl005.py` | 404 | Canonical CL-005 end-to-end demo |
 | `examples/refine_batch.py` | 109 | Thin CLI over `violation_pack.refine_batch_core` (was 754) |
-| `examples/run_one.sh` | 240 | Interactive single-violation pipeline |
+| `examples/run_one.sh` | 260 | Single-violation pipeline (server variant) |
+| `examples/run_one_local.sh` | 259 | Single-violation pipeline (local variant) |
 | `examples/wire_extensions.py` | 99 | Qdrant+Neo4j wiring demo |
-| `examples/stage_cl_batch.py` | 639 | Legacy bundle staging (read but not fully reviewed) |
+| `examples/vault_to_bundle.py` | 1605 | Vault violation JSON → final bundle under `build/<VID>/` (replaced the retired `stage_cl_batch.py`) |
+| `examples/validate_preflight.py` | 461 | Pre-flight checks over `build/`: source data, bundle segment ids vs `segments_manifest.json`, transcript coverage, registry-resolved framework files |
 
 ### Test files
 | File | Lines | What it tests |
@@ -290,6 +292,7 @@ The project is a well-layered Python library with clear separation of concerns:
 | `tests/test_layers.py` | 173 | Layer 1-5 functions: idempotence, fabrication rejection, composition |
 | `tests/test_end_to_end.py` | 62 | Full CL-005 rebuild: segment count, article count, weighted_score, **11 checks**, validation pass/fail, bundle files exist |
 | `tests/test_verifier.py` | 129 | Verifier failure modes: fabricated rol, LLM-verified authority, unknown nexus segment, empty verification_required, unresolved cross-refs |
+| `tests/test_validation.py` | 156 | V01-V11 pipeline, focused on V02: quotes are matched against the *cited* segment, not the whole artifact (catches a quote lifted from a neighbouring segment), escape-insensitive, unresolved/empty quotes skipped |
 | `tests/test_extensions.py` | 276 | HashEmbedder determinism, in-memory fake Qdrant for upsert/search, fake Neo4j driver for CYPHER generation, jurisprudence verify() contract enforcement |
 | `tests/test_ingesters.py` | 261 | Fake corpus for JurisprudenceIngester (chunking, idempotence, cap), fake transcript bundle for TranscriptIngester (empty skip, audio tags), FrameworkIngester article header parsing |
 

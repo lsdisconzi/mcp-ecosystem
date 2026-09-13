@@ -6,8 +6,8 @@ groups violations by failure class, and prints a concrete remediation
 command list per bucket.
 
 Usage:
-    python3 examples/triage_buckets.py --input build/cl_batch
-    python3 examples/triage_buckets.py --input build/cl_batch --emit-script remediate.sh
+    python3 examples/triage_buckets.py --input build
+    python3 examples/triage_buckets.py --input build --emit-script remediate.sh
 """
 from __future__ import annotations
 
@@ -249,7 +249,7 @@ def _print_commands(buckets: dict[str, list[BundleReport]]) -> None:
         print("   Optional: to suppress V08 confidence.value warn, regenerate contracts:")
         ids_str = " ".join(warn_ids)
         print(f"   # for v in {ids_str}; do")
-        print(f"   #   python3 examples/sync_contract.py --input build/cl_batch --only $v")
+        print(f"   #   python3 examples/sync_contract.py --input build --only $v")
         print(f"   # done")
         print()
 
@@ -260,28 +260,28 @@ def _print_commands(buckets: dict[str, list[BundleReport]]) -> None:
 
         # Sub-classify: which need restaging (manifest segment_id fix) vs just revalidation
         # For now, all V01 failures need the source manifest corrected first,
-        # then re-stage + validation-only rerun (enrichment already present).
+        # then re-convert + validation-only rerun (enrichment already present).
         print()
-        print("── V01 UNRESOLVED: Upstream manifest fix → restage → revalidate ────")
+        print("── V01 UNRESOLVED: Upstream manifest fix → re-convert → revalidate ──")
         print("   These violations reference segment IDs that don't exist in the")
-        print("   transcript HTML. Fix the segments_manifest.json for each case,")
+        print("   transcript JSON. Fix the segments_manifest.json for each case,")
         print("   then run the commands below.")
         print()
         print("   Step 1: Fix source manifests (manual — per transcript above)")
         print()
-        print("   Step 2: Restage + validation-only rerun (no LLM cost):")
+        print("   Step 2: Re-convert + validation-only rerun (no LLM cost):")
         ids_str = " ".join(v01_ids)
         print(f"   for v in {ids_str}; do")
         print(f"     echo \"=== $v ===\"")
-        print(f"     # Restage from corrected source manifest")
-        print(f"     python3 examples/stage_cl_batch.py --jurisdiction CL --ids $v")
+        print(f"     # Re-convert from the corrected source manifest")
+        print(f"     .venv/bin/python examples/vault_to_bundle.py \"$v\" --jurisdiction CL")
         print(f"     # Revalidate without enrichment (preserves existing LLM output)")
-        print(f"     python3 examples/refine_batch.py --input build/cl_batch --only $v --no-enrich")
+        print(f"     .venv/bin/python examples/refine_batch.py --input build --only \"$v\" --no-enrich")
         print(f"   done")
         print()
         print("   Step 2-ALT: If segment IDs were expanded (new segments need enrichment):")
         for vid in v01_ids:
-            print(f"   ./examples/run_one.sh {vid} --no-enrich   # or full run if new segments added")
+            print(f"   ./examples/run_one_local.sh {vid} --no-enrich   # or full run if new segments added")
         print()
 
         # Also emit a targeted full-rerun command for cases where manifest fix
@@ -309,7 +309,7 @@ def _print_commands(buckets: dict[str, list[BundleReport]]) -> None:
                     print(f"   {r.violation_id}: {c.check_id} {c.name}")
                     print(f"     Details: {c.details[:200]}")
                     print(f"     # Revalidate after fix:")
-                    print(f"     python3 examples/refine_batch.py --input build/cl_batch --only {r.violation_id} --no-enrich")
+                    print(f"     python3 examples/refine_batch.py --input build --only {r.violation_id} --no-enrich")
                     print()
 
     # --- Summary
@@ -350,6 +350,8 @@ def _emit_script(path: Path, buckets: dict[str, list[BundleReport]]) -> None:
         'cd "$(dirname "$0")/.."',
         "source .venv/bin/activate",
         "",
+        'VENV_PY="${VENV_PY:-.venv/bin/python}"',
+        "",
     ]
     v01_members = buckets.get(BUCKET_V01_UNRESOLVED, [])
     if v01_members:
@@ -358,11 +360,11 @@ def _emit_script(path: Path, buckets: dict[str, list[BundleReport]]) -> None:
         lines.append("")
         lines.append("for v in \"${VIOLATIONS[@]}\"; do")
         lines.append("  # refine_batch prefers <id>.json.bak when present; clear stale snapshots")
-        lines.append("  rm -f \"build/cl_batch/$v/$v.json.bak\"")
-        lines.append("  echo \"=== Restaging $v ===\"")
-        lines.append("  python3 examples/stage_cl_batch.py --jurisdiction CL --ids \"$v\"")
+        lines.append("  rm -f \"build/$v/$v.json.bak\"")
+        lines.append("  echo \"=== Re-converting $v ===\"")
+        lines.append("  \"$VENV_PY\" examples/vault_to_bundle.py \"$v\" --jurisdiction CL")
         lines.append("  echo \"=== Revalidating $v ===\"")
-        lines.append("  python3 examples/refine_batch.py --input build/cl_batch --only \"$v\" --no-enrich")
+        lines.append("  \"$VENV_PY\" examples/refine_batch.py --input build --only \"$v\" --no-enrich")
         lines.append("done")
         lines.append("")
     else:
@@ -375,7 +377,7 @@ def _emit_script(path: Path, buckets: dict[str, list[BundleReport]]) -> None:
         lines.append("# Generate validation artifacts for bundles missing checks.json")
         for r in actionable_other:
             lines.append(f"echo \"=== Validating {r.violation_id} ===\"")
-            lines.append(f"./examples/run_one.sh {r.violation_id} --no-enrich")
+            lines.append(f"./examples/run_one_local.sh {r.violation_id} --no-enrich")
 
     lines.append("")
     lines.append("echo")

@@ -2,7 +2,7 @@
 # Interactive single-violation pipeline runner.
 #
 # Asks for jurisdiction + violation id, then runs the full pipeline:
-#   1. stage_cl_batch.py  (legacy bundle -> canonical layout)
+#   1. vault_to_bundle.py (vault JSON -> final bundle under build/<VID>/)
 #   2. refine_batch.py    (Layers 1-5 + validation, writes refined JSON)
 #   3. wire_extensions.py (upsert into Qdrant + Neo4j)
 #
@@ -24,6 +24,11 @@ cd "$ROOT"
 
 # shellcheck disable=SC1091
 [ -f .venv/bin/activate ] && source .venv/bin/activate
+
+# Any interpreter will do here as long as it is the one with the project's
+# dependencies; prefer the venv explicitly rather than trusting PATH.
+VENV_PY="${VENV_PY:-.venv/bin/python}"
+[ -x "$VENV_PY" ] || VENV_PY="$(command -v python3)"
 
 # ---- argument parsing -----------------------------------------------------
 JURISDICTION="${JURISDICTION:-}"
@@ -140,58 +145,54 @@ fi
 echo "================================================================"
 echo
 
-# ---- server path detection ------------------------------------------------
-# The staging script hardcodes macOS developer paths as defaults.  When
-# running on the server, override them to point at the vault/shared trees.
-STAGE_EXTRA_ARGS=()
-if [ -d /awareness/shared ]; then
-    STAGE_EXTRA_ARGS+=(
-        --source /awareness/shared/violations
-        --framework-md-root /awareness/shared/source_laws/law_md
-    )
-    # Map jurisdiction to the rendered-transcript incident directory.
-    case "$JURISDICTION" in
-        CL) STAGE_EXTRA_ARGS+=(--rendered /awareness/shared/transcripts_rendered/I-002) ;;
-        BR) STAGE_EXTRA_ARGS+=(--rendered /awareness/shared/transcripts_rendered/I-001) ;;
-        *)  STAGE_EXTRA_ARGS+=(--rendered /awareness/shared/transcripts_rendered/I-002) ;;  # default to I-002
-    esac
-    echo "    Server paths detected: ${STAGE_EXTRA_ARGS[*]}"
-fi
-
-# ---- 1. stage -------------------------------------------------------------
-# Clear stale refine artefacts. refine_batch._load_violation prefers
-# <id>.json.bak over the live JSON when present, which would silently mask
-# any stager changes (e.g. verbatim-body hydration) on re-runs.
-BUNDLE_DIR="build/cl_batch/${VID}"
-rm -f "${BUNDLE_DIR}/${VID}.json" "${BUNDLE_DIR}/${VID}.json.bak"
-
-# Per-run temp file so multiple parallel run_one.sh invocations (different
-# VIDs / different providers) do not clobber each other's staging output.
-STAGE_TMP="$(mktemp -t "run_one_stage.${TARGET_VID}.XXXXXX.json")"
-trap 'rm -f "$STAGE_TMP"' EXIT
-
-echo "── [1/3] Staging legacy bundle ─────────────────────────────────"
-python3 examples/stage_cl_batch.py --jurisdiction "$JURISDICTION" --ids "$VID" \
-    ${STAGE_EXTRA_ARGS[@]+"${STAGE_EXTRA_ARGS[@]}"} \
-    | tee "$STAGE_TMP" | tail -30
-
-# Bail if staging failed
-if ! python3 -c "
-import json,sys
-d=json.load(open('${STAGE_TMP}'))
-r=d['results'][0]
-sys.exit(0 if r.get('ok') else 1)
-"; then
-    echo "Staging failed for $VID — aborting." >&2
+# ---- source layout -------------------------------------------------------
+# The converter reads the vault's structured violation JSON and the repo's own
+# transcript/law trees (data/transcripts/json, data/law). Nothing here mirrors
+# a framework list or a code -> filename map, so there is nothing to keep in
+# sync when the corpus changes. Override VAULT_SOURCE for another case.
+VAULT_SOURCE="${VAULT_SOURCE:-/awareness/shared/violations}"
+if [ ! -d "$VAULT_SOURCE" ]; then
+    echo "Vault source not found: $VAULT_SOURCE" >&2
+    echo "Set VAULT_SOURCE to the schema-4.0 JSON directory of the case." >&2
     exit 1
 fi
 
-# If a suffix is in play, mirror the canonical bundle to the suffixed dir
-# so refine_batch operates on an independent copy. We rename the inner
-# violation JSON so refine_batch._find_violation_json picks it up by the
-# bundle-dir name. The JSON's `violation_id` field stays equal to VID,
-# which is fine for output comparison.
-TARGET_BUNDLE="build/cl_batch/${TARGET_VID}"
+# ---- 1. convert ----------------------------------------------------------
+# vault_to_bundle.py writes the FINAL bundle directly (contract.json,
+# segments_manifest.json, Transcripts/, Legal framework/, <VID>.json,
+# conversion_warnings.json) — there is no separate staging hop.
+echo "── [1/3] Vault JSON -> bundle ─────────────────────────────────"
+echo "    Vault:  $VAULT_SOURCE"
+echo "    Bundle: build/${VID}"
+"$VENV_PY" examples/vault_to_bundle.py "$VID" \
+    --jurisdiction "$JURISDICTION" \
+    --source "$VAULT_SOURCE" \
+    --transcript-dir data/transcripts/json \
+    --law-root data/law \
+    --speaker-index data/speaker_index.json \
+    --output build
+
+BUNDLE_DIR="build/${VID}"
+
+# A missing artefact would otherwise surface as a confusing refine error.
+for required in contract.json segments_manifest.json "${VID}.json"; do
+    if [ ! -f "${BUNDLE_DIR}/${required}" ]; then
+        echo "Conversion incomplete: ${BUNDLE_DIR}/${required} is missing — aborting." >&2
+        exit 1
+    fi
+done
+
+# refine_batch._load_violation prefers <id>.json.bak over the live JSON when
+# present, which would silently mask any converter change on re-runs.
+rm -f "${BUNDLE_DIR}/${VID}.json.bak"
+
+# If a suffix is in play, mirror the converted bundle to the suffixed dir so
+# refine_batch operates on an independent copy. We rename the inner violation
+# JSON so refine_batch._find_violation_json picks it up by the bundle-dir name.
+# The JSON's `violation_id` field stays equal to VID, which is fine for output
+# comparison. Relative symlinks (Transcripts/, Legal framework/) stay valid
+# because the copy sits at the same depth.
+TARGET_BUNDLE="build/${TARGET_VID}"
 if [ "$TARGET_VID" != "$VID" ]; then
     rm -rf "$TARGET_BUNDLE"
     cp -R "$BUNDLE_DIR" "$TARGET_BUNDLE"
@@ -208,7 +209,7 @@ fi
 echo
 echo "── [2/3] Refining (Layers 1–5 + validation) ───────────────────"
 # Report resolved LLM status using Settings (supports provider-specific keys).
-python3 - <<'PY'
+"$VENV_PY" - <<'PY'
 from violation_pack.config import Settings
 
 s = Settings.from_env()
@@ -219,7 +220,7 @@ if enabled:
 else:
     print("    LLM enrichment: OFF (configure provider key in .env, e.g. DEEPSEEK_API_KEY)")
 PY
-REFINE_CMD=(python3 examples/refine_batch.py --input build/cl_batch --only "$TARGET_VID" --include-extra)
+REFINE_CMD=("$VENV_PY" examples/refine_batch.py --input build --only "$TARGET_VID" --include-extra --no-backup)
 if [ "$NO_ENRICH" -eq 1 ]; then
     REFINE_CMD+=(--no-enrich)
 elif [ -n "$ENRICH_STAGES" ]; then
@@ -228,7 +229,7 @@ fi
 "${REFINE_CMD[@]}"
 
 # ---- 3. upsert ------------------------------------------------------------
-JSON_PATH="build/cl_batch/${TARGET_VID}/${TARGET_VID}.json"
+JSON_PATH="build/${TARGET_VID}/${TARGET_VID}.json"
 if [ ! -f "$JSON_PATH" ]; then
     echo "Refined JSON not found at $JSON_PATH — aborting." >&2
     exit 1
@@ -246,7 +247,7 @@ elif [ "$TARGET_VID" != "$VID" ]; then
 else
     echo
     echo "── [3/3] Upserting into Qdrant + Neo4j ────────────────────────"
-    python3 examples/wire_extensions.py --violation-json "$JSON_PATH" 2>&1 \
+    "$VENV_PY" examples/wire_extensions.py --violation-json "$JSON_PATH" 2>&1 \
         | grep -v -E "UserWarning|show_warning|Qdrant client" || true
 fi
 
@@ -254,5 +255,6 @@ echo
 echo "================================================================"
 echo "  Done: $TARGET_VID"
 echo "  Refined JSON: $JSON_PATH"
-echo "  Validation:   build/cl_batch/${TARGET_VID}/Validation/validation_report.md"
+echo "  Validation:   build/${TARGET_VID}/Validation/validation_report.md"
+echo "  Warnings:     build/${TARGET_VID}/conversion_warnings.json"
 echo "================================================================"

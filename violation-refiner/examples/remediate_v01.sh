@@ -7,21 +7,23 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 source .venv/bin/activate
 
+VENV_PY="${VENV_PY:-.venv/bin/python}"
+
 VIOLATIONS=(CL-002 CL-008 CL-009 CL-010 CL-011 CL-012 CL-013 CL-014 CL-015 CL-017 CL-018)
 
 for v in "${VIOLATIONS[@]}"; do
   # refine_batch prefers <id>.json.bak when present; clear stale snapshots
-  rm -f "build/cl_batch/$v/$v.json.bak"
-  echo "=== Restaging $v ==="
-  python3 examples/stage_cl_batch.py --jurisdiction CL --ids "$v"
+  rm -f "build/$v/$v.json.bak"
+  echo "=== Re-converting $v ==="
+  "$VENV_PY" examples/vault_to_bundle.py "$v" --jurisdiction CL
   echo "=== Revalidating $v ==="
-  python3 examples/refine_batch.py --input build/cl_batch --only "$v" --no-enrich
+  "$VENV_PY" examples/refine_batch.py --input build --only "$v" --no-enrich
 done
 
 
 # Generate validation artifacts for bundles missing checks.json
 echo "=== Validating CL-016 ==="
-./examples/run_one.sh CL-016 --no-enrich
+./examples/run_one_local.sh CL-016 --no-enrich
 
 echo
 echo "Remediation run complete. Run triage_buckets.py again to verify."
