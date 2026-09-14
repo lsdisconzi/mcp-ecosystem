@@ -17,8 +17,17 @@ __pycache__/
 # `build/` (trailing slash) does NOT match `build.prev/`, so the stale-bundle
 # snapshot was previously committable at 4.6M. Keep it local-only.
 build.prev/
+
+# `build/` ITSELF IS TRACKED — the root `.gitignore` re-includes
+# `violation-refiner/build/`, because the refined bundles and their validation
+# reports are deliverables. Only the transient per-run files stay ignored here:
+#   - refine_batch_summary.json — refine_batch.py writes it into the --input root
+#   - *.bak — would shadow the bundle in _load_violation on the next run
+build/refine_batch_summary.json
+build/**/*.bak
 dist/
 .venv-vps-linux
 .vscode
 .logs
 .run
+.dev

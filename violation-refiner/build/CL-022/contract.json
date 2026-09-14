@@ -1,0 +1,402 @@
+{
+  "schema_version": "4.0",
+  "violation_id": "CL-022",
+  "violation_number": "CL-022",
+  "title": "Regulatory Failure — DGAC Abdication of Oversight Authority",
+  "case": {
+    "id": "I-002",
+    "name": "I-002-Chile-Santiago"
+  },
+  "jurisdiction": "CL",
+  "framework": {
+    "codes": [
+      "CACH"
+    ],
+    "files": {
+      "CACH": "CL/L18916_CACH.md"
+    }
+  },
+  "category": "Regulatory Oversight Failure",
+  "severity": "HIGH",
+  "confidence": {
+    "value": 0.54,
+    "components": {
+      "CL.CACH.Art.133": 0.637
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T13:12:23.835232Z",
+    "history": [
+      "2026-05-12T13:07:51.728230+00:00: value=0.0",
+      "2026-05-12T13:08:08.609452+00:00: value=0.0",
+      "2026-05-12T13:08:11.880322+00:00: value=0.0",
+      "2026-05-12T13:09:42.571278+00:00: value=0.54",
+      "2026-05-12T13:10:07.548345+00:00: value=0.54",
+      "2026-05-12T13:10:59.412204+00:00: value=0.54",
+      "2026-05-12T13:11:51.389173+00:00: value=0.54",
+      "2026-05-12T13:12:18.469113+00:00: value=0.54"
+    ],
+    "validated": true,
+    "note": "V10 validated. Cleanest validation in Lote F: 9 pass / 2 warn / 0 fail. V01: all 4 segments resolved. Single-article framework with strong score (0.713). 8/8 authorities unverified. Confidence 0.61 is pipeline-derived; MD frontmatter previously carried legacy 0.88 from seed."
+  },
+  "incident": {
+    "date": "5 de julho de 2024 — Voo LA8159 — Aeroporto SCL (ver Fatos Fixos do Incidente)",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T11:00:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "incident_timestamp": "2024-07-05T11:00:00-04:00",
+  "incident_timestamp_display": "5 de julho de 2024 — Voo LA8159 — Aeroporto SCL (ver Fatos Fixos do Incidente)",
+  "allegation_summary": "It is alleged that DGAC (Direccion General de Aeronautica Civil) officials present at the airport during the LA8159 incident failed to exercise their regulatory oversight authority. Despite (1) a DGAC official confirming the passenger was right after PDI CCTV review (STG-7), (2) witnessing the passenger's forcible removal without documentation, and (3) being the regulatory body responsible for enforcing CACH Art. 133, DGAC took no enforcement action, issued no citations, and allowed LATAM to proceed with the document fabrication scheme and lifetime ban without intervention. This failure to exercise regulatory authority enabled LATAM's systematic procedural violations.",
+  "legal_basis": {
+    "frameworks": [
+      {
+        "framework_code": "CACH",
+        "framework_name": "CACH",
+        "framework_file": "CL/L18916_CACH.md",
+        "articles": [
+          {
+            "article_id": "CL.CACH.Art.133",
+            "article_name": "Codigo Aeronautico de Chile, Art. 133 — Denegacion de Embarque",
+            "article_text": "1. A eleccion del pasajero:\n\na) Embarcar en el siguiente vuelo que tenga disponible el transportador, o en un transporte alternativo, si es que decidiera persistir en el contrato de transporte aereo.  \nb) El reembolso del monto total pagado por el billete, si el pasajero se desiste del contrato de transporte aereo y este no hubiera comenzado su ejecucion.",
+            "applicability_rationale": "DGAC is the regulatory body responsible for enforcing CACH, including Art. 133. The agency's failure to intervene despite witnessing violations and confirming the carrier's allegations were false constitutes an abdication of its statutory oversight mandate. | legacy paraphrase: El transportador podra denegar el embarque... para lo cual debera: 1.- A eleccion del pasajero... 2.- El transportador debera ofrecer una compensacion...",
+            "duty_bearer": "state",
+            "norm_type": "definition",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CACH.Art.184",
+      "candidate_name": "Codigo Aeronautico de Chile, Art. 184 — Atribuciones de la DGAC",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.184 from bcn.cl/leychile (DFL 221 de 1931 / Ley 18.916)",
+        "Confirm whether Art. 184 establishes DGAC's general supervisory and enforcement powers over air transport operations",
+        "Verify that the article imposes affirmative duties (not merely discretionary powers) on DGAC to intervene when carrier conduct violates the Code"
+      ],
+      "preliminary_view": "Art. 184 likely defines DGAC's institutional mandate to supervise compliance with the Codigo Aeronautico. If it establishes mandatory oversight duties, DGAC's explicit disclaimer ('esta decision no la decidimos nosotros') while witnessing confirmed-false allegations against a passenger would constitute a breach of its statutory function.",
+      "history_note": "Proposed as the organic-authority article that grounds the 'abdication of oversight' theory. Not previously cited in the bundle."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.2",
+      "candidate_name": "Codigo Aeronautico de Chile, Art. 2 — Autoridad Aeronautica",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.2 from bcn.cl/leychile",
+        "Confirm whether Art. 2 designates DGAC as the authority responsible for applying and enforcing the Code",
+        "Determine if the article creates a non-delegable duty or merely an institutional designation"
+      ],
+      "preliminary_view": "Art. 2 likely establishes DGAC as the competent authority for enforcement of the entire Codigo Aeronautico. Combined with the factual record showing DGAC deferred entirely to the carrier's narrative and disclaimed decision-making authority, this article would ground the argument that DGAC cannot lawfully abdicate its role to a private party.",
+      "history_note": "Foundational article defining DGAC's institutional role. Not in the established bundle."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.134",
+      "candidate_name": "Codigo Aeronautico de Chile, Art. 134 — Obligaciones del Transportador en caso de cancelacion o retraso",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.134 from bcn.cl/leychile",
+        "Determine whether Art. 134 extends passenger-protection obligations to situations where the carrier causes a passenger to miss a flight through wrongful denial of boarding",
+        "Assess whether DGAC has a supervisory duty to ensure compliance with Art. 134 remedies"
+      ],
+      "preliminary_view": "If Art. 134 imposes carrier obligations when a passenger loses their flight due to carrier action, DGAC's failure to enforce those obligations in real time (despite being physically present and aware the allegations were false) reinforces the abdication theory.",
+      "history_note": "Adjacent to established Art. 133; likely contains complementary duties. Not yet verified."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.150",
+      "candidate_name": "Codigo Aeronautico de Chile, Art. 150 — Responsabilidad del Transportador",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.150 from bcn.cl/leychile",
+        "Confirm whether Art. 150 establishes carrier liability for damages caused by wrongful denial of transport",
+        "Assess whether DGAC has enforcement or adjudicatory duties under this provision"
+      ],
+      "preliminary_view": "Art. 150 likely establishes the carrier's civil liability framework. DGAC's regulatory role would include ensuring carriers do not escape liability by fabricating justifications for denial of boarding. The agency's passive acceptance of the carrier's narrative despite CCTV evidence to the contrary may constitute a failure to protect the passenger's rights under this provision.",
+      "history_note": "Proposed to establish the liability framework that DGAC should have been enforcing. Exact article number requires verification — CACH liability provisions may be in a different article."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.3",
+      "candidate_name": "Constitucion Politica de la Republica, Art. 19 Nr. 3 — Igual proteccion de la ley en el ejercicio de sus derechos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CPR Art. 19 Nr. 3 from bcn.cl/leychile",
+        "Confirm that the guarantee of equal protection and due process applies to administrative proceedings and state-agent interactions with individuals",
+        "Assess whether DGAC's uncritical adoption of the carrier's version without independent verification violates procedural fairness guarantees"
+      ],
+      "preliminary_view": "Art. 19 Nr. 3 guarantees equal protection and due process. DGAC's conduct — accepting the carrier's allegations at face value, refusing to exercise independent judgment, and telling the passenger to seek legal remedies on his own — may violate the constitutional guarantee that state organs must afford individuals fair treatment when exercising authority that affects their rights.",
+      "history_note": "Constitutional due-process provision. Relevant because DGAC is a state organ exercising public authority at the moment of the incident."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.22",
+      "candidate_name": "Constitucion Politica de la Republica, Art. 19 Nr. 22 — No discriminacion arbitraria en el trato del Estado en materia economica",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CPR Art. 19 Nr. 22 from bcn.cl/leychile",
+        "Confirm whether the prohibition of arbitrary discrimination by the State in economic matters extends to regulatory agencies favoring a carrier over a consumer",
+        "Assess applicability to DGAC's conduct of deferring entirely to LATAM's narrative"
+      ],
+      "preliminary_view": "Art. 19 Nr. 22 prohibits arbitrary discrimination by the State in economic matters. DGAC's systematic deference to the carrier's version — while disclaiming any duty to the passenger — could constitute arbitrary favoritism toward the regulated entity at the expense of the consumer.",
+      "history_note": "Constitutional economic-equality provision. Proposed as supplementary constitutional ground."
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.3.b",
+      "candidate_name": "Ley 19.496 (Ley de Proteccion al Consumidor), Art. 3 letra b — Derecho a informacion veraz y oportuna",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Ley 19.496 Art. 3 letra b from bcn.cl/leychile",
+        "Confirm whether the consumer's right to truthful information creates a correlative duty on regulatory agencies to not propagate or endorse false carrier narratives",
+        "Assess whether DGAC's repetition of the carrier's unverified allegations to the passenger violates this consumer right"
+      ],
+      "preliminary_view": "Art. 3 letra b guarantees consumers the right to truthful and timely information. While the primary duty-bearer is the provider, DGAC's role in relaying and endorsing the carrier's false narrative to the passenger — without independent verification — may constitute state complicity in violating this consumer right.",
+      "history_note": "Consumer-protection provision. Proposed to bridge the regulatory-failure theory with consumer-rights framework."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.186",
+      "candidate_name": "Codigo Aeronautico de Chile, Art. 186 — Facultades fiscalizadoras de la DGAC",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.186 from bcn.cl/leychile",
+        "Confirm whether Art. 186 grants DGAC specific inspection and enforcement powers over carrier compliance with passenger rights",
+        "Verify the exact article number — CACH enforcement powers may be in Art. 184, 185, or 186"
+      ],
+      "preliminary_view": "If Art. 186 grants DGAC specific enforcement and inspection powers, the agency's failure to exercise those powers when confronted with evidence that the carrier's allegations were false would constitute a dereliction of statutory duty. The exact article number within the CACH enforcement chapter requires verification.",
+      "history_note": "Proposed as the specific enforcement-powers article. Exact numbering uncertain — verification needed against the actual CACH text."
+    }
+  ],
+  "cross_references": [
+    {
+      "ref": "CL-019",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-013",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-009",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-015",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-003",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-006",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-008",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-010",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-021",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-012",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-004",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-011",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-020",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-014",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-002",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-005",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-007",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-019__opus46",
+      "relation": "regulatory_inaction_enabled_unchecked_intimidation"
+    },
+    {
+      "ref": "CL-020__opus46",
+      "relation": "dgac_deference_perpetuated_evolving_justifications"
+    },
+    {
+      "ref": "CL-021__opus46",
+      "relation": "regulatory_abdication_left_retaliatory_removal_uncorrected"
+    },
+    {
+      "ref": "CL-022__opus46",
+      "relation": "parallel_analysis_of_same_dgac_abdication_violation"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-022-PDI-WRITTEN-REPORT",
+      "question": "¿Existe informe escrito de la PDI descartando el incumplimiento alegado?",
+      "blocks_element": "modalidad_incumplimiento_proceso",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-022-DGAC-PARTE-FORMAL",
+      "question": "¿Existe el parte formal DGAC de STG-7.seg-75? ¿Contenido íntegro?",
+      "blocks_element": "abdication_dgac_oversight",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-022-DGAC-SPEAKER-IDENTITY",
+      "question": "¿El hablante en STG-7.seg-75 es DGAC o exclusivamente PDI?",
+      "blocks_element": "abdication_dgac_oversight",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-022-DGAC-POSTERIOR-ACTION",
+      "question": "¿Actuó DGAC con posterioridad en ejercicio de potestad sancionatoria?",
+      "blocks_element": "abdication_dgac_oversight",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-022-CARRIER-OPTIONS-OFFERED",
+      "question": "¿Existen registros de ofrecimiento de opciones §1 al pasajero?",
+      "blocks_element": "omision_opciones_pasajero",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-022-CARRIER-COMPENSATION-ISSUED",
+      "question": "¿Se emitió compensación económica §2 al pasajero?",
+      "blocks_element": "omision_compensacion",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-022-CARRIER-IDENTITY-NOMINAL",
+      "question": "¿Razón social exacta y AOC de la aerolínea?",
+      "blocks_element": "sujeto_activo_transportador",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-022-TICKET-VALIDITY-FORMAL",
+      "question": "¿Documentación formal del billete vigente al momento de la denegación?",
+      "blocks_element": "sujeto_pasivo_pasajero_afectado",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-022-PDI-CAMERA-REVIEW-FORMAL",
+      "question": "¿Acta formal de revisión de cámaras PDI mencionada en STG-7.seg-44?",
+      "blocks_element": "modalidad_incumplimiento_proceso",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL-022-AIRLINE-ID",
+      "question": "¿Cuál es la identidad precisa de la aerolínea transportadora que denegó el embarque al pasajero?",
+      "blocks_element": "CL.CACH.Art.133.1.elem.sujeto_obligado_transportador",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL-022-ALT-OFRECIDAS",
+      "question": "¿El transportador ofreció al pasajero alternativas de embarque o reembolso en algún momento posterior al incidente no registrado en los segmentos disponibles?",
+      "blocks_element": "CL.CACH.Art.133.1.elem.ofrecimiento_alternativas_pasajero",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL-022-COMP-POSTERIOR",
+      "question": "¿Se ofreció compensación económica al pasajero en alguna instancia posterior no documentada en los segmentos disponibles?",
+      "blocks_element": "CL.CACH.Art.133.2.elem.ofrecimiento_compensacion",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL-022-PROTOCOLO-DGAC",
+      "question": "¿Existe normativa interna, circular o protocolo de la DGAC que detalle el procedimiento de intervención de sus funcionarios ante denegaciones de embarque presenciadas in situ?",
+      "blocks_element": "CL.CACH.Art.133.elem.deber_fiscalizador_dgac",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL-022-INFORME-PDI-CCTV",
+      "question": "¿Existe un informe formal de la PDI que documente la revisión de las grabaciones CCTV y sus conclusiones respecto a la ausencia de agresión por parte del pasajero?",
+      "blocks_element": "CL.CACH.Art.133.elem.falsedad_causal_denegacion",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL-022-ACUSACIONES-DETALLE",
+      "question": "¿Cuáles fueron exactamente las dos acusaciones formuladas contra el pasajero que sirvieron de causal para la remoción?",
+      "blocks_element": "CL.CACH.Art.133.elem.falsedad_causal_denegacion",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL-022-COMUNICACION-PDI-DGAC",
+      "question": "¿La PDI comunicó formalmente a la DGAC los resultados de la revisión de cámaras CCTV antes de que la DGAC emitiera o cerrara su parte oficial?",
+      "blocks_element": "CL.CACH.Art.133.elem.conocimiento_dgac_de_falsedad",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL-022-PARTE-MODIFICADO",
+      "question": "¿La DGAC modificó, complementó o emitió un parte adicional tras conocer la confirmación de la PDI sobre la falsedad de las acusaciones?",
+      "blocks_element": "CL.CACH.Art.133.elem.conocimiento_dgac_de_falsedad",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL-022-SECUENCIA-TEMPORAL",
+      "question": "¿Cuál fue la secuencia temporal exacta entre la confirmación de la PDI (revisión CCTV) y el cierre de la actuación administrativa de la DGAC?",
+      "blocks_element": "CL.CACH.Art.133.elem.conocimiento_dgac_de_falsedad",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL-022-COSTOS-PASAJERO",
+      "question": "¿Cuál fue el monto del billete aéreo y los costos adicionales incurridos por el pasajero como consecuencia de la denegación de embarque?",
+      "blocks_element": "CL.CACH.Art.133.elem.perjuicio_pasajero",
+      "priority": "medium"
+    }
+  ],
+  "related_violations": [
+    "CL-001",
+    "CL-003",
+    "CL-005",
+    "CL-008",
+    "CL-011",
+    "CL-015",
+    "INT-001",
+    "INT-002",
+    "INT-003"
+  ],
+  "tags": [
+    "violation",
+    "severity/high",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "_provenance": {
+    "source": "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN/CL-022.json",
+    "vault_operations": 13,
+    "converted_by": "examples/vault_to_bundle.py"
+  }
+}

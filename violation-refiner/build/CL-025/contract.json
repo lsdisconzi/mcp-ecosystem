@@ -1,0 +1,421 @@
+{
+  "schema_version": "4.0",
+  "violation_id": "CL-025",
+  "violation_number": "CL-025",
+  "title": "Systematic Gaslighting and Consumer Deception — False Claim of No Impediments After 1-Year Ban",
+  "case": {
+    "id": "I-002",
+    "name": "I-002-Chile-Santiago"
+  },
+  "jurisdiction": "CL",
+  "framework": {
+    "codes": [
+      "CHIPENCOD",
+      "CPCL",
+      "LPDC"
+    ],
+    "files": {
+      "CHIPENCOD": "CL/CHIPENCOD_CP.md",
+      "CPCL": "CL/CodigoPenal.md",
+      "LPDC": "CL/L19496_LPDC.md"
+    }
+  },
+  "category": "Systematic Gaslighting / Consumer Deception / Cross-Border",
+  "severity": "CRITICAL",
+  "confidence": {
+    "value": 0.59,
+    "components": {
+      "CL.CPCL.C1.Art.412": 0.55,
+      "CL.CHIPENCOD.T4.C1.Art.193": 0.5,
+      "CL.LPDC.Art.3.b": 0.814,
+      "CL.LPDC.Art.23": 0.757
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T14:09:27.483623Z",
+    "history": [
+      "2026-05-12T14:01:19.198322+00:00: value=0.0",
+      "2026-05-12T14:01:35.730733+00:00: value=0.0",
+      "2026-05-12T14:01:40.997425+00:00: value=0.0",
+      "2026-05-12T14:06:46.111677+00:00: value=0.59",
+      "2026-05-12T14:07:58.319190+00:00: value=0.59"
+    ],
+    "validated": true,
+    "note": "V10 validated. V01: 3 segments unresolved — highest in Lote F. V06: 1 element uncovered (Art. 193 sujeto_activo_calificado). 13/13 authorities unverified. Strongest article: LPDC 3.b (0.775). Confidence 0.52 is pipeline-derived; MD frontmatter previously carried legacy 0.93 from seed."
+  },
+  "incident": {
+    "date": "2025-07-04",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T13:30:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "incident_timestamp": "2024-07-05T13:30:00-04:00",
+  "incident_timestamp_display": "2025-07-04 (email date) — rooted in 2024-07-05 incident",
+  "allegation_summary": "On July 4, 2025, LATAM Airlines sent a gaslighting email to passenger [[SPK-passenger-leandro]] via Christopher Calle (Customer Service). The email stated: 'verificamos que no fueran encontrados impedimentos en nuestros sistemas de modo que usted puede realizar la compra de boletos aéreos' — this was knowingly false, as LATAM had imposed a lifetime ban on July 5, 2024 and enforced it on July 6, 2024. The email refused to provide documentation, CCTV recordings, or evidence, stating these could 'only be delivered upon formal request from competent authority' — despite the passenger having already filed formal complaints with Carabineros. The timing — one year later, after the passenger began going public on LinkedIn — reveals a strategic gaslighting maneuver designed to publicly discredit the passenger's claims.",
+  "legal_basis": {
+    "frameworks": [
+      {
+        "framework_code": "CPCL",
+        "framework_name": "CPCL",
+        "framework_file": "CL/CodigoPenal.md",
+        "articles": [
+          {
+            "article_id": "CL.CPCL.C1.Art.412",
+            "article_name": "Codigo Penal, Art. 412 — Calumnia: Imputacion falsa de un delito",
+            "article_text": "Es calumnia la imputacion de un delito determinado pero falso y que pueda actualmente perseguirse de oficio.",
+            "applicability_rationale": "legacy paraphrase: Calumnia: Imputación falsa de un delito",
+            "duty_bearer": "state",
+            "norm_type": "prohibition",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      },
+      {
+        "framework_code": "CHIPENCOD",
+        "framework_name": "CHIPENCOD",
+        "framework_file": "CL/CHIPENCOD_CP.md",
+        "articles": [
+          {
+            "article_id": "CL.CHIPENCOD.T4.C1.Art.193",
+            "article_name": "Codigo Penal, Art. 193 N°4 — Falsedad ideologica",
+            "article_text": "4.° Faltando a la verdad en la narración de hechos sustanciales.",
+            "applicability_rationale": "legacy paraphrase: El que, a sabiendas, cometiere falsedad en instrumento público o privado...",
+            "duty_bearer": "state",
+            "norm_type": "prohibition",
+            "applicability": "supporting",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      },
+      {
+        "framework_code": "LPDC",
+        "framework_name": "LPDC",
+        "framework_file": "CL/L19496_LPDC.md",
+        "articles": [
+          {
+            "article_id": "CL.LPDC.Art.3.b",
+            "article_name": "Ley 19.496, Art. 3(b) — Derecho a informacion veraz y oportuna",
+            "article_text": "b) El derecho a una información veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratación y otras características relevantes de los mismos, y el deber de informarse responsablemente de ellos.",
+            "applicability_rationale": "legacy paraphrase: Son derechos y deberes basicos del consumidor: b) El derecho a una informacion veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratacion y otras caracteristicas relevantes de los mismos.",
+            "duty_bearer": "air_operator",
+            "norm_type": "right",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          },
+          {
+            "article_id": "CL.LPDC.Art.23",
+            "article_name": "Ley 19.496, Art. 23 — Infraccion por negligencia del proveedor",
+            "article_text": "Comete infracción a las disposiciones de la presente ley el proveedor que, en la venta de un bien o en la prestación de un servicio, **actuando con negligencia**, causa menoscabo al consumidor debido a fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio.",
+            "applicability_rationale": "legacy paraphrase: El proveedor de un servicio sera responsable de los danos y perjuicios que cause al consumidor por la prestacion de un servicio defectuoso, incluyendo la falta de veracidad en la informacion proporcionada y el incumplimiento de las condiciones de contratacion.",
+            "duty_bearer": "air_operator",
+            "norm_type": "liability",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "BR.CDC.T3.Art.6",
+      "candidate_name": "BR.CDC.T3.Art.6",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for BR.CDC.T3.Art.6 and confirm excerpt"
+      ],
+      "preliminary_view": "Art. 6. São direitos básicos do consumidor: III - a informação adequada e clara sobre os diferentes produtos e serviços; IV - a proteção contra publicidade enganosa e abusiva, métodos comerciais coercitivos ou desleais, bem como contra prát",
+      "history_note": "legacy import"
+    },
+    {
+      "candidate_article_id": "BR.CDC.T5.C4.Art.39",
+      "candidate_name": "BR.CDC.T5.C4.Art.39",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for BR.CDC.T5.C4.Art.39 and confirm excerpt"
+      ],
+      "preliminary_view": "Art. 39. É vedado ao fornecedor: II - recusar atendimento às demandas dos consumidores, na exata medida de sua disponibilidade de estoque; V - exigir do consumidor vantagem manifestamente excessiva",
+      "history_note": "legacy import"
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.12",
+      "candidate_name": "Obligación de respetar los términos y condiciones ofrecidos o convenidos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.12 from bcn.cl/leychile (Ley 19.496)",
+        "Confirm that the article imposes on the proveedor the duty to honor the terms, conditions, and modalities under which the service was offered or agreed upon"
+      ],
+      "preliminary_view": "LATAM sold a ticket and then denied boarding while claiming 'no impediments' existed, potentially breaching the obligation to honor contracted service terms. The false claim of no impediments after a 1-year ban constitutes a failure to respect the conditions under which the service was offered.",
+      "history_note": "Not present in established_articles. Commonly invoked alongside Art. 3(b) and Art. 23 LPDC in denied-boarding consumer claims."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.3.e",
+      "candidate_name": "Derecho a la reparación e indemnización adecuada y oportuna",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.3 letra e) from bcn.cl/leychile (Ley 19.496)",
+        "Confirm that it establishes the consumer's right to adequate and timely reparation for all damages suffered"
+      ],
+      "preliminary_view": "The passenger was denied documentation, humiliated, and given no reparation pathway. Art. 3(e) establishes the right to adequate and timely indemnification, which LATAM appears to have frustrated by deflecting to a 'legal department' that never contacted the passenger.",
+      "history_note": "Art. 3(b) is already established; letter (e) of the same article addresses a distinct right (reparation) not yet covered."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.28",
+      "candidate_name": "Publicidad engañosa o falsa — inducción a error o engaño",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.28 from bcn.cl/leychile (Ley 19.496)",
+        "Verify whether the article's scope extends to post-sale representations (not only advertising) that induce error about the characteristics or conditions of a service"
+      ],
+      "preliminary_view": "LATAM's representation that there were 'no impediments' when a 1-year ban existed could constitute inducing the consumer to error about the conditions of the service. Applicability depends on whether Art. 28 covers post-sale operational representations or is limited to pre-contractual advertising.",
+      "history_note": "Not in established_articles. Frequently paired with Art. 3(b) in deception-based consumer claims."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.16.a",
+      "candidate_name": "Cláusulas abusivas — facultad unilateral de dejar sin efecto el contrato",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.16 letra a) from bcn.cl/leychile (Ley 19.496)",
+        "Confirm that it declares abusive any clause granting the provider unilateral power to terminate or modify the contract without equivalent faculty for the consumer"
+      ],
+      "preliminary_view": "The supervisor's statement 'la acceptas se quieres o no' reflects a unilateral imposition without consumer consent. If LATAM's conditions of carriage contain a clause permitting unilateral denial of boarding without documented justification or recourse, Art. 16(a) may render such clause abusive.",
+      "history_note": "Not in established_articles. Relevant to the coercive 'take it or leave it' dynamic documented in LATAM-4.seg-12."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.24",
+      "candidate_name": "Sanción genérica por infracción a la LPC",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.24 from bcn.cl/leychile (Ley 19.496)",
+        "Confirm the sanction regime (multas) applicable when no specific sanction is provided for the infraction"
+      ],
+      "preliminary_view": "Serves as the residual sanctions provision for infractions under the LPC that do not have a specific penalty assigned. Relevant for quantifying remedies alongside Art. 23.",
+      "history_note": "Not in established_articles. Procedural/remedial complement to the substantive violations already identified."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.131",
+      "candidate_name": "Obligaciones del transportador aéreo respecto del pasajero",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.131 from bcn.cl/leychile (Código Aeronáutico, DFL 221 de 1931 / Ley 18.916)",
+        "Confirm whether it establishes the carrier's obligation to transport the passenger who holds a valid ticket and has complied with check-in requirements"
+      ],
+      "preliminary_view": "If the passenger held a valid ticket and checked in properly, LATAM's denial of boarding may violate the carrier's statutory transport obligation under the Código Aeronáutico. The false claim of 'no impediments' while simultaneously enforcing a ban is directly relevant.",
+      "history_note": "No Código Aeronáutico articles are in the established set. This is the primary sectoral norm for air transport obligations in Chile."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.133",
+      "candidate_name": "Denegación de embarque y compensación al pasajero",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.133 from bcn.cl/leychile (Código Aeronáutico)",
+        "Verify whether it addresses denied boarding specifically and what compensation or documentation obligations it imposes on the carrier"
+      ],
+      "preliminary_view": "Directly relevant to the denied-boarding scenario. The carrier's refusal to provide written documentation explaining the denial (as demanded by the passenger in STG-22.seg-1) may violate specific duties under this article.",
+      "history_note": "Not in established_articles. Must verify exact article number — Chilean Código Aeronáutico articles on denied boarding may be Art. 133 or nearby provisions."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.145",
+      "candidate_name": "Responsabilidad del transportador por incumplimiento del contrato de transporte aéreo",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.145 from bcn.cl/leychile (Código Aeronáutico)",
+        "Confirm whether it establishes carrier liability for failure to perform the transport contract and the scope of damages recoverable"
+      ],
+      "preliminary_view": "Establishes the carrier's liability framework for breach of the air transport contract. Relevant to quantifying damages from the denied boarding and the deceptive conduct surrounding it.",
+      "history_note": "Not in established_articles. Exact article number requires verification against current consolidated text of Ley 18.916."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1546",
+      "candidate_name": "Buena fe en la ejecución de los contratos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.1546 from bcn.cl/leychile (Código Civil)",
+        "Confirm that it mandates good faith performance of contracts and extends to obligations not expressly stated but arising from the nature of the obligation"
+      ],
+      "preliminary_view": "LATAM's systematic gaslighting — telling the passenger there are 'no impediments' while enforcing a ban, refusing documentation, and imposing coercive terms — constitutes bad faith contract performance. Art. 1546 CC provides the general civil law foundation for the good faith duty that LATAM breached.",
+      "history_note": "Not in established_articles. Foundational civil law norm frequently invoked alongside consumer protection provisions."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1556",
+      "candidate_name": "Indemnización de perjuicios — daño emergente y lucro cesante",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.1556 from bcn.cl/leychile (Código Civil)",
+        "Confirm that it establishes the scope of compensable damages (daño emergente and lucro cesante) for contractual breach"
+      ],
+      "preliminary_view": "Provides the civil law basis for claiming both actual damages (ticket cost, alternative transport, accommodation) and lost profits resulting from LATAM's breach. Complements the consumer protection remedies.",
+      "history_note": "Not in established_articles. Standard damages provision for contractual liability claims."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Responsabilidad extracontractual — el que ha cometido un delito o cuasidelito",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2314 from bcn.cl/leychile (Código Civil)",
+        "Confirm that it establishes the general obligation to indemnify for damages caused by fault or negligence (delito or cuasidelito civil)"
+      ],
+      "preliminary_view": "The systematic gaslighting, humiliation, and deception may constitute a civil wrong (cuasidelito civil) independent of the contractual relationship. Art. 2314 provides an alternative or cumulative basis for claiming moral damages (daño moral) arising from the degrading treatment.",
+      "history_note": "Not in established_articles. Relevant to the emotional harm described in STG-7.seg-12 ('fui humillado')."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.3",
+      "candidate_name": "Igual protección de la ley en el ejercicio de los derechos — debido proceso",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19 numeral 3 from bcn.cl/leychile (Constitución Política de la República)",
+        "Confirm that it guarantees due process and the right to a fair procedure, and assess whether it applies horizontally to private actors imposing sanctions (such as a flight ban)"
+      ],
+      "preliminary_view": "LATAM imposed a 1-year ban and then denied boarding without providing documentation or a fair process for the passenger to challenge the measure. While constitutional due process primarily binds the state, Chilean doctrine has recognized horizontal application (eficacia horizontal) in cases where private entities exercise quasi-regulatory power over individuals. Applicability requires verification of current jurisprudential scope.",
+      "history_note": "Not in established_articles. Horizontal application to private carriers is contested but has been recognized in some Chilean court decisions."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.4",
+      "candidate_name": "Respeto y protección a la vida privada y a la honra de la persona y su familia",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19 numeral 4 from bcn.cl/leychile (Constitución Política de la República)",
+        "Assess whether the public humiliation at the airport constitutes an infringement of the passenger's honor under this constitutional guarantee"
+      ],
+      "preliminary_view": "The passenger was publicly humiliated at the airport (STG-7.seg-12: 'fui humillado'; LATAM-4.seg-1: 'me están dejando como un idiota'). This constitutional guarantee protects personal honor and could support a recurso de protección or amplify moral damages claims.",
+      "history_note": "Not in established_articles. Constitutional dimension of the dignity/honor harm."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.3.d",
+      "candidate_name": "Derecho a la seguridad en el consumo — integridad personal",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.3 letra d) from bcn.cl/leychile (Ley 19.496)",
+        "Confirm whether it covers psychological safety/integrity or is limited to physical safety of goods and services"
+      ],
+      "preliminary_view": "If Art. 3(d) encompasses psychological integrity and not merely physical safety, the systematic gaslighting and coercive treatment could constitute a violation. Scope requires verification.",
+      "history_note": "Not in established_articles. Art. 3(b) is established but letter (d) addresses a distinct right."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.43",
+      "candidate_name": "Indemnización del daño moral en materia de consumo",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.43 from bcn.cl/leychile (Ley 19.496)",
+        "Confirm whether this article (or the correct article number) explicitly authorizes courts to award moral damages in consumer cases"
+      ],
+      "preliminary_view": "The passenger suffered documented humiliation and emotional distress. If the LPC explicitly provides for moral damages, this strengthens the remedial framework. Exact article number requires verification as the LPC has been amended multiple times.",
+      "history_note": "Not in established_articles. Article number is approximate and must be verified against current consolidated text."
+    },
+    {
+      "candidate_article_id": "CL.DS113.Art.9",
+      "candidate_name": "Derechos del pasajero en caso de cancelación o denegación de embarque (Reglamento DS 113)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for DS 113 (Reglamento de la Junta de Aeronáutica Civil) Art. 9 or equivalent provision on denied boarding from bcn.cl/leychile",
+        "Verify the exact article number addressing passenger rights upon denied boarding, including documentation and compensation obligations"
+      ],
+      "preliminary_view": "The JAC's regulatory framework (DS 113 or successor regulation) likely contains specific provisions on carrier obligations when denying boarding, including the duty to provide written justification — precisely what the passenger demanded and was refused. Exact article number requires verification.",
+      "history_note": "Not in established_articles. DS 113 is the implementing regulation for air passenger rights in Chile; exact article numbering must be confirmed."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.207",
+      "candidate_name": "Falsedad ideológica en documento privado",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CP.Art.207 from bcn.cl/leychile (Código Penal)",
+        "Confirm whether it applies to false statements in private documents and whether LATAM's internal ban documentation or the 'no impediments' representation could fall within its scope"
+      ],
+      "preliminary_view": "AGENT-FIT CONCERN: Art. 193 (already established) addresses falsification by public officials. Art. 207 or Art. 197 CP may be the correct provision for falsification in private documents by private actors. The false claim of 'no impediments' while a ban existed could constitute ideological falsity in a private instrument. Exact article number requires verification.",
+      "history_note": "Not in established_articles. Included to address the gap left by Art. 193 CP which targets public officials — LATAM is a private entity. The correct private-document falsification article must be confirmed."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.197",
+      "candidate_name": "Falsificación de instrumento privado",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CP.Art.197 from bcn.cl/leychile (Código Penal)",
+        "Confirm that it criminalizes falsification of private documents committed with intent to cause harm, and assess whether LATAM's contradictory representations (ban exists / no impediments) could constitute falsification"
+      ],
+      "preliminary_view": "More directly applicable than Art. 193 CP (which targets public officials) to a private airline's false documentation or representations. If LATAM produced or maintained documents falsely stating no impediments while an internal ban was active, this could constitute falsification of a private instrument with intent to cause harm.",
+      "history_note": "Not in established_articles. Addresses the agent-fit problem with Art. 193 CP (established article targets 'empleado público' but LATAM is a private entity)."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.473",
+      "candidate_name": "Estafa residual — engaño que causa perjuicio patrimonial",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CP.Art.473 from bcn.cl/leychile (Código Penal)",
+        "Confirm that it covers residual fraud (estafa) where deception causes patrimonial harm and no other specific fraud provision applies"
+      ],
+      "preliminary_view": "LATAM's false representation that there were 'no impediments' — inducing the passenger to travel to the airport, incur costs, and present for boarding — only to deny boarding based on a pre-existing ban, could constitute the deceptive conduct element of estafa. The passenger suffered patrimonial harm (lost ticket, travel costs, alternative arrangements).",
+      "history_note": "Not in established_articles. Residual fraud provision applicable when the specific estafa articles (Arts. 468-472) do not precisely fit."
+    },
+    {
+      "candidate_article_id": "CL.LPDP.Art.2.f",
+      "candidate_name": "Definición de dato personal y tratamiento — Ley 19.628",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDP.Art.2 letra f) or equivalent definitional article from bcn.cl/leychile (Ley 19.628)",
+        "Confirm whether an internal airline ban list constitutes 'tratamiento de datos personales' under the law"
+      ],
+      "preliminary_view": "LATAM's maintenance of an internal ban list containing the passenger's personal data (name, flight history, ban status) constitutes processing of personal data. If this processing was done without proper legal basis, consent, or transparency, it may violate data protection obligations. Preliminary — requires verification of whether ban lists fall within the law's scope.",
+      "history_note": "Not in established_articles. Data protection angle not yet explored in the violation analysis."
+    },
+    {
+      "candidate_article_id": "CL.LPDP.Art.12",
+      "candidate_name": "Derecho de acceso a datos personales — Ley 19.628",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDP.Art.12 from bcn.cl/leychile (Ley 19.628)",
+        "Confirm that it grants data subjects the right to access their personal data held by the responsible party and that the airline's refusal to provide documentation could constitute a violation"
+      ],
+      "preliminary_view": "The passenger repeatedly demanded documentation about why he was denied boarding (STG-22.seg-1). If the ban constitutes personal data processing, LATAM's refusal to provide the documentation may violate the passenger's right of access under data protection law.",
+      "history_note": "Not in established_articles. Complements the consumer protection claims with a data protection dimension."
+    }
+  ],
+  "cross_references": [],
+  "open_questions": [],
+  "related_violations": [
+    "CL-001",
+    "CL-002",
+    "CL-003",
+    "CL-004",
+    "CL-005",
+    "CL-006",
+    "CL-007",
+    "CL-008",
+    "CL-009",
+    "CL-010",
+    "CL-011",
+    "CL-012",
+    "CL-013",
+    "CL-014",
+    "CL-019",
+    "CL-020",
+    "CL-021",
+    "CL-022",
+    "CL-023",
+    "CL-024",
+    "INT-001",
+    "INT-002",
+    "INT-003",
+    "BR-001",
+    "BR-002",
+    "BR-003"
+  ],
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "_provenance": {
+    "source": "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN/CL-025.json",
+    "vault_operations": 6,
+    "converted_by": "examples/vault_to_bundle.py"
+  }
+}

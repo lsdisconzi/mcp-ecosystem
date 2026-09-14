@@ -1,0 +1,227 @@
+{
+  "schema_version": "4.0",
+  "violation_id": "CL-036",
+  "violation_number": "CL-036",
+  "title": "Knowing False Imputation in the Fabricated Document — Calumnia After PDI Exoneration (Dolo Directo)",
+  "case": {
+    "id": "I-002",
+    "name": "I-002-Chile-Santiago"
+  },
+  "jurisdiction": "CL",
+  "framework": {
+    "codes": [
+      "CHIPENCOD"
+    ],
+    "files": {
+      "CHIPENCOD": "CL/CHIPENCOD_CP.md"
+    }
+  },
+  "category": "Calumnia — Knowing False Imputation",
+  "severity": "CRITICAL",
+  "confidence": {
+    "value": 0.61,
+    "components": {
+      "CL.CHIPENCOD.T4.C6.Art.211": 0.717
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T14:43:43.095538Z",
+    "history": [
+      "2026-05-12T14:28:30.448301+00:00: value=0.0",
+      "2026-05-12T14:29:48.744503+00:00: value=0.0",
+      "2026-05-12T14:30:11.451804+00:00: value=0.0",
+      "2026-05-12T14:34:17.262344+00:00: value=0.61",
+      "2026-05-12T14:37:24.446160+00:00: value=0.61",
+      "2026-05-12T14:39:59.080770+00:00: value=0.61",
+      "2026-05-12T14:40:46.355701+00:00: value=0.61",
+      "2026-05-12T14:41:53.429050+00:00: value=0.61"
+    ],
+    "validated": false,
+    "note": ""
+  },
+  "incident": {
+    "date": "July 5, 2024 (Santiago, Chile)",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T13:30:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "incident_timestamp": "2024-07-05T13:30:00-04:00",
+  "incident_timestamp_display": "July 5, 2024 (Santiago, Chile)",
+  "allegation_summary": "By 21:51 the passenger expressly informed [[SPK-diego-latam-supervisor]] (STG-29 SEG 44–47) that PDI CCTV review had already disproven the two underlying accusations (aggression / unauthorized boarding). [[SPK-diego-latam-supervisor]] nevertheless proceeded with drafting the document (SEG 51), constructed a leading-question narrative implying 'aggression' (SEG 102–104), and the document delivered by [[SPK-antonela-latam-agent]] at 22:59 (json_latam_STG_2 SEG 4–5) repeats those same disproven imputations verbatim: 'agresiona al personal de la latam', 'ingresa la aeronave sin autorizacion', 'no respeta la instruccion'. When confronted in json_latam_STG_2 SEG 6, [[SPK-antonela-latam-agent]] states 'no podemos cambiar la informacion que tenemos'. The mens-rea elements of calumnia (knowledge of falsity, malice) are met by both [[SPK-diego-latam-supervisor]]'s and [[SPK-antonela-latam-agent]]'s contemporaneous awareness of the PDI finding.",
+  "legal_basis": {
+    "frameworks": [
+      {
+        "framework_code": "CHIPENCOD",
+        "framework_name": "CHIPENCOD",
+        "framework_file": "CL/CHIPENCOD_CP.md",
+        "articles": [
+          {
+            "article_id": "CL.CHIPENCOD.T4.C6.Art.211",
+            "article_name": "Codigo Penal de Chile, Art. 211 — Calumnia",
+            "article_text": "El que imputare falsamente a alguna persona haber cometido un crimen o simple delito, siendo sabedor de la falsedad de la imputación, o el que la hiciere de malicia, incurrirá en las penas de reclusión menor en sus grados mínimo a medio y multa de once a quince unidades tributarias mensuales.",
+            "applicability_rationale": "After being informed that PDI CCTV review had disproven the underlying accusations (STG-29 SEG 44–47), Diego nonetheless produced — and Antonela delivered — a document repeating the imputation of 'agresion'. Both elements of Art. 211 are met: (i) imputation of a crime, (ii) knowledge of falsity / malice. | legacy paraphrase: El que imputare falsamente a alguna persona haber cometido un crimen o simple delito, siendo sabedor de la falsedad de la imputacion, o el que la hiciere de malicia, incurrira en las penas de reclusion menor en sus grados minimo a medio y multa de once a quince unidades tributarias mensuales.",
+            "duty_bearer": "state",
+            "norm_type": "definition",
+            "applicability": "supporting",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CC.Art.2331",
+      "candidate_name": "Código Civil de Chile, Art. 2331 — Indemnización por injurias o calumnias",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2331 from bcn.cl/leychile",
+        "Confirm whether Article 2331 applies automatically to moral damages in calumny cases without requiring proof of bad faith",
+        "Cross-reference with established calumny Article 211 to confirm civil reparability"
+      ],
+      "preliminary_view": "Directly supports a civil claim for moral damages arising from calumnious imputations, without the victim needing to prove the defendant's bad faith. The false document delivered by LATAM employees (Antonela) repeating a known false accusation of aggression fits the scenario of 'imputaciones injuriosas o calumniosas'.",
+      "history_note": "Proposed as the primary civil remedy for the established criminal act of calumny. Article 2331 is a well‑known provision in Chilean civil law for damages arising from injuries to honor."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Código Civil de Chile, Art. 2314 — Responsabilidad extracontractual general",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2314 from bcn.cl/leychile",
+        "Verify whether a corporation like LATAM can be civilly liable for the actions of its employees under Article 2314",
+        "Compare with Article 2331 to determine whether 2314 is superseded or complementary"
+      ],
+      "preliminary_view": "Establishes a general obligation to indemnify for damages caused by a delict or quasi‑delict. If the specific article 2331 is for some reason inapplicable, Article 2314 provides a residual ground for claiming moral and material damages from the false imputation.",
+      "history_note": "Proposed as a fall‑back civil liability norm in case the special rule of Article 2331 is not available in the particular circumstances."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2329",
+      "candidate_name": "Código Civil de Chile, Art. 2329 — Responsabilidad por hecho propio",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2329 from bcn.cl/leychile",
+        "Confirm whether the article covers damages caused with malice (dolo), and whether it can be applied to a legal person"
+      ],
+      "preliminary_view": "States that every damage that can be attributed to malice or negligence of another person must be repaired. The intentional delivery of a document containing a known false accusation could constitute 'malicia', engaging Article 2329 directly.",
+      "history_note": "Proposed alongside Article 2314 as an alternative general civil provision that explicitly mentions malice (dolo), which is an element of the criminal calumny. Useful if the direct application of Article 2314 is disputed."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.Art.416",
+      "candidate_name": "Código Penal de Chile, Art. 416 — Injurias",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.416 from bcn.cl/leychile",
+        "Verify whether an imputation of a crime (aggression) that is known to be false can also be prosecuted as 'injurias' under Article 416",
+        "Determine whether the existence of a specific calumny article (211) precludes a parallel injuria charge"
+      ],
+      "preliminary_view": "Article 416 defines injury as any expression or action done in dishonor, discredit, or contempt of another person. Even if the aggression imputation is legally a calumny, it also inherently harms the victim's honor. An injury charge could serve as a subsidiary or alternative criminal route.",
+      "history_note": "Proposed because Chilean criminal law often allows cumulative or alternative charges for calumny and injury. The present facts clearly show a deliberate attack on the passenger's reputation, which is the core of Article 416."
+    }
+  ],
+  "cross_references": [
+    {
+      "ref": "CL-019",
+      "relation": "supervisor_dismissed_recording_to_prevent_evidence_of_fabrication"
+    },
+    {
+      "ref": "CL-020",
+      "relation": "fabricated_document_constitutes_evolving_justification_for_removal"
+    },
+    {
+      "ref": "CL-021",
+      "relation": "fabricated_document_prepared_in_retaliation_for_passenger_questioning_pilot"
+    },
+    {
+      "ref": "CL-022",
+      "relation": "dgac_abdication_allowed_reliance_on_fabricated_document"
+    },
+    {
+      "ref": "CL-023",
+      "relation": "fabricated_document_maintains_false_narrative_despite_pdi_exoneration"
+    },
+    {
+      "ref": "CL-024",
+      "relation": "pdi_official_report_exoneration_disproves_fabricated_document"
+    },
+    {
+      "ref": "CL-025",
+      "relation": "fabricated_document_used_in_gaslighting_to_deny_passenger_impediments"
+    },
+    {
+      "ref": "CL-028",
+      "relation": "supervisor_verbal_abuse_included_delivering_fabricated_document"
+    },
+    {
+      "ref": "CL-029",
+      "relation": "dgac_mishandling_included_ignoring_fabricated_document"
+    },
+    {
+      "ref": "CL-030",
+      "relation": "public_officials_likely_relied_on_fabricated_document_to_obstruct_justice"
+    },
+    {
+      "ref": "CL-031",
+      "relation": "compliance_officer_non_response_ignored_fabricated_document_evidence"
+    },
+    {
+      "ref": "CL-032",
+      "relation": "dgac_defensoria_non_response_prevented_scrutiny_of_fabricated_document"
+    },
+    {
+      "ref": "CL-033",
+      "relation": "fabricated_document_produced_from_conspiracy_to_solicit_adjustable_template"
+    },
+    {
+      "ref": "CL-034",
+      "relation": "fabricated_document_routed_through_off_book_sales_channel"
+    },
+    {
+      "ref": "CL-035",
+      "relation": "diego_admission_confirms_no_author_of_fabricated_document_was_witness"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-036-AGRESION",
+      "question": "¿La 'agresión' califica como crimen o simple delito en la legislación chilena?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.elem.contenido_delito",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-036-ACTA-PDI",
+      "question": "¿Existe un acta o resolución de la PDI que desestime la agresión?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.elem.falsedad_imputacion",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-036-CONOC-ANT",
+      "question": "¿Tenía Antonela conocimiento personal de la falsedad, o solo cumplía órdenes?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.elem.dolo",
+      "priority": "critical"
+    }
+  ],
+  "related_violations": [
+    "CL-001",
+    "CL-005",
+    "CL-013",
+    "CL-016",
+    "CL-017",
+    "CL-023",
+    "CL-035"
+  ],
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "_provenance": {
+    "source": "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN/CL-036.json",
+    "vault_operations": 7,
+    "converted_by": "examples/vault_to_bundle.py"
+  }
+}

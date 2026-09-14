@@ -1,0 +1,540 @@
+{
+  "schema_version": "4.0",
+  "violation_id": "CL-010",
+  "violation_number": "CL-010",
+  "title": "Rights Violation — Systematic Denial of Fundamental Passenger Rights",
+  "case": {
+    "id": "I-002",
+    "name": "I-002-Chile-Santiago"
+  },
+  "jurisdiction": "CL",
+  "framework": {
+    "codes": [
+      "CONST",
+      "L20285",
+      "LPDC"
+    ],
+    "files": {
+      "CONST": "CL/Constitucion.md",
+      "L20285": "CL/L20285_Transparencia.md",
+      "LPDC": "CL/L19496_LPDC.md"
+    }
+  },
+  "category": "Systematic Rights Denial",
+  "severity": "CRITICAL",
+  "confidence": {
+    "value": 0.7,
+    "components": {
+      "CL.CONST.T1.C1.Art.1": 0.7,
+      "CL.CONST.T1.C3.P1.Art.19.1": 0.788,
+      "CL.L20285.T1.Art.3": 0.814,
+      "CL.LPDC.Art.3.b": 0.914,
+      "CL.LPDC.Art.23": 0.875
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T06:56:33.387305Z",
+    "history": [
+      "2026-05-12T06:47:48.126076+00:00: value=0.0",
+      "2026-05-12T06:47:58.344741+00:00: value=0.0",
+      "2026-05-12T06:48:05.292293+00:00: value=0.0",
+      "2026-05-12T06:51:46.181380+00:00: value=0.7",
+      "2026-05-12T06:53:00.489580+00:00: value=0.7",
+      "2026-05-12T06:53:49.500005+00:00: value=0.7",
+      "2026-05-12T06:54:56.757145+00:00: value=0.7",
+      "2026-05-12T06:56:26.569146+00:00: value=0.7"
+    ],
+    "validated": true,
+    "note": "Validated by V10 pipeline check. Lowered from legacy contract value (0.96) to formula-derived value (0.65)."
+  },
+  "incident": {
+    "date": "2024-07-05",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T13:30:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "incident_timestamp": "2024-07-05T13:30:00-04:00",
+  "incident_timestamp_display": "2024-07-05 — Voo LA8159 — Aeroporto SCL",
+  "allegation_summary": "The LA8159 incident involved systematic denial of the passenger's fundamental rights across multiple dimensions: (1) violation of inherent dignity and equality (CONST Art. 1), (2) violation of physical and mental integrity (CONST Art. 19 N°1), (3) denial of access to public information about the removal decision (Ley 20.285 Art. 3), (4) denial of truthful consumer information (LPDC Art. 3.b), and (5) negligent service provision causing consumer harm (LPDC Art. 23). These violations were not isolated — they reflect an institutional pattern of rights negation.",
+  "legal_basis": {
+    "frameworks": [
+      {
+        "framework_code": "CONST",
+        "framework_name": "CONST",
+        "framework_file": "CL/Constitucion.md",
+        "articles": [
+          {
+            "article_id": "CL.CONST.T1.C1.Art.1",
+            "article_name": "Constitución, Art. 1 — Dignidad, libertad e igualdad",
+            "article_text": "The State is at the service of the human person and its goal is to promote the common good, for which it must contribute to create the social conditions which may allow each and every one of the members of the national community to achieve their greatest possible spiritual and material fulfillment, with full respect for the rights and guaranties established by this Constitutions. It is the duty of the State to safeguard national security, to provide protection to the population and the family, tending the strengthening of the latter, to promote the harmonized integration of all the sectors of the Nation and to ensure everyone the right to participate in the national life with equal opportunities.",
+            "applicability_rationale": "legacy paraphrase: Persons are born free and equal, in dignity and rights. The State is at the service of the human person and its goal is to promote the common good, with full respect for the rights and guaranties established by this Constitution.",
+            "duty_bearer": "state",
+            "norm_type": "right",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          },
+          {
+            "article_id": "CL.CONST.T1.C3.P1.Art.19.1",
+            "article_name": "Constitución, Art. 19 N°1 — Vida e integridad física y psíquica",
+            "article_text": "The right to life and to the physical and mental integrity of the person.",
+            "applicability_rationale": "legacy paraphrase: The right to life and to the physical and mental integrity of the person. The application of any illegitimate constrain is forbidden.",
+            "duty_bearer": "state",
+            "norm_type": "right",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      },
+      {
+        "framework_code": "L20285",
+        "framework_name": "L20285",
+        "framework_file": "CL/L20285_Transparencia.md",
+        "articles": [
+          {
+            "article_id": "CL.L20285.T1.Art.3",
+            "article_name": "Ley 20.285, Art. 3 — Transparencia y acceso a información pública",
+            "article_text": "Artículo 3° - Principio de Transparencia. La función pública se ejerce con transparencia, de modo que permita y promueva el conocimiento de los procedimientos, contenidos y decisiones que se adopten en ejercicio de ella.",
+            "applicability_rationale": "legacy paraphrase: Toda persona tiene derecho a solicitar y a recibir informacion de cualquier organo de la Administracion del Estado, en la forma y condiciones que establece esta ley.",
+            "duty_bearer": "state",
+            "norm_type": "right",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      },
+      {
+        "framework_code": "LPDC",
+        "framework_name": "LPDC",
+        "framework_file": "CL/L19496_LPDC.md",
+        "articles": [
+          {
+            "article_id": "CL.LPDC.Art.3.b",
+            "article_name": "Ley 19.496, Art. 3(b) — Derecho a información veraz y oportuna",
+            "article_text": "b) El derecho a una información veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratación y otras características relevantes de los mismos, y el deber de informarse responsablemente de ellos.",
+            "applicability_rationale": "legacy paraphrase: Son derechos y deberes basicos del consumidor: b) El derecho a una informacion veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratacion y otras caracteristicas relevantes de los mismos.",
+            "duty_bearer": "air_operator",
+            "norm_type": "right",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          },
+          {
+            "article_id": "CL.LPDC.Art.23",
+            "article_name": "Ley 19.496, Art. 23 — Infracciones del proveedor",
+            "article_text": "Artículo 23.- Comete infracción a las disposiciones de la presente ley el proveedor que, en la venta de un bien o en la prestación de un servicio, **actuando con negligencia**, causa menoscabo al consumidor debido a fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio.",
+            "applicability_rationale": "legacy paraphrase: El proveedor de un servicio sera responsable de los danos y perjuicios que cause al consumidor por la prestacion de un servicio defectuoso, incluyendo la falta de veracidad en la informacion proporcionada y el incumplimiento de las condiciones de contratacion.",
+            "duty_bearer": "air_operator",
+            "norm_type": "liability",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CONST.T1.C3.P3.Art.19.3",
+      "candidate_name": "CL.CONST.T1.C3.P3.Art.19.3",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CONST.T1.C3.P3.Art.19.3 and confirm excerpt"
+      ],
+      "preliminary_view": "Equal protection under the law in the exercise of their rights. All person has the right to legal defense in the manner indicated by the law and no authority or individual may prevent, restrict or distort the due intervention of the legal c",
+      "history_note": "legacy paraphrase: Equal protection under the law in the exercise of their rights. All person has the right to legal defense. No authority or individual may prevent, restrict or distort the due intervention of the legal counsel. Any ruling of a body that exercises jurisdiction must be based on a previous legally held process. The legislator must always establish the guarantees of a rational and just procedure and investigation."
+    },
+    {
+      "candidate_article_id": "CL.CONST.T1.C3.P7.Art.19.7",
+      "candidate_name": "CL.CONST.T1.C3.P7.Art.19.7",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CONST.T1.C3.P7.Art.19.7 and confirm excerpt"
+      ],
+      "preliminary_view": "The right to personal freedom and to individual security. Therefore, a. Everyone has the right to reside and remain in any place of the Republic, move from one place to another and enter and leave its territory, provided that the norms esta",
+      "history_note": "legacy paraphrase: The right to personal freedom and to individual security. No one may be deprived of his personal freedom nor may such be restricted except in the cases and the manner established by the Constitution and the laws."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.133",
+      "candidate_name": "Código Aeronáutico Art. 133 - Obligaciones del transportador respecto del pasajero",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for DFL 221 (Código Aeronáutico) Art. 133 from bcn.cl/leychile",
+        "Confirm whether it establishes the carrier's obligation to inform the passenger of the reasons for denial of boarding or removal from aircraft"
+      ],
+      "preliminary_view": "The Código Aeronáutico regulates the obligations of the air carrier toward passengers. Art. 133 and surrounding provisions may establish duties regarding information and justification when a passenger is denied transport or removed from an aircraft. Directly applicable to LATAM as air operator.",
+      "history_note": "Not previously cited. The Código Aeronáutico (DFL 221 of 1931, replaced by Ley 18.916 of 1990) is the primary Chilean framework governing air transport obligations. Needs verification of exact article number and content."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.131",
+      "candidate_name": "Código Aeronáutico Art. 131 - Contrato de transporte aéreo",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Ley 18.916 (Código Aeronáutico) Art. 131 from bcn.cl/leychile",
+        "Confirm whether it defines the carrier's contractual obligations including completion of transport"
+      ],
+      "preliminary_view": "Art. 131 defines the air transport contract and the carrier's obligation to transport the passenger to the agreed destination. Unilateral removal without written justification may constitute breach of this contractual obligation. Directly applicable to LATAM.",
+      "history_note": "Not previously cited. Requires verification of exact text and numbering in current consolidated version of Código Aeronáutico."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.145",
+      "candidate_name": "Código Aeronáutico Art. 145 - Responsabilidad del transportador por incumplimiento",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Código Aeronáutico Art. 145 from bcn.cl/leychile",
+        "Verify whether it establishes carrier liability for failure to perform the transport contract and applicable indemnification"
+      ],
+      "preliminary_view": "Establishes the carrier's liability regime when it fails to perform the transport contract. Removal of a boarded passenger without proper justification could trigger this liability provision. Applicable to LATAM as carrier.",
+      "history_note": "Not previously cited. Exact article number needs verification against current consolidated text of Ley 18.916."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.12",
+      "candidate_name": "Ley 19.496 Art. 12 - Incumplimiento de condiciones ofrecidas o convenidas",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Ley 19.496 Art. 12 from bcn.cl/leychile",
+        "Confirm whether it addresses the provider's obligation to comply with the terms and conditions offered or agreed upon in the contract"
+      ],
+      "preliminary_view": "Art. 12 of the LPC establishes that every provider must respect the terms and conditions offered or agreed upon with the consumer. LATAM's unilateral removal of a boarded passenger without written justification may constitute a violation of contracted service conditions.",
+      "history_note": "Not previously cited. Complements the already-established Art. 3(b) and Art. 23 of the same law."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.3.e",
+      "candidate_name": "Ley 19.496 Art. 3 letra e) - Derecho a la reparación e indemnización",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Ley 19.496 Art. 3 letra e) from bcn.cl/leychile",
+        "Confirm whether it establishes the consumer's right to adequate and timely reparation for damages suffered"
+      ],
+      "preliminary_view": "Art. 3(e) establishes the consumer's right to adequate and timely reparation for all damages suffered as a consequence of acts that violate the consumer protection norms. Applicable given the systematic denial of passenger rights documented in the incident.",
+      "history_note": "Not previously cited. Art. 3(b) is already established; letter (e) addresses the reparation right specifically."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1545",
+      "candidate_name": "Código Civil Art. 1545 - Fuerza obligatoria del contrato",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Código Civil Art. 1545 from bcn.cl/leychile",
+        "Confirm pacta sunt servanda principle and its application to unilateral termination of transport contract"
+      ],
+      "preliminary_view": "Art. 1545 CC establishes that a legally executed contract is law for the contracting parties and cannot be invalidated except by mutual consent or legal causes. LATAM's unilateral removal of a passenger with a valid ticket/boarding pass may violate this principle.",
+      "history_note": "Not previously cited. General civil law principle supporting the specific aviation and consumer law claims."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1546",
+      "candidate_name": "Código Civil Art. 1546 - Buena fe contractual",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Código Civil Art. 1546 from bcn.cl/leychile",
+        "Confirm obligation of good faith in contract performance and whether refusal to provide written justification constitutes bad faith"
+      ],
+      "preliminary_view": "Art. 1546 CC requires contracts to be performed in good faith, obligating not only what is expressly stipulated but also what emanates from the nature of the obligation or by law or custom. The systematic refusal to provide written reasons for deplaning may constitute bad faith performance.",
+      "history_note": "Not previously cited. Supports the argument that LATAM's conduct violated good faith obligations inherent in the transport contract."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Código Civil Art. 2314 - Responsabilidad extracontractual",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Código Civil Art. 2314 from bcn.cl/leychile",
+        "Confirm general tort liability rule and its applicability to damages caused by airline's conduct beyond contractual scope"
+      ],
+      "preliminary_view": "Art. 2314 CC establishes that whoever commits a wrongful act (delito o cuasidelito) that causes damage to another is obligated to indemnify. May apply to damages (moral, material) caused by the manner of removal and systematic denial of information, beyond mere contractual breach.",
+      "history_note": "Not previously cited. Provides alternative basis for damages claim if contractual route is insufficient."
+    },
+    {
+      "candidate_article_id": "CL.CONST.Art.19.24",
+      "candidate_name": "Constitución Art. 19 N°24 - Derecho de propiedad (sobre derechos incorporales)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CPR Art. 19 N°24 from bcn.cl/leychile",
+        "Verify applicability of property right over incorporeal rights (the contractual right to transport) per Chilean constitutional jurisprudence"
+      ],
+      "preliminary_view": "Chilean constitutional doctrine recognizes property over incorporeal rights, including contractual rights. The passenger's right to transport under a valid ticket constitutes a property right protected by Art. 19 N°24. Deprivation without due process may constitute a constitutional violation. However, this is a horizontal-effect argument requiring careful doctrinal support.",
+      "history_note": "Not previously cited. Chilean courts have applied this provision to protect contractual rights via recurso de protección."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.16.g",
+      "candidate_name": "Ley 19.496 Art. 16 letra g) - Cláusulas abusivas",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Ley 19.496 Art. 16 from bcn.cl/leychile",
+        "Confirm whether letra g) or another subsection addresses clauses that allow unilateral termination without adequate justification as abusive"
+      ],
+      "preliminary_view": "Art. 16 of the LPC declares abusive those contractual clauses that grant the provider the unilateral right to terminate the contract without equivalent faculty for the consumer, or that contravene good faith requirements. If LATAM relied on conditions of carriage permitting removal without written justification, such clauses may be deemed abusive.",
+      "history_note": "Not previously cited. Requires verification of exact letter applicable to unilateral termination clauses."
+    },
+    {
+      "candidate_article_id": "CL.CONST.Art.19.2",
+      "candidate_name": "Constitución Art. 19 N°2 - Igualdad ante la ley",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CPR Art. 19 N°2 from bcn.cl/leychile",
+        "Assess whether discriminatory treatment in denial of rights (compared to other passengers) engages this provision"
+      ],
+      "preliminary_view": "Art. 19 N°2 guarantees equality before the law and prohibits arbitrary discrimination. If the passenger was singled out for removal and denial of information without objective justification while other passengers were not similarly treated, this provision may be engaged. Requires factual evidence of differential treatment.",
+      "history_note": "Not previously cited. Complements the already-established Art. 19 N°1 and proposed Art. 19 N°3 and N°7."
+    }
+  ],
+  "cross_references": [
+    {
+      "ref": "CL-008",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-002",
+      "relation": "forcible_removal_executed_without_rights_disclosure"
+    },
+    {
+      "ref": "CL-003",
+      "relation": "institutional_collusion_enabled_systematic_rights_denial"
+    },
+    {
+      "ref": "CL-004",
+      "relation": "concealment_of_exoneration_perpetuated_rights_denial"
+    },
+    {
+      "ref": "CL-005",
+      "relation": "cctv_exoneration_should_have_restored_denied_rights"
+    },
+    {
+      "ref": "CL-006",
+      "relation": "boarding_denial_continued_pattern_of_rights_violation"
+    },
+    {
+      "ref": "CL-007",
+      "relation": "failure_to_rectify_perpetuated_rights_denial"
+    },
+    {
+      "ref": "CL-009",
+      "relation": "icao_standards_require_passenger_rights_protections_violated_here"
+    },
+    {
+      "ref": "CL-016",
+      "relation": "invalid_document_used_as_pretext_denying_written_justification"
+    },
+    {
+      "ref": "CL-010__opus46",
+      "relation": "duplicate_or_variant_analysis_of_same_violation"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-CL010-LATAM-CONCESION",
+      "question": "",
+      "blocks_element": "",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL010-CAUSAL-DESEMBARCO",
+      "question": "",
+      "blocks_element": "",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL010-IDENTIDAD-AGENTES",
+      "question": "",
+      "blocks_element": "",
+      "priority": "high"
+    },
+    {
+      "id": "+ 17 additional questions",
+      "question": "",
+      "blocks_element": "",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL010-DGAC-INTERVENCION",
+      "question": "¿Intervino personal de la DGAC o PDI en la ejecución del desembarque forzado del pasajero?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.4.elem.servicio_persona_humana",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL010-FISCALIZACION-DEBER",
+      "question": "¿Existía un deber de fiscalización estatal (DGAC, JAC) incumplido al momento de los hechos respecto de los protocolos de desembarque involuntario?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.4.elem.servicio_persona_humana",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL010-VIAS-ADMIN-AGOTADAS",
+      "question": "¿Se agotaron las vías administrativas ante la DGAC o el SERNAC antes de invocar la norma constitucional?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.4.elem.respeto_derechos_garantias",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL010-SEGURIDAD-ENTIDAD",
+      "question": "¿Qué entidad de seguridad fue activada (PDI, Carabineros, seguridad privada aeroportuaria, seguridad interna de LATAM) y bajo qué protocolo normativo se ejecutó la intervención?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.5.elem.proteccion_poblacion",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL010-ACTA-SEGURIDAD",
+      "question": "¿Se labró algún parte, acta o informe de la intervención de seguridad durante el desembarque del pasajero?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.5.elem.proteccion_poblacion",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL010-PATRON-DISCRIMINATORIO",
+      "question": "¿Existieron otros pasajeros en situación comparable (mismo vuelo u otros vuelos) que recibieron trato diferente, lo que permitiría acreditar un patrón discriminatorio?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.5.elem.igualdad_oportunidades",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL010-NORMATIVA-SECTORIAL",
+      "question": "¿Existe normativa sectorial vigente (resoluciones DGAC, regulaciones JAC, Código Aeronáutico) que obligara a LATAM a informar por escrito los motivos del desembarque y que no fue aplicada?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.4.elem.condiciones_sociales_realizacion",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL010-PERJUICIO-CUANTIFICACION",
+      "question": "¿Se puede cuantificar el perjuicio material sufrido por el pasajero (valor del pasaje, gastos de alojamiento, transporte alternativo, compromisos incumplidos)?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.4.elem.condiciones_sociales_realizacion",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL010-RECURSO-PROTECCION",
+      "question": "¿Se interpuso recurso de protección invocando Art. 19 N° 1, N° 2 o N° 24 CPR en conexión con Art. 1, y dentro del plazo de 30 días corridos?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.4.elem.dignidad_persona",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL010-FUERZA-FISICA",
+      "question": "¿Se ejerció fuerza física directa sobre el cuerpo del pasajero durante la remoción del avión?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.acto_lesivo_integridad_fisica",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL010-REGISTROS-MEDICOS",
+      "question": "¿Existen registros médicos, constancias de lesiones o certificados de atención posteriores al incidente que acrediten afectación a la integridad física?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.acto_lesivo_integridad_fisica",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL010-PERITAJE-PSICOLOGICO",
+      "question": "¿Se cuenta con informe pericial psicológico que acredite secuelas psíquicas derivadas del incidente?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.afectacion_integridad_psiquica",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL010-REGISTRO-INTERNO-LATAM",
+      "question": "¿Existe algún registro interno de LATAM (bitácora de vuelo, informe del comandante, reporte de incidente, sistema de gestión de pasajeros) que documente la causa de la remoción?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.arbitrariedad_ilegalidad",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL010-NORMA-SEGURIDAD-INVOCADA",
+      "question": "¿Se invocó alguna norma de seguridad aérea (Código Aeronáutico, regulaciones DGAC, normas OACI) como fundamento para la remoción del pasajero?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.arbitrariedad_ilegalidad",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL010-POLICIA-APREMIO",
+      "question": "¿Participó personal policial (PDI o Carabineros) o de la DGAC directamente en la remoción física del pasajero, lo que reforzaría el carácter de apremio estatal ilegítimo?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.apremio_ilegitimo",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL010-CONDUCTA-PREVIA-PASAJERO",
+      "question": "¿Existió algún acto previo del pasajero (conducta disruptiva, incumplimiento de instrucciones de seguridad, estado de ebriedad u otro) que pudiera interrumpir el nexo causal o justificar el desembarque?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.nexo_causal",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL010-OTROS-PASAJEROS-PATRON",
+      "question": "¿Existen otros pasajeros afectados por el mismo patrón de desembarque forzado sin información que refuercen la calificación de sistematicidad institucional?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.denegacion_sistematica_derechos",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL010-TRANSPARENCIA-CONCESIONARIO",
+      "question": "¿Se extiende la obligación de transparencia de la Ley 20.285 a concesionarios de transporte aéreo por ejercer función pública delegada, o es más apropiado invocar normativa sectorial?",
+      "blocks_element": "CL.L20285.Art.3.elem.sujeto_obligado",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL010-DOCUMENTACION-POSTERIOR",
+      "question": "¿Existe constancia de que LATAM haya entregado posteriormente documentación justificativa del desembarque por otro canal (correo electrónico, carta, respuesta a reclamo SERNAC)?",
+      "blocks_element": "CL.L20285.Art.3.elem.denegacion_u_omision",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL010-RECLAMO-JAC-DGAC",
+      "question": "¿Se presentó reclamo ante la JAC o DGAC y fue obstaculizado por la falta de documentación entregada por LATAM?",
+      "blocks_element": "CL.L20285.Art.3.elem.perjuicio_al_afectado",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL010-PROTOCOLO-INTERNO-LATAM",
+      "question": "¿Cuáles son los protocolos internos de LATAM para desembarque involuntario y qué estándar de información al pasajero establecen?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.objeto_informacion",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL010-COMUNICACION-PREVIA-VERAZ",
+      "question": "¿Existió alguna comunicación previa documentada (antes del desembarque o inmediatamente después) que contuviera información veraz sobre la causal de remoción?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.veracidad",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL010-LEGITIMACION-PASAJE",
+      "question": "¿El pasaje fue adquirido directamente por el consumidor o por un tercero (empresa, agencia), lo que podría afectar la legitimación activa bajo LPDC?",
+      "blocks_element": "CL.LPDC.Art.23.1.elem.sujeto_pasivo_consumidor",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL010-CAUSA-OBJETIVA-SEGURIDAD",
+      "question": "¿Existió alguna causa objetiva de seguridad operacional (alerta de seguridad, instrucción del comandante, incidente técnico) que pudiera excluir la negligencia del proveedor?",
+      "blocks_element": "CL.LPDC.Art.23.1.elem.conducta_negligente",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL010-DESTINO-REUBICACION",
+      "question": "¿El pasajero fue reubicado en un vuelo posterior, recibió reembolso, o perdió completamente el servicio contratado? ¿Qué gastos adicionales documentables se generaron?",
+      "blocks_element": "CL.LPDC.Art.23.1.elem.menoscabo_al_consumidor",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL010-BITACORA-COMANDANTE",
+      "question": "¿Existe registro en la bitácora de vuelo o informe del comandante que documente la decisión de desembarque y su fundamento?",
+      "blocks_element": "CL.LPDC.Art.23.1.elem.falla_o_deficiencia_calidad_servicio",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL010-ORDEN-ORIGINAL",
+      "question": "¿Quién dio la orden original de remoción del pasajero del vuelo (comandante, jefe de cabina, personal de tierra, sistema automatizado)?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.sujeto_activo_agresor",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL010-INFO-ESCRITA-POSTERIOR",
+      "question": "¿Se proporcionó información por escrito al pasajero en algún momento posterior al incidente que no conste en los segmentos de audio/video disponibles?",
+      "blocks_element": "CL.LPDC.Art.23.1.elem.denegacion_derecho_informacion",
+      "priority": "medium"
+    }
+  ],
+  "related_violations": [
+    "CL-001",
+    "CL-008"
+  ],
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "_provenance": {
+    "source": "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN/CL-010.json",
+    "vault_operations": 18,
+    "converted_by": "examples/vault_to_bundle.py"
+  }
+}

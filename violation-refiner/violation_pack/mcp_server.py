@@ -333,7 +333,7 @@ def build_server(include_ui: bool = True):
         contract: dict | None = None,
         known_violation_ids: list[str] | None = None,
     ) -> dict:
-        """Run V01-V11 validation. `transcripts` and `frameworks` are lists of
+        """Run the full validation pipeline. `transcripts` and `frameworks` are lists of
         {path, source_id|framework_code, bundle_uri} entries used to construct
         readers."""
         v = _v_load(violation)

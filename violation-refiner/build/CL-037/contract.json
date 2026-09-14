@@ -1,0 +1,228 @@
+{
+  "schema_version": "4.0",
+  "violation_id": "CL-037",
+  "violation_number": "CL-037",
+  "title": ": \"Coercion — Conditional Documentation ('si no se calma') Threatening Withdrawal of Statutory Notice\"",
+  "case": {
+    "id": "I-002",
+    "name": "I-002-Chile-Santiago"
+  },
+  "jurisdiction": "CL",
+  "framework": {
+    "codes": [
+      "CPCL"
+    ],
+    "files": {
+      "CPCL": "CL/CodigoPenal.md"
+    }
+  },
+  "category": "Coercion — Conditional Statutory Notice",
+  "severity": "CRITICAL",
+  "confidence": {
+    "value": 0.32,
+    "components": {
+      "CL.CPCL.L3.T4.Art.494.16": 0.375
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T14:45:39.109311Z",
+    "history": [
+      "2026-05-12T14:28:55.543800+00:00: value=0.0",
+      "2026-05-12T14:30:15.775622+00:00: value=0.0",
+      "2026-05-12T14:30:34.080777+00:00: value=0.0",
+      "2026-05-12T14:36:51.249454+00:00: value=0.32",
+      "2026-05-12T14:39:39.447845+00:00: value=0.32",
+      "2026-05-12T14:41:09.516007+00:00: value=0.32",
+      "2026-05-12T14:42:30.005372+00:00: value=0.32",
+      "2026-05-12T14:43:50.158392+00:00: value=0.32"
+    ],
+    "validated": false,
+    "note": ""
+  },
+  "incident": {
+    "date": "July 5, 2024 (Santiago, Chile)",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T13:30:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "incident_timestamp": "2024-07-05T13:30:00-04:00",
+  "incident_timestamp_display": "July 5, 2024 (Santiago, Chile)",
+  "allegation_summary": "STG-29 SEG 66–70 (232.78s–253.61s): after promising the document (SEG 41–42), [[SPK-diego-latam-supervisor]] reverses and says 'ni siquiera corresponde que yo le entregue una carta', followed by 'si no se calma, la idea es que nos ayudemos'. Conditioning the delivery of a statutory notice (LPDC Art. 23 bis / CACH Art. 133) on the passenger's demeanour is moral/psychological coercion: it compels the passenger to refrain from exercising the lawful right to protest and to demand documentation. The conduct meets CPCL Art. 494.16 ('impedir a otro con violencia hacer lo que la ley no prohibe') and is reinforced as apremio ilegitimo under CONST Art. 19.1.",
+  "legal_basis": {
+    "frameworks": [
+      {
+        "framework_code": "CPCL",
+        "framework_name": "CPCL",
+        "framework_file": "CL/CodigoPenal.md",
+        "articles": [
+          {
+            "article_id": "CL.CPCL.L3.T4.Art.494.16",
+            "article_name": "Codigo Penal de Chile, Art. 494 N°16 — Coaccion / Apremio",
+            "article_text": "El que sin estar legitimamente autorizado impidiere a otro con violencia hacer lo que la ley no prohibe, o le compeliere a ejecutar lo que no quiera.",
+            "applicability_rationale": "Threatening to withhold a statutory denied-boarding notice unless the passenger 'se calma' compels him to refrain from exercising the lawful right to protest and demand documentation, satisfying Art. 494.16 ('impedir a otro con violencia hacer lo que la ley no prohibe'). The conduct is reinforced as apremio ilegitimo under CONST Art. 19.1. | legacy paraphrase: Sufriran la pena de multa de una a cuatro unidades tributarias mensuales: 16. El que sin estar legitimamente autorizado impidiere a otro con violencia hacer lo que la ley no prohibe, o le compeliere a ejecutar lo que no quiera.",
+            "duty_bearer": "state",
+            "norm_type": "definition",
+            "applicability": "supporting",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.LPDC.Art.13",
+      "candidate_name": "Ley del Consumidor, Art. 13 — Constreñimiento al consumidor",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.13 from bcn.cl/leychile, focusing on threat-based coercion of consumer acts unrelated to contract formation"
+      ],
+      "preliminary_view": "The supervisor's threat to withhold a statutory denied-boarding notice unless the passenger 'se calma' arguably constrains the passenger to refrain from lawful protest—an 'acto' under Art. 13 prohibited if compelled by threats. Verify whether post-sale, non-contractual acts (e.g., ceasing complaints) are covered by the provision's broad wording ('ejecutar cualquier otro acto').",
+      "history_note": "Proposed by analyst as a consumer-protection analogue to CPCL 494.16; candidate replaces a previously unverified suggestion from the pipeline."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Código Civil, Art. 2314 — Responsabilidad extracontractual por delito o cuasidelito civil",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2314 from bcn.cl/leychile, confirming it grounds liability for civil wrongs causing damage"
+      ],
+      "preliminary_view": "If the passenger suffered moral or material damage from the coercive threat, Art. 2314 could serve as the primary indemnification hook. The provision's generality makes it almost always a fallback, but care must be taken to link the threat directly to a legally cognizable harm.",
+      "history_note": "Added because coercive conduct, if proven harmful, typically gives rise to a civil remedy; this is a standard accompaniment to the criminal-type article already invoked."
+    }
+  ],
+  "cross_references": [
+    {
+      "ref": "CL-019",
+      "relation": "coercive_threat_constitutes_intimidation"
+    },
+    {
+      "ref": "CL-020",
+      "relation": "coercion_used_to_enforce_shifting_narrative"
+    },
+    {
+      "ref": "CL-021",
+      "relation": "coercion_as_retaliation_for_questioning_pilot"
+    },
+    {
+      "ref": "CL-022",
+      "relation": "coercion_enabled_by_regulatory_failure"
+    },
+    {
+      "ref": "CL-023",
+      "relation": "conditional_documentation_perpetuates_false_narrative"
+    },
+    {
+      "ref": "CL-024",
+      "relation": "coercion_contradicts_police_exoneration"
+    },
+    {
+      "ref": "CL-025",
+      "relation": "coercive_threat_part_of_systematic_gaslighting"
+    },
+    {
+      "ref": "CL-027",
+      "relation": "coercion_to_prevent_escalation_consistent_with_blocking_executive_communications"
+    },
+    {
+      "ref": "CL-028",
+      "relation": "coercive_conduct_is_counter_staff_misconduct"
+    },
+    {
+      "ref": "CL-029",
+      "relation": "coercion_violates_DGAC_organic_law"
+    },
+    {
+      "ref": "CL-030",
+      "relation": "coercion_may_constitute_obstruction_of_justice"
+    },
+    {
+      "ref": "CL-031",
+      "relation": "coercion_pattern_ignored_by_compliance_officer"
+    },
+    {
+      "ref": "CL-032",
+      "relation": "coercive_conduct_not_responded_to_by_DGAC_or_Defensoria"
+    },
+    {
+      "ref": "CL-033",
+      "relation": "conditional_documentation_part_of_fabrication_conspiracy"
+    },
+    {
+      "ref": "CL-034",
+      "relation": "conditional_documentation_produced_through_off_book_channels"
+    },
+    {
+      "ref": "CL-035",
+      "relation": "document_threatened_is_authored_without_witness"
+    },
+    {
+      "ref": "CL-036",
+      "relation": "coercion_uses_document_containing_false_imputation"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-CL-037-quien-amenazo",
+      "question": "¿Quién exactamente amenazó al pasajero?",
+      "blocks_element": "CL.CPCL.Art.494.16.elem.sujeto_activo",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL-037-autorizacion-legitima",
+      "question": "¿Tenía el supervisor autorización legítima para retener la documentación?",
+      "blocks_element": "CL.CPCL.Art.494.16.elem.ausencia_autorizacion",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL-037-condicion-entrega",
+      "question": "¿Se condicionó la entrega del comprobante a que el pasajero 'se calmara'?",
+      "blocks_element": "CL.CPCL.Art.494.16.elem.violencia_moral",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL-037-impedimento-protesta",
+      "question": "¿Se impidió efectivamente al pasajero protestar?",
+      "blocks_element": "CL.CPCL.Art.494.16.elem.impedimento",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL-037-acto-licito",
+      "question": "¿Qué acto lícito específico estaba ejerciendo?",
+      "blocks_element": "CL.CPCL.Art.494.16.elem.acto_licito",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL-037-dolo",
+      "question": "¿Actuó con dolo de impedir el ejercicio de un derecho?",
+      "blocks_element": "CL.CPCL.Art.494.16.elem.dolo",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL-037-resultado-impedimento",
+      "question": "¿Se logró impedir al pasajero?",
+      "blocks_element": "CL.CPCL.Art.494.16.elem.resultado",
+      "priority": "critical"
+    }
+  ],
+  "related_violations": [
+    "CL-019",
+    "CL-033",
+    "CL-038"
+  ],
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "_provenance": {
+    "source": "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN/CL-037.json",
+    "vault_operations": 10,
+    "converted_by": "examples/vault_to_bundle.py"
+  }
+}

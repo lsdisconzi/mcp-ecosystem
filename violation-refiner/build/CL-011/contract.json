@@ -1,0 +1,519 @@
+{
+  "schema_version": "4.0",
+  "violation_id": "CL-011",
+  "violation_number": "CL-011",
+  "title": "Denial of Due Process — No Evidence, No Reason Given for Removal",
+  "case": {
+    "id": "I-002",
+    "name": "I-002-Chile-Santiago"
+  },
+  "jurisdiction": "CL",
+  "framework": {
+    "codes": [
+      "CACH"
+    ],
+    "files": {
+      "CACH": "CL/L18916_CACH.md"
+    }
+  },
+  "category": "Denial of Due Process",
+  "severity": "CRITICAL",
+  "confidence": {
+    "value": 0.77,
+    "components": {
+      "CL.CACH.Art.133": 0.9
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T06:55:46.845842Z",
+    "history": [
+      "2026-05-12T06:51:40.829255+00:00: value=0.0",
+      "2026-05-12T06:51:47.922202+00:00: value=0.0",
+      "2026-05-12T06:51:52.612356+00:00: value=0.0",
+      "2026-05-12T06:52:38.233041+00:00: value=0.77",
+      "2026-05-12T06:53:00.827200+00:00: value=0.77",
+      "2026-05-12T06:54:08.724472+00:00: value=0.77",
+      "2026-05-12T06:54:58.291776+00:00: value=0.77",
+      "2026-05-12T06:55:33.168534+00:00: value=0.77"
+    ],
+    "validated": true,
+    "note": "Validated by V10 pipeline check. Lowered from legacy contract value (0.96) to formula-derived value (0.63)."
+  },
+  "incident": {
+    "date": "5 de julho de 2024 — Voo LA8159 — Aeroporto SCL (ver Fatos Fixos do Incidente)",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T11:00:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "incident_timestamp": "2024-07-05T11:00:00-04:00",
+  "incident_timestamp_display": "5 de julho de 2024 — Voo LA8159 — Aeroporto SCL",
+  "allegation_summary": "The passenger was forcibly removed from flight LA8159 without being presented with any evidence of wrongdoing and without being given a specific lawful reason for the removal. PDI CCTV review confirmed no aggression occurred, yet the passenger was never informed of any official grounds. The removal violated core due process principles: no notice, no opportunity to be heard, no written record, and no appeal mechanism provided. CACH Art. 133 requires specific procedures for denied boarding — none were followed.",
+  "legal_basis": {
+    "frameworks": [
+      {
+        "framework_code": "CACH",
+        "framework_name": "CACH",
+        "framework_file": "CL/L18916_CACH.md",
+        "articles": [
+          {
+            "article_id": "CL.CACH.Art.133",
+            "article_name": "Codigo Aeronautico de Chile, Art. 133 — Denegacion de Embarque",
+            "article_text": "el transportador podra denegar el embarque a uno o mas pasajeros contra su voluntad, para lo cual debera:\n\n1. A eleccion del pasajero:\n\na) Embarcar en el siguiente vuelo que tenga disponible el transportador, o en un transporte alternativo, si es que decidiera persistir en el contrato de transporte aereo.  \nb) El reembolso del monto total pagado por el billete, si el pasajero se desiste del contrato de transporte aereo y este no hubiera comenzado su ejecucion.  \nc) Si ya se hubiera iniciado la ejecucion de un viaje con escala y/o conexion, el transportador debera ofrecer, a eleccion del pasajero, cualesquiera de las siguientes opciones:\n\ni. Embarque en el siguiente vuelo que tenga disponible el transportador, o en un transporte alternativo, si es que decidiera persistir en el contrato de transporte aereo.  \nii. Reembolso de la porcion no utilizada.  \niii. Retorno al punto de partida, con reembolso del precio del pasaje.\n\n2. Sin perjuicio de lo anterior, el transportador debera ofrecer una compensacion al pasajero afectado con la denegacion de embarque, cuyo monto sera determinado conforme a la siguiente tabla:",
+            "applicability_rationale": "CACH Art. 133 establishes mandatory procedures upon denied boarding, including offering options to the passenger and providing compensation. The article presupposes a lawful denied boarding decision. A removal executed without any statement of reasons, evidence, or opportunity to be heard fails to meet even the most basic requirements of procedural due process, rendering the denial of boarding procedurally void. The carrier's subsequent delivery of a fabricated document containing disproven allegations 9+ hours later cannot retroactively cure the complete absence of due process at the moment of removal. | legacy paraphrase: El transportador podra denegar el embarque a uno o mas pasajeros contra su voluntad, para lo cual debera: 1.- A eleccion del pasajero... 2.- El transportador debera ofrecer una compensacion al pasajero afectado...",
+            "duty_bearer": "state",
+            "norm_type": "definition",
+            "applicability": "direct",
+            "subsections_invoked": [
+              "1",
+              "2"
+            ],
+            "status": "established"
+          }
+        ]
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CACH.Art.131",
+      "candidate_name": "Codigo Aeronautico de Chile, Art. 131 — Obligaciones del transportador respecto del pasajero",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.131 from bcn.cl/leychile (DFL 221 de 1931 / Ley 18916)",
+        "Confirm whether Art. 131 establishes general obligations of the carrier toward the passenger including duty to transport and duty of care"
+      ],
+      "preliminary_view": "Art. 131 likely establishes the carrier's fundamental obligation to execute the transport contract. A removal without stated reasons may constitute a unilateral breach of this obligation. Needs verification of exact text.",
+      "history_note": "Proposed as the general duty-to-transport norm that complements Art. 133's specific denied-boarding procedure."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.134",
+      "candidate_name": "Codigo Aeronautico de Chile, Art. 134 — Excepciones a la denegacion de embarque",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.134 from bcn.cl/leychile",
+        "Confirm whether Art. 134 enumerates the only lawful grounds for denying boarding without compensation (safety, documentation, etc.)",
+        "Verify whether the carrier must communicate the specific ground to the passenger at the time of denial"
+      ],
+      "preliminary_view": "If Art. 134 lists exhaustive exceptions (e.g., safety, health, documentation deficiencies), the absence of any stated reason at the time of removal suggests none of these exceptions was actually invoked, strengthening the due-process violation claim.",
+      "history_note": "Natural companion to Art. 133; defines the boundary conditions under which denial is permissible without full compensation."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.135",
+      "candidate_name": "Codigo Aeronautico de Chile, Art. 135 — Informacion al pasajero en caso de denegacion",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.135 from bcn.cl/leychile",
+        "Confirm whether this article mandates written notice to the passenger stating reasons for denied boarding and available remedies"
+      ],
+      "preliminary_view": "If Art. 135 requires the carrier to inform the passenger in writing of the reasons and their rights at the moment of denial, the complete absence of any explanation until 9+ hours later constitutes a direct violation.",
+      "history_note": "Proposed based on standard regulatory structure where Art. 133 sets procedure, Art. 134 sets exceptions, and Art. 135 sets information duties. Existence must be verified."
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.3",
+      "candidate_name": "Ley de Proteccion al Consumidor (Ley 19.496), Art. 3 — Derechos basicos del consumidor",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPC.Art.3 from bcn.cl/leychile (Ley 19.496)",
+        "Confirm that letra b) guarantees the right to truthful and sufficient information",
+        "Confirm that letra e) guarantees the right to reparation and adequate indemnification"
+      ],
+      "preliminary_view": "Art. 3 letra b) (derecho a una informacion veraz y oportuna) is directly violated when the carrier removes a passenger without providing any reason. Letra e) (derecho a la reparacion e indemnizacion adecuada) supports the claim for damages arising from the procedurally void removal.",
+      "history_note": "LPC applies subsidiarily to air transport contracts per Chilean jurisprudence when CACH does not fully regulate consumer protection aspects."
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.12",
+      "candidate_name": "Ley de Proteccion al Consumidor (Ley 19.496), Art. 12 — Obligacion de respetar los terminos ofrecidos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPC.Art.12 from bcn.cl/leychile",
+        "Confirm that Art. 12 obliges the provider to respect the conditions offered or agreed upon with the consumer"
+      ],
+      "preliminary_view": "The unilateral removal from a confirmed flight without justification constitutes a breach of the terms agreed in the transport contract, violating Art. 12's mandate that providers honor contracted conditions.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.23",
+      "candidate_name": "Ley de Proteccion al Consumidor (Ley 19.496), Art. 23 — Infraccion por negativa injustificada de venta o prestacion de servicio",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPC.Art.23 from bcn.cl/leychile",
+        "Confirm whether Art. 23 sanctions unjustified refusal to provide a service already contracted",
+        "Verify applicability to transport services"
+      ],
+      "preliminary_view": "Denying boarding without any stated reason may constitute a 'negativa injustificada de prestacion de servicio' under Art. 23, triggering infraccional liability under the LPC.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.3",
+      "candidate_name": "Constitucion Politica de la Republica, Art. 19 N°3 — Igual proteccion de la ley / debido proceso",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19 numeral 3 from bcn.cl/leychile",
+        "Assess whether due process guarantees apply horizontally (Drittwirkung) to private carriers acting in conjunction with state authorities (PDI/DGAC)",
+        "Research Chilean case law on horizontal application of due process in airline removal cases"
+      ],
+      "preliminary_view": "The constitutional due process guarantee (Art. 19 N°3 inc. 6°: 'toda sentencia de un organo que ejerza jurisdiccion debe fundarse en un proceso previo legalmente tramitado') applies primarily to state action. However, given that PDI and DGAC officers participated in the removal and the PDI officer confirmed no aggression occurred, there is a colorable argument that state actors facilitated a deprivation without due process. Horizontal application to purely private conduct is more contested.",
+      "history_note": "Constitutional due process is the foundational norm underlying the violation title. Its direct applicability depends on the degree of state involvement in the removal decision."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.24",
+      "candidate_name": "Constitucion Politica de la Republica, Art. 19 N°24 — Derecho de propiedad (sobre derechos contractuales)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19 numeral 24 from bcn.cl/leychile",
+        "Research Chilean jurisprudence on whether a confirmed airline ticket constitutes a 'derecho incorporal' protected under Art. 19 N°24",
+        "Identify recurso de proteccion cases where passengers invoked property rights over tickets"
+      ],
+      "preliminary_view": "Chilean courts have recognized that contractual rights (including confirmed tickets) constitute incorporeal property protected by Art. 19 N°24. The unilateral deprivation of the right to fly without compensation or due process may constitute an arbitrary privation of property.",
+      "history_note": "Commonly invoked in recurso de proteccion actions against airlines in Chile."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.2",
+      "candidate_name": "Constitucion Politica de la Republica, Art. 19 N°2 — Igualdad ante la ley / no discriminacion arbitraria",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19 numeral 2 from bcn.cl/leychile",
+        "Assess whether removal without reason, when other passengers were not removed, constitutes arbitrary discrimination",
+        "Research whether nationality/language of passenger (Brazilian/Portuguese-speaking) could ground a discrimination claim"
+      ],
+      "preliminary_view": "If the passenger was singled out without objective justification while similarly-situated passengers were permitted to board, this may constitute arbitrary discrimination. The absence of any stated reason makes it impossible to rule out discriminatory motive.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1545",
+      "candidate_name": "Codigo Civil, Art. 1545 — Fuerza obligatoria del contrato (pacta sunt servanda)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.1545 from bcn.cl/leychile",
+        "Confirm standard text: 'Todo contrato legalmente celebrado es una ley para los contratantes...'"
+      ],
+      "preliminary_view": "The confirmed ticket constitutes a binding contract. Art. 1545 establishes that a validly formed contract is law between the parties and cannot be unilaterally invalidated except by mutual consent or legal cause. Removal without reason violates this principle.",
+      "history_note": "Foundational civil law norm for contractual breach claims."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1546",
+      "candidate_name": "Codigo Civil, Art. 1546 — Buena fe contractual",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.1546 from bcn.cl/leychile",
+        "Confirm text regarding execution of contracts in good faith"
+      ],
+      "preliminary_view": "Removing a passenger without reason and later fabricating a justification document constitutes bad faith in the execution of the transport contract, violating Art. 1546's mandate that contracts be performed de buena fe.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1489",
+      "candidate_name": "Codigo Civil, Art. 1489 — Condicion resolutoria tacita / resolucion por incumplimiento",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.1489 from bcn.cl/leychile",
+        "Confirm applicability to bilateral contracts where one party fails to perform"
+      ],
+      "preliminary_view": "The carrier's refusal to transport constitutes non-performance of its principal obligation, entitling the passenger to seek resolution of the contract with indemnification of damages under Art. 1489.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Codigo Civil, Art. 2314 — Responsabilidad extracontractual por hecho ilicito",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2314 from bcn.cl/leychile",
+        "Assess whether the removal, being outside the scope of legitimate contractual performance, gives rise to extracontractual liability in addition to contractual liability"
+      ],
+      "preliminary_view": "If the removal is characterized as an arbitrary act exceeding the bounds of the contract (particularly the subsequent ban from flying LATAM), Art. 2314 may ground an extracontractual damages claim for the harm caused by the wrongful act.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.16",
+      "candidate_name": "Ley de Proteccion al Consumidor (Ley 19.496), Art. 16 — Clausulas abusivas",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPC.Art.16 from bcn.cl/leychile",
+        "Confirm whether letra g) or another letra declares abusive any clause granting the provider unilateral power to terminate without equivalent faculty for the consumer",
+        "Assess whether LATAM's conditions of carriage contain a clause purporting to authorize removal without stated reasons"
+      ],
+      "preliminary_view": "If LATAM relies on a contractual clause granting it unilateral discretion to deny boarding without obligation to state reasons, such clause may be declared abusive under Art. 16 for creating a significant imbalance in the parties' rights and obligations.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.147",
+      "candidate_name": "Codigo Aeronautico de Chile, Art. 147 — Responsabilidad del transportador por incumplimiento",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.147 from bcn.cl/leychile (Ley 18916)",
+        "Confirm whether Art. 147 establishes carrier liability for damages caused by non-performance or defective performance of the transport contract",
+        "Verify article number — may be Art. 147 or nearby article in Title IX"
+      ],
+      "preliminary_view": "This article likely establishes the carrier's liability regime for failure to perform the transport obligation, providing the specific aeronautical-law basis for damages beyond the compensation table in Art. 133.",
+      "history_note": "Article number needs verification; the CACH liability provisions are in Title IX (Arts. 142-172 approximately)."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.133bis",
+      "candidate_name": "Codigo Aeronautico de Chile, Art. 133 bis — Obligacion de informar derechos al pasajero",
+      "framework_cache_status": "pending_fetch",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.133 bis from bcn.cl/leychile",
+        "Confirm whether this article (introduced by Ley 21.395 or similar reform) requires the carrier to inform the passenger of their rights at the moment of denied boarding",
+        "Verify existence — this may have been introduced in the 2022-2024 reforms to the CACH"
+      ],
+      "preliminary_view": "If Art. 133 bis exists and mandates immediate written notification of rights and reasons, the carrier's failure to provide any explanation until 9+ hours later is a direct statutory violation. Existence must be confirmed.",
+      "history_note": "Recent CACH reforms (Ley 21.395, 2022) introduced passenger rights provisions. Exact article numbering needs verification."
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.3.letra.b",
+      "candidate_name": "Ley de Proteccion al Consumidor (Ley 19.496), Art. 3 letra b) — Derecho a informacion veraz y oportuna",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPC.Art.3 letra b) from bcn.cl/leychile",
+        "Confirm that it guarantees the consumer's right to truthful and timely information about goods and services"
+      ],
+      "preliminary_view": "The complete absence of any reason given at the time of removal, followed by a fabricated document hours later, violates the consumer's right to truthful and timely information about the service denial. This is a specific sub-right within Art. 3 that merits independent invocation.",
+      "history_note": "Listed separately from general Art. 3 reference to highlight the specific letra applicable to the information-denial aspect of the due process violation."
+    }
+  ],
+  "cross_references": [
+    {
+      "ref": "CL-009",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-002",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001__opus46",
+      "relation": "false_accusation_provided_no_evidentiary_basis_for_removal"
+    },
+    {
+      "ref": "CL-001__opus46v1",
+      "relation": "false_accusation_provided_no_evidentiary_basis_for_removal"
+    },
+    {
+      "ref": "CL-002__opus46",
+      "relation": "removal_executed_without_due_process_or_evidence"
+    },
+    {
+      "ref": "CL-003",
+      "relation": "collusion_enabled_removal_without_providing_reasons"
+    },
+    {
+      "ref": "CL-003__opus46",
+      "relation": "collusion_enabled_removal_without_providing_reasons"
+    },
+    {
+      "ref": "CL-004",
+      "relation": "concealment_of_exoneration_perpetuated_baseless_removal"
+    },
+    {
+      "ref": "CL-004__opus46",
+      "relation": "concealment_of_exoneration_perpetuated_baseless_removal"
+    },
+    {
+      "ref": "CL-005",
+      "relation": "cctv_confirms_no_aggression_proving_removal_without_evidence"
+    },
+    {
+      "ref": "CL-005__deepseek",
+      "relation": "cctv_confirms_no_aggression_proving_removal_without_evidence"
+    },
+    {
+      "ref": "CL-006",
+      "relation": "denial_of_due_process_extended_to_next_day_boarding_ban"
+    },
+    {
+      "ref": "CL-006__opus46",
+      "relation": "denial_of_due_process_extended_to_next_day_boarding_ban"
+    },
+    {
+      "ref": "CL-007",
+      "relation": "no_corrective_action_after_baseless_removal_confirmed"
+    },
+    {
+      "ref": "CL-007__opus46",
+      "relation": "no_corrective_action_after_baseless_removal_confirmed"
+    },
+    {
+      "ref": "CL-008",
+      "relation": "dgac_disclaims_decision_while_failing_oversight_of_due_process"
+    },
+    {
+      "ref": "CL-008__opus46",
+      "relation": "dgac_disclaims_decision_while_failing_oversight_of_due_process"
+    },
+    {
+      "ref": "CL-009__opus46",
+      "relation": "icao_facilitation_standards_require_due_process_for_removal"
+    },
+    {
+      "ref": "CL-010",
+      "relation": "due_process_denial_constitutes_fundamental_rights_violation"
+    },
+    {
+      "ref": "CL-010__opus46",
+      "relation": "due_process_denial_constitutes_fundamental_rights_violation"
+    },
+    {
+      "ref": "CL-011__opus46",
+      "relation": "duplicate_variant_of_same_due_process_violation"
+    },
+    {
+      "ref": "CL-016",
+      "relation": "unsigned_carta_desembarque_served_as_sole_purported_justification"
+    },
+    {
+      "ref": "CL-016__gemini3flash",
+      "relation": "invalid_document_used_in_lieu_of_proper_due_process"
+    },
+    {
+      "ref": "CL-016__grok41fast",
+      "relation": "invalid_document_used_in_lieu_of_proper_due_process"
+    },
+    {
+      "ref": "CL-016__haikulatest",
+      "relation": "invalid_document_used_in_lieu_of_proper_due_process"
+    },
+    {
+      "ref": "CL-016__hy3",
+      "relation": "invalid_document_used_in_lieu_of_proper_due_process"
+    },
+    {
+      "ref": "CL-016__opus46",
+      "relation": "invalid_document_used_in_lieu_of_proper_due_process"
+    },
+    {
+      "ref": "CL-016__opus47",
+      "relation": "invalid_document_used_in_lieu_of_proper_due_process"
+    },
+    {
+      "ref": "CL-016__opus47version2",
+      "relation": "invalid_document_used_in_lieu_of_proper_due_process"
+    },
+    {
+      "ref": "CL-016__sonnet4",
+      "relation": "invalid_document_used_in_lieu_of_proper_due_process"
+    },
+    {
+      "ref": "CL-016__sonnet4.6",
+      "relation": "invalid_document_used_in_lieu_of_proper_due_process"
+    },
+    {
+      "ref": "CL-016__sonnetlatest",
+      "relation": "invalid_document_used_in_lieu_of_proper_due_process"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-011-JURIDICAL-IDENTITY",
+      "question": "Razón social exacta y RUT de la entidad operadora",
+      "blocks_element": "",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-011-PNR-ETICKET",
+      "question": "¿Existe PNR o e-ticket que acredite la reserva?",
+      "blocks_element": "",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-011-CAUSAL-REMOCION",
+      "question": "¿Invocó el transportador alguna causal legal de denegación?",
+      "blocks_element": "",
+      "priority": "high"
+    },
+    {
+      "id": "+ 5 additional",
+      "question": "",
+      "blocks_element": "",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL011-BILLETE",
+      "question": "¿Existe documentación del contrato de transporte (boarding pass, e-ticket, confirmación de reserva) que confirme a LATAM como transportador contractual y acredite la validez del billete al momento del embarque?",
+      "blocks_element": "CL.CACH.Art.133.1.elem.sujeto_obligado_transportador",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL011-HORA-PRESENT",
+      "question": "¿A qué hora se presentó el pasajero al proceso de embarque y se encontraba dentro del plazo reglamentario de presentación (check-in / puerta de embarque)?",
+      "blocks_element": "CL.CACH.Art.133.1.elem.sujeto_pasivo_pasajero",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL011-CAUSA-TRANSP",
+      "question": "¿Existe algún documento interno o comunicación posterior del transportador que invoque una causa específica y verificable para la denegación de embarque (sobreventa, seguridad operacional, conducta del pasajero, etc.)?",
+      "blocks_element": "CL.CACH.Art.133.elem.ausencia_causa_justificante",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL011-OPCIONES-133",
+      "question": "¿Existe comunicación escrita, registro en sistema o constancia de que LATAM ofreció al pasajero las opciones del Art. 133 N° 1 (embarque en siguiente vuelo, reembolso total, o alternativas para viaje iniciado)?",
+      "blocks_element": "CL.CACH.Art.133.1.elem.obligacion_ofrecer_opciones",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL011-COMPENS",
+      "question": "¿Se ofreció o pagó compensación al pasajero en algún momento posterior a la denegación de embarque, incluyendo vouchers, reembolsos parciales o indemnizaciones extrajudiciales?",
+      "blocks_element": "CL.CACH.Art.133.2.elem.obligacion_compensacion",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL011-DOC-JUSTIF",
+      "question": "¿Se entregó al pasajero algún documento justificativo al momento de la remoción o en las horas inmediatamente posteriores, y de existir, qué contenido y alegaciones incluía?",
+      "blocks_element": "CL.CACH.Art.133.elem.ausencia_debido_proceso",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL011-FABR-ALEG",
+      "question": "¿El documento o comunicación entregada posteriormente por el transportador contenía alegaciones verificables o fabricadas respecto de la conducta del pasajero?",
+      "blocks_element": "CL.CACH.Art.133.elem.ausencia_debido_proceso",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL011-CUANTIF-PATRIM",
+      "question": "¿Cuál es la cuantificación del daño patrimonial sufrido por el pasajero, incluyendo el valor del billete perdido, gastos de alojamiento, transporte alternativo y otros gastos consecuenciales?",
+      "blocks_element": "CL.CACH.Art.133.elem.perjuicio_al_pasajero",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL011-DANO-MORAL",
+      "question": "¿Se reclama daño moral por la forma de la remoción, y de ser así, qué evidencia respalda la afectación extrapatrimonial (humillación pública, angustia, afectación psicológica)?",
+      "blocks_element": "CL.CACH.Art.133.elem.perjuicio_al_pasajero",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL011-REPORTE-DGAC",
+      "question": "¿Existe un reporte o resolución de la DGAC relativo al incidente que establezca si la denegación de embarque fue comunicada o autorizada por la autoridad aeronáutica?",
+      "blocks_element": "",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL011-PARTE-PDI",
+      "question": "¿Existe un parte policial o acta de intervención de PDI que documente las circunstancias de la remoción del pasajero y las razones invocadas por el transportador ante la autoridad policial?",
+      "blocks_element": "",
+      "priority": "high"
+    }
+  ],
+  "related_violations": [
+    "CL-001",
+    "CL-002",
+    "CL-009"
+  ],
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "_provenance": {
+    "source": "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN/CL-011.json",
+    "vault_operations": 10,
+    "converted_by": "examples/vault_to_bundle.py"
+  }
+}

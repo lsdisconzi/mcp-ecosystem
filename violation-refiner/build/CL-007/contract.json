@@ -1,0 +1,462 @@
+{
+  "schema_version": "4.0",
+  "violation_id": "CL-007",
+  "violation_number": "CL-007",
+  "title": "No Corrective Action — Systematic Failure to Rectify Known False Accusation",
+  "case": {
+    "id": "I-002",
+    "name": "I-002-Chile-Santiago"
+  },
+  "jurisdiction": "CL",
+  "framework": {
+    "codes": [
+      "CACH"
+    ],
+    "files": {
+      "CACH": "CL/L18916_CACH.md"
+    }
+  },
+  "category": "Failure to Rectify / Continuous Violation",
+  "severity": "HIGH",
+  "confidence": {
+    "value": 0.78,
+    "components": {
+      "CL.CACH.Art.133": 0.914
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T06:46:44.174327Z",
+    "history": [
+      "2026-05-12T06:42:51.668985+00:00: value=0.0",
+      "2026-05-12T06:43:02.891826+00:00: value=0.0",
+      "2026-05-12T06:43:06.133058+00:00: value=0.0",
+      "2026-05-12T06:43:56.778434+00:00: value=0.78",
+      "2026-05-12T06:44:24.223317+00:00: value=0.78",
+      "2026-05-12T06:45:25.002916+00:00: value=0.78",
+      "2026-05-12T06:46:07.794629+00:00: value=0.78",
+      "2026-05-12T06:46:34.422167+00:00: value=0.78"
+    ],
+    "validated": true,
+    "note": "Validated by V10 pipeline check. Lowered from legacy contract value (0.95) to formula-derived value (0.60)."
+  },
+  "incident": {
+    "date": "5 de julho de 2024 — Voo LA8159 — Aeroporto SCL (ver Fatos Fixos do Incidente)",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T23:00:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "incident_timestamp": "2024-07-05T11:00:00-04:00",
+  "incident_timestamp_display": "2024-07-05 — Voo LA8159 — Aeroporto SCL",
+  "allegation_summary": "Despite PDI's CCTV confirmation that no aggression occurred, and despite the passenger's repeated requests for correction, LATAM failed to take any corrective action. The airline: (1) maintained the false accusation as the official record of the incident, (2) refused to correct the 'carta de desembarque' when confronted with PDI's exoneration (STG-29.seg-32: 'La PDI confirmó que no hubo agresión'), (3) applied the false record as the basis for a lifetime ban, and (4) failed to offer any of the statutory remedies under CACH Art. 133 §§1-2. This constitutes a continuous violation — the initial false accusation was compounded by subsequent deliberate inaction.",
+  "legal_basis": {
+    "frameworks": [
+      {
+        "framework_code": "CACH",
+        "framework_name": "CACH",
+        "framework_file": "CL/L18916_CACH.md",
+        "articles": [
+          {
+            "article_id": "CL.CACH.Art.133",
+            "article_name": "Codigo Aeronautico de Chile, Art. 133 — Denegacion de Embarque",
+            "article_text": "1. A eleccion del pasajero:\n\na) Embarcar en el siguiente vuelo que tenga disponible el transportador, o en un transporte alternativo, si es que decidiera persistir en el contrato de transporte aereo.",
+            "applicability_rationale": "CACH Art. 133 establishes a framework of carrier obligations. Inherent in these obligations is the duty to maintain accurate enforcement records and to correct errors when discovered. The systematic failure to correct a known false accusation that triggered a boarding denial means the carrier is maintaining an invalid enforcement action in continued violation of Art. 133. | legacy paraphrase: El transportador podra denegar el embarque... para lo cual debera: 1.- A eleccion del pasajero... 2.- El transportador debera ofrecer una compensacion...",
+            "duty_bearer": "state",
+            "norm_type": "definition",
+            "applicability": "direct",
+            "subsections_invoked": [
+              "1",
+              "a",
+              "2"
+            ],
+            "status": "established"
+          }
+        ]
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Código Civil, Art. 2314 — Responsabilidad extracontractual por hecho ilícito",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2314 from bcn.cl/leychile",
+        "Confirm that maintaining a known false accusation without correction constitutes a 'hecho ilícito' generating obligation to indemnify under this article"
+      ],
+      "preliminary_view": "The carrier's systematic refusal to correct a false accusation after PDI exoneration may constitute a continuing tortious act (hecho ilícito) causing reputational and moral harm, triggering extracontractual liability under Art. 2314 CC.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2329",
+      "candidate_name": "Código Civil, Art. 2329 — Reparación integral del daño por todo daño imputable a malicia o negligencia",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2329 from bcn.cl/leychile",
+        "Assess whether the carrier's deliberate refusal to correct (after being informed of PDI findings) constitutes 'malicia o negligencia' under this provision"
+      ],
+      "preliminary_view": "Art. 2329 extends liability to any damage attributable to malice or negligence. The carrier's explicit refusal to rectify a proven-false accusation, with knowledge of the PDI exoneration, could constitute negligence or even malice in maintaining the defamatory record.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.3",
+      "candidate_name": "Ley 19.496 (Ley de Protección al Consumidor), Art. 3 — Derechos básicos del consumidor",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPC.Art.3 from bcn.cl/leychile",
+        "Identify which literal (letra) establishes the right to truthful and timely information and the right to reparation",
+        "Confirm applicability to air transport services under LPC scope"
+      ],
+      "preliminary_view": "Art. 3 LPC establishes fundamental consumer rights including the right to truthful information (letra b) and the right to reparation and indemnification (letra e). The carrier's refusal to correct a false accusation may violate the consumer's right to accurate information about their own service record.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.12",
+      "candidate_name": "Ley 19.496, Art. 12 — Obligación de respetar los términos ofrecidos y convenidos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPC.Art.12 from bcn.cl/leychile",
+        "Assess whether maintaining a false accusation in the passenger's record constitutes a unilateral modification of service conditions"
+      ],
+      "preliminary_view": "Art. 12 obliges providers to respect agreed terms. Maintaining a false accusation that may affect future service (e.g., no-fly list, restricted boarding) could constitute a unilateral alteration of the contractual relationship without basis.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.23",
+      "candidate_name": "Ley 19.496, Art. 23 — Infracción por negativa injustificada de venta o prestación de servicio",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPC.Art.23 from bcn.cl/leychile",
+        "Determine whether the carrier's refusal to correct the record, combined with the original boarding denial based on a false accusation, constitutes an unjustified refusal of service"
+      ],
+      "preliminary_view": "If the false accusation remains uncorrected and could serve as basis for future service denials, Art. 23 LPC's prohibition on unjustified refusal of service may be engaged prospectively and retrospectively.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPDP.Art.6",
+      "candidate_name": "Ley 19.628 (Protección de Datos Personales), Art. 6 — Derecho de rectificación de datos personales",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDP.Art.6 from bcn.cl/leychile",
+        "Confirm that an internal airline incident record containing a false accusation constitutes 'datos personales' subject to rectification under this article",
+        "Verify whether the article imposes an obligation on the data controller to rectify upon request when data is proven inaccurate"
+      ],
+      "preliminary_view": "Art. 6 of Ley 19.628 grants data subjects the right to demand rectification of personal data that is erroneous, inexact, equivocal, or incomplete. A carrier's internal record attributing an assault to a passenger — proven false by PDI — would constitute erroneous personal data requiring correction upon request.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPDP.Art.11",
+      "candidate_name": "Ley 19.628, Art. 11 — Obligación del responsable de modificar o eliminar datos inexactos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDP.Art.11 from bcn.cl/leychile",
+        "Confirm the obligation timeline and whether the carrier's flat refusal ('nadie se lo va a hacer') constitutes a violation of the statutory duty to respond to rectification requests"
+      ],
+      "preliminary_view": "Art. 11 establishes the data controller's obligation to modify or block data when the data subject demonstrates inaccuracy. The carrier's categorical refusal to correct the record despite PDI-confirmed falsity may directly violate this provision.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPDP.Art.23",
+      "candidate_name": "Ley 19.628, Art. 23 — Indemnización por tratamiento indebido de datos personales",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDP.Art.23 from bcn.cl/leychile",
+        "Confirm that the article provides a cause of action for damages arising from unlawful data processing including failure to rectify"
+      ],
+      "preliminary_view": "Art. 23 provides that the data controller who causes damage through improper data treatment must indemnify. The continued maintenance of a proven-false accusation in the passenger's record, after explicit refusal to correct, may trigger this indemnification obligation.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.4",
+      "candidate_name": "Constitución Política de la República, Art. 19 Nº 4 — Respeto y protección de la honra",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19 Nº 4 from bcn.cl/leychile",
+        "Assess whether a private carrier's refusal to correct a false accusation engages the constitutional guarantee of honor protection via horizontal effect (efecto horizontal/Drittwirkung)"
+      ],
+      "preliminary_view": "Art. 19 Nº 4 CPR guarantees the right to honor and private life. While primarily a vertical guarantee against the State, Chilean doctrine recognizes horizontal effect. The carrier's systematic maintenance of a false assault accusation after PDI exoneration may constitute a continuing affront to the passenger's honor.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.145",
+      "candidate_name": "Código Aeronáutico de Chile, Art. 145 — Responsabilidad del transportador por daños al pasajero",
+      "framework_cache_status": "pending_fetch",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.145 from bcn.cl/leychile",
+        "Determine whether 'daños' under this article encompasses moral/reputational harm from false accusations maintained by the carrier",
+        "Confirm the article number — verify whether Art. 144 or 145 is the correct provision for carrier liability to passengers"
+      ],
+      "preliminary_view": "CACH Art. 145 (or nearby provisions in Title IX) establishes carrier liability for damages to passengers. The question is whether maintaining a false accusation without correction constitutes a 'daño' within the scope of aeronautical carrier liability or whether it falls outside the transport-specific regime.",
+      "history_note": "Article number requires verification; CACH Title IX on carrier liability spans Arts. 142-172 approximately."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1546",
+      "candidate_name": "Código Civil, Art. 1546 — Buena fe contractual",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.1546 from bcn.cl/leychile",
+        "Assess whether the carrier's refusal to correct a known false accusation violates the duty of good faith in the execution of the transport contract"
+      ],
+      "preliminary_view": "Art. 1546 CC mandates that contracts must be performed in good faith. A carrier that knowingly maintains a false accusation against a passenger — after law enforcement has confirmed its falsity — and refuses any corrective action, may be acting in bad faith in the performance of its contractual obligations.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.16",
+      "candidate_name": "Ley 19.496, Art. 16 — Cláusulas abusivas",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPC.Art.16 from bcn.cl/leychile",
+        "Determine whether a carrier's unilateral power to maintain false records without correction mechanism constitutes an abusive clause or practice under letra g) or other literals"
+      ],
+      "preliminary_view": "If the carrier's conditions of carriage or internal policies grant it unilateral power to maintain incident records without any correction mechanism (as suggested by 'ninguno de nuestros documentos tiene firma' and categorical refusal), this may constitute an abusive contractual practice under Art. 16 LPC.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.412",
+      "candidate_name": "Código Penal, Art. 412 — Calumnia (imputación falsa de delito)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CP.Art.412 from bcn.cl/leychile",
+        "Determine whether the false accusation of assault (agresión) constitutes imputation of a crime (delito) for purposes of calumnia",
+        "Assess whether continued maintenance of the accusation after PDI exoneration constitutes a continuing calumnious act or only the original statement qualifies"
+      ],
+      "preliminary_view": "Art. 412 CP defines calumnia as the false imputation of a specific crime. The crew's accusation of 'agresión' (assault) — confirmed false by PDI via CCTV review — may constitute calumnia. The carrier's refusal to retract could be relevant to demonstrating animus injuriandi, though the primary criminal act would be the original false accusation rather than the failure to correct.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.416",
+      "candidate_name": "Código Penal, Art. 416 — Injuria (expresión proferida en descrédito)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CP.Art.416 from bcn.cl/leychile",
+        "Assess whether the false accusation, if not meeting the threshold of calumnia, constitutes injuria",
+        "Determine relevance of the carrier's refusal to correct as evidence of intent"
+      ],
+      "preliminary_view": "If the false accusation does not meet the strict requirements of calumnia (Art. 412), it may still constitute injuria under Art. 416 CP as an expression made to discredit the passenger. The systematic refusal to correct after PDI confirmation strengthens the inference of intent to dishonor.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.131",
+      "candidate_name": "Código Aeronáutico de Chile, Art. 131 — Obligaciones del transportador aéreo",
+      "framework_cache_status": "pending_fetch",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.131 from bcn.cl/leychile",
+        "Confirm whether this article establishes general carrier obligations that include duty of care and accurate record-keeping",
+        "Verify exact article number in context of CACH Title IX"
+      ],
+      "preliminary_view": "Art. 131 CACH (if it establishes general carrier obligations) may impose a duty of care that encompasses maintaining accurate records regarding passenger incidents. The systematic failure to correct a proven-false accusation would breach this general duty.",
+      "history_note": "Article number requires verification against current CACH text."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2331",
+      "candidate_name": "Código Civil, Art. 2331 — Imputaciones injuriosas (limitación de daño moral — declarado parcialmente inconstitucional)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2331 from bcn.cl/leychile",
+        "Verify current constitutional status after TC Rol 1185-2008 and subsequent inaplicabilidad rulings",
+        "Determine whether this article would limit or exclude moral damages for the false accusation, or whether it has been effectively neutralized by constitutional jurisprudence"
+      ],
+      "preliminary_view": "Art. 2331 CC historically limited recovery for injurious imputations to patrimonial damages only. However, the Tribunal Constitucional has repeatedly declared it inapplicable for violating Art. 19 Nº 4 CPR. A careful analyst must consider this article as a potential defense the carrier might raise, while noting its constitutional vulnerability.",
+      "history_note": "Included for completeness as a potential carrier defense; TC inaplicabilidad rulings have substantially weakened its force."
+    }
+  ],
+  "cross_references": [
+    {
+      "ref": "CL-006",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001__opus46",
+      "relation": "false_accusation_confirmed_but_never_corrected"
+    },
+    {
+      "ref": "CL-001__opus46v1",
+      "relation": "false_accusation_confirmed_but_never_corrected"
+    },
+    {
+      "ref": "CL-002",
+      "relation": "removal_decision_never_corrected_after"
+    },
+    {
+      "ref": "CL-002__opus46",
+      "relation": "removal_decision_never_corrected_after"
+    },
+    {
+      "ref": "CL-003",
+      "relation": "institutional_collusion_perpetuated_by_refusal_to_correct"
+    },
+    {
+      "ref": "CL-003__opus46",
+      "relation": "institutional_collusion_perpetuated_by_refusal_to_correct"
+    },
+    {
+      "ref": "CL-004",
+      "relation": "concealment_enabled_refusal_to_rectify"
+    },
+    {
+      "ref": "CL-004__opus46",
+      "relation": "concealment_enabled_refusal_to_rectify"
+    },
+    {
+      "ref": "CL-005",
+      "relation": "pdi_exoneration_invoked_but_carrier_refused_correction"
+    },
+    {
+      "ref": "CL-005__deepseek",
+      "relation": "pdi_exoneration_invoked_but_carrier_refused_correction"
+    },
+    {
+      "ref": "CL-006__opus46",
+      "relation": "boarding_denial_consequence_of_uncorrected_false_accusation"
+    },
+    {
+      "ref": "CL-016",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__gemini3flash",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__grok41fast",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__haikulatest",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__hy3",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__opus46",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__opus47",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__opus47version2",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__sonnet4",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__sonnet4.6",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__sonnetlatest",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-007__opus46",
+      "relation": "duplicate_analysis_same_violation"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-007-FORMAL-DENIAL-DOC",
+      "question": "",
+      "blocks_element": "",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-007-PASSENGER-PERSIST-CONTRACT",
+      "question": "",
+      "blocks_element": "",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-007-LATAM-ALTERNATIVE-OFFERED",
+      "question": "",
+      "blocks_element": "",
+      "priority": "high"
+    },
+    {
+      "id": "+ 4 additional",
+      "question": "",
+      "blocks_element": "",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL-007-BOARDING-PASS",
+      "question": "¿Se dispone del boarding pass, reserva electrónica o billete que acredite el contrato de transporte aéreo específico entre Leandro Disconzi y LATAM para el vuelo en cuestión?",
+      "blocks_element": "CL.CACH.Art.133.1.elem.sujeto_pasivo_pasajero",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL-007-ACTA-DENEGACION",
+      "question": "¿Existe documentación formal del acto de denegación de embarque (acta de denegación, notificación escrita al pasajero, registro en sistema DCS de LATAM)?",
+      "blocks_element": "CL.CACH.Art.133.1.elem.hecho_generador_denegacion_embarque",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL-007-VUELO-ALTERNATIVO",
+      "question": "¿El pasajero solicitó embarque en un vuelo posterior y se le denegó, o se le ofreció alguna alternativa de transporte conforme al Art. 133 N° 1 lit. a?",
+      "blocks_element": "CL.CACH.Art.133.1.a.elem.obligacion_reembarque_alternativa",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL-007-COMPENSACION",
+      "question": "¿Se ofreció alguna compensación económica o en especie al pasajero por la denegación de embarque? ¿El pasajero la reclamó formalmente?",
+      "blocks_element": "CL.CACH.Art.133.2.elem.obligacion_compensacion",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL-007-INFORME-PDI",
+      "question": "¿Existe un informe escrito o parte policial de la PDI que formalice la revisión de cámaras de seguridad y la exoneración del pasajero respecto de la acusación de agresión?",
+      "blocks_element": "CL.CACH.Art.133.elem.causa_ilicita_acusacion_falsa",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL-007-VERIFICACION-LATAM-PDI",
+      "question": "¿LATAM verificó independientemente con la PDI la exoneración del pasajero, o existe constancia de que se le comunicó formalmente el resultado de la investigación policial?",
+      "blocks_element": "CL.CACH.Art.133.elem.conocimiento_falsedad_por_transportador",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL-007-NORMATIVA-RECTIFICACION",
+      "question": "¿Existe normativa reglamentaria chilena (DAN, JAR-OPS, Resoluciones DGAC) que imponga expresamente a los transportadores aéreos la obligación de rectificar registros internos de incidentes a bordo cuando se comprueba la falsedad de los hechos?",
+      "blocks_element": "CL.CACH.Art.133.elem.omision_sistematica_correccion",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL-007-DENEGACIONES-POSTERIORES",
+      "question": "¿El pasajero ha sufrido denegaciones de embarque posteriores u otras restricciones de viaje vinculadas a los registros falsos mantenidos por LATAM?",
+      "blocks_element": "CL.CACH.Art.133.elem.perjuicio_continuado_pasajero",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL-007-ALERTAS-SISTEMA",
+      "question": "¿Los registros internos de LATAM generan alertas automáticas (flags, no-fly list interna, códigos de restricción) que afecten futuros viajes del pasajero en la red LATAM o aerolíneas asociadas?",
+      "blocks_element": "CL.CACH.Art.133.elem.perjuicio_continuado_pasajero",
+      "priority": "medium"
+    }
+  ],
+  "related_violations": [
+    "CL-001",
+    "CL-006"
+  ],
+  "tags": [
+    "violation",
+    "severity/high",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "_provenance": {
+    "source": "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN/CL-007.json",
+    "vault_operations": 10,
+    "converted_by": "examples/vault_to_bundle.py"
+  }
+}

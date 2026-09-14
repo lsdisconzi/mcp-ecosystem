@@ -1,0 +1,538 @@
+{
+  "schema_version": "4.0",
+  "violation_id": "CL-003",
+  "violation_number": "CL-003",
+  "title": "Institutional Collusion — Coordinated Misconduct Between LATAM, DGAC, and PDI",
+  "case": {
+    "id": "I-002",
+    "name": "I-002-Chile-Santiago"
+  },
+  "jurisdiction": "CL",
+  "framework": {
+    "codes": [
+      "CHIPENCOD"
+    ],
+    "files": {
+      "CHIPENCOD": "CL/CHIPENCOD_CP.md"
+    }
+  },
+  "category": "Institutional Collusion",
+  "severity": "CRITICAL",
+  "confidence": {
+    "value": 0.58,
+    "components": {
+      "CL.CHIPENCOD.T4.C3.Art.193": 0.688
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T06:42:55.732583Z",
+    "history": [
+      "2026-05-12T06:38:52.218535+00:00: value=0.0",
+      "2026-05-12T06:39:05.290536+00:00: value=0.0",
+      "2026-05-12T06:39:08.826092+00:00: value=0.0",
+      "2026-05-12T06:39:59.276952+00:00: value=0.58",
+      "2026-05-12T06:40:27.554482+00:00: value=0.58",
+      "2026-05-12T06:41:26.634085+00:00: value=0.58",
+      "2026-05-12T06:42:09.041762+00:00: value=0.58",
+      "2026-05-12T06:42:43.298619+00:00: value=0.58"
+    ],
+    "validated": true,
+    "note": "Validated by V10 pipeline check. Lowered from legacy contract value (0.94) to formula-derived value (0.52)."
+  },
+  "incident": {
+    "date": "5 July 2024, Santiago Airport (SCL)",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T00:00:00Z",
+    "clock_time_confidence": "unknown"
+  },
+  "incident_timestamp": "2024-07-05T00:00:00+00:00",
+  "incident_timestamp_display": "5 July 2024, Santiago Airport (SCL)",
+  "allegation_summary": "On 5 July 2024, at Santiago Airport during the boarding or disembarkation of flight LA8159, LATAM Airlines staff, in coordination with officials of the Dirección General de Aeronáutica Civil (DGAC) and the Policia de Investigaciones de Chile (PDI), orchestrated a false narrative that a passenger was aggressive, leading to the passenger's forcible removal. LATAM initiated the false accusation; DGAC officials abdicated their regulatory oversight role and instead facilitated the removal; PDI officers executed the physical removal without independently verifying the accusation. Subsequently, PDI coached LATAM staff to file a personal complaint rather than a corporate one to shield the airline from vicarious liability. CCTV footage later exonerated the passenger, revealing that the three institutions had colluded to maintain the false narrative.",
+  "legal_basis": {
+    "frameworks": [
+      {
+        "framework_code": "CHIPENCOD",
+        "framework_name": "CHIPENCOD",
+        "framework_file": "CL/CHIPENCOD_CP.md",
+        "articles": [
+          {
+            "article_id": "CL.CHIPENCOD.T4.C3.Art.193",
+            "article_name": "Artículo 193, Código Penal de Chile — Falsedad ideológica por empleado público",
+            "article_text": "4.° Faltando a la verdad en la narración de hechos sustanciales. 5.° Alterando las fechas verdaderas. 6.° Haciendo en documento verdadero cualquiera alteración o intercalación que varíe su sentido. 7.° Dando copia en forma fehaciente de un documento supuesto, o manifestando en ella cosa contraria o diferente de la que contenga el verdadero original. 8.° Ocultando en perjuicio del Estado o de un particular cualquier documento oficial.",
+            "applicability_rationale": "DGAC and PDI officials, acting as public employees, abused their office by making false statements regarding the passenger's behavior, which were substantial to the decision to remove the passenger. Their collusion with LATAM transformed what should have been an independent regulatory and law enforcement action into a coordinated misrepresentation. | legacy paraphrase: Será castigado con presidio menor en su grado máximo a presidio mayor en su grado mínimo el empleado público que, abusando de su oficio, cometiere falsedad: faltando a la verdad en la narración de hechos sustanciales.",
+            "duty_bearer": "state",
+            "norm_type": "definition",
+            "applicability": "supporting",
+            "subsections_invoked": [
+              "3",
+              "4",
+              "8"
+            ],
+            "status": "established"
+          }
+        ]
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CHIPENCOD.Art.194",
+      "candidate_name": "Artículo 194, Código Penal — Falsedad en documento público por particular",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.194 from bcn.cl/leychile",
+        "Confirm whether LATAM employees (private actors) who induced or co-authored the false narrative fall under Art.194 rather than Art.193"
+      ],
+      "preliminary_view": "Art.194 punishes private individuals who commit the same falsifications described in Art.193 in public documents. LATAM crew members who provided the false aggression narrative that was incorporated into official DGAC/PDI reports could be liable under this provision as non-public-employee co-authors of documentary falsification.",
+      "history_note": "Complementary to established Art.193; covers the private-actor side of the same coordinated falsification."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.Art.210",
+      "candidate_name": "Artículo 210, Código Penal — Falso testimonio / declaración falsa ante autoridad",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.210 from bcn.cl/leychile",
+        "Determine whether LATAM crew's oral statements to DGAC/PDI constitute 'declaraciones' within the scope of Art.210"
+      ],
+      "preliminary_view": "If LATAM personnel made formal declarations to PDI or DGAC falsely asserting passenger aggression, Art.210 (false testimony/declaration before authority) may apply. The CCTV review confirmed no aggression occurred, supporting the falsity element.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.Art.256",
+      "candidate_name": "Artículo 256, Código Penal — Prevaricación administrativa (funcionario público que falta a obligaciones)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.256 from bcn.cl/leychile",
+        "Assess whether DGAC/PDI officers' failure to independently verify LATAM's claims before enforcing removal constitutes a dereliction of duty under this article"
+      ],
+      "preliminary_view": "DGAC officials who enforced removal without independent verification, and PDI officers who refused to take a complaint against LATAM despite confirming no aggression on CCTV, may have knowingly failed to discharge their legal obligations, constituting administrative prevarication.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.Art.255",
+      "candidate_name": "Artículo 255, Código Penal — Abusos contra particulares por funcionarios públicos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.255 from bcn.cl/leychile",
+        "Verify whether forced deplaning enforced by state agents without lawful basis constitutes 'vejación injusta' or 'apremio ilegítimo' under this provision"
+      ],
+      "preliminary_view": "The physical removal of the passenger by security personnel acting under DGAC/captain authority, based on a fabricated narrative, could constitute an abuse against a private individual by public officials exercising their functions.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.Art.269bis",
+      "candidate_name": "Artículo 269 bis, Código Penal — Obstrucción a la investigación",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.269bis from bcn.cl/leychile",
+        "Determine whether PDI's refusal to accept a complaint against LATAM (seg-62) and channeling it only as a personal complaint constitutes obstruction"
+      ],
+      "preliminary_view": "PDI officer's explicit statement that a complaint could only be taken 'as your person, not as LATAM' — despite having confirmed via CCTV that no aggression occurred — may constitute obstruction of justice by limiting the scope of investigation and shielding the corporate actor.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.Art.15",
+      "candidate_name": "Artículo 15, Código Penal — Autoría y participación (coautoría)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.15 from bcn.cl/leychile",
+        "Assess whether coordinated action between LATAM, DGAC, and PDI satisfies co-authorship requirements under numerals 1 or 3"
+      ],
+      "preliminary_view": "The collusion theory requires establishing that multiple actors took part in the execution of the offense directly, or facilitated its commission by prior agreement. Art.15 provides the doctrinal basis for attributing criminal liability to all participants in the coordinated misconduct.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.5",
+      "candidate_name": "Artículo 5, Código Aeronáutico — Autoridad aeronáutica y sus funciones",
+      "framework_cache_status": "pending_fetch",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.5 from bcn.cl/leychile",
+        "Confirm DGAC's specific legal duties regarding passenger rights and independent verification before enforcing carrier decisions"
+      ],
+      "preliminary_view": "Establishes DGAC's regulatory role and duties. Relevant to showing that DGAC had an independent obligation to verify facts rather than merely rubber-stamp LATAM's removal request.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.145",
+      "candidate_name": "Artículo 145, Código Aeronáutico — Autoridad del comandante de aeronave",
+      "framework_cache_status": "pending_fetch",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.145 from bcn.cl/leychile",
+        "Determine whether captain's authority to order deplaning is absolute or requires factual basis, and whether exercise based on fabricated grounds vitiates the order's legality"
+      ],
+      "preliminary_view": "DGAC's narrative references the captain's order to deplane. Art.145 defines the scope and limits of the commander's authority. If the captain's order was based on false information provided by crew, the order may lack legal foundation.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.3",
+      "candidate_name": "Artículo 3, Ley 19.496 (Ley de Protección al Consumidor) — Derechos básicos del consumidor",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.3 from bcn.cl/leychile",
+        "Identify which letras (a, b, c, d, e) are engaged by arbitrary service denial and dignitary harm"
+      ],
+      "preliminary_view": "The passenger as consumer has rights to non-discrimination, dignity, and full information. LATAM's removal based on fabricated grounds violates the consumer's right to non-arbitrary service denial and dignified treatment.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.23",
+      "candidate_name": "Artículo 23, Ley 19.496 — Infracción por negativa injustificada de venta o prestación de servicio",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.23 from bcn.cl/leychile",
+        "Confirm applicability to airline service denial and whether arbitrary discrimination is covered"
+      ],
+      "preliminary_view": "LATAM's refusal to transport the passenger without legitimate justification (CCTV confirmed no aggression) may constitute unjustified refusal to provide a contracted service, triggering consumer protection sanctions.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Artículo 2314, Código Civil — Responsabilidad extracontractual (delito o cuasidelito civil)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2314 from bcn.cl/leychile",
+        "Confirm applicability to coordinated tortious conduct by multiple actors (LATAM + state agents)"
+      ],
+      "preliminary_view": "General tort liability provision. The coordinated misconduct causing patrimonial and moral damages to the passenger (missed flight, reputational harm, emotional distress) engages civil liability of all participants.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2317",
+      "candidate_name": "Artículo 2317, Código Civil — Responsabilidad solidaria por delito o cuasidelito cometido por varios",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2317 from bcn.cl/leychile",
+        "Verify that joint tortfeasor solidarity applies when public and private actors collude"
+      ],
+      "preliminary_view": "If multiple actors (LATAM, DGAC, PDI) jointly caused the harm through coordinated misconduct, Art.2317 establishes their solidary (joint and several) civil liability for damages.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.N3",
+      "candidate_name": "Artículo 19 N°3, Constitución Política — Igual protección de la ley / debido proceso",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19.N3 from bcn.cl/leychile",
+        "Assess whether PDI's refusal to process complaint against LATAM violates equal protection and due process guarantees"
+      ],
+      "preliminary_view": "PDI's channeling of the complaint only 'as your person, not as LATAM' despite confirmed absence of aggression may violate the constitutional guarantee of equal protection before the law and access to justice.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.N7",
+      "candidate_name": "Artículo 19 N°7, Constitución Política — Libertad personal y seguridad individual",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19.N7 from bcn.cl/leychile",
+        "Determine whether forced deplaning and detention by security constitutes a restriction of personal liberty without legal basis"
+      ],
+      "preliminary_view": "The physical removal and effective detention of the passenger by security personnel acting on fabricated grounds may constitute an unlawful restriction of personal liberty, engaging constitutional protections.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.Art.148",
+      "candidate_name": "Artículo 148, Código Penal — Detención ilegal por funcionario público",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.148 from bcn.cl/leychile",
+        "Assess whether the forced removal and effective detention without legal basis by state-directed security constitutes illegal detention"
+      ],
+      "preliminary_view": "Agent-fit note: This article targets public employees who illegally detain persons. If the security personnel who physically removed the passenger were acting under DGAC/PDI direction (state agents), and the factual basis was fabricated, Art.148 may apply to those state actors.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.Art.22",
+      "candidate_name": "Artículo 22, Código Penal — Conspiración",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.22 from bcn.cl/leychile",
+        "Verify whether conspiracy doctrine applies to the pre-arranged coordination between LATAM and state actors, or whether co-authorship (Art.15) is the more appropriate vehicle"
+      ],
+      "preliminary_view": "If the coordination between LATAM, DGAC, and PDI was pre-arranged rather than spontaneous, conspiracy provisions may supplement co-authorship liability. However, Chilean law generally prefers Art.15 co-authorship for executed offenses.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.Art.241",
+      "candidate_name": "Artículo 241, Código Penal — Exacciones ilegales / cohecho pasivo",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.241 from bcn.cl/leychile",
+        "Determine whether DGAC/PDI officers acting in LATAM's interest without independent verification suggests improper benefit or institutional capture that could engage corruption-adjacent provisions"
+      ],
+      "preliminary_view": "Speculative but worth verifying: if state actors systematically defer to LATAM without independent verification, this pattern may suggest institutional capture. Art.241 would require evidence of improper benefit, which is not directly established in the segments but warrants investigation.",
+      "history_note": "Low-confidence candidate; included for completeness given the collusion theory."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.131",
+      "candidate_name": "Artículo 131, Código Aeronáutico — Obligaciones del transportador aéreo",
+      "framework_cache_status": "pending_fetch",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.131 from bcn.cl/leychile",
+        "Confirm whether this article establishes the carrier's obligation to transport passengers who have complied with contractual requirements"
+      ],
+      "preliminary_view": "If the passenger complied with all boarding procedures (as he asserts and CCTV appears to confirm), LATAM's refusal to transport him may breach the carrier's statutory obligation under the Código Aeronáutico.",
+      "history_note": ""
+    }
+  ],
+  "cross_references": [
+    {
+      "ref": "CL-002",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001__opus46",
+      "relation": "false_accusation_formed_basis_for_multi_agency_collusion"
+    },
+    {
+      "ref": "CL-001__opus46v1",
+      "relation": "calumnia_propagated_across_institutions_without_verification"
+    },
+    {
+      "ref": "CL-002__opus46",
+      "relation": "pdi_force_deployed_in_coordination_with_latam_and_dgac"
+    },
+    {
+      "ref": "CL-003__opus46",
+      "relation": "alternate_draft_of_same_collusion_violation"
+    },
+    {
+      "ref": "CL-005",
+      "relation": "cctv_exoneration_confirmed_yet_institutions_maintained_false_narrative"
+    },
+    {
+      "ref": "CL-005__deepseek",
+      "relation": "pdi_concealed_exculpatory_finding_despite_confirming_no_aggression"
+    },
+    {
+      "ref": "CL-007",
+      "relation": "downstream_consequence_of_coordinated_institutional_misconduct"
+    },
+    {
+      "ref": "CL-011",
+      "relation": "institutional_failure_to_remedy_after_collusion_exposed"
+    },
+    {
+      "ref": "CL-016",
+      "relation": "unsigned_carta_desembarque_product_of_institutional_collusion"
+    },
+    {
+      "ref": "CL-016__gemini3flash",
+      "relation": "invalid_document_issued_through_coordinated_misconduct"
+    },
+    {
+      "ref": "CL-016__grok41fast",
+      "relation": "disembarkation_letter_repeated_disproved_accusation_from_collusion"
+    },
+    {
+      "ref": "CL-016__haikulatest",
+      "relation": "carta_desembarque_perpetuated_false_narrative_across_agencies"
+    },
+    {
+      "ref": "CL-016__hy3",
+      "relation": "invalid_document_evidences_inter_institutional_coordination"
+    },
+    {
+      "ref": "CL-016__opus46",
+      "relation": "dgac_issued_document_based_on_unverified_latam_accusation"
+    },
+    {
+      "ref": "CL-016__opus47",
+      "relation": "carta_desembarque_formalized_collusive_removal_decision"
+    },
+    {
+      "ref": "CL-016__opus47version2",
+      "relation": "unsigned_document_reflects_coordinated_institutional_action"
+    },
+    {
+      "ref": "CL-016__sonnet4",
+      "relation": "invalid_carta_produced_by_dgac_latam_pdi_coordination"
+    },
+    {
+      "ref": "CL-016__sonnet4.6",
+      "relation": "disembarkation_document_issued_without_independent_verification"
+    },
+    {
+      "ref": "CL-016__sonnetlatest",
+      "relation": "carta_desembarque_memorialized_collusive_false_narrative"
+    },
+    {
+      "ref": "CL-017",
+      "relation": "further_institutional_action_flowing_from_coordinated_misconduct"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-003-PARTE-DGAC-TEXTO",
+      "question": "¿Cuál es el contenido exacto del parte DGAC?",
+      "blocks_element": "acto_del_oficio",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-003-PARTE-DGAC-NATURALEZA",
+      "question": "¿Naturaleza jurídica exacta del parte DGAC?",
+      "blocks_element": "objeto_material",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-003-COMUNICACION-PREVIA",
+      "question": "¿Existió comunicación previa entre DGAC/PDI y LATAM?",
+      "blocks_element": "abuso_del_oficio",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-003-SECUENCIA-TEMPORAL",
+      "question": "¿El parte fue emitido antes o después de la revisión CCTV?",
+      "blocks_element": "modalidad_4",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-003-PARTE-DGAC-CONTENIDO-AGRESION",
+      "question": "¿El parte narra positivamente una agresión u omite la exoneración?",
+      "blocks_element": "modalidad_4",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-003-ATRIBUCION-DECLARACIONES",
+      "question": "¿El parte atribuye al pasajero declaraciones que él niega?",
+      "blocks_element": "modalidad_3",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-003-DOLO-MOMENTO-CONOCIMIENTO",
+      "question": "¿En qué momento exacto tomaron conocimiento de la falsedad?",
+      "blocks_element": "dolo",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-003-DOLO-COMUNICACION-DGAC-PDI",
+      "question": "¿Existió comunicación DGAC-PDI acreditando conocimiento compartido?",
+      "blocks_element": "dolo",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-003-NOMBRAMIENTOS",
+      "question": "¿Nombramientos formales y calidad jurídica de cada funcionario?",
+      "blocks_element": "sujeto_activo",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-003-ATRIBUCIONES-LEGALES",
+      "question": "¿Actuaron dentro o fuera de sus atribuciones legales?",
+      "blocks_element": "abuso_del_oficio",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-003-DOCUMENTO-OCULTADO",
+      "question": "¿Existía registro oficial que debió generarse?",
+      "blocks_element": "modalidad_8",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-003-AUTENTICACION-GRABACION",
+      "question": "¿Puede autenticarse la grabación PDI como evidencia válida?",
+      "blocks_element": "modalidad_4",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-003-LATAM-COAUTORIA",
+      "question": "¿Puede LATAM ser imputado como coautor o partícipe?",
+      "blocks_element": "sujeto_activo",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-003-PARTE-DGAC-ENTREGA",
+      "question": "¿Se solicitó el parte y fue denegado?",
+      "blocks_element": "modalidad_8",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-003-PERJUICIOS-ADICIONALES",
+      "question": "¿Existen perjuicios adicionales cuantificables?",
+      "blocks_element": "perjuicio",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL003-DGAC-ID",
+      "question": "¿Consta en registros administrativos la identidad completa (nombre, grado, cargo) del funcionario DGAC que emitió el parte oficial referido en seg-75?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.4.elem.sujeto_activo",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL003-DGAC-DEBER",
+      "question": "¿Tenía el funcionario DGAC un deber legal o reglamentario de verificar independientemente los hechos reportados por la aerolínea antes de emitir el parte oficial?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.4.elem.abuso_del_oficio",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL003-PARTE-TEXTO",
+      "question": "¿Cuál es el contenido textual íntegro del parte emitido por la DGAC (referido en seg-75), y en particular, qué hechos específicos se narraron respecto de la conducta del pasajero?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.4.elem.objeto_material",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL003-PARTE-AGRESION",
+      "question": "¿Se consignó en el parte DGAC la supuesta agresión del pasajero que fue posteriormente desmentida por la revisión de cámaras CCTV (seg-44, seg-55)?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.4.elem.modalidad_tipica_faltar_verdad",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL003-DGAC-CCTV",
+      "question": "¿Tuvo el funcionario DGAC acceso a las grabaciones de CCTV del aeropuerto antes de emitir el parte oficial?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.4.elem.tipicidad_subjetiva_dolo",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL003-PDI-DGAC-COM",
+      "question": "¿Existió comunicación entre el PDI y el DGAC, previa a la emisión del parte, en la que se compartiera la conclusión de que las cámaras no mostraban agresión alguna?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.4.elem.tipicidad_subjetiva_dolo",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL003-CCTV-CUSTODIA",
+      "question": "¿Las grabaciones CCTV del aeropuerto son custodiadas por una entidad pública (DGAC, PDI) o por el concesionario privado, y califican jurídicamente como 'documento oficial' para efectos del Art. 193 N°8 CP?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.8.elem.modalidad_ocultacion",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL003-CCTV-SOLICITUD",
+      "question": "¿Se solicitó formalmente al PDI, DGAC o al concesionario aeroportuario la entrega o preservación de las grabaciones CCTV, y fue dicha solicitud denegada o ignorada?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.8.elem.modalidad_ocultacion",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL003-CCTV-PRESERV",
+      "question": "¿Existen aún las grabaciones CCTV del incidente, o fueron eliminadas conforme a políticas de retención de datos, y en tal caso, se incumplió algún deber de preservación?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.8.elem.modalidad_ocultacion",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL003-OMISION-VS-OCULT",
+      "question": "¿La conducta del PDI de no incorporar la evidencia CCTV exculpatoria al procedimiento constituye un acto positivo de 'ocultamiento' en el sentido del Art. 193 N°8, o se trata de una mera omisión no subsumible en dicho tipo?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.8.elem.modalidad_ocultacion",
+      "priority": "medium"
+    }
+  ],
+  "related_violations": [
+    "CL-001",
+    "CL-002",
+    "CL-016"
+  ],
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "_provenance": {
+    "source": "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN/CL-003.json",
+    "vault_operations": 11,
+    "converted_by": "examples/vault_to_bundle.py"
+  }
+}

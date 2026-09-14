@@ -180,6 +180,15 @@ _METADATA_LINE_PATTERN = re.compile(
 _DECLARED_SHA_PATTERN = re.compile(r"\*\*Sha256:\*\*\s*([0-9a-f]{64})", re.IGNORECASE)
 
 
+def _normalize_article_key(identifier: str) -> str:
+    """Casefold and drop spaces/underscores so an ELI id and the cache header
+    identifier it was derived from can be compared: the caches declare
+    ``CL.CPCL.C1.Art.269_ter`` for the header ``### Art. 269 ter``,
+    ``CL.LPDC.Art.23bis`` for ``### Art. 23 bis`` and ``CL.LPDC.Art.50A`` for
+    ``### Art. 50 A``."""
+    return re.sub(r"[\s_]+", "", identifier).casefold()
+
+
 def _strip_metadata_block(body: str) -> str:
     """Drop leading metadata lines (Theme/ELI ID/Tags/...), trailing '---'
     separators, and surrounding blank lines so the returned string is the
@@ -244,9 +253,18 @@ class MarkdownFrameworkSource:
         as well as a bare numeric form: if no exact match, returns the body of
         the cached article whose identifier starts with ``article_number``
         followed by a non-digit boundary (so '133' matches '133 A' only if
-        '133' itself is not cached)."""
+        '133' itself is not cached).
+
+        The canonical ELI id is accepted too even when it spells the
+        identifier differently from the header, because ELI ids drop the
+        spaces the headers keep ('269_ter' vs '269 ter', '23bis' vs '23 bis').
+        """
         if article_number in self._articles:
             return self._articles[article_number]
+        wanted = _normalize_article_key(article_number)
+        for key, body in self._articles.items():
+            if _normalize_article_key(key) == wanted:
+                return body
         prefix = f"{article_number} "
         prefix_dot = f"{article_number}."
         for key, body in self._articles.items():

@@ -1,0 +1,289 @@
+{
+  "schema_version": "4.0",
+  "violation_id": "CL-030",
+  "violation_number": "CL-030",
+  "title": "Chilean Penal Code Violations by Public Officials — Abuso de Autoridad and Obstruction of Justice During LA8159 Investigation",
+  "case": {
+    "id": "I-002",
+    "name": "I-002-Chile-Santiago"
+  },
+  "jurisdiction": "CL",
+  "framework": {
+    "codes": [
+      "CPCL",
+      "LPDC"
+    ],
+    "files": {
+      "CPCL": "CL/CodigoPenal.md",
+      "LPDC": "CL/L19496_LPDC.md"
+    }
+  },
+  "category": "Created from seed (Lote F)",
+  "severity": "CRITICAL",
+  "confidence": {
+    "value": 0.72,
+    "components": {
+      "CL.CPCL.C1.Art.255": 0.82,
+      "CL.CPCL.C1.Art.269_ter": 0.933,
+      "CL.LPDC.Art.23": 0.68
+    },
+    "authorities_verification_factor": 0.887,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.887",
+    "derived_at": "2026-09-14T00:35:17.493466Z",
+    "history": [
+      "2026-09-13T15:40:47.712066+00:00: value=0.38",
+      "2026-09-13T18:06:22.564736+00:00: value=0.48",
+      "2026-09-13T18:06:45.482321+00:00: value=0.48",
+      "2026-09-13T18:07:11.247888+00:00: value=0.48",
+      "2026-09-13T18:07:44.966248+00:00: value=0.48",
+      "2026-09-13T18:35:10.575410+00:00: value=0.48",
+      "2026-09-13T18:36:01.454856+00:00: value=0.48",
+      "2026-09-13T18:46:25.414240+00:00: value=0.48",
+      "2026-09-13T18:46:36.663570+00:00: value=0.48",
+      "2026-09-13T18:46:36.670005+00:00: value=0.48",
+      "2026-09-13T19:08:50.148387+00:00: value=0.67",
+      "2026-09-13T19:14:21.745236+00:00: value=0.67",
+      "2026-09-13T19:53:48.835108+00:00: value=0.67",
+      "2026-09-13T19:55:58.637487+00:00: value=0.67",
+      "2026-09-13T20:09:29.320019+00:00: value=0.67",
+      "2026-09-13T20:17:01.009808+00:00: value=0.7",
+      "2026-09-13T20:17:25.193395+00:00: value=0.7",
+      "2026-09-13T20:18:44.703039+00:00: value=0.7",
+      "2026-09-13T20:18:56.432853+00:00: value=0.7",
+      "2026-09-13T20:18:56.787382+00:00: value=0.7"
+    ],
+    "validated": false,
+    "note": "Synced with Validation/checks.json from the violation-pack pipeline (V01–V17: 14 pass, 3 warn, 0 fail). All three warnings are genuine and non-blocking. V03 article_text_hash: framework CONST declares a self-reported SHA (26b530c1…) that does not match its actual content (a42140a7…) — a pre-existing property of data/law/CL/Constitucion.md, reported the same way for the ~20 other bundles that register it, not something this bundle introduced. V07 authorities_verification: 6/8 authorities remain research targets; the two CPR authorities (Art. 19 N° 1, Art. 19 N° 3) were verified with statute_in_bundle_v1 against Legal framework/CONST.md, so authorities_verification_factor = 0.887. That cache is the constituteproject.org English translation, not the official BCN/leychile text each research_query asked for; the caveat is recorded on both authorities' verification_provenance.notes and fabrication_risk_note, and the Spanish wording is attested by no cache in this corpus. V12 speaker_attribution: STG-6 seg-292/seg-297 and STG-7 seg-41 carry the diarizer label 'multi_party_audio', which the transcript participant record does not declare, so their speaker attribution is unresolved. The confidence rose from 0.48 to 0.67 when the dead-weight CL.LPDC.T1.Art.3.b grid was removed, and from 0.67 to 0.70 when the two CPR authorities were verified (see _provenance.remediation). 2026-09-13 (agent, after review of .dev/04-CL-030-improvements.md): the bundle adopted 20 agent-verified segments and 22 nexus rows, and Art. 255 'dolo' was raised contested -> strong on the basis of the DGAC's own on-record concession (STG-6/seg-301, seg-302) together with the cabin crew's naming of the motive (STG-5/seg-13). That single proof_status change moves Art.255 0.76 -> 0.82 and the aggregate 0.70 -> 0.72. It is important that the 20 segments and 22 nexus rows by themselves are worth 0.00: weighted_score is the mean of PROOF_WEIGHTS[proof_status] per grid and neither nexus.strength nor proof_evidence_segments is an input to it, so a bundle can be materially better evidenced at an unchanged confidence. The 0.75-0.78 aggregate predicted in the review was not adopted because it is not reachable from the changes that review proposed; it would require four proof_status flips (measured ceiling 0.77)."
+  },
+  "incident": {
+    "date": "2024-07-05",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T13:30:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "incident_timestamp": "2024-07-05T13:30:00-04:00",
+  "incident_timestamp_display": "2024-07-05",
+  "allegation_summary": "DGAC and PDI public officials were involved in the handling of the LA8159 incident and the subsequent investigation into a complaint against the passenger. The evidence establishes the service context in which DGAC personnel acted (airport security, STG-7 seg-36, seg-82; STG-6 seg-297) and identifies a serving police officer who knew there had been no assault and steered the complaint towards a version that did not record that fact. On that basis it is alleged that a police officer obstructed the investigation by failing to preserve the exculpatory record (Art. 269 ter CPCL), that the passenger was subjected to unjust harassment by a public employee acting in the service (Art. 255 CPCL), and that the air operator incurred liability for negligence in the provision of the service, causing the passenger a detriment (Art. 23 LPDC). Every provision is currently invoked as supporting rather than direct applicability; the elements that remain unproven are recorded in the element grids and carried as open questions. Art. 223 and 224 CPCL (prevaricación) are carried as unverified candidates only: their text is absent from the current CPCL framework cache. These allegations are independent of the false accusation by the LATAM [[SPK-stewardess-accuser]] (CL-001) and concern separate conduct by state officials.",
+  "legal_basis": {
+    "frameworks": [
+      {
+        "framework_code": "CPCL",
+        "framework_name": "CPCL",
+        "framework_file": "CL/CodigoPenal.md",
+        "articles": [
+          {
+            "article_id": "CL.CPCL.C1.Art.255",
+            "article_name": "Vejaciones injustas por empleado publico",
+            "article_text": "El empleado publico que, desempenando un acto del servicio, cometiere cualquier vejacion injusta contra las personas sera castigado con la pena de reclusion menor en su grado minimo, salvo que el hecho sea constitutivo de un delito de mayor gravedad, caso en el cual se aplicara solo la pena asignada por la ley a este.",
+            "applicability_rationale": "El tipo exige que el empleado público, desempeñando un acto del servicio, cometa una vejación injusta contra las personas. La evidencia acredita el contexto de servicio (STG-7 seg-36, seg-82; STG-6 seg-297) y la imputación subjetiva se califica como dolo eventual (STG-6 seg-297) por lo que la aplicabilidad se califica como de apoyo y no directa.",
+            "duty_bearer": "state",
+            "norm_type": "penalty",
+            "applicability": "supporting",
+            "subsections_invoked": [],
+            "status": "established"
+          },
+          {
+            "article_id": "CL.CPCL.C1.Art.269_ter",
+            "article_name": "Obstruccion a la investigacion por funcionario",
+            "article_text": "El funcionario policial, el fiscal del Ministerio Publico, o el abogado asistente del fiscal, en su caso, que a sabiendas ocultare, alterare o destruyere cualquier antecedente, objeto o documento, o imagen o sonido contenido en sistemas de registro y almacenamiento audiovisual que permita establecer la existencia o inexistencia de un delito, la participacion punible en el de alguna persona o su inocencia, o que pueda servir para la determinacion de la pena, sera castigado con presidio menor en cualquiera de sus grados e inhabilitacion especial perpetua para el cargo.",
+            "applicability_rationale": "La conducta documentada se refiere a un funcionario policial que conocía la ausencia de agresión y orientó la reformulación de la denuncia; la subsunción final requiere verificar el registro oficial de la investigación.",
+            "duty_bearer": "state",
+            "norm_type": "penalty",
+            "applicability": "supporting",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      },
+      {
+        "framework_code": "LPDC",
+        "framework_name": "LPDC",
+        "framework_file": "CL/L19496_LPDC.md",
+        "articles": [
+          {
+            "article_id": "CL.LPDC.Art.23",
+            "article_name": "Infracción por Negligencia del Proveedor",
+            "article_text": "> Artículo 23.- Comete infracción a las disposiciones de la presente ley el proveedor que, en la venta de un bien o en la prestación de un servicio, **actuando con negligencia**, causa menoscabo al consumidor debido a fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio.",
+            "applicability_rationale": "El tipo sanciona al proveedor que, actuando con negligencia en la venta de un bien o la prestación de un servicio, causa menoscabo al consumidor por fallas o deficiencias del bien o servicio. La aplicabilidad es de apoyo: la evidencia acredita la condición de proveedor y la información entregada, pero no un menoscabo cuantificado ni la negligencia en sí.",
+            "duty_bearer": "air_operator",
+            "norm_type": "penalty",
+            "applicability": "supporting",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      }
+    ]
+  },
+  "established_article_ids": [
+    "CL.CPCL.C1.Art.255",
+    "CL.CPCL.C1.Art.269_ter",
+    "CL.LPDC.Art.23"
+  ],
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CPCL.T4.Art.223",
+      "candidate_name": "CL.CPCL.T4.Art.223",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPCL.T4.Art.223 and confirm excerpt",
+        "Confirm the canonical ELI identifier: the inherited 'T4' hierarchy comes from the stale mirror, whereas the framework cache renders Art. 255 as CL.CPCL.C1.Art.255; the cache identifier wins until an authoritative text is loaded"
+      ],
+      "preliminary_view": "El empleado público que, a sabiendas, dictare providencia o resolución manifiestamente injusta en negocio contencioso-administrativo o meramente administrativo, será castigado con reclusión menor en su grado medio a inhabilitación especial ",
+      "history_note": "legacy import; excluded from the current CPCL framework cache — the CodigoPenal.md rebuild drops the stale-mirror summary that carried this text, so neither the text nor the 'T4' hierarchy is verified"
+    },
+    {
+      "candidate_article_id": "CL.CPCL.T4.Art.224",
+      "candidate_name": "CL.CPCL.T4.Art.224",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPCL.T4.Art.224 and confirm excerpt",
+        "Confirm the canonical ELI identifier: the inherited 'T4' hierarchy comes from the stale mirror, whereas the framework cache renders Art. 255 as CL.CPCL.C1.Art.255; the cache identifier wins until an authoritative text is loaded"
+      ],
+      "preliminary_view": "El empleado público que, a sabiendas, omitiere o retardare algún acto de su cargo, o no cumpliere con el deber de promover la persecución de los delincuentes, será castigado con reclusión menor en su grado mínimo y multa.",
+      "history_note": "legacy import; excluded from the current CPCL framework cache — the CodigoPenal.md rebuild drops the stale-mirror summary that carried this text, so neither the text nor the 'T4' hierarchy is verified"
+    }
+  ],
+  "cross_references": [
+    {
+      "ref": "CL-031",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-032",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-033",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-035",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-036",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-037",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-038",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-039",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-041",
+      "relation": "related"
+    },
+    {
+      "ref": "INT-001",
+      "relation": "related"
+    },
+    {
+      "ref": "INT-010",
+      "relation": "related"
+    },
+    {
+      "ref": "INT-017",
+      "relation": "related"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-CL030-001",
+      "question": "¿Consta en el expediente, la bitácora de cabina o el informe de la aerolínea algún elemento que acredite que la decisión de desembarque y la formulación de la denuncia se adoptaron con conocimiento de que no hubo agresión (dolo eventual)?",
+      "blocks_element": "CL.CPCL.C1.Art.255.1.elem.dolo",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL030-002",
+      "question": "¿Qué estándar ha fijado la jurisprudencia chilena para calificar de 'vejación injusta' (art. 255 CPCL) un desembarque forzado con custodia policial, y constituye el trato oficial acumulado —desestimación del reclamo, reconocimiento de no verificación y participación en el desembarque— una vejación injusta en el sentido de ese artículo?",
+      "blocks_element": "CL.CPCL.C1.Art.255.1.elem.vejacion_injusta",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL030-003",
+      "question": "¿El parte policial, el libro de novedades de la PDI y las grabaciones de la unidad de servicio registran la versión original sin agresión y su posterior reformulación por el funcionario que conocía la inocencia del pasajero?",
+      "blocks_element": "CL.CPCL.C1.Art.269_ter.elem.ocultamiento_o_alteracion",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL030-004",
+      "question": "¿Cuál es el procedimiento de seguridad que LATAM debía aplicar a bordo para verificar una denuncia de agresión antes de ordenar el desembarque, y consta que no se aplicó?",
+      "blocks_element": "CL.LPDC.Art.23.1.elem.negligencia",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL030-005",
+      "question": "¿Qué causa concreta se registró internamente como motivo de la remoción del vuelo y de la pérdida del ticket, y consta que esa causa no corresponde a una falla o deficiencia del servicio?",
+      "blocks_element": "CL.LPDC.Art.23.1.elem.falla_calidad",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL030-006",
+      "question": "¿Consta que la aerolínea entregó al pasajero información veraz y oportuna sobre los motivos de su desembarque y las vías de reclamo (materia del derecho a información del Art. 3 letra b LPDC, retirado de este bundle por falta de sustentación)?",
+      "blocks_element": null,
+      "priority": "low"
+    },
+    {
+      "id": "OQ-CL030-007",
+      "question": "¿Quién operó la puerta de embarque del vuelo LA8159 el 5 de julio de 2024: el pasajero mediante un equipo de autoemisión, o personal de la aerolínea? El registro contiene afirmaciones opuestas (STG-6/seg-79 y seg-83 de la DGAC frente a STG-6/seg-112 del pasajero) y una descripción del funcionamiento del equipo por un funcionario PDI (STG-7/seg-122), de modo que la controversia verificable es sobre la operación de la puerta y no sobre la existencia de la máquina.",
+      "blocks_element": "CL.CPCL.C1.Art.269_ter.elem.ocultamiento_o_alteracion",
+      "priority": "high"
+    }
+  ],
+  "related_violations": [
+    "CL-031",
+    "CL-032",
+    "CL-033",
+    "CL-035",
+    "CL-036",
+    "CL-037",
+    "CL-038",
+    "CL-039",
+    "CL-041",
+    "INT-001",
+    "INT-010",
+    "INT-017"
+  ],
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "_provenance": {
+    "source": "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN/CL-030.json",
+    "vault_operations": 4,
+    "converted_by": "examples/vault_to_bundle.py",
+    "remediation": [
+      {
+        "timestamp": "2026-09-13T18:31:08Z",
+        "actor": "agent_remediation",
+        "operation": "sync_contract_with_bundle",
+        "note": "Regenerated legal_basis from CL-030.json established_articles (dropped Art. 223/224, which carried empty article_text while marked established), adopted the canonical ELI ids (CL.CPCL.C1.Art.255, CL.CPCL.C1.Art.269_ter, CL.LPDC.T1.Art.3.b), added established_article_ids, re-keyed confidence.components and refreshed derived_at/history from the pipeline output, replaced the legacy-paraphrase applicability rationales with authored ones, removed the duplicate CL.CPCL.C1.Art.269_ter candidate now verified in bundle, and rewrote allegation_summary to drop the unsupported prevaricación (Arts. 223-224) and the untraceable EVID-001 CCTV citation."
+      },
+      {
+        "timestamp": "2026-09-13T19:20:00Z",
+        "actor": "agent_remediation",
+        "operation": "sync_contract_with_bundle",
+        "note": "Second-round CL-030 review follow-up. Removed CL.LPDC.T1.Art.3.b from established_article_ids and from legal_basis.frameworks[LPDC].articles (its element grid was all-missing, so it contributed 0 to the confidence numerator while diluting the denominator; the issue is carried forward as OQ-CL030-006 instead of as an unsupported established article). Rewrote allegation_summary to drop the right-to-information allegation that rested solely on that article. Repointed confidence.components/value at the recomputed derivation: value 0.48 → 0.67, components {Art.255: 0.76, Art.269_ter: 0.933, Art.23: 0.68} with Art. 255 rising from 0.66 because the dolo element moved from missing to contested. Mirrored the six bundle open_questions. Synced the Art. 255 applicability_rationale with the wording now stored in the bundle. Re-validated against the extended V01-V15 pipeline (V12 speaker_attribution, V13 evidence_nexus_coherence, V14 dead_weight_articles and V15 verbatim_hash_integrity were added after this review): 13 pass / 2 warn / 0 fail. Both warnings are genuine and deliberately non-blocking: V07 (no authorities listed) and V12 (3 segments labelled 'multi_party_audio', a speaker label the source participant record does not declare)."
+      },
+      {
+        "timestamp": "2026-09-13T20:10:00Z",
+        "actor": "agent_remediation",
+        "operation": "sync_contract_with_bundle",
+        "note": "Third-round CL-030 review follow-up. Adopted the corrected pack's structure but not three of its claims, each of which failed verification against the artifacts. (1) The pack asserted new segment fields speaker_source / speaker_attribution_basis and reassigned the speaker of three segments; EvidenceSegment is extra=forbid and has no such fields, so the pack does not load as a Violation at all (137 validation errors), and rewriting segment.speaker would hide the diarizer label that V12 exists to report. The three segments keep 'multi_party_audio' and the inference is declared in Element.weaknesses instead. (2) The pack marked two authorities verified; no authority in this corpus is verified=true, the flag may only be set with a VerificationProvenance written by the verify_authority protocol, and verifier.py rejects verified=true without it (E_AUTH_VERIFIED_BY_LLM), so all eight authorities are declared verified=false and carry their citation metadata in research_query / proposition_to_verify / fabrication_risk_note. authorities_verification_factor therefore stays 0.85 and confidence stays 0.67 rather than the pack's 0.70. (3) The pack's related_violations listed nine CL ids, none of which reciprocates the link; the twelve bundles that do declare an edge to CL-030 (CL-031..CL-041 subset and INT-001/010/017) are used instead. Also added cross_references to both views, aligned all six open questions byte-for-byte with the bundle, and refreshed confidence.note, which still described the V01-V11 pipeline. V01-V15: 13 pass / 2 warn / 0 fail."
+      }
+    ]
+  }
+}

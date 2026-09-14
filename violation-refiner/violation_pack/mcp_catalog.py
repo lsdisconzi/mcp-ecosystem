@@ -87,7 +87,7 @@ def _violation_pack_server(python: str | None = None) -> ServerEntry:
             ToolEntry("add_element_grid_tool", "Attach a doctrinal element grid.", ["layer-3"]),
             ToolEntry("build_nexus_layer_tool", "Attach the fact↔norm↔element matrix.", ["layer-4"]),
             ToolEntry("add_authority_stub_tool", "Attach an unverified authority stub.", ["layer-5"]),
-            ToolEntry("run_pipeline_tool", "Run V01–V11 validation.", ["validation"]),
+            ToolEntry("run_pipeline_tool", "Run the full validation pipeline.", ["validation"]),
             ToolEntry("enrich_violation_tool", "Run full LLM enrichment.", ["llm", "enrichment"]),
             ToolEntry("enrich_stage_tool", "Run one enrichment stage.", ["llm", "enrichment"]),
             ToolEntry("verify_enrichment_tool", "Run the LLM-output verifier.", ["verifier"]),

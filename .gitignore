@@ -14,7 +14,17 @@ __pycache__/
 *.egg
 *.egg-info/
 dist/
+# Generic Python build output — EXCEPT `violation-refiner/build/`, which holds the
+# refined violation bundles and their validation reports (versioned deliverables).
+# A directory exclusion prunes traversal, so the tree must be re-included
+# explicitly; a `!build/` in a deeper .gitignore cannot undo it.
 build/
+!violation-refiner/build/
+!violation-refiner/build/**
+# The negation above would also override the cache rules further up, so re-state
+# them for this one tree.
+violation-refiner/build/**/__pycache__/
+violation-refiner/build/**/*.py[co]
 .eggs/
 .Python
 pip-log.txt

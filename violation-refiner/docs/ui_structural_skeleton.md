@@ -56,7 +56,7 @@ S6  Layer 5 — Authority stubs                   add_authority_stub
 S7  Authority verification (3 protocols)        verify_statute_* / verify_human_attested
 S8  Confidence derivation + attach              derive_confidence / attach_confidence
 S9  LLM enrichment (optional, 8 stages)         enrich_violation
-S10 Validation V01–V11                          run_pipeline
+S10 Validation V01–V17                          run_pipeline
 S11 Packaging (json → manifest → zip)           write_violation_json → build_manifest → zip_bundle
 ```
 
@@ -516,6 +516,22 @@ The server rejects absolute paths and traversal outside the repository root.
 
 Optional bibliographic fields (all text, all optional): `court`, `rol`, `decision_date`, `author`, `work`, `pages`, `instrument`, `holding_summary`.
 
+> **Implementation divergence (measured).** The three allowed values above are a
+> *design proposal*, not a constraint. In `violation_pack/models.py`,
+> `Authority.verification_protocol` is declared `str | None` with **no
+> validator** — the `Literal` of those three protocol names belongs to
+> `VerificationProvenance.protocol`, a different field (V11 validates that one
+> against `_KNOWN_PROTOCOLS`). The implemented writer,
+> `jurisprudence.py`, puts free prose there:
+> `"Qdrant-record=<id>; primary_source_url=<url>"`, which is not one of the
+> three literals. `verify_statute_in_bundle` writes
+> `"statute_in_bundle_v1; source=…; sha256=…"`. So a `select` restricted to the
+> three literals would reject what the library actually produces; either the
+> field should be validated as an enum (and `jurisprudence.py` changed to match)
+> or this row should be a text input. V16 currently only warns when the field is
+> *blank* on a `verified=True` authority, which is all that can be stated
+> without settling that question.
+
 **Behaviours**
 
 - The `verification_protocol` select should *drive the S7 form*: choosing `statute_in_bundle_v1` pre-selects the S7 tab and shows the fields that protocol needs.
@@ -672,7 +688,7 @@ All three raise on failure with the prefix `verification_failed:` — parse that
 
 ---
 
-### S10 — Validation V01–V11
+### S10 — Validation V01–V17
 
 **Purpose.** Run the integrity pipeline and present the result. This is the reviewer's decision surface.
 
@@ -689,7 +705,7 @@ All three raise on failure with the prefix `verification_failed:` — parse that
 | `F-s10-known` | `known_violation_ids` | tag input | siblings | used by V05 |
 | `F-s10-extra` | `extra_checks` | advanced | `[]` | plug-in checks |
 
-**The eleven checks — render each with its semantics so pass/warn/fail is interpretable:**
+**The seventeen checks — render each with its semantics so pass/warn/fail is interpretable:**
 
 | ID | Name | Pass / Warn / Fail semantics |
 | --- | --- | --- |
@@ -704,6 +720,12 @@ All three raise on failure with the prefix `verification_failed:` — parse that
 | V09 | `language_consistency` | fail on inconsistent language fields |
 | V10 | `confidence_derivation` | fail when confidence is missing / not derivable |
 | V11 | `enrichment_integrity` | includes the known warning `W_AUTH_DANGLING_SUPPORT` |
+| V12 | `speaker_attribution` | **warn** when a cited segment's `speaker` is not a label its own source declares; sources with no participant record are skipped |
+| V13 | `evidence_nexus_coherence` | **warn** when a nexus row cites a segment its own element does not list in `proof_evidence_segments` |
+| V14 | `dead_weight_articles` | **warn** when an established article's grid scores 0 and only dilutes the weighted mean; articles scoring ≤ 0.2 are reported in a passing check |
+| V15 | `verbatim_hash_integrity` | fail when `verbatim_sha256` is not the digest of the `verbatim_es` beside it |
+| V16 | `authority_verification_coherence` | **fail** when `confidence.authorities_verification_factor` contradicts its own derivation (V10 only compares `confidence.value`); **warn** when an unverified stub leaves both `research_query` and `proposition_to_verify` blank, when a verified authority's pinned `source_sha256` no longer matches the cached framework it was verified against, or when a verified authority leaves `verification_protocol` blank (the prose counterpart of `verification_provenance.protocol`, which no other check reads) |
+| V17 | `cross_view_consistency` | **fail** when `open_questions` or `cross_references` disagree with `contract.json`; **warn** when no contract view is supplied. Optional fields are compared with nullability read from the model, so `null` vs `""` is not drift; `related_violations` and edge reciprocity are deliberately not asserted (corpus facts, not per-bundle invariants) |
 
 **Outputs.** `ValidationReport(pipeline_version, ran_at, violation_id, checks)` plus `report.summary` = `{total, pass, warn, fail}`.
 
@@ -711,8 +733,8 @@ All three raise on failure with the prefix `verification_failed:` — parse that
 
 ```
 Confidence: 0.74
-{'total': 11, 'pass': 7, 'warn': 4, 'fail': 0}
-warnings: V03, V05, V07, V11 (W_AUTH_DANGLING_SUPPORT)
+{'total': 17, 'pass': 12, 'warn': 5, 'fail': 0}
+warnings: V03, V05, V07, V11 (W_AUTH_DANGLING_SUPPORT), V17 (no contract view)
 ```
 
 **Files written by the batch path** (S11): `Validation/checks.json` (full report) and `Validation/validation_report.md` (markdown with `Total/Pass/Warn/Fail` and a bullet list per check).

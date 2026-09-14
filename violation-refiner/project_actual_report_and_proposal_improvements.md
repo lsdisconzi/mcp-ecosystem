@@ -41,6 +41,14 @@
 > | 7.9 | fix/remove `generate_map.py` | ✅ DONE (removed) | file absent |
 > | 7.10 | add `build/` to `.gitignore` | ✅ DONE | `build/` and `dist/` added to the runtime-artifacts block |
 >
+> **Amendment (2026-09-13):** `build/` is no longer ignored — rows 6 and 7.10
+> above are **superseded**. The root `.gitignore` now re-includes
+> `violation-refiner/build/`, so the 81 refined bundles, their conversion
+> artifacts and their validation reports are **versioned**. `build.prev/` (the
+> pre-rewrite 42-bundle snapshot) stays local-only. Only the transient per-run
+> files inside `build/` remain ignored: `refine_batch_summary.json`, `*.bak`,
+> `.DS_Store`, `__pycache__/`.
+>
 > **Current metrics (verified 2026-09-11):** 39 MCP tools (was 30); V01–V11
 > (11 checks, not 10); `python examples/refine_cl005.py` →
 > `Confidence: 0.74`, `Validation: {'total': 11, 'pass': 7, 'warn': 4, 'fail': 0}`
@@ -70,7 +78,8 @@
 - **Remaining risk (low)**: one design gap only — there is still no
   non-filesystem `FrameworkSource` implementation (ledger 5.2-10). The former
   documentation/config hygiene items are all closed: `.env.example` exists,
-  `docs/mcp_mapping.md` exists, `build/` and `dist/` are gitignored, and the
+  `docs/mcp_mapping.md` exists, `dist/` is gitignored and `build/` is tracked
+  (see the 2026-09-13 amendment), and the
   system-wide `pkill` fallback in `stop.sh` has been replaced by a
   cwd-scoped reaper. See the ledger above.
 

@@ -53,9 +53,16 @@ def test_endtoend_produces_a_bundle(example_module):
 
 
 def test_endtoend_validation_report(example_module):
+    # The expected check count is derived from the pipeline itself, never
+    # pinned: a hardcoded total silently becomes a "registration" test that
+    # has to be edited every time a check is added, instead of asserting that
+    # the run executed the whole pipeline.
+    from violation_pack.validation import DEFAULT_PIPELINE
+
     report = example_module.report
     summary = report.summary
-    assert summary["total"] == 11
+    assert summary["total"] == len(DEFAULT_PIPELINE)
+    assert [c.check_id for c in report.checks] == [cid for cid, _, _ in DEFAULT_PIPELINE]
     assert summary["fail"] == 0, f"Failures present: {[c for c in report.checks if c.status == 'fail']}"
     assert summary["pass"] >= 6, f"Only {summary['pass']} passes; details: {report.summary}"
 

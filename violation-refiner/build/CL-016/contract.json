@@ -1,0 +1,467 @@
+{
+  "schema_version": "4.0",
+  "violation_id": "CL-016",
+  "violation_number": "CL-016",
+  "title": ": \"Invalid Document — Unsigned 'Carta de Desembarque' with Disproven Allegations\"",
+  "case": {
+    "id": "I-002",
+    "name": "I-002-Chile-Santiago"
+  },
+  "jurisdiction": "CL",
+  "framework": {
+    "codes": [
+      "CACH"
+    ],
+    "files": {
+      "CACH": "CL/L18916_CACH.md"
+    }
+  },
+  "category": "Document Fabrication",
+  "severity": "CRITICAL",
+  "incident": {
+    "date": "5 de julho de 2024 — Voo LA8159 — Aeroporto SCL (ver Fatos Fixos do Incidente)",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T22:59:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "incident_timestamp": "2024-07-05T22:59:00-04:00",
+  "incident_timestamp_display": "5 de julho de 2024 — Voo LA8159 — Aeroporto SCL (ver Fatos Fixos do Incidente)",
+  "allegation_summary": "It is alleged that LATAM staff, under the direction of Supervisor [[SPK-diego-latam-supervisor]] and Supervisora [[SPK-antonela-latam-agent]], manufactured and delivered a false, unsigned, and unstamped 'carta de desembarque' (disembarkation letter) containing three allegations of passenger misconduct — aggression against LATAM personnel, unauthorized entry into the aircraft, and failure to follow instructions — all of which had been disproven by PDI CCTV review hours earlier. The document was fabricated using a 'certificado de contingencia' template designed for flight cancellations, routed through the Sales department (Ventas) for off-book printing, and delivered 9+ hours after the passenger's removal without signature, stamp, or identifiable author. [[SPK-diego-latam-supervisor]] was recorded instructing that the letter be 'adjusted' ('ajustar') to his specifications, and explicitly admitted that nobody who wrote the document was present at the event ('nadie estuvo en el hecho'). The delivered document fails to meet any of the mandatory requirements of CACH Art. 133 or LPDC Art. 23 bis for denied boarding documentation.",
+  "legal_basis": {
+    "frameworks": [
+      {
+        "framework_code": "CACH",
+        "framework_name": "CACH",
+        "framework_file": "CL/L18916_CACH.md",
+        "articles": [
+          {
+            "article_id": "CL.CACH.Art.133",
+            "article_name": "Codigo Aeronautico de Chile, Art. 133 — Denegacion de Embarque por Sobreventa",
+            "article_text": "1. A eleccion del pasajero:\n\na) Embarcar en el siguiente vuelo que tenga disponible el transportador, o en un transporte alternativo, si es que decidiera persistir en el contrato de transporte aereo.  \nb) El reembolso del monto total pagado por el billete, si el pasajero se desiste del contrato de transporte aereo y este no hubiera comenzado su ejecucion.",
+            "applicability_rationale": "The delivered document — an unsigned, unstamped, template-repurposed 'certificado de contingencia' containing PDI-disproven allegations and none of the passenger rights, compensation amounts, or complaint mechanisms required by CACH Art. 133 — constitutes a complete failure of the carrier's statutory obligations upon denied boarding. The passenger was not offered any of the options under Art. 133(1), no compensation under Art. 133(2), and the document provided as 'documentation' was a fabricated instrument containing false allegations manufactured through an off-book process routed through the Sales department rather than official channels. | legacy paraphrase: El transportador podra denegar el embarque a uno o mas pasajeros contra su voluntad, para lo cual debera: 1.- A eleccion del pasajero: a) Embarcar en el siguiente vuelo que tenga disponible el transportador, o en un transporte alternativo... b) El reembolso del monto total pagado por el billete... 2.- Sin perjuicio de lo anterior, el transportador debera ofrecer una compensacion al pasajero afectado con la denegacion de embarque... 10 unidades de fomento para vuelos de entre 2.500 y 4.000 kilometros; 20 unidades de fomento para vuelos de mas de 8.000 kilometros.",
+            "duty_bearer": "state",
+            "norm_type": "definition",
+            "applicability": "direct",
+            "subsections_invoked": [
+              "1",
+              "2"
+            ],
+            "status": "established"
+          }
+        ]
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CACH.Art.134",
+      "candidate_name": "Codigo Aeronautico de Chile, Art. 134 — Obligaciones de informacion al pasajero en caso de denegacion de embarque",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.134 from bcn.cl/leychile to confirm it establishes a duty to inform passengers in writing of their rights upon denied boarding",
+        "Verify whether Art. 134 mandates specific content requirements for the written notice (compensation amounts, complaint mechanisms, alternative transport options)"
+      ],
+      "preliminary_view": "If Art. 134 requires the carrier to deliver a written notice containing the passenger's rights and compensation entitlements upon denied boarding, the unsigned 'Carta de Desembarque' containing false allegations and omitting all statutory rights information would constitute a direct violation. The segments showing 'statutory_rights_omitted_from_document' and 'compensation_information_withheld' support this hypothesis.",
+      "history_note": "Companion provision to established Art. 133; likely contains the procedural/informational obligations that complement the substantive rights in Art. 133."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.135",
+      "candidate_name": "Codigo Aeronautico de Chile, Art. 135 — Registro y constancia de denegacion de embarque",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.135 from bcn.cl/leychile to determine if it establishes requirements for the formal documentation of denied boarding events",
+        "Verify whether Art. 135 requires signatures, stamps, or other authentication elements on denied boarding documentation"
+      ],
+      "preliminary_view": "If Art. 135 establishes formal requirements for denied boarding documentation (signatures, official stamps, authentication), the admission by Antonela that 'ninguno de nuestros documentos tiene firma' and the exposed fabrication process through Sales rather than official channels would constitute a direct violation of documentary formalities.",
+      "history_note": "Hypothesized based on the systematic structure of CACH Arts. 133 et seq. regarding denied boarding procedures. Needs verification of existence and content."
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.3",
+      "candidate_name": "Ley de Proteccion al Consumidor (19.496), Art. 3 — Derechos basicos del consumidor",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 3 of Ley 19.496 from bcn.cl/leychile",
+        "Confirm that Art. 3 letra b) establishes the right to truthful and timely information about goods and services",
+        "Confirm that Art. 3 letra e) establishes the right to adequate reparation and compensation"
+      ],
+      "preliminary_view": "Art. 3 letra b) of the LPC establishes the consumer's right to truthful, sufficient information. The delivery of a document containing PDI-disproven false allegations (aggression that PDI confirmed did not occur) and the refusal to correct false content ('No podemos cambiar la información que tenemos') would violate the right to truthful information. The withholding of compensation information and statutory rights from the document compounds this violation.",
+      "history_note": "General consumer protection framework applicable to air transport services in Chile. Supplements sector-specific CACH provisions."
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.12",
+      "candidate_name": "Ley de Proteccion al Consumidor (19.496), Art. 12 — Obligacion de cumplir lo ofrecido y pactado",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 12 of Ley 19.496 from bcn.cl/leychile",
+        "Verify that Art. 12 establishes that the terms and conditions offered or agreed upon are binding on the provider"
+      ],
+      "preliminary_view": "If the carrier sold a ticket for flight LA8159 and then denied boarding without complying with the contractual and statutory obligations (proper documentation, compensation, rebooking options), Art. 12 would be violated as the service contracted was not delivered and the provider failed to honor the terms of the transport contract.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.23",
+      "candidate_name": "Ley de Proteccion al Consumidor (19.496), Art. 23 — Infraccion por negativa injustificada de venta o prestacion de servicio",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 23 of Ley 19.496 from bcn.cl/leychile",
+        "Verify whether Art. 23 covers unjustified refusal to provide a contracted service and whether it applies when the refusal is based on fabricated or disproven grounds"
+      ],
+      "preliminary_view": "The denied boarding based on allegations of aggression that PDI explicitly confirmed did not occur ('una agresion a una persona....no hay') could constitute an unjustified refusal to provide the contracted air transport service under Art. 23, particularly when the justification document was fabricated through irregular channels.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.28",
+      "candidate_name": "Ley de Proteccion al Consumidor (19.496), Art. 28 — Publicidad o informacion engañosa",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 28 of Ley 19.496 from bcn.cl/leychile",
+        "Verify whether Art. 28's prohibition on misleading information extends to post-sale documentation containing false statements about the consumer's conduct"
+      ],
+      "preliminary_view": "The 'Carta de Desembarque' containing false allegations of aggression — disproven by PDI — could constitute misleading information under Art. 28 if the provision extends beyond advertising to encompass official documentation provided to consumers that misrepresents facts. This application is less certain and requires verification of the article's scope.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1545",
+      "candidate_name": "Codigo Civil, Art. 1545 — Fuerza obligatoria del contrato (ley para las partes)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 1545 of the Codigo Civil from bcn.cl/leychile",
+        "Confirm that Art. 1545 establishes that a validly formed contract is law for the contracting parties and cannot be invalidated except by mutual consent or legal cause"
+      ],
+      "preliminary_view": "The unilateral termination of the transport contract (denied boarding) based on fabricated grounds — allegations of aggression that PDI confirmed did not occur — would violate the binding force of the contract under Art. 1545. The carrier cannot unilaterally dissolve the contract based on false pretexts documented through irregular internal processes.",
+      "history_note": "Foundational civil law principle of pacta sunt servanda applicable to the air transport contract."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1546",
+      "candidate_name": "Codigo Civil, Art. 1546 — Buena fe contractual",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 1546 of the Codigo Civil from bcn.cl/leychile",
+        "Confirm that Art. 1546 establishes the obligation to execute contracts in good faith"
+      ],
+      "preliminary_view": "The fabrication of a document containing false allegations through an irregular process (routed through Sales, described as 'borrero'/draft, unsigned), the refusal to correct known falsehoods, the denial of access to CCTV evidence, and the imposition of a unilateral version ('eso es lo que vio la empresa') constitute bad faith in the execution of the transport contract, violating Art. 1546.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Codigo Civil, Art. 2314 — Responsabilidad extracontractual por daño",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 2314 of the Codigo Civil from bcn.cl/leychile",
+        "Confirm that Art. 2314 establishes that anyone who commits a wrongful act (delito o cuasidelito) causing damage to another is obligated to indemnify"
+      ],
+      "preliminary_view": "The creation and delivery of a document containing false allegations of aggression — which PDI confirmed did not occur — causing reputational harm and potential legal exposure to the passenger, could constitute an extracontractual wrongful act (hecho ilícito) under Art. 2314. The deliberate fabrication process exposed by supervisor Diego strengthens the dolus element.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1698",
+      "candidate_name": "Codigo Civil, Art. 1698 — Carga de la prueba (onus probandi)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 1698 of the Codigo Civil from bcn.cl/leychile",
+        "Confirm that Art. 1698 establishes that the burden of proof of an obligation or its extinction rests on the party alleging it"
+      ],
+      "preliminary_view": "LATAM's refusal to provide access to CCTV evidence ('No, ese no se puede mostrar') while simultaneously maintaining allegations of passenger aggression in the document creates an evidentiary issue. Under Art. 1698, the carrier bears the burden of proving the alleged aggression that justified the denied boarding. The suppression of video evidence and reliance on an unsigned, fabricated document fails to meet this burden.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPDP.Art.12",
+      "candidate_name": "Ley 19.628 sobre Proteccion de la Vida Privada, Art. 12 — Derecho de acceso a datos personales",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 12 of Ley 19.628 from bcn.cl/leychile",
+        "Verify that Art. 12 grants data subjects the right to access personal data held about them by responsible parties",
+        "Determine whether CCTV footage and internal incident reports constitute 'datos personales' under the law"
+      ],
+      "preliminary_view": "The denial of access to CCTV footage ('No, ese no se puede mostrar') and the characterization of the Carta de Desembarque as 'un documento privado que no es para los pasajeros' — despite containing allegations about the passenger's conduct — may violate the passenger's right to access personal data held about them under Art. 12 of Ley 19.628.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPDP.Art.6",
+      "candidate_name": "Ley 19.628 sobre Proteccion de la Vida Privada, Art. 6 — Exactitud de los datos personales",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 6 of Ley 19.628 from bcn.cl/leychile",
+        "Verify whether Art. 6 establishes an obligation to maintain accurate personal data and to rectify inaccurate data upon request"
+      ],
+      "preliminary_view": "The maintenance of false allegations of aggression in the Carta de Desembarque — after PDI confirmed no aggression occurred — and the explicit refusal to correct the information ('No podemos cambiar la información que tenemos') may violate the data accuracy obligation under Art. 6, particularly if the document feeds into LATAM's internal passenger records or blacklists.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.131",
+      "candidate_name": "Codigo Aeronautico de Chile, Art. 131 — Obligaciones del transportador aereo respecto del pasajero",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.131 from bcn.cl/leychile",
+        "Verify whether Art. 131 establishes general obligations of the air carrier toward passengers including duty of care and proper documentation"
+      ],
+      "preliminary_view": "As a general provision on carrier obligations, Art. 131 may establish the baseline duty framework that the fabrication of false documentation and denial of passenger rights violates. Needs verification of actual content and relationship to Art. 133.",
+      "history_note": "Structural provision preceding the established Art. 133; may contain general duty framework."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.172",
+      "candidate_name": "Codigo Aeronautico de Chile, Art. 172 — Responsabilidad del transportador por incumplimiento",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.172 from bcn.cl/leychile",
+        "Verify whether Art. 172 establishes carrier liability for breach of transport obligations and the scope of damages recoverable"
+      ],
+      "preliminary_view": "If Art. 172 establishes the liability regime for carrier breaches of the Codigo Aeronautico, it would provide the damages framework for the violations of Art. 133 (and potentially Art. 134-135) already established. The fabrication of false documentation to justify the breach could be an aggravating factor.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.16",
+      "candidate_name": "Ley de Proteccion al Consumidor (19.496), Art. 16 — Clausulas abusivas",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 16 of Ley 19.496 from bcn.cl/leychile",
+        "Verify whether Art. 16 letra g) prohibits clauses that allow the provider to unilaterally terminate the contract without equivalent faculty for the consumer",
+        "Determine if the carrier's internal policy of issuing unsigned documents without passenger input constitutes an abusive contractual practice"
+      ],
+      "preliminary_view": "The carrier's assertion that the Carta de Desembarque is 'un documento privado que no es para los pasajeros' and the policy that 'ninguno de nuestros documentos tiene firma' — effectively allowing unilateral termination of the transport contract without accountability or passenger recourse — may reflect abusive contractual terms under Art. 16.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.3",
+      "candidate_name": "Constitucion Politica de la Republica, Art. 19 N°3 — Igual proteccion de la ley y debido proceso",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 19 N°3 of the Constitucion from bcn.cl/leychile",
+        "Verify whether the due process guarantee applies horizontally to private actors in the context of quasi-adjudicative decisions (e.g., denied boarding based on alleged misconduct)",
+        "Research Chilean case law on horizontal application of due process to airline denied boarding decisions"
+      ],
+      "preliminary_view": "The imposition of a denied boarding decision based on unproven allegations of aggression, documented in an unsigned fabricated letter, without allowing the passenger to contest the allegations or access evidence (CCTV denied), may implicate due process concerns under Art. 19 N°3. However, horizontal application of constitutional due process to private airline decisions is doctrinally contested and requires verification of Chilean jurisprudential acceptance.",
+      "history_note": "Constitutional provision; horizontal effect (Drittwirkung) in Chilean law is not universally accepted for all contexts. Included for completeness but application is uncertain."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.4",
+      "candidate_name": "Constitucion Politica de la Republica, Art. 19 N°4 — Respeto y proteccion de la honra",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 19 N°4 of the Constitucion from bcn.cl/leychile",
+        "Verify whether the right to honor and reputation is directly applicable against private entities that create and maintain false allegations in official documentation"
+      ],
+      "preliminary_view": "The creation of an official-looking document (Carta de Desembarque) containing false allegations of aggression — which PDI explicitly confirmed did not occur — and the refusal to correct these false statements, may constitute an affront to the passenger's honor protected under Art. 19 N°4. The document was created through a fabrication process and contains defamatory content that could affect the passenger's reputation with authorities and future travel.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.DS113.Art.54",
+      "candidate_name": "DS 113 (Reglamento de Transporte Aereo), Art. 54 — Procedimiento de denegacion de embarque",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 54 of DS 113 (Reglamento del Codigo Aeronautico / Reglamento de Transporte Aereo) from bcn.cl/leychile",
+        "Verify the correct DS number for the implementing regulation of CACH Arts. 131-135",
+        "Determine whether the regulation specifies documentary requirements, signature requirements, or procedural steps for denied boarding"
+      ],
+      "preliminary_view": "The implementing regulation of the Codigo Aeronautico likely contains detailed procedural requirements for denied boarding documentation that would be violated by the unsigned, fabricated Carta de Desembarque. The specific DS number and article need verification as DS 113 may not be the correct reference.",
+      "history_note": "The implementing regulation number needs verification. Chilean air transport regulations have been modified multiple times. The article number 54 is hypothetical and requires confirmation."
+    }
+  ],
+  "cross_references": [
+    {
+      "ref": "CL-017",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-011",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-005",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-007",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-005__deepseek",
+      "relation": "disproven_aggression_allegation_retained_in_letter"
+    },
+    {
+      "ref": "CL-016__opus47",
+      "relation": "same_violation_alternate_analysis"
+    },
+    {
+      "ref": "CL-016__opus47version2",
+      "relation": "same_violation_alternate_analysis"
+    },
+    {
+      "ref": "CL-016__opus46",
+      "relation": "same_violation_alternate_analysis"
+    },
+    {
+      "ref": "CL-016__sonnet4",
+      "relation": "same_violation_alternate_analysis"
+    },
+    {
+      "ref": "CL-016__sonnet4.6",
+      "relation": "same_violation_alternate_analysis"
+    },
+    {
+      "ref": "CL-016__sonnetlatest",
+      "relation": "same_violation_alternate_analysis"
+    },
+    {
+      "ref": "CL-016__haikulatest",
+      "relation": "same_violation_alternate_analysis"
+    },
+    {
+      "ref": "CL-016__hy3",
+      "relation": "same_violation_alternate_analysis"
+    },
+    {
+      "ref": "CL-016__gemini3flash",
+      "relation": "same_violation_alternate_analysis"
+    },
+    {
+      "ref": "CL-016__grok41fast",
+      "relation": "same_violation_alternate_analysis"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-016-CAUSAL",
+      "question": "¿Cuál fue la causal específica invocada por LATAM para denegar el embarque?",
+      "blocks_element": "denegacion_involuntaria",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-016-BOARDINGPASS",
+      "question": "¿Existe boarding pass o PNR confirmado del pasajero?",
+      "blocks_element": "sujeto_obligado",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-016-FLUJO-INTERNO",
+      "question": "¿Existe registro documental interno (emails, logs, mensajes) del proceso de fabricación?",
+      "blocks_element": "fabricacion_fraudulenta",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-016-CCTV",
+      "question": "¿Existen grabaciones CCTV del momento de la denegación de embarque?",
+      "blocks_element": "denegacion_involuntaria",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-016-PDI-ACTA",
+      "question": "¿Existe acta formal de PDI que consigne que no hubo agresión?",
+      "blocks_element": "denegacion_involuntaria",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-016-IMPUTACION-PJ",
+      "question": "¿Puede atribuirse el dolo de funcionarios individuales a LATAM como persona jurídica?",
+      "blocks_element": "dolo",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-016-DISTANCIA",
+      "question": "¿Distancia ortodrómica del vuelo para determinar compensación UF aplicable?",
+      "blocks_element": "omision_compensacion",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-016-REEMBARQUE-POSTERIOR",
+      "question": "¿Se ofreció posteriormente opción de reembarque o reembolso?",
+      "blocks_element": "omision_reembarque, omision_reembolso",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-016-CAUSAL",
+      "question": "¿Cuál fue la causal específica invocada por LATAM para denegar el embarque — sobreventa, conducta del pasajero u otra? La aplicabilidad estricta del Art. 133 (diseñado para sobreventa) depende de la causal formalmente invocada.",
+      "blocks_element": "CL.CACH.Art.133.1.elem.denegacion_embarque_involuntaria",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-016-BOARDINGPASS",
+      "question": "¿Existe el boarding pass emitido o la reserva confirmada (PNR) del pasajero que acredite directamente que tenía derecho a embarcar en el vuelo?",
+      "blocks_element": "CL.CACH.Art.133.1.elem.denegacion_embarque_involuntaria",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-016-DISTANCIA",
+      "question": "¿Cuál era la distancia ortodrómica del vuelo denegado para determinar si la compensación aplicable es de 10 UF (2.500-4.000 km) o 20 UF (más de 8.000 km) conforme al Art. 133 N°2?",
+      "blocks_element": "CL.CACH.Art.133.2.elem.omision_compensacion",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-016-FLUJO-INTERNO",
+      "question": "¿Existe registro documental interno de LATAM (correos electrónicos, mensajes en sistema, logs de impresión) que corrobore el proceso off-book de fabricación de la 'carta de desembarque' descrito por el supervisor Diego (dictado por Antonela, envío a Ventas como borrador, impresión)?",
+      "blocks_element": "CL.CACH.Art.133.1.elem.fabricacion_documento_fraudulento",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-016-IMPUTACION-PJ",
+      "question": "¿Puede atribuirse el dolo de los funcionarios individuales (supervisores Diego, Antonela y otros) a la persona jurídica LATAM Airlines, considerando si actuaron dentro de sus funciones y conforme a protocolos corporativos o en desviación de estos?",
+      "blocks_element": "CL.CACH.Art.133.2.elem.elemento_subjetivo_dolo",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-016-CCTV",
+      "question": "¿Existen las grabaciones CCTV del aeropuerto correspondientes al momento de la denegación de embarque, y fueron preservadas o destruidas tras la negativa de LATAM a exhibirlas?",
+      "blocks_element": "CL.CACH.Art.133.1.elem.denegacion_embarque_involuntaria",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-016-REEMBARQUE-POSTERIOR",
+      "question": "¿Se ofreció en algún momento posterior (call center, correo, counter) la opción de reembarque o reembolso al pasajero, lo que podría constituir cumplimiento tardío del Art. 133 N°1?",
+      "blocks_element": "CL.CACH.Art.133.1.elem.omision_opcion_reembarque",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-016-PDI-ACTA",
+      "question": "¿Existe acta o informe formal de PDI que consigne expresamente la conclusión de que no hubo agresión, y está disponible como prueba documental admisible?",
+      "blocks_element": "CL.CACH.Art.133.1.elem.documento_invalido_como_cumplimiento",
+      "priority": "medium"
+    }
+  ],
+  "related_violations": [
+    "CL-005",
+    "CL-001",
+    "CL-003",
+    "CL-007",
+    "CL-011",
+    "CL-017"
+  ],
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "_provenance": {
+    "source": "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN/CL-016.json",
+    "vault_operations": 12,
+    "converted_by": "examples/vault_to_bundle.py"
+  },
+  "_vault_confidence": {
+    "value": 0.77,
+    "components": {
+      "CL.CACH.Art.133": 0.9
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T06:28:02.561806Z",
+    "history": [
+      "2026-05-12T06:23:28.795645+00:00: value=0.0",
+      "2026-05-12T06:23:46.082823+00:00: value=0.0",
+      "2026-05-12T06:23:49.426358+00:00: value=0.0",
+      "2026-05-12T06:24:33.047579+00:00: value=0.77",
+      "2026-05-12T06:25:11.284225+00:00: value=0.77",
+      "2026-05-12T06:26:26.666439+00:00: value=0.77",
+      "2026-05-12T06:27:22.839412+00:00: value=0.77",
+      "2026-05-12T06:27:53.932272+00:00: value=0.77"
+    ],
+    "validated": true,
+    "note": "V10 validated. 9/9 authorities pending verification. V01 warning: 9 segments unresolved. V08 fail: violation_id mismatch in contract (VIOL_CL016CACH vs CL-016 — legacy seed). Confidence 0.77 is pipeline-derived; MD frontmatter previously carried legacy 0.98 from seed."
+  }
+}

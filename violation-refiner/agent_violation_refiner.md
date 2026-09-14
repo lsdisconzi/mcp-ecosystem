@@ -14,7 +14,7 @@ You are the dedicated development agent for **ViolationRefiner** (`violation_pac
 **Language**: Python 3.10+ (`requires-python = ">=3.10"`); local dev interpreter 3.14
 **Primary interface**: Python library + MCP server (39 tools) + CLI catalog
 
-**What it does**: Turns violation narratives into 5 enriched layers (evidence anchoring, norm anchoring, element grid, nexus matrix, authority stubs), computes confidence scores, runs an 11-check validation pipeline (V01-V11), and packages everything into signed zip bundles.
+**What it does**: Turns violation narratives into 5 enriched layers (evidence anchoring, norm anchoring, element grid, nexus matrix, authority stubs), computes confidence scores, runs a 17-check validation pipeline (V01-V17), and packages everything into signed zip bundles.
 
 ## Architecture
 
@@ -25,7 +25,7 @@ violation_pack/
 ├── sources.py         [I/O]        Transcript/framework readers (Protocols + HTML/Markdown impls)
 ├── layers.py          [Transform]  5 pure enrichment functions (idempotent, merge-by-ID)
 ├── confidence.py      [Derive]     Weighted-mean formula with configurable authority-verification floor
-├── validation.py      [Verify]     V01-V11 validation pipeline (pure functions)
+├── validation.py      [Verify]     V01-V17 validation pipeline (pure functions)
 ├── verifier.py        [Verify]     LLM-output enrichment integrity checks (7 checks)
 ├── authority_verification.py [Verify]  3 verification protocols (statute_in_bundle, statute_external, human_attested)
 ├── pack.py            [Output]     Bundle layout, MANIFEST.txt, zip
@@ -69,7 +69,7 @@ violation_pack/
 | `violation_pack/layers.py` | 323 | 5 enrichment layer functions |
 | `violation_pack/enrich.py` | 989 | LLM-driven enrichment orchestration |
 | `violation_pack/verifier.py` | 376 | Enrichment integrity checks (V11) |
-| `violation_pack/validation.py` | 340 | V01-V11 pipeline |
+| `violation_pack/validation.py` | 784 | V01-V17 pipeline |
 | `violation_pack/refine_batch_core.py` | 662 | Importable batch-refiner core |
 | `violation_pack/mcp_server.py` | 790 | MCP server with 39 tools |
 | `violation_pack/qdrant_index.py` | 370 | Qdrant VectorIndex impl |
@@ -127,6 +127,11 @@ marked **OPEN**.
 4. ~~**`build/` is not in `.gitignore`**~~ **FIXED**: `build/` and `dist/` are
    both ignored; `examples/refine_cl005.py` writes `build/CL-005` and
    `build/CL-005_refined_pack.zip` there.
+   **Superseded 2026-09-13:** the root `.gitignore` now *re-includes*
+   `violation-refiner/build/`, so the refined bundles and their validation
+   reports are versioned. Only the transient per-run files inside that tree
+   (`refine_batch_summary.json`, `*.bak`) stay ignored — see the comments in the
+   root `.gitignore` and `violation-refiner/.gitignore`.
 5. ~~**`stop.sh` still uses `pkill -f`**~~ **FIXED**: the system-wide match was
    replaced by `reap_local_server_processes()`, which resolves each candidate
    PID's working directory with `lsof` and only kills processes whose cwd is
@@ -142,7 +147,9 @@ marked **OPEN**.
   `pip install -e '.[all,test]'` — with only the `test` extra, the eight
   Qdrant/Neo4j tests **skip silently** (`could not import 'qdrant_client'`)
   rather than fail, which hides extension regressions.
-- Verified state: `38 passed` in ~2.0 s with all extras installed. The demo
+- Verified state: the full suite passes in ~1.3 s with all extras installed
+  (181 tests at the time of writing). Treat the run as the assertion, not the
+  number — the count grows and prose does not. The demo
   (`python examples/refine_cl005.py`) runs against the same venv.
 
 ## Development Conventions
@@ -152,6 +159,12 @@ marked **OPEN**.
 - **Protocols over ABCs**: Extension points use `typing.Protocol`. Implementations don't need to inherit.
 - **Idempotence**: Every layer function must be idempotent. Use `_merge_by_id()` for upsert semantics.
 - **Anti-fabrication**: Never weaken the defense-in-depth. Layer 1 MUST reject unknown segment IDs. Layer 5 MUST NOT accept roll numbers. The verifier MUST recheck independently.
+- **Authorities are two-state**: `verified: false` means "research target" and requires `type`, `supports`, `research_query`, `proposition_to_verify` and a `fabrication_risk_note`, with every bibliographic field (`court`, `rol`, `decision_date`, `author`, `work`, `pages`, `instrument`, `holding_summary`) left `null` — `E_AUTH_FABRICATED_FIELD` fires otherwise. `verified: true` may only be set by `authority_verification.py` (`statute_in_bundle_v1` / `statute_external_fetch_v1` / `human_attested_v1`) together with a `VerificationProvenance` (`source_uri`, `source_sha256`, `matched_quote`, `matched_offset`); without it the verifier raises `E_AUTH_VERIFIED_BY_LLM`. A source name such as "official gazette website" in a prose field is not a verification state. Adding unverified authorities never raises confidence — the factor is `0.85 + 0.15 × verified_ratio`.
+- **`supports` uses one ID style**: every entry must resolve against `established_articles[].article_id` ∪ `element_grids[].elements[].element_id`. Never mix article ids and element ids in one authority (`CL-001` does, against an empty `element_grids`, and fails V11).
+- **Never overwrite the diarizer**: an undeclared `segment.speaker` is a finding to record in `Element.weaknesses` or an `OpenQuestion`, not a field to edit. Re-pointing it at a plausible speaker does not silence V12 (`_declared_speaker_labels()` never reads `speaker_id`) and erases the evidence that the attribution was inferred. There is no `speaker_source` field — `EvidenceSegment` is `extra="forbid"`.
+- **One shape per concept**: `CrossReference` is `{ref, relation}` with `ref` a sibling violation id in every view. `related_violations` exists only in `contract.json` and is a narrower, independently curated relation (18 of 81 bundles list one that is not among their own cross-references), *not* a projection of `cross_references`. Reciprocity is a corpus-level audit, not a per-bundle invariant (446 of 1081 edges are one-directional). Contracts are `schema_version: "4.0"`, bundles `"3.0"`.
+- **Mirror bundle edits into the contract**: the pipeline reads `contract.json` and never writes it, so any meaningful bundle change (articles, nexus, open questions, confidence) must be applied to the contract by hand in the same edit.
+- **Cross-view consistency is a validation property**: V08 compares the two views' overlapping fields but not `open_questions`, which is how CL-030's views drifted on four of six questions unchecked. Until a check covers a shared field, "the views agree" is an assumption, not a verified fact.
 - **Configuration**: All config via `violation_pack/config.py` `Settings.from_env()`. No hardcoded credentials or paths.
 
 ## Infrastructure
@@ -173,5 +186,14 @@ marked **OPEN**.
 4. If changing config, update `.env.example`. Adding a `Settings` field without
    adding it there leaves the example stale; the drift guard only checks the
    catalog, not the example.
-5. Run `pytest tests/ -v` after any change to layers, validation, verifier, or extensions.
-6. Never commit chat logs, backups, or build artifacts.
+5. If adding a field to a Pydantic model, remember every model in `models.py` is
+   `extra="forbid"`: a bundle carrying an undeclared key does not round-trip, it
+   hard-fails `model_validate`. Add the field to `models.py` first, then to the
+   artifacts.
+6. If editing a bundle by hand, re-run the pipeline before trusting the result
+   (`refine_batch.py --input build --only <ID> --no-backup --no-enrich`) and
+   mirror the change into `contract.json`. Nexus rows and `proof_evidence_segments`
+   are coupled by V13, and neither affects confidence — only element
+   `proof_status` and applicability weights do.
+7. Run `pytest tests/ -v` after any change to layers, validation, verifier, or extensions.
+8. Never commit chat logs, backups, or build artifacts.

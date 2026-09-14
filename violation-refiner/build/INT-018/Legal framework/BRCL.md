@@ -1,0 +1,1 @@
+../../../data/law/INT/EN/BR_CL_Joint_Declaration_2024.md

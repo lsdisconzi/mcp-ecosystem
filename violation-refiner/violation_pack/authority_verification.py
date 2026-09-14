@@ -168,10 +168,23 @@ def verify_statute_in_bundle(
         notes=f"matched in article {article_number} of {framework.framework_code()}",
     )
 
+    # `verification_protocol` is the human-readable counterpart of
+    # `verification_provenance.protocol` (the machine enum). The jurisprudence
+    # path already fills it in (`jurisprudence.py`); without this the record
+    # would claim `verified=True` while naming no protocol anywhere a human
+    # reads, and the two views of "how was this verified" would diverge.
+    # Note: `fabrication_risk_note` is deliberately NOT cleared here. For
+    # statutes it can carry legally meaningful caveats that are unrelated to
+    # verification status (e.g. "this is a constitutional ground, not the
+    # incriminating norm"), so blanket clearing would lose information. A
+    # caller whose note only asserted "unverified" must revise it themselves.
     updated = auth.model_copy(update={
         "verified": True,
         "instrument": instrument or f"{framework.framework_code()} Art. {article_number}",
         "pages": pages,
+        "verification_protocol": (
+            f"{provenance.protocol}; source={source_uri}; sha256={source_sha}"
+        ),
         "verification_provenance": provenance,
     })
 

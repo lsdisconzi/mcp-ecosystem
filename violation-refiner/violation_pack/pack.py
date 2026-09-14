@@ -43,7 +43,16 @@ def write_violation_json(violation: Violation, root: Path) -> Path:
 
 
 def build_manifest(root: Path, schema_version: str = "3.0") -> Path:
-    """Produce MANIFEST.txt with every file's size + sha256."""
+    """Produce MANIFEST.txt with every file's size + sha256.
+
+    The hashes describe **one generation** of the bundle, not its identity. A
+    re-run rewrites ``Generated`` and therefore every hash, and ``<id>.json`` is
+    not byte-stable across runs: ``confidence.derived_at`` is refreshed and
+    ``confidence.attach_confidence`` appends the previous value to
+    ``confidence.history`` on every pass. So compare a manifest against a fresh
+    manifest of the same tree, never against a hash recorded from an earlier run
+    — the bundle sha is a snapshot, not a stable artifact id.
+    """
     files = []
     for p in sorted(root.rglob("*")):
         if p.is_file() and p.name != "MANIFEST.txt":

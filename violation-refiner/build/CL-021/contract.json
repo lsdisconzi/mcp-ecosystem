@@ -1,0 +1,664 @@
+{
+  "schema_version": "4.0",
+  "violation_id": "CL-021",
+  "violation_number": "CL-021",
+  "title": "Retaliation for Legitimate Question to Pilot",
+  "case": {
+    "id": "I-002",
+    "name": "I-002-Chile-Santiago"
+  },
+  "jurisdiction": "CL",
+  "framework": {
+    "codes": [
+      "CHIPENCOD",
+      "CONST",
+      "LPDC"
+    ],
+    "files": {
+      "CHIPENCOD": "CL/CHIPENCOD_CP.md",
+      "CONST": "CL/Constitucion.md",
+      "LPDC": "CL/L19496_LPDC.md"
+    }
+  },
+  "category": "Retaliation / Represalia por Ejercicio Legitimo de Derechos",
+  "severity": "CRITICAL",
+  "confidence": {
+    "value": 0.6,
+    "components": {
+      "CL.CHIPENCOD.T4.C6.Art.211": 0.688,
+      "CL.CHIPENCOD.T4.C6.Art.212": 0.543,
+      "CL.CONST.T1.C3.P3.Art.19.4": 0.68,
+      "CL.LPDC.Art.3.b": 0.743,
+      "CL.LPDC.Art.23": 0.886
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T13:16:03.371487Z",
+    "history": [
+      "2026-05-12T13:07:05.383556+00:00: value=0.0",
+      "2026-05-12T13:07:14.382721+00:00: value=0.0",
+      "2026-05-12T13:07:21.756043+00:00: value=0.0",
+      "2026-05-12T13:12:12.878188+00:00: value=0.6",
+      "2026-05-12T13:13:17.680144+00:00: value=0.6",
+      "2026-05-12T13:14:09.798014+00:00: value=0.6",
+      "2026-05-12T13:15:09.441465+00:00: value=0.6",
+      "2026-05-12T13:15:58.672815+00:00: value=0.6"
+    ],
+    "validated": true,
+    "note": "V10 validated. V01: 3 segments unresolved (STG-1.seg-12, STG-1.seg-40, STG-5.seg-40) — highest unresolved count of Lote F. 13/13 authorities unverified. Confidence 0.50 is pipeline-derived; MD frontmatter previously carried legacy 0.93 from seed."
+  },
+  "incident": {
+    "date": "2024-07-05",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T13:30:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "incident_timestamp": "2024-07-05T13:30:00-04:00",
+  "incident_timestamp_display": "2024-07-05 (SCL, flight LA8159)",
+  "allegation_summary": "The [[SPK-stewardess-accuser]] reveals the actual trigger for the removal: [[SPK-passenger-leandro]]'s earlier question to the pilot about flight delays (recorded in Audio 1 / STG-1). She states he 'started at the beginning saying the flight was late.' However, the passenger merely asked a routine question about an arriving flight and whether his connection was on time. The boarding signal was showing 'boarding' while the aircraft had not yet arrived. This was a legitimate inquiry. The [[SPK-stewardess-accuser]]'s invocation of this question as justification for removal constitutes retaliation for a customer complaint, not a response to any disruptive behavior.",
+  "legal_basis": {
+    "frameworks": [
+      {
+        "framework_code": "CHIPENCOD",
+        "framework_name": "CHIPENCOD",
+        "framework_file": "CL/CHIPENCOD_CP.md",
+        "articles": [
+          {
+            "article_id": "CL.CHIPENCOD.T4.C6.Art.211",
+            "article_name": "Codigo Penal (CHIPENCOD), Art. 211 — Imputacion falsa de crimen o simple delito",
+            "article_text": "El que imputare falsamente a alguna persona haber cometido un crimen o simple delito, siendo sabedor de la falsedad de la imputación, o el que la hiciere de malicia, incurrirá en las penas de reclusión menor en sus grados mínimo a medio y multa de once a quince unidades tributarias mensuales.",
+            "applicability_rationale": "legacy paraphrase: El que imputare falsamente a alguna persona haber cometido un crimen o simple delito, siendo sabedor de la falsedad de la imputacion, incurrira en las penas de reclusion menor.",
+            "duty_bearer": "state",
+            "norm_type": "penalty",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          },
+          {
+            "article_id": "CL.CHIPENCOD.T4.C6.Art.212",
+            "article_name": "Codigo Penal (CHIPENCOD), Art. 212 — Denuncia calumniosa / simulacion de victima",
+            "article_text": "El que simulare ser víctima de algún crimen o simple delito, o que en el parte o denuncia que diere a la autoridad supusiere haber intervenido personas que no han tenido participación en el hecho o que hubieren dejado rastros que puedan inducir a error sobre la perpetración de una acción delictiva, o que con igual propósito hiciere o facilitare que otro presente dichas circunstancias, sufrirá la pena de reclusión menor en su grado mínimo a medio o multa de seis a diez unidades tributarias mensuales.",
+            "applicability_rationale": "legacy paraphrase: Penalties for defamation and calumnia when made before authorities.",
+            "duty_bearer": "state",
+            "norm_type": "penalty",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      },
+      {
+        "framework_code": "CONST",
+        "framework_name": "CONST",
+        "framework_file": "CL/Constitucion.md",
+        "articles": [
+          {
+            "article_id": "CL.CONST.T1.C3.P3.Art.19.4",
+            "article_name": "Constitucion, Art. 19 N°4 — Prohibicion de apremios ilegitimos",
+            "article_text": "The right to life and to the physical and mental integrity of the person.",
+            "applicability_rationale": "legacy paraphrase: Respect and protection of private life and honor.",
+            "duty_bearer": "state",
+            "norm_type": "right",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      },
+      {
+        "framework_code": "LPDC",
+        "framework_name": "LPDC",
+        "framework_file": "CL/L19496_LPDC.md",
+        "articles": [
+          {
+            "article_id": "CL.LPDC.Art.3.b",
+            "article_name": "Ley 19.496, Art. 3(b) — Derecho a informacion veraz y oportuna",
+            "article_text": "b) El derecho a una información veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratación y otras características relevantes de los mismos, y el deber de informarse responsablemente de ellos.",
+            "applicability_rationale": "legacy paraphrase: Son derechos y deberes basicos del consumidor: b) El derecho a una informacion veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratacion y otras caracteristicas relevantes de los mismos.",
+            "duty_bearer": "air_operator",
+            "norm_type": "right",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          },
+          {
+            "article_id": "CL.LPDC.Art.23",
+            "article_name": "Ley 19.496, Art. 23 — Infraccion por negligencia del proveedor que causa menoscabo",
+            "article_text": "Comete infracción a las disposiciones de la presente ley el proveedor que, en la venta de un bien o en la prestación de un servicio, **actuando con negligencia**, causa menoscabo al consumidor debido a fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio.",
+            "applicability_rationale": "legacy paraphrase: El proveedor de un servicio sera responsable de los danos y perjuicios que cause al consumidor por la prestacion de un servicio defectuoso, incluyendo la falta de veracidad en la informacion proporcionada y el incumplimiento de las condiciones de contratacion.",
+            "duty_bearer": "air_operator",
+            "norm_type": "liability",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CONST.T1.C3.P3.Art.19.3",
+      "candidate_name": "Igual protección de la ley en el ejercicio de sus derechos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 19 Nr. 3 of the Constitución Política de la República from bcn.cl/leychile and confirm it guarantees equal protection in the exercise of rights",
+        "Assess whether horizontal application (Drittwirkung) against a private airline is doctrinally supported in Chilean constitutional jurisprudence"
+      ],
+      "preliminary_view": "Plausibly applicable: passenger exercised a legitimate right (asking a question) and was subjected to differential, punitive treatment. The guarantee of equal protection in the exercise of rights could ground a recurso de protección claim.",
+      "history_note": "Already present as legacy import candidate; retained with expanded verification steps."
+    },
+    {
+      "candidate_article_id": "CL.CONST.T1.C3.P3.Art.19.2",
+      "candidate_name": "Igualdad ante la ley – no discriminación arbitraria",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 19 Nr. 2 of the Constitución Política from bcn.cl/leychile",
+        "Confirm it prohibits arbitrary discrimination and assess applicability to a private carrier's retaliatory removal of a passenger"
+      ],
+      "preliminary_view": "The removal appears to lack proportionate justification and may constitute arbitrary discrimination against a passenger who merely posed a question, triggering Art. 19 Nr. 2.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.133",
+      "candidate_name": "Obligaciones del transportador aéreo respecto del pasajero",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 133 of the Código Aeronáutico (DFL 221 de 1931 / Ley 18.916) from bcn.cl/leychile",
+        "Confirm whether it establishes the carrier's duty to transport the passenger once the contract is formed and the conditions under which denial of boarding is lawful"
+      ],
+      "preliminary_view": "If the passenger held a valid boarding pass and no safety ground existed, unilateral removal may breach the carrier's statutory obligation to perform the transport contract.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.134",
+      "candidate_name": "Responsabilidad del transportador por incumplimiento del contrato de transporte aéreo",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 134 of the Código Aeronáutico from bcn.cl/leychile",
+        "Verify whether it imposes liability on the carrier for failure to perform the transport and the remedies available to the passenger"
+      ],
+      "preliminary_view": "Retaliatory removal without legitimate safety justification could constitute breach of the transport contract, engaging carrier liability under this article.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.145",
+      "candidate_name": "Denegación de embarque – condiciones y compensación",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 145 (or the correct article addressing denied boarding / involuntary removal) of the Código Aeronáutico from bcn.cl/leychile",
+        "Confirm whether it requires objective safety or security grounds for removal and mandates compensation"
+      ],
+      "preliminary_view": "If the Código Aeronáutico restricts involuntary deplaning to enumerated safety/security grounds, removal for asking a question would be ultra vires.",
+      "history_note": "Article number is approximate; verification must confirm exact numbering in current consolidated text."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Responsabilidad extracontractual – el que ha cometido un delito o cuasidelito",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 2314 of the Código Civil from bcn.cl/leychile",
+        "Confirm it establishes general tortious liability for anyone who causes damage through fault"
+      ],
+      "preliminary_view": "Retaliatory removal causing moral and material harm (missed flight, humiliation, reputational damage) may engage general extra-contractual liability under Art. 2314 CC.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2329",
+      "candidate_name": "Reparación integral del daño – todo daño imputable a malicia o negligencia",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 2329 of the Código Civil from bcn.cl/leychile",
+        "Confirm it mandates full reparation of damages attributable to malice or negligence"
+      ],
+      "preliminary_view": "Complements Art. 2314; supports claim for full indemnification including moral damages arising from the retaliatory conduct.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.3.e",
+      "candidate_name": "Derecho a la reparación e indemnización adecuada y oportuna",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 3 letra e) of Ley 19.496 (LPDC) from bcn.cl/leychile",
+        "Confirm it grants consumers the right to adequate and timely reparation and indemnification"
+      ],
+      "preliminary_view": "Passenger as consumer has a statutory right to reparation for damages caused by the provider's deficient service (retaliatory removal).",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.12",
+      "candidate_name": "Obligación de respetar los términos y condiciones ofrecidos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 12 of Ley 19.496 from bcn.cl/leychile",
+        "Confirm it obliges the provider to honor the terms, conditions, and modalities under which the service was offered or agreed"
+      ],
+      "preliminary_view": "LATAM sold a transport service; unilateral termination without contractual or legal basis violates the duty to honor agreed conditions.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.16.g",
+      "candidate_name": "Cláusulas abusivas – facultad unilateral de dejar sin efecto el contrato",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 16 letra g) of Ley 19.496 from bcn.cl/leychile",
+        "Confirm it declares abusive any clause granting the provider unilateral power to terminate the contract without equivalent faculty for the consumer"
+      ],
+      "preliminary_view": "If LATAM invoked a contractual clause to justify removal, that clause may be declared abusive under Art. 16 g) if it grants disproportionate unilateral termination power.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T8.Art.296",
+      "candidate_name": "Amenazas – el que amenazare seriamente a otro",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 296 of the Código Penal from bcn.cl/leychile",
+        "Confirm it penalizes serious threats and assess whether the crew's invocation of security ('Ya activamos seguridad') against a non-threatening passenger could constitute coercive threat"
+      ],
+      "preliminary_view": "The crew's statement 'Ya activamos seguridad. Igual va a tener que bajar' directed at a passenger who posed no threat could, in extreme interpretation, constitute intimidation. Applicability is contested and likely weak absent explicit threat of bodily harm.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T3.C4.Art.143",
+      "candidate_name": "Coacción – obligar a otro a hacer lo que la ley no manda",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 143 (or correct article on coercion/coacción) of the Código Penal from bcn.cl/leychile",
+        "Verify whether compelling a passenger to deplane without lawful authority constitutes coacción under Chilean criminal law"
+      ],
+      "preliminary_view": "If no lawful ground existed for the removal order, forcing the passenger off the aircraft through invocation of security may constitute unlawful coercion. Article number requires verification.",
+      "history_note": "Article number is approximate; Chilean CP addresses coacción in various provisions. Exact article must be confirmed."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.24",
+      "candidate_name": "Multas por infracciones a la Ley del Consumidor",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 24 of Ley 19.496 from bcn.cl/leychile",
+        "Confirm it establishes the sanction regime (fines) for infractions and whether it applies cumulatively with Art. 23"
+      ],
+      "preliminary_view": "Establishes the penalty framework applicable to LATAM if Art. 23 infraction is proven.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.131",
+      "candidate_name": "Contrato de transporte aéreo – derechos del pasajero",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 131 of the Código Aeronáutico (Ley 18.916) from bcn.cl/leychile",
+        "Confirm it defines the air transport contract and the passenger's core rights thereunder"
+      ],
+      "preliminary_view": "Foundational article defining the contractual relationship; removal without cause breaches the carrier's primary obligation.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.CONST.T1.C3.P3.Art.19.22",
+      "candidate_name": "No discriminación arbitraria en el trato que deben dar el Estado y sus organismos en materia económica",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 19 Nr. 22 of the Constitución Política from bcn.cl/leychile",
+        "Assess whether this provision, primarily directed at state economic regulation, has been applied horizontally to private service providers in Chilean case law"
+      ],
+      "preliminary_view": "Agent-fit concern: Art. 19 Nr. 22 is primarily directed at the State's obligation not to discriminate in economic matters. Its horizontal application to a private airline is doctrinally contested and likely weak without supporting jurisprudence.",
+      "history_note": ""
+    }
+  ],
+  "cross_references": [
+    {
+      "ref": "CL-019",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-013",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-009",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-015",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-003",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-006",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-008",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-010",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-012",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-004",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-011",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-020",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-014",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-002",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-005",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-007",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-019__opus46",
+      "relation": "security_activation_constitutes_threat_of_more_problems"
+    },
+    {
+      "ref": "CL-020__opus46",
+      "relation": "pilot_language_trigger_reveals_evolving_justification"
+    },
+    {
+      "ref": "CL-021__opus46",
+      "relation": "same_violation_alternate_analysis"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-CL021-AUTOR-IMPUTACION",
+      "question": "¿Quién formuló la imputación ante seguridad/autoridad?",
+      "blocks_element": "Art. 211 sujeto activo",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL021-PARTE-FORMAL",
+      "question": "¿Se formalizó parte escrito, denuncia ante autoridad?",
+      "blocks_element": "Art. 212 objeto material (parte/denuncia)",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL021-CONTENIDO-COMUNICACION-SEGURIDAD",
+      "question": "¿Qué información transmitió tripulación a seguridad?",
+      "blocks_element": "Art. 211 acto imputación",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL021-TIPO-PENAL-INVOCADO",
+      "question": "¿Qué figura penal fue comunicada para justificar desembarco?",
+      "blocks_element": "Art. 211 objeto material",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL021-IDENTIDAD-PASAJERO",
+      "question": "¿Identidad del pasajero en manifiesto de vuelo?",
+      "blocks_element": "Art. 211 sujeto pasivo",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL021-PREGUNTA-PASAJERO",
+      "question": "¿Contenido exacto de la pregunta al [[SPK-pilot-ruiz]]?",
+      "blocks_element": "Art. 19.4 acto desencadenante",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL021-SEGMENTOS-NO-RECUPERADOS",
+      "question": "¿Contenido de segmentos no recuperados?",
+      "blocks_element": "Art. 19.4 nexo causal",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL021-INSTRUCCION-PILOTO",
+      "question": "¿Ordenó el piloto el desembarco o fue iniciativa de azafata?",
+      "blocks_element": "Art. 19.4 sujeto activo",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL021-COMUNICACIONES-INTERNAS-TRIPULACION",
+      "question": "¿Comunicaciones internas revelan conocimiento de falsedad?",
+      "blocks_element": "Art. 211 dolo",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL021-HABILITACION-REGLAMENTARIA",
+      "question": "¿Invocó tripulación norma específica?",
+      "blocks_element": "Art. 19.4 ilegitimidad",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL021-PROTOCOLO-DESEMBARCO-LATAM",
+      "question": "¿Protocolo interno de desembarco fue seguido?",
+      "blocks_element": "LPDC 23 negligencia",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL021-ACTA-POLICIAL-INCIDENTE",
+      "question": "¿Existe acta policial del incidente?",
+      "blocks_element": "Art. 211 resultado perjuicio",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL021-ACTUACIONES-AUTORIDAD-SEGURIDAD",
+      "question": "¿Qué actuaciones desplegó autoridad de seguridad?",
+      "blocks_element": "Art. 212 resultado inducción error",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL021-INCIDENTE-PREVIO-NO-REGISTRADO",
+      "question": "¿Incidente previo no registrado que diera sustento?",
+      "blocks_element": "Art. 19.4 ilegitimidad",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-PUBLICIDAD-DESEMBARCO",
+      "question": "¿Presenciado por otros pasajeros?",
+      "blocks_element": "Art. 19.4 afectación honra",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-INTERVENCION-FISICA-SEGURIDAD",
+      "question": "¿Intervención física o solo presión verbal?",
+      "blocks_element": "Art. 19.4 modalidad apremio",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-CONTRATO-TRANSPORTE-BOARDING",
+      "question": "¿Consta contrato de transporte?",
+      "blocks_element": "LPDC 3.b sujeto pasivo",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-PERJUICIO-PATRIMONIAL-CONSUMIDOR",
+      "question": "¿Perjuicios patrimoniales cuantificables?",
+      "blocks_element": "LPDC 23 menoscabo",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-DENUNCIA-SERNAC-DGAC",
+      "question": "¿Denuncia ante SERNAC o DGAC?",
+      "blocks_element": "LPDC 3.b resultado perjuicio",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-INSTRUCCIONES-INTERNAS-LATAM-DESEMBARCO",
+      "question": "¿Instrucciones internas de LATAM sobre desembarco?",
+      "blocks_element": "LPDC 3.b dolo infractor",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-SUBSUNCION-CAUSAL-ART23",
+      "question": "¿Bajo qué causal del Art. 23 LPDC se subsume?",
+      "blocks_element": "LPDC 23 falla servicio",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-CONDUCTA-PASAJERO-CAUSA-CONCURRENTE",
+      "question": "¿Existió conducta del pasajero como causa concurrente?",
+      "blocks_element": "LPDC 23 nexo causal",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-DANO-MORAL-PASAJERO",
+      "question": "¿Antecedentes de daño moral del pasajero?",
+      "blocks_element": "LPDC 23 menoscabo",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-INSTRUCCIONES-INTERNAS-212",
+      "question": "(See OQ-CL021-COMUNICACIONES-INTERNAS-TRIPULACION)",
+      "blocks_element": "—",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-CREW-ID",
+      "question": "¿Quién exactamente (nombre, cargo) transmitió la imputación o comunicación a seguridad aeroportuaria: la azafata, el piloto, o ambos?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.1.elem.sujeto_activo",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL021-CONTENT-REPORT",
+      "question": "¿Qué conducta concreta y qué palabras exactas se atribuyeron al pasajero al comunicar la situación a seguridad aeroportuaria?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.1.elem.imputacion_falsa",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL021-FORMAL-DENUNCIA",
+      "question": "¿Se presentó un parte o denuncia formal ante Carabineros, PDI o autoridad aeronáutica tras la activación de seguridad, y cuál fue su contenido?",
+      "blocks_element": "CL.CHIPENCOD.Art.212.1.elem.objeto_material_parte_denuncia",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL021-POLICE-ACTION",
+      "question": "¿El pasajero fue detenido, interrogado o formalizado por alguna autoridad policial o judicial como consecuencia de la activación de seguridad?",
+      "blocks_element": "CL.CHIPENCOD.Art.212.1.elem.resultado_induccion_error",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL021-COCKPIT-COMMS",
+      "question": "¿Existen comunicaciones internas cockpit-cabina (interphone log o CVR) que revelen la motivación real de la decisión de remoción?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.1.elem.dolo_conocimiento_falsedad",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL021-CABIN-LOG",
+      "question": "¿Existe un cabin log, formulario de incidente a bordo o libro de novedades que consigne la razón oficial de la remoción del pasajero?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.1.elem.modalidad_tipica",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL021-LATAM-PROTOCOL",
+      "question": "¿Cuáles son los protocolos internos de Latam para activación de seguridad y remoción de pasajeros, y se cumplieron en este caso?",
+      "blocks_element": "CL.CHIPENCOD.Art.212.1.elem.tipicidad_subjetiva_dolo",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL021-CCTV-WITNESSES",
+      "question": "¿Existe registro CCTV del aeropuerto o declaraciones de testigos (otros pasajeros) que confirmen que el pasajero no realizó conducta disruptiva alguna?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.1.elem.falsedad_objetiva",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL021-INTERMEDIATE-CONDUCT",
+      "question": "¿Existió alguna conducta del pasajero entre la pregunta al piloto (STG-1) y la orden de desembarco (STG-5) que pudiera justificar la decisión de la tripulación?",
+      "blocks_element": "CL.CONST.Art.19.4.elem.nexo_causal_represalia",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL021-COMMANDER-RATIFICATION",
+      "question": "¿La decisión de remoción fue adoptada o ratificada formalmente por el comandante de la aeronave conforme al Art. 64 del Código Aeronáutico?",
+      "blocks_element": "CL.CONST.Art.19.4.elem.ausencia_justificacion",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-BOARDING-PASS",
+      "question": "¿Se acreditó documentalmente la compra del pasaje y la relación contractual de transporte (boarding pass, e-ticket, PNR)?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.relacion_de_consumo",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-POST-REMOVAL-INFO",
+      "question": "¿Se entregó al pasajero algún documento o comunicación posterior con los motivos del desembarco y sus derechos conforme al DS 221?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.condiciones_contratacion",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-REBOOKING-REFUND",
+      "question": "¿Se ofreció al pasajero rebooking, reembolso o compensación posterior, y cuál fue el perjuicio patrimonial concreto sufrido?",
+      "blocks_element": "CL.LPDC.Art.23.1.elem.menoscabo_consumidor",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-PASSENGER-ID",
+      "question": "¿Se individualizó formalmente al pasajero afectado (nombre completo, RUT/pasaporte) para efectos de legitimación activa?",
+      "blocks_element": "CL.CONST.Art.19.4.elem.titularidad_derecho",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-MORAL-DAMAGE",
+      "question": "¿El pasajero afectado ha declarado sobre el impacto en su honra y existen consecuencias posteriores documentadas (difusión en redes, inclusión en listas negras, daño psicológico)?",
+      "blocks_element": "CL.CONST.Art.19.4.elem.dano_moral_reputacional",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-DISRUPTIVE-CLASSIFICATION",
+      "question": "¿Se calificó formalmente la conducta del pasajero como 'pasajero disruptivo' en algún registro de la DGAC o de la aerolínea, y bajo qué fundamento?",
+      "blocks_element": "CL.CHIPENCOD.Art.212.1.elem.modalidad_tipica_simulacion",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL021-TIME-GAP",
+      "question": "¿Cuánto tiempo transcurrió entre la pregunta del pasajero al piloto y la orden de desembarco, y qué ocurrió en ese intervalo?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.informacion_oportuna",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL021-FINAL-TRANSPORT",
+      "question": "¿Se completó finalmente el transporte del pasajero en otro vuelo o hubo denegación total del servicio?",
+      "blocks_element": "CL.LPDC.Art.23.1.elem.falla_o_deficiencia_servicio",
+      "priority": "low"
+    }
+  ],
+  "related_violations": [
+    "CL-001",
+    "CL-002",
+    "CL-003",
+    "CL-014",
+    "CL-019",
+    "CL-020"
+  ],
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "_provenance": {
+    "source": "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN/CL-021.json",
+    "vault_operations": 19,
+    "converted_by": "examples/vault_to_bundle.py"
+  }
+}

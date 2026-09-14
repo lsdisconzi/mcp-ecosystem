@@ -13,7 +13,7 @@ reference implementations in-package, behind optional extras.
 
 ## What it does today
 
-Five enrichment layers, eleven validation checks (V01–V11), derived
+Five enrichment layers, seventeen validation checks (V01–V17), derived
 confidence, signed manifest, zipped bundle. Each layer is a pure function:
 takes a current `Violation` state, returns a new one with provenance appended.
 
@@ -27,8 +27,8 @@ takes a current `Violation` state, returns a new one with provenance appended.
 
 Confidence is then `derive_confidence(violation)` — formula visible, history
 appended each time it's re-derived. Validation is `run_pipeline(violation,
-transcripts=..., frameworks=...)` and returns a `ValidationReport` with V01
-through V11.
+transcripts=..., frameworks=..., contract=...)` and returns a `ValidationReport`
+with V01 through V17.
 
 ## Extension seams
 
@@ -84,7 +84,7 @@ violation-pack/
 │   ├── _utils.py             # shared helpers (sha256_text)
 │   ├── layers.py             # build_evidence_layer, build_norms_layer, ...
 │   ├── confidence.py         # derive_confidence; configurable verification floor
-│   ├── validation.py         # V01–V11 + run_pipeline
+│   ├── validation.py         # V01–V17 + run_pipeline
 │   ├── verifier.py           # V11 enrichment-integrity checks
 │   ├── authority_verification.py  # statute_in_bundle / statute_external_fetch / human_attested
 │   ├── pack.py               # MANIFEST, zip, canonical bundle layout
@@ -213,7 +213,7 @@ Expected end-to-end output (and what the tests assert):
 Bundle written to: build/CL-005
 Zip:               build/CL-005_refined_pack.zip
 Confidence:        0.74
-Validation:        {'total': 11, 'pass': 7, 'warn': 4, 'fail': 0}
+Validation:        {'total': 17, 'pass': 12, 'warn': 5, 'fail': 0}
   ✓ V01 segment_resolution
   ✓ V02 verbatim_quote_match
   ! V03 article_text_hash
@@ -225,9 +225,15 @@ Validation:        {'total': 11, 'pass': 7, 'warn': 4, 'fail': 0}
   ✓ V09 language_consistency
   ✓ V10 confidence_derivation
   ! V11 enrichment_integrity
+  ✓ V12 speaker_attribution
+  ✓ V13 evidence_nexus_coherence
+  ✓ V14 dead_weight_articles
+  ✓ V15 verbatim_hash_integrity
+  ✓ V16 authority_verification_coherence
+  ! V17 cross_view_consistency
 ```
 
-The four warnings are external-action items, not internal bugs:
+The five warnings are external-action items, not internal bugs:
 
 * **V03** — the framework cache's self-reported SHA in its metadata header
   doesn't match the file's actual content hash. Either re-hash or clarify the
@@ -239,6 +245,9 @@ The four warnings are external-action items, not internal bugs:
   source.
 * **V11** — one `W_AUTH_DANGLING_SUPPORT` warning: an authority's `supports`
   entry references an article/element id that isn't present in the bundle.
+* **V17** — this demo builds a bare bundle with no sibling `contract.json`, so
+  the cross-view comparison is unsupported and says so rather than passing
+  vacuously. Against a real bundle directory it compares and passes.
   Register the cited element or drop the support link.
 
 ## Documentation
@@ -276,9 +285,113 @@ Run `violation-pack-catalog --format catalog` for the machine-readable tool list
    guard against the kind of citation fabrication that produced the original
    CL-005's Art. 497 / Art. 269_ter errors.
 
-5. **Every function is MCP-shaped from day one.** Single responsibility,
+   An authority therefore has exactly **two honest states**, and no third:
+
+   * `verified: false` — a research target. It carries `type`, `supports`,
+     `research_query` and `proposition_to_verify`, plus a
+     `fabrication_risk_note` explaining why it cannot be cited yet. Every
+     bibliographic field (`court`, `rol`, `decision_date`, `author`, `work`,
+     `pages`, `instrument`, `holding_summary`) must be `null`; the verifier
+     raises `E_AUTH_FABRICATED_FIELD` the moment one is populated. Put the
+     citation you *mean* to check into `proposition_to_verify` or
+     `research_query` — never into the field that asserts it exists.
+   * `verified: true` — set only by `authority_verification.py`
+     (`statute_in_bundle_v1`, `statute_external_fetch_v1`,
+     `human_attested_v1`) and only together with a `VerificationProvenance`
+     carrying `source_uri`, `source_sha256`, `matched_quote` and
+     `matched_offset`. `verified: true` without that provenance is
+     `E_AUTH_VERIFIED_BY_LLM`.
+
+   "I read it on leychile.cl" is not a verification state: a source name in a
+   prose field is a claim about evidence, not evidence. When in doubt leave the
+   authority `false` — V07 is a `warn` by design, and a warn that is true is
+   worth more than a pass that is fabricated. Adding authorities does not raise
+   confidence either: the factor is `0.85 + 0.15 × verified_ratio`, so eight
+   unverified authorities score exactly the same as none.
+
+5. **`supports` holds one ID style, never a mix.** Each entry is checked
+   against the union of `established_articles[].article_id` and
+   `element_grids[].elements[].element_id`. List either all article ids or all
+   element ids; mixing the two styles produces "empty id" errors that look like
+   a schema problem but are really a citation-style mismatch. `build/CL-001`
+   declares twelve authorities against an empty `element_grids`, which is why
+   it does not pass V11 — do not treat it as a precedent.
+
+6. **Never overwrite the diarizer.** If a segment's `speaker` is a label the
+   transcript's participant record does not declare, that is a finding, not a
+   bug to patch by editing `segment.speaker`. Record the inference in the
+   element's `weaknesses` (or an `OpenQuestion`) and let V12 keep warning.
+   Re-pointing the segment at a plausible declared speaker does not silence V12
+   anyway — `_declared_speaker_labels()` reads `canonical_name`, `role` and
+   `speaker_label`, never `speaker_id` — and it destroys the only record that
+   the attribution was inferred. `EvidenceSegment` has no `speaker_source`
+   field and is `extra="forbid"`, so `weaknesses` is the only place an inferred
+   attribution can live.
+
+7. **Every function is MCP-shaped from day one.** Single responsibility,
    JSON-serializable in/out, idempotent, no global state. See the
    [MCP server](#mcp-server) section below for the function → tool mapping.
+
+8. **One shape per concept, in every view.** `CrossReference` is
+   `{ref, relation}` and `ref` is a **sibling violation id** — all 1069
+   instances under `build/*/contract.json` use that shape, so a richer
+   `{ref_type, ref_id, note}` object parses as nothing and would invalidate
+   every bundle at once. Article- and segment-level targets are not
+   cross-references; they belong in `established_articles` and
+   `proof_evidence_segments`.
+
+9. **`related_violations` is contract-only and narrower than
+   `cross_references`.** No bundle carries it and `Violation` has no such
+   field. Contracts are `schema_version: "4.0"` while bundles are `"3.0"` — two
+   artifacts with their own versioning, which is why V08 compares their
+   overlapping *content* rather than their version strings. It is **not** a
+   projection of `cross_references`: measured over the corpus, 18 of 81 bundles
+   list a `related_violation` that is not among their own cross-references, so
+   the two relations are curated independently. Do not assert containment.
+
+10. **Reciprocity is a graph-level property, not a per-bundle invariant.**
+    The tempting rule — "every link must be linked back" — is empirically
+    false here: 446 of 1081 cross-reference edges are one-directional and 169
+    `related_violations` edges have no counterpart. A bundle is refined in
+    isolation, so it cannot know what its neighbours declare; V05 therefore
+    resolves targets without demanding a return edge, and V17 deliberately does
+    not assert reciprocity. Checking it requires the whole corpus loaded at
+    once, which is an audit, not a bundle check.
+
+11. **A bundle edit implies a contract edit.** The pipeline reads
+    `contract.json` and never writes it. Semantically meaningful bundle edits —
+    articles, nexus rows, open questions, confidence — must be mirrored into
+    the contract by hand, in the same change, or the two views silently
+    diverge.
+
+12. **Cross-view consistency is a validation property, not a convention.**
+    V08 compares `violation_id`/`title`/`severity`/`confidence` and the
+    established-article set; **V17** compares `open_questions` and
+    `cross_references` against the contract. V17 exists because V08's silence
+    is exactly how CL-030's bundle and contract drifted apart on open questions
+    across three review rounds without a single check firing. Anything both
+    views carry should be compared mechanically; where a field is optional, the
+    comparison derives nullability from the model so that JSON's two spellings
+    of "absent" (`null` and `""`) are not reported as drift.
+
+13. **A verification path must fill both the prose protocol and the machine
+    provenance — but they are not the same field.** `Authority` carries
+    `verification_provenance.protocol`, a `Literal` V11 validates against
+    `_KNOWN_PROTOCOLS`, *and* `verification_protocol`, declared as a bare
+    `str | None` with **no validator**. Asserting them equal would be a false
+    constraint. Measured: `jurisprudence.py` writes prose into the second field
+    (`"Qdrant-record=…; primary_source_url=…"`), while
+    `docs/ui_structural_skeleton.md` specifies it as a select of the three
+    protocol *literals* — so the design doc and the implementation disagree
+    about the field's type, and the implementation is what runs. Separately,
+    `verify_statute_in_bundle` populated only the provenance, and **no check
+    read the prose field at all**, so the corpus's only verified authorities
+    claimed `verified=True` while naming no protocol anywhere a reviewer looks.
+    V16 now warns on the blank case (which is all that can be stated without
+    first resolving the type question). Relatedly, verification does **not**
+    make `fabrication_risk_note` safe to clear wholesale: for statutes it mixes
+    the "unverified" clause with substantive caveats, so a note falsified by
+    verification must be *revised*, not blanked — it is not a status field.
 
 ## What's next (in suggested order)
 
@@ -300,8 +413,16 @@ Run `violation-pack-catalog --format catalog` for the machine-readable tool list
 4. **Use `KnowledgeGraph` for graph walks.** Cross-reference propagation,
    open-question blast radius, and confidence re-derivation triggers.
 
-5. **Supply the bundle-level violation index** so V05 can resolve
-   cross-references across violations instead of warning.
+5. **Move reciprocal-link checking to a corpus-level audit.** V05 resolves each
+   `ref` against the id set that `_collect_known_ids()` builds from the bundle
+   folders and their declared `cross_references`, so sibling ids resolve when a
+   pack is refined alongside its neighbours and warn when it is refined in
+   isolation (see the CL-005 demo output above). Reciprocity is deliberately
+   *not* part of V05 or V17 because it is not a per-bundle property — 446 of
+   1081 cross-reference edges are one-directional, and a pack refined in
+   isolation cannot see its neighbours. The natural home is a tool that loads
+   every bundle at once and reports the in-degree/out-degree asymmetries, which
+   is also what would let a graph query drive confidence re-derivation.
 
 ## MCP server
 
@@ -332,7 +453,7 @@ for `/health`; `stop.sh` shuts it down.
 | Startup | `init_violation` |
 | Layers 1–5 | `build_evidence_layer_tool`, `build_norms_layer_tool`, `add_element_grid_tool`, `build_nexus_layer_tool`, `add_authority_stub_tool` |
 | Confidence | `derive_confidence_tool`, `attach_confidence_tool` |
-| Validation | `run_pipeline_tool` (V01–V11), `verify_enrichment_tool` |
+| Validation | `run_pipeline_tool` (V01–V17), `verify_enrichment_tool` |
 | Authority verification | `verify_statute_in_bundle_tool`, `verify_statute_external_fetch_tool`, `verify_human_attested_tool` |
 | Packaging | `write_violation_json_tool`, `build_manifest_tool`, `zip_bundle_tool`, `copy_source_into_bundle_tool` |
 | Batch | `refine_batch_tool` |

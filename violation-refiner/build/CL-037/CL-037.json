@@ -1,0 +1,503 @@
+{
+  "violation_id": "CL-037",
+  "title": ": \"Coercion — Conditional Documentation ('si no se calma') Threatening Withdrawal of Statutory Notice\"",
+  "severity": "CRITICAL",
+  "schema_version": "3.0",
+  "incident": {
+    "date": "July 5, 2024 (Santiago, Chile)",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T13:30:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "segments": [
+    {
+      "segment_id": "I-002_17_NAR-21_STG_29.seg-92",
+      "role_in_argument": "supervisor_raises_prior_incident",
+      "audio_offset_start": 418.0,
+      "audio_offset_end": 422.089983022071,
+      "speaker": "airline_supervisor",
+      "verbatim_es": "Claro, porque como usted dijo recién, había habido una agresión entre usted y un agente...",
+      "verbatim_sha256": "49d926e241af7b701cff693877c9136a654390b48012b07611154b2809dfd54f",
+      "translation_en": "Of course, because as you just said, there had been an aggression between you and a...",
+      "transcription_notes": "reanchored from STG-29.seg-66 (method=text+offset, confidence=high, text_ratio=0.963)",
+      "source_uri": "Transcripts/I-002_17_NAR-21_STG_29.json#seg-92",
+      "source_sha256": "5ca66ca0be4865eca47e32900cc332d65d03b68bd2a3a2624a0e2e4d460a6d1c",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "I-002_17_NAR-21_STG_29.seg-93",
+      "role_in_argument": "passenger_denies_aggression",
+      "audio_offset_start": 421.82512733446526,
+      "audio_offset_end": 426.5,
+      "speaker": "passenger",
+      "verbatim_es": "no hubo una agresión, hubo una acusación que fue comprobada que fue mentira.",
+      "verbatim_sha256": "190d5dae5568a8877afefced16e25f2c45fa49bfe301a7077ec06c69c777355f",
+      "translation_en": "There was no aggression, there was an accusation that was proven false.",
+      "transcription_notes": "reanchored from STG-29.seg-68 (method=text+offset, confidence=high, text_ratio=1.0)",
+      "source_uri": "Transcripts/I-002_17_NAR-21_STG_29.json#seg-93",
+      "source_sha256": "5ca66ca0be4865eca47e32900cc332d65d03b68bd2a3a2624a0e2e4d460a6d1c",
+      "audio_uri": null
+    }
+  ],
+  "framework_caches": [
+    {
+      "framework_code": "CPCL",
+      "framework_name": "CPCL",
+      "cache_file": "Legal framework/CPCL.md",
+      "cache_file_sha256": "0b2d5b975f2e95a699c22550dd660fe12fd724b9a0206361553c31927773b7fe",
+      "cache_self_reported_sha256": null,
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "17",
+        "94",
+        "255",
+        "269 ter",
+        "412",
+        "416",
+        "494 N 16"
+      ]
+    }
+  ],
+  "established_articles": [
+    {
+      "article_id": "CL.CPCL.L3.T4.Art.494.16",
+      "article_name": "Codigo Penal de Chile, Art. 494 N°16 — Coaccion / Apremio",
+      "subsections_invoked": [],
+      "verbatim_excerpt": "El que sin estar legitimamente autorizado impidiere a otro con violencia hacer lo que la ley no prohibe, o le compeliere a ejecutar lo que no quiera.",
+      "verbatim_excerpt_sha256": "906e1c8aae7da62a8ad1540ce4daff3beb104d535e42d63c4f21876d4fe1bc0f",
+      "framework_code": "CPCL",
+      "framework_cache_status": "verified_in_bundle",
+      "duty_bearer": "state",
+      "norm_type": "definition",
+      "applicability": "supporting",
+      "applicability_rationale": "Threatening to withhold a statutory denied-boarding notice unless the passenger 'se calma' compels him to refrain from exercising the lawful right to protest and demand documentation, satisfying Art. 494.16 ('impedir a otro con violencia hacer lo que la ley no prohibe'). The conduct is reinforced as apremio ilegitimo under CONST Art. 19.1. | legacy paraphrase: Sufriran la pena de multa de una a cuatro unidades tributarias mensuales: 16. El que sin estar legitimamente autorizado impidiere a otro con violencia hacer lo que la ley no prohibe, o le compeliere a ejecutar lo que no quiera."
+    }
+  ],
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.LPDC.Art.13",
+      "candidate_name": "Ley del Consumidor, Art. 13 — Constreñimiento al consumidor",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.13 from bcn.cl/leychile, focusing on threat-based coercion of consumer acts unrelated to contract formation"
+      ],
+      "preliminary_view": "The supervisor's threat to withhold a statutory denied-boarding notice unless the passenger 'se calma' arguably constrains the passenger to refrain from lawful protest—an 'acto' under Art. 13 prohibited if compelled by threats. Verify whether post-sale, non-contractual acts (e.g., ceasing complaints) are covered by the provision's broad wording ('ejecutar cualquier otro acto').",
+      "history_note": "Proposed by analyst as a consumer-protection analogue to CPCL 494.16; candidate replaces a previously unverified suggestion from the pipeline."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Código Civil, Art. 2314 — Responsabilidad extracontractual por delito o cuasidelito civil",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2314 from bcn.cl/leychile, confirming it grounds liability for civil wrongs causing damage"
+      ],
+      "preliminary_view": "If the passenger suffered moral or material damage from the coercive threat, Art. 2314 could serve as the primary indemnification hook. The provision's generality makes it almost always a fallback, but care must be taken to link the threat directly to a legally cognizable harm.",
+      "history_note": "Added because coercive conduct, if proven harmful, typically gives rise to a civil remedy; this is a standard accompaniment to the criminal-type article already invoked."
+    }
+  ],
+  "element_grids": [
+    {
+      "article_id": "CL.CPCL.L3.T4.Art.494.16",
+      "article_short": "Art. 494 N°16 — Impedir con violencia acto lícito (CPCL)",
+      "elements": [
+        {
+          "element_id": "CL.CPCL.Art.494.16.elem.sujeto_activo",
+          "label": "Sujeto activo",
+          "doctrinal_basis": "El que ... impidiere",
+          "proof_status": "contested",
+          "proof_evidence_segments": [
+            "I-002_17_NAR-21_STG_29.seg-92"
+          ],
+          "argument_es": "El Sr. Diego, supervisor de Latam, aparece en la grabación (seg-66) pero no está directamente probado que él haya proferido la amenaza.",
+          "weaknesses": [
+            "No hay grabación directa de la amenaza."
+          ],
+          "open_questions": [
+            "¿Quién exactamente amenazó al pasajero?"
+          ]
+        },
+        {
+          "element_id": "CL.CPCL.Art.494.16.elem.ausencia_autorizacion",
+          "label": "Ausencia de autorización legítima",
+          "doctrinal_basis": "sin estar legitimamente autorizado",
+          "proof_status": "missing",
+          "proof_evidence_segments": [],
+          "argument_es": "No hay evidencia en los segmentos sobre si el supervisor estaba autorizado o no para retener el comprobante.",
+          "weaknesses": [
+            "Falta de prueba de la falta de autorización."
+          ],
+          "open_questions": [
+            "¿Tenía el supervisor autorización legítima para retener la documentación?"
+          ]
+        },
+        {
+          "element_id": "CL.CPCL.Art.494.16.elem.violencia_moral",
+          "label": "Violencia moral (amenaza)",
+          "doctrinal_basis": "con violencia",
+          "proof_status": "contested",
+          "proof_evidence_segments": [
+            "I-002_17_NAR-21_STG_29.seg-92"
+          ],
+          "argument_es": "El supervisor hace referencia a una agresión previa que sabe falsa (seg-66, 70), lo que sugiere un contexto de coacción moral, pero no hay registro de la amenaza explícita de retener el comprobante.",
+          "weaknesses": [
+            "No se registra la amenaza textualmente."
+          ],
+          "open_questions": [
+            "¿Se condicionó la entrega del comprobante a que el pasajero 'se calmara'?"
+          ]
+        },
+        {
+          "element_id": "CL.CPCL.Art.494.16.elem.impedimento",
+          "label": "Impedimento de acto lícito",
+          "doctrinal_basis": "impidiere a otro con violencia hacer lo que la ley no prohibe",
+          "proof_status": "contested",
+          "proof_evidence_segments": [
+            "I-002_17_NAR-21_STG_29.seg-92"
+          ],
+          "argument_es": "El pasajero podría haber sido impedido de ejercer su derecho a reclamar, pero los segmentos solo muestran la discusión sobre un incidente anterior, no el acto de impedir.",
+          "weaknesses": [
+            "No hay mención directa del impedimento."
+          ],
+          "open_questions": [
+            "¿Se impidió efectivamente al pasajero protestar?"
+          ]
+        },
+        {
+          "element_id": "CL.CPCL.Art.494.16.elem.acto_licito",
+          "label": "Acto lícito impedido",
+          "doctrinal_basis": "hacer lo que la ley no prohibe",
+          "proof_status": "missing",
+          "proof_evidence_segments": [],
+          "argument_es": "Los segmentos no mencionan qué acto lícito estaba realizando el pasajero que fue impedido.",
+          "weaknesses": [
+            "Falta completamente la descripción del acto."
+          ],
+          "open_questions": [
+            "¿Qué acto lícito específico estaba ejerciendo?"
+          ]
+        },
+        {
+          "element_id": "CL.CPCL.Art.494.16.elem.sujeto_pasivo",
+          "label": "Sujeto pasivo",
+          "doctrinal_basis": "a otro",
+          "proof_status": "established",
+          "proof_evidence_segments": [
+            "I-002_17_NAR-21_STG_29.seg-93"
+          ],
+          "argument_es": "El pasajero Leandro Disconzi habla en los segmentos, identificándose como la otra parte.",
+          "weaknesses": [],
+          "open_questions": []
+        },
+        {
+          "element_id": "CL.CPCL.Art.494.16.elem.dolo",
+          "label": "Dolo (intención)",
+          "doctrinal_basis": null,
+          "proof_status": "contested",
+          "proof_evidence_segments": [],
+          "argument_es": "El supervisor afirma saber que la acusación previa era falsa (seg-70), lo que podría evidenciar una intención de utilizar ese antecedente para coaccionar al pasajero, pero no es concluyente.",
+          "weaknesses": [
+            "No hay expresión explícita de la intención de coaccionar."
+          ],
+          "open_questions": [
+            "¿Actuó con dolo de impedir el ejercicio de un derecho?"
+          ]
+        },
+        {
+          "element_id": "CL.CPCL.Art.494.16.elem.resultado",
+          "label": "Resultado: impedimento efectivo",
+          "doctrinal_basis": "impidiere",
+          "proof_status": "missing",
+          "proof_evidence_segments": [],
+          "argument_es": "No hay evidencia en los segmentos de que el pasajero haya sido efectivamente impedido de hacer algo.",
+          "weaknesses": [
+            "Falta de prueba del resultado."
+          ],
+          "open_questions": [
+            "¿Se logró impedir al pasajero?"
+          ]
+        }
+      ]
+    }
+  ],
+  "nexus_matrix": [
+    {
+      "fact_id": "I-002_17_NAR-21_STG_29.seg-92",
+      "norm_id": "CL.CPCL.L3.T4.Art.494.16",
+      "element_id": "CL.CPCL.Art.494.16.elem.sujeto_activo",
+      "nexus_type": "speaker_identification",
+      "strength": "medium",
+      "rationale_oneline": "Supervisor's reference identifies passenger as involved in prior aggression, implying active subject role."
+    },
+    {
+      "fact_id": "I-002_17_NAR-21_STG_29.seg-93",
+      "norm_id": "CL.CPCL.L3.T4.Art.494.16",
+      "element_id": "CL.CPCL.Art.494.16.elem.sujeto_activo",
+      "nexus_type": "circumstantial_omission",
+      "strength": "low",
+      "rationale_oneline": "Passenger's denial of aggression indirectly acknowledges personal involvement, indicating active subject."
+    },
+    {
+      "fact_id": "I-002_17_NAR-21_STG_29.seg-93",
+      "norm_id": "CL.CPCL.L3.T4.Art.494.16",
+      "element_id": "CL.CPCL.Art.494.16.elem.ausencia_autorizacion",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "medium",
+      "rationale_oneline": "Admission of false accusation indicates the claim lacked legitimate authorization."
+    },
+    {
+      "fact_id": "I-002_17_NAR-21_STG_29.seg-92",
+      "norm_id": "CL.CPCL.L3.T4.Art.494.16",
+      "element_id": "CL.CPCL.Art.494.16.elem.violencia_moral",
+      "nexus_type": "system_state_corroboration",
+      "strength": "medium",
+      "rationale_oneline": "Mention of 'aggression' implies a history of violent or threatening behavior, indicating moral violence."
+    },
+    {
+      "fact_id": "I-002_17_NAR-21_STG_29.seg-93",
+      "norm_id": "CL.CPCL.L3.T4.Art.494.16",
+      "element_id": "CL.CPCL.Art.494.16.elem.violencia_moral",
+      "nexus_type": "circumstantial_omission",
+      "strength": "low",
+      "rationale_oneline": "Denial of aggression suggests the existence of a conflict that may involve threats."
+    },
+    {
+      "fact_id": "I-002_17_NAR-21_STG_29.seg-93",
+      "norm_id": "CL.CPCL.L3.T4.Art.494.16",
+      "element_id": "CL.CPCL.Art.494.16.elem.impedimento",
+      "nexus_type": "functional_context",
+      "strength": "low",
+      "rationale_oneline": "False accusation may have been intended to impede a lawful act or process."
+    },
+    {
+      "fact_id": "I-002_17_NAR-21_STG_29.seg-93",
+      "norm_id": "CL.CPCL.L3.T4.Art.494.16",
+      "element_id": "CL.CPCL.Art.494.16.elem.acto_licito",
+      "nexus_type": "circumstantial_omission",
+      "strength": "low",
+      "rationale_oneline": "False accusation implies the lawful act of truthful reporting was subverted."
+    },
+    {
+      "fact_id": "I-002_17_NAR-21_STG_29.seg-92",
+      "norm_id": "CL.CPCL.L3.T4.Art.494.16",
+      "element_id": "CL.CPCL.Art.494.16.elem.sujeto_pasivo",
+      "nexus_type": "speaker_identification",
+      "strength": "medium",
+      "rationale_oneline": "Supervisor references another person in the aggression, identifying potential passive subject."
+    },
+    {
+      "fact_id": "I-002_17_NAR-21_STG_29.seg-93",
+      "norm_id": "CL.CPCL.L3.T4.Art.494.16",
+      "element_id": "CL.CPCL.Art.494.16.elem.dolo",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Passenger admits the accusation was proven false, directly evidencing intentional deceit."
+    }
+  ],
+  "authorities": [],
+  "confidence": {
+    "value": 0.32,
+    "components": {
+      "CL.CPCL.L3.T4.Art.494.16": 0.375
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-09-13T15:40:47.731674Z",
+    "history": []
+  },
+  "open_questions": [
+    {
+      "id": "OQ-CL-037-quien-amenazo",
+      "question": "¿Quién exactamente amenazó al pasajero?",
+      "blocks_element": "CL.CPCL.Art.494.16.elem.sujeto_activo",
+      "priority": "high",
+      "obtaining_method": null
+    },
+    {
+      "id": "OQ-CL-037-autorizacion-legitima",
+      "question": "¿Tenía el supervisor autorización legítima para retener la documentación?",
+      "blocks_element": "CL.CPCL.Art.494.16.elem.ausencia_autorizacion",
+      "priority": "critical",
+      "obtaining_method": null
+    },
+    {
+      "id": "OQ-CL-037-condicion-entrega",
+      "question": "¿Se condicionó la entrega del comprobante a que el pasajero 'se calmara'?",
+      "blocks_element": "CL.CPCL.Art.494.16.elem.violencia_moral",
+      "priority": "high",
+      "obtaining_method": null
+    },
+    {
+      "id": "OQ-CL-037-impedimento-protesta",
+      "question": "¿Se impidió efectivamente al pasajero protestar?",
+      "blocks_element": "CL.CPCL.Art.494.16.elem.impedimento",
+      "priority": "high",
+      "obtaining_method": null
+    },
+    {
+      "id": "OQ-CL-037-acto-licito",
+      "question": "¿Qué acto lícito específico estaba ejerciendo?",
+      "blocks_element": "CL.CPCL.Art.494.16.elem.acto_licito",
+      "priority": "critical",
+      "obtaining_method": null
+    },
+    {
+      "id": "OQ-CL-037-dolo",
+      "question": "¿Actuó con dolo de impedir el ejercicio de un derecho?",
+      "blocks_element": "CL.CPCL.Art.494.16.elem.dolo",
+      "priority": "medium",
+      "obtaining_method": null
+    },
+    {
+      "id": "OQ-CL-037-resultado-impedimento",
+      "question": "¿Se logró impedir al pasajero?",
+      "blocks_element": "CL.CPCL.Art.494.16.elem.resultado",
+      "priority": "critical",
+      "obtaining_method": null
+    }
+  ],
+  "cross_references": [
+    {
+      "ref": "CL-019",
+      "relation": "coercive_threat_constitutes_intimidation"
+    },
+    {
+      "ref": "CL-020",
+      "relation": "coercion_used_to_enforce_shifting_narrative"
+    },
+    {
+      "ref": "CL-021",
+      "relation": "coercion_as_retaliation_for_questioning_pilot"
+    },
+    {
+      "ref": "CL-022",
+      "relation": "coercion_enabled_by_regulatory_failure"
+    },
+    {
+      "ref": "CL-023",
+      "relation": "conditional_documentation_perpetuates_false_narrative"
+    },
+    {
+      "ref": "CL-024",
+      "relation": "coercion_contradicts_police_exoneration"
+    },
+    {
+      "ref": "CL-025",
+      "relation": "coercive_threat_part_of_systematic_gaslighting"
+    },
+    {
+      "ref": "CL-027",
+      "relation": "coercion_to_prevent_escalation_consistent_with_blocking_executive_communications"
+    },
+    {
+      "ref": "CL-028",
+      "relation": "coercive_conduct_is_counter_staff_misconduct"
+    },
+    {
+      "ref": "CL-029",
+      "relation": "coercion_violates_DGAC_organic_law"
+    },
+    {
+      "ref": "CL-030",
+      "relation": "coercion_may_constitute_obstruction_of_justice"
+    },
+    {
+      "ref": "CL-031",
+      "relation": "coercion_pattern_ignored_by_compliance_officer"
+    },
+    {
+      "ref": "CL-032",
+      "relation": "coercive_conduct_not_responded_to_by_DGAC_or_Defensoria"
+    },
+    {
+      "ref": "CL-033",
+      "relation": "conditional_documentation_part_of_fabrication_conspiracy"
+    },
+    {
+      "ref": "CL-034",
+      "relation": "conditional_documentation_produced_through_off_book_channels"
+    },
+    {
+      "ref": "CL-035",
+      "relation": "document_threatened_is_authored_without_witness"
+    },
+    {
+      "ref": "CL-036",
+      "relation": "coercion_uses_document_containing_false_imputation"
+    }
+  ],
+  "provenance": [
+    {
+      "timestamp": "2026-05-20T20:53:27.054061Z",
+      "actor": "manual_ingestion",
+      "operation": "ingest_v1",
+      "layer": null,
+      "note": "[vault layer=0] From v1 _provenance"
+    },
+    {
+      "timestamp": "2026-05-12T14:36:51.248788Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CPCL.L3.T4.Art.494.16: 8 elements; weighted score 0.38."
+    },
+    {
+      "timestamp": "2026-05-12T14:39:39.447418Z",
+      "actor": "layers.build_nexus_layer",
+      "operation": "add_or_replace_nexus_entries",
+      "layer": 4,
+      "note": "Upserted 12 nexus entries."
+    },
+    {
+      "timestamp": "2026-05-12T14:42:30.005127Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-COERCION-SUBJ (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T14:42:30.005240Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-NO-AUTH (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T14:42:30.005256Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-MORAL-VIOLENCE (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T14:42:30.005266Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-IMPEDIMENT (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T14:42:30.005273Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-ACTO-LICITO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T14:42:30.005279Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-DOLO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T14:42:30.005285Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-RESULTADO (verified=False)."
+    }
+  ]
+}

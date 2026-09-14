@@ -1,0 +1,216 @@
+{
+  "schema_version": "4.0",
+  "violation_id": "CL-040",
+  "violation_number": "CL-040",
+  "title": ": \"[[SPK-antonela-latam-agent]]'s Accessory Liability — Knowing Delivery of False Document Plus Active Refusal to Authenticate (Signature/Stamp/Author)\"",
+  "case": {
+    "id": "I-002",
+    "name": "I-002-Chile-Santiago"
+  },
+  "jurisdiction": "CL",
+  "framework": {
+    "codes": [
+      "CHIPENCOD"
+    ],
+    "files": {
+      "CHIPENCOD": "CL/CHIPENCOD_CP.md"
+    }
+  },
+  "category": "Accessory Calumnia / Document Conduit",
+  "severity": "CRITICAL",
+  "confidence": {
+    "value": 0.53,
+    "components": {
+      "CL.CHIPENCOD.T4.C6.Art.211": 0.62
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T15:06:36.504511Z",
+    "history": [
+      "2026-05-12T14:47:53.064511+00:00: value=0.0",
+      "2026-05-12T14:49:12.811749+00:00: value=0.0",
+      "2026-05-12T14:49:45.356370+00:00: value=0.0",
+      "2026-05-12T14:57:00.926115+00:00: value=0.53",
+      "2026-05-12T15:00:23.042750+00:00: value=0.53",
+      "2026-05-12T15:02:20.042468+00:00: value=0.53",
+      "2026-05-12T15:03:05.875788+00:00: value=0.53",
+      "2026-05-12T15:04:41.908050+00:00: value=0.53"
+    ],
+    "validated": false,
+    "note": ""
+  },
+  "incident": {
+    "date": "July 5, 2024 (Santiago, Chile)",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T13:30:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "incident_timestamp": "2024-07-05T13:30:00-04:00",
+  "incident_timestamp_display": "July 5, 2024 (Santiago, Chile)",
+  "allegation_summary": "json_latam_STG_4 SEG 22, 23–24, 27–28, 98–99 documents [[SPK-antonela-latam-agent]]'s active conduct: (i) she delivered the document (SEG 99: 'no, yo solamente la entregue'); (ii) she refused to provide a signature (SEG 22: 'ninguno de nuestros documentos tiene firma'); (iii) she refused to provide a stamp (SEG 27–28: 'nadie se lo va a hacer, senor'); (iv) she declined to identify the human author (SEG 23–24: 'latam, latam esta siendo responsable de eso'); and (v) she dismissed the passenger's invocation of his recording (SEG 101–103: 'me pidio para entregarte' — denying the recorded instruction to 'escribir y modificar'). Combined with her knowledge that PDI had disproven the allegations (json_latam_STG_2 SEG 5–6), this is accessory liability for calumnia (CHIPENCOD Art. 211) and a co-author role in CPCL Art. 197 falsification, since she was [[SPK-diego-latam-supervisor]]'s named content-source ('lo que dice la Anto', STG-29 SEG 39).",
+  "legal_basis": {
+    "frameworks": [
+      {
+        "framework_code": "CHIPENCOD",
+        "framework_name": "CHIPENCOD",
+        "framework_file": "CL/CHIPENCOD_CP.md",
+        "articles": [
+          {
+            "article_id": "CL.CHIPENCOD.T4.C6.Art.211",
+            "article_name": "Codigo Penal de Chile, Art. 211 — Calumnia (accessory)",
+            "article_text": "El que imputare falsamente a alguna persona haber cometido un crimen o simple delito, siendo sabedor de la falsedad de la imputación, o el que la hiciere de malicia, incurrirá en las penas de reclusión menor en sus grados mínimo a medio y multa de once a quince unidades tributarias mensuales.",
+            "applicability_rationale": "Antonela was named by Diego as the content source ('lo que dice la Anto') and personally delivered the document while refusing signature, stamp, and identification of human authorship. This is accessory liability for calumnia and a co-author role for Art. 197 falsification. | legacy paraphrase: El que imputare falsamente a alguna persona haber cometido un crimen o simple delito, siendo sabedor de la falsedad de la imputacion, o el que la hiciere de malicia, incurrira en las penas de reclusion menor en sus grados minimo a medio y multa de once a quince unidades tributarias mensuales.",
+            "duty_bearer": "state",
+            "norm_type": "definition",
+            "applicability": "supporting",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CHIPENCOD.Art.197",
+      "candidate_name": "Código Penal de Chile, Art. 197 — Falsificación de documento privado (autoría directa o como coautora)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.197 from bcn.cl/leychile to confirm exact wording and scope.",
+        "Check whether Art. 197 penalizes any person who, with intent to cause harm, commits falsehood in a private document (e.g., fabricating or modifying a letter).",
+        "Review doctrinal sources to determine if 'entregar' a false document with knowledge of its falsehood qualifies as coautoría under Art. 197."
+      ],
+      "preliminary_view": "Antonela admitted delivering the document that she knew was modified (seg-101/102). Art. 197 applies to anyone who, with perjuicio de tercero, commits a falsehood in a private document; her role may constitute direct falsification or co‑authorship.",
+      "history_note": "Proposed because the incident describes delivery of a document whose content was identified as coming from Antonela, and she refused to authenticate it, which raises an independent penal hypothesis beyond calumnia."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2320",
+      "candidate_name": "Código Civil de Chile, Art. 2320 — Responsabilidad del empleador por los hechos de sus dependientes",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2320 from bcn.cl/leychile.",
+        "Confirm that the article makes an employer (LATAM) civilly liable for wrongful acts committed by an employee (Antonela) in the exercise of her functions.",
+        "Verify whether the provision requires proof of culpa in vigilando or if it establishes an objective liability standard."
+      ],
+      "preliminary_view": "Antonela acted as LATAM supervisor while delivering a false document and refusing authentication. Art. 2320 would extend civil responsibility to LATAM for her acts performed within the scope of her employment.",
+      "history_note": ""
+    },
+    {
+      "candidate_article_id": "CL.LPC.Art.3",
+      "candidate_name": "Ley del Consumidor (Ley N° 19.496), Art. 3 — Derecho a información veraz",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPC.Art.3 from bcn.cl/leychile, paying special attention to inciso b) on truthful and timely information.",
+        "Determine if providing a false document that imputes a wrongful act to a consumer qualifies as an infringement of the right to truthful information.",
+        "Check if the consumer‑protection authority (SERNAC) or courts have applied Art. 3 in cases of false statements about passengers."
+      ],
+      "preliminary_view": "The document delivered by Antonela contained an imputation that Leandro Disconzi had committed a misdeed, which she knew to be false. As a provider, LATAM is obliged to give truthful information; delivering a false statement likely breaches Art. 3 inc. b).",
+      "history_note": "This article is proposed as an additional consumer‑law avenue parallel to the penal and civil hypotheses."
+    }
+  ],
+  "cross_references": [
+    {
+      "ref": "CL-033",
+      "relation": "antonela_delivered_document_fabricated_per_conspiracy"
+    },
+    {
+      "ref": "CL-034",
+      "relation": "antonela_served_as_conduit_in_off-book_document_channel"
+    },
+    {
+      "ref": "CL-035",
+      "relation": "antonela_refusal_to_name_author_corroborates_diego_admission"
+    },
+    {
+      "ref": "CL-036",
+      "relation": "antonela_knowingly_delivered_calumnious_document"
+    },
+    {
+      "ref": "CL-023",
+      "relation": "antonela_persisted_in_false_narrative_by_refusing_authentication"
+    },
+    {
+      "ref": "CL-020",
+      "relation": "antonela_presented_false_document_as_evolving_justification"
+    },
+    {
+      "ref": "CL-025",
+      "relation": "antonela_delivery_part_of_gaslighting_and_deception_scheme"
+    },
+    {
+      "ref": "CL-037",
+      "relation": "antonela_document_delivery_occurred_in_coercive_context"
+    },
+    {
+      "ref": "CL-038",
+      "relation": "antonela_failed_to_provide_mandatory_written_notice"
+    },
+    {
+      "ref": "CL-039",
+      "relation": "antonela_delivered_false_document_instead_of_compensation_offer"
+    },
+    {
+      "ref": "CL-024",
+      "relation": "antonela_document_contradicted_official_police_exoneration"
+    },
+    {
+      "ref": "CL-028",
+      "relation": "antonela_conduct_exemplifies_counter_staff_misconduct"
+    },
+    {
+      "ref": "CL-019",
+      "relation": "antonela_document_delivery_extended_intimidation"
+    },
+    {
+      "ref": "CL-021",
+      "relation": "antonela_document_served_as_post_removal_retaliation_justification"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-CL-040-COAUTORIA-ENTREGA",
+      "question": "¿Constituye la simple entrega del documento un acto de imputación a título de coautoría?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.elem.sujeto_activo_imputador",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL-040-DELITO-IMPUTADO",
+      "question": "¿Qué crimen o simple delito se le imputaba específicamente a Leandro en el documento?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.elem.modalidad_imputacion_falsa",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL-040-TIPICIDAD-HECHO",
+      "question": "¿El hecho imputado constituye efectivamente un crimen o simple delito según la legislación chilena?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.elem.objeto_material_imputacion_delictiva",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL-040-PRUEBA-FALSEDAD",
+      "question": "¿Existen pruebas independientes de que la imputación era objetivamente falsa?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.elem.dolo_conocimiento_o_malicia",
+      "priority": "high"
+    }
+  ],
+  "related_violations": [
+    "CL-016",
+    "CL-033",
+    "CL-035",
+    "CL-036",
+    "CL-038"
+  ],
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "_provenance": {
+    "source": "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN/CL-040.json",
+    "vault_operations": 6,
+    "converted_by": "examples/vault_to_bundle.py"
+  }
+}

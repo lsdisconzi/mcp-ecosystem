@@ -1,0 +1,556 @@
+{
+  "schema_version": "4.0",
+  "violation_id": "CL-008",
+  "violation_number": "CL-008",
+  "title": "DGAC Regulatory Abdication — Failure to Exercise Oversight Authority",
+  "case": {
+    "id": "I-002",
+    "name": "I-002-Chile-Santiago"
+  },
+  "jurisdiction": "CL",
+  "framework": {
+    "codes": [
+      "CONST",
+      "L16752",
+      "LPDC"
+    ],
+    "files": {
+      "CONST": "CL/Constitucion.md",
+      "L16752": "CL/L16752_DGAC.md",
+      "LPDC": "CL/L19496_LPDC.md"
+    }
+  },
+  "category": "Regulatory Abdication",
+  "severity": "CRITICAL",
+  "confidence": {
+    "value": 0.62,
+    "components": {
+      "CL.L16752.T1.Art.1": 0.743,
+      "CL.L16752.T2.Art.3": 0.725,
+      "CL.CONST.T1.C1.Art.6": 0.74,
+      "CL.CONST.T1.C1.Art.5": 0.65,
+      "CL.LPDC.Art.3.b": 0.788,
+      "CL.LPDC.Art.23": 0.714
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T06:53:15.470958Z",
+    "history": [
+      "2026-05-12T06:43:17.991129+00:00: value=0.0",
+      "2026-05-12T06:43:30.226811+00:00: value=0.0",
+      "2026-05-12T06:43:37.671843+00:00: value=0.0",
+      "2026-05-12T06:48:33.521071+00:00: value=0.62",
+      "2026-05-12T06:49:34.493502+00:00: value=0.62",
+      "2026-05-12T06:50:25.992541+00:00: value=0.62",
+      "2026-05-12T06:51:34.927947+00:00: value=0.62",
+      "2026-05-12T06:53:02.065283+00:00: value=0.62"
+    ],
+    "validated": true,
+    "note": "Validated by V10 pipeline check. Confidence is 0.0 pending element grid construction."
+  },
+  "incident": {
+    "date": "2024-07-05",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T13:30:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "incident_timestamp": "2024-07-05T13:30:00-04:00",
+  "incident_timestamp_display": "2024-07-05 — Voo LA8159 — Aeroporto SCL",
+  "allegation_summary": "DGAC officials failed to exercise their statutory oversight authority during the LA8159 incident. Despite being present during the passenger's forcible removal and having access to CCTV footage that exonerated the passenger, DGAC personnel did not intervene to correct LATAM's false narrative. DGAC's Ley 16.752 mandates include fiscalización of aviation activities, protection of passenger rights, and issuance of binding instructions to carriers. The failure to act constitutes a regulatory abdication that enabled LATAM's misconduct to proceed unchecked.",
+  "legal_basis": {
+    "frameworks": [
+      {
+        "framework_code": "L16752",
+        "framework_name": "L16752",
+        "framework_file": "CL/L16752_DGAC.md",
+        "articles": [
+          {
+            "article_id": "CL.L16752.T1.Art.1",
+            "article_name": "Ley 16.752, Art. 1 — Dirección y administración de aeródromos públicos",
+            "article_text": "Le corresponderá fundamentalmente la dirección y administración de los aeródromos públicos y de los servicios destinados a la ayuda y protección de la navegación aérea.",
+            "applicability_rationale": "legacy paraphrase: La Direccion General de Aeronautica Civil sera un servicio dependiente de la Comandancia en Jefe de la Fuerza Aerea de Chile... Le correspondera fundamentalmente la direccion y administracion de los aerodromos publicos y de los servicios destinados a la ayuda y proteccion de la navegacion aerea.",
+            "duty_bearer": "state",
+            "norm_type": "definition",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          },
+          {
+            "article_id": "CL.L16752.T2.Art.3",
+            "article_name": "Ley 16.752, Art. 3 — Funciones y atribuciones de la DGAC",
+            "article_text": "j) Fiscalizar las actividades de la aviación civil, en resguardo de la seguridad de vuelo y dictar las instrucciones de general aplicación que sean necesarias para los fines señalados.",
+            "applicability_rationale": "legacy paraphrase: Correspondera a la DGAC: j) Fiscalizar las actividades de la aviacion civil, en resguardo de la seguridad de vuelo y dictar las instrucciones de general aplicacion. r) Investigar las infracciones a las leyes, reglamentos y demas disposiciones relacionadas con la navegacion aerea cuya aplicacion y control le corresponda. z) En general, fiscalizar el cumplimiento de las disposiciones legales y reglamentarias relativas a la aeronavegacion.",
+            "duty_bearer": "state",
+            "norm_type": "definition",
+            "applicability": "direct",
+            "subsections_invoked": [
+              "b",
+              "h",
+              "j",
+              "q",
+              "z"
+            ],
+            "status": "established"
+          }
+        ]
+      },
+      {
+        "framework_code": "CONST",
+        "framework_name": "CONST",
+        "framework_file": "CL/Constitucion.md",
+        "articles": [
+          {
+            "article_id": "CL.CONST.T1.C1.Art.6",
+            "article_name": "Constitución Política, Art. 6 — Sujeción de los órganos del Estado a la Constitución",
+            "article_text": "The bodies of the State bodies must subject their action to the Constitution and the norms enacted in conformity therewith as well as guarantee the institutional order of the Republic.",
+            "applicability_rationale": "legacy paraphrase: The bodies of the State must subject their action to the Constitution and the norms enacted in conformity therewith as well as guarantee the institutional order of the Republic. The breach of this norm will generate the responsibilities and penalties determined by the law.",
+            "duty_bearer": "state",
+            "norm_type": "definition",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          },
+          {
+            "article_id": "CL.CONST.T1.C1.Art.5",
+            "article_name": "Constitución Política, Art. 5 — Soberanía y límites del poder estatal",
+            "article_text": "Sovereignty rests essentially with the Nation. It is exercise by the people through plebiscites and periodic elections, as well as by the authorities established by this Constitution. No sector of the people or individual may claim its exercise. The exercise of sovereignty recognized the respect towards the essential rights that emanate from human nature as a limit. It is the duty of the State’s bodies to respect and promote those rights, guaranteed by this Constitution, as well as by international treaties which have been ratified by Chile and that are in force.",
+            "applicability_rationale": "legacy paraphrase: It is the duty of the State's bodies to respect and promote those rights, guaranteed by this Constitution, as well as by international treaties which have been ratified by Chile and that are in force.",
+            "duty_bearer": "state",
+            "norm_type": "definition",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      },
+      {
+        "framework_code": "LPDC",
+        "framework_name": "LPDC",
+        "framework_file": "CL/L19496_LPDC.md",
+        "articles": [
+          {
+            "article_id": "CL.LPDC.Art.3.b",
+            "article_name": "Ley 19.496, Art. 3(b) — Derecho a información veraz",
+            "article_text": "b) El derecho a una información veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratación y otras características relevantes de los mismos, y el deber de informarse responsablemente de ellos.",
+            "applicability_rationale": "legacy paraphrase: Son derechos y deberes basicos del consumidor: b) El derecho a una informacion veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratacion y otras caracteristicas relevantes de los mismos.",
+            "duty_bearer": "air_operator",
+            "norm_type": "right",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          },
+          {
+            "article_id": "CL.LPDC.Art.23",
+            "article_name": "Ley 19.496, Art. 23 — Infracciones del proveedor",
+            "article_text": "Comete infracción a las disposiciones de la presente ley el proveedor que, en la venta de un bien o en la prestación de un servicio, **actuando con negligencia**, causa menoscabo al consumidor debido a fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio.",
+            "applicability_rationale": "legacy paraphrase: El proveedor de un servicio sera responsable de los danos y perjuicios que cause al consumidor por la prestacion de un servicio defectuoso, incluyendo la falta de veracidad en la informacion proporcionada y el incumplimiento de las condiciones de contratacion.",
+            "duty_bearer": "air_operator",
+            "norm_type": "liability",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CONST.Art.38",
+      "candidate_name": "Responsabilidad del Estado por actos de la Administración",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Art. 38 inciso 2 of the Constitución Política de la República from bcn.cl/leychile",
+        "Confirm that the article establishes that any person injured in their rights by the Administration may file a claim before the courts"
+      ],
+      "preliminary_view": "Art. 38 inc. 2 CPR establishes that any person harmed by an act of the State Administration may seek redress before the courts. DGAC's passive refusal to intervene when a passenger was denied boarding without explanation and referred in a loop between airline and regulator could constitute a harmful omission by the Administration giving rise to State liability.",
+      "history_note": "Not previously cited. Added because the violation alleges regulatory abdication by a State organ (DGAC), which triggers the constitutional basis for State liability for administrative fault or omission."
+    },
+    {
+      "candidate_article_id": "CL.L18575.Art.4",
+      "candidate_name": "Ley Orgánica Constitucional de Bases Generales de la Administración del Estado — Responsabilidad por falta de servicio",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 4 of Ley 18.575 from bcn.cl/leychile",
+        "Confirm that it establishes that the State shall be liable for damages caused by its organs in the exercise of their functions"
+      ],
+      "preliminary_view": "Art. 4 of Ley 18.575 provides that the State is liable for harm caused by its organs. DGAC's failure to exercise its supervisory mandate (fiscalización) when directly confronted with a passenger complaint constitutes a potential falta de servicio.",
+      "history_note": "Not previously cited. Complements CL.CONST.Art.38 by providing the organic-law basis for falta de servicio doctrine applicable to DGAC as a State service."
+    },
+    {
+      "candidate_article_id": "CL.L18575.Art.42",
+      "candidate_name": "Ley 18.575 — Falta de servicio (órganos no excluidos)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 42 of Ley 18.575 (Título II) from bcn.cl/leychile",
+        "Verify whether DGAC, as a service dependent on the Air Force (per L16752 Art.1), falls under Título II or is excluded; check Art. 21 inc. 2 exclusion list"
+      ],
+      "preliminary_view": "Art. 42 establishes that State organs responding under Título II are liable for falta de servicio. However, DGAC's institutional dependency on the Comandancia en Jefe de la FACH may place it outside Título II (Art. 21 inc. 2 excludes FFAA). Verification of DGAC's precise legal classification is essential before relying on this article.",
+      "history_note": "Added with caveat. If DGAC is excluded from Título II, liability would rest on Art. 4 and general constitutional principles instead."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.102",
+      "candidate_name": "Código Aeronáutico — Obligaciones del transportador respecto del pasajero",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 102 of DFL 221 (Código Aeronáutico) from bcn.cl/leychile",
+        "Confirm whether it addresses the carrier's obligation to transport the passenger or provide justification for denial of boarding"
+      ],
+      "preliminary_view": "Art. 102 of the Código Aeronáutico may establish the carrier's obligation to execute the transport contract. DGAC's duty to fiscalizar compliance with aeronautical regulations (per L16752 Art.3 j/z) would include ensuring carriers comply with this article. DGAC's passivity in the face of an apparent breach strengthens the regulatory abdication claim.",
+      "history_note": "Not previously cited. Included because the underlying incident involves denial of boarding, and DGAC's oversight duty extends to carrier compliance with the Código Aeronáutico."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.133",
+      "candidate_name": "Código Aeronáutico — Responsabilidad del transportador por incumplimiento",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 133 of DFL 221 (Código Aeronáutico) from bcn.cl/leychile",
+        "Confirm whether it addresses carrier liability for failure to perform the transport or unjustified denial of boarding"
+      ],
+      "preliminary_view": "Art. 133 may establish carrier liability for non-performance of the air transport contract. Relevant to DGAC's oversight duty: if the carrier breached Art. 133 and DGAC failed to investigate or sanction, this reinforces the regulatory abdication theory.",
+      "history_note": "Not previously cited. Article number requires verification as Código Aeronáutico numbering on carrier liability may differ."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.184",
+      "candidate_name": "Código Aeronáutico — Facultad sancionatoria de la DGAC",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 184 (or nearby articles in Título XII on infracciones y sanciones) of DFL 221 (Código Aeronáutico) from bcn.cl/leychile",
+        "Identify the specific article granting DGAC sanctioning power over aeronautical infractions by carriers"
+      ],
+      "preliminary_view": "The Código Aeronáutico grants DGAC sanctioning authority over infractions. DGAC's refusal to even investigate the passenger's complaint about unjustified removal from a flight represents a failure to exercise this statutory power. Exact article number needs verification.",
+      "history_note": "Article number is approximate; the sanctioning regime is in Título XII of the Código Aeronáutico. Verification needed to identify the precise article."
+    },
+    {
+      "candidate_article_id": "CL.CONST.Art.19.N3",
+      "candidate_name": "Constitución — Igual protección de la ley en el ejercicio de derechos (debido proceso)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 19 N° 3 of the Constitución Política from bcn.cl/leychile",
+        "Confirm that it guarantees equal protection and due process, including the right to a rational and fair procedure"
+      ],
+      "preliminary_view": "Art. 19 N° 3 CPR guarantees due process. DGAC's dismissive treatment of the passenger's complaint — effectively telling him to resolve it with the airline while the airline told him to resolve it with DGAC — may constitute a denial of the rational and fair procedure that State organs must afford to persons seeking to exercise their rights.",
+      "history_note": "Not previously cited. The referral loop between DGAC and LATAM effectively denied the passenger any procedural avenue, implicating due process guarantees."
+    },
+    {
+      "candidate_article_id": "CL.CONST.Art.19.N26",
+      "candidate_name": "Constitución — Garantía de no afectación del contenido esencial de derechos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 19 N° 26 of the Constitución Política from bcn.cl/leychile",
+        "Confirm that it prohibits State action that affects the essential content of constitutional rights"
+      ],
+      "preliminary_view": "Art. 19 N° 26 protects the essential content of rights from being impaired by regulatory action or inaction. DGAC's abdication of its oversight role effectively left the passenger without any effective remedy, potentially impairing the essential content of his consumer and mobility rights.",
+      "history_note": "Not previously cited. Supports the argument that regulatory inaction can itself constitute an impairment of constitutional rights."
+    },
+    {
+      "candidate_article_id": "CL.L19496.Art.58",
+      "candidate_name": "Ley del Consumidor — Competencia del SERNAC y coordinación con organismos sectoriales",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art. 58 of Ley 19.496 from bcn.cl/leychile",
+        "Confirm whether it addresses SERNAC's role and coordination with sectoral regulators like DGAC in consumer protection matters"
+      ],
+      "preliminary_view": "Art. 58 of the LPC defines SERNAC's competence and may address coordination with sectoral regulators. Relevant to whether DGAC can lawfully deflect consumer complaints to the airline without engaging its own supervisory powers, or whether it has a duty to coordinate with SERNAC.",
+      "history_note": "Not previously cited. Explores the institutional coordination gap that enabled the referral loop documented in the evidence."
+    }
+  ],
+  "cross_references": [
+    {
+      "ref": "CL-003",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-010",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001",
+      "relation": "dgac_failed_to_investigate_false_accusation_underlying_removal"
+    },
+    {
+      "ref": "CL-001__opus46",
+      "relation": "dgac_failed_to_investigate_false_accusation_underlying_removal"
+    },
+    {
+      "ref": "CL-001__opus46v1",
+      "relation": "dgac_failed_to_investigate_false_accusation_underlying_removal"
+    },
+    {
+      "ref": "CL-002",
+      "relation": "dgac_abdicated_oversight_of_forcible_removal_it_should_have_regulated"
+    },
+    {
+      "ref": "CL-002__opus46",
+      "relation": "dgac_abdicated_oversight_of_forcible_removal_it_should_have_regulated"
+    },
+    {
+      "ref": "CL-003__opus46",
+      "relation": "dgac_passive_role_constitutes_element_of_institutional_collusion"
+    },
+    {
+      "ref": "CL-004",
+      "relation": "dgac_never_demanded_cctv_evidence_enabling_concealment"
+    },
+    {
+      "ref": "CL-004__opus46",
+      "relation": "dgac_never_demanded_cctv_evidence_enabling_concealment"
+    },
+    {
+      "ref": "CL-005",
+      "relation": "dgac_took_no_action_after_pdi_exoneration_finding"
+    },
+    {
+      "ref": "CL-005__deepseek",
+      "relation": "dgac_took_no_action_after_pdi_exoneration_finding"
+    },
+    {
+      "ref": "CL-006",
+      "relation": "dgac_failed_to_prevent_next_day_boarding_denial_under_invalid_ban"
+    },
+    {
+      "ref": "CL-006__opus46",
+      "relation": "dgac_failed_to_prevent_next_day_boarding_denial_under_invalid_ban"
+    },
+    {
+      "ref": "CL-007",
+      "relation": "dgac_inaction_is_component_of_systematic_failure_to_rectify"
+    },
+    {
+      "ref": "CL-007__opus46",
+      "relation": "dgac_inaction_is_component_of_systematic_failure_to_rectify"
+    },
+    {
+      "ref": "CL-008__opus46",
+      "relation": "duplicate_or_variant_of_same_dgac_abdication_violation"
+    },
+    {
+      "ref": "CL-016",
+      "relation": "dgac_failed_to_scrutinize_invalid_unsigned_carta_de_desembarque"
+    },
+    {
+      "ref": "CL-016__opus46",
+      "relation": "dgac_failed_to_scrutinize_invalid_unsigned_carta_de_desembarque"
+    },
+    {
+      "ref": "CL-016__opus47",
+      "relation": "dgac_failed_to_scrutinize_invalid_unsigned_carta_de_desembarque"
+    },
+    {
+      "ref": "CL-016__opus47version2",
+      "relation": "dgac_failed_to_scrutinize_invalid_unsigned_carta_de_desembarque"
+    },
+    {
+      "ref": "CL-016__sonnet4",
+      "relation": "dgac_failed_to_scrutinize_invalid_unsigned_carta_de_desembarque"
+    },
+    {
+      "ref": "CL-016__sonnet4.6",
+      "relation": "dgac_failed_to_scrutinize_invalid_unsigned_carta_de_desembarque"
+    },
+    {
+      "ref": "CL-016__sonnetlatest",
+      "relation": "dgac_failed_to_scrutinize_invalid_unsigned_carta_de_desembarque"
+    },
+    {
+      "ref": "CL-016__gemini3flash",
+      "relation": "dgac_failed_to_scrutinize_invalid_unsigned_carta_de_desembarque"
+    },
+    {
+      "ref": "CL-016__grok41fast",
+      "relation": "dgac_failed_to_scrutinize_invalid_unsigned_carta_de_desembarque"
+    },
+    {
+      "ref": "CL-016__haikulatest",
+      "relation": "dgac_failed_to_scrutinize_invalid_unsigned_carta_de_desembarque"
+    },
+    {
+      "ref": "CL-016__hy3",
+      "relation": "dgac_failed_to_scrutinize_invalid_unsigned_carta_de_desembarque"
+    },
+    {
+      "ref": "CL-011",
+      "relation": "dgac_referral_loop_deflects_passenger_between_entities"
+    },
+    {
+      "ref": "CL-017",
+      "relation": "dgac_regulatory_abdication_enabled_downstream_harm"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-CL008-DGAC-FUNC-ID",
+      "question": "¿Cuál era la identidad, cargo y grado del funcionario DGAC que intervino en la interacción registrada en STG-19 (SPEAKER_00)?",
+      "blocks_element": "CL.L16752.T1.Art.1.elem.sujeto_obligado",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL008-DAN-PROTECCION",
+      "question": "¿Existen circulares, DANs (Disposiciones de Aeronáutica Nacional) o reglamentos internos de la DGAC que operacionalicen el deber de protección respecto de pasajeros denegados de embarque o removidos de vuelos?",
+      "blocks_element": "CL.L16752.T1.Art.1.elem.deber_proteccion_navegacion_aerea",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL008-ACTUACION-POSTERIOR",
+      "question": "¿Se registró alguna actuación administrativa posterior de la DGAC respecto de este incidente (acta, informe, sumario, requerimiento a la aerolínea)?",
+      "blocks_element": "CL.L16752.T1.Art.1.elem.omision_funcional",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL008-PROTOCOLO-RECLAMOS",
+      "question": "¿Existe un protocolo interno de la DGAC para la atención de reclamos de pasajeros en aeródromos, y autoriza dicho protocolo la derivación directa al operador sin intervención fiscalizadora?",
+      "blocks_element": "CL.L16752.T2.Art.3.z.elem.fiscalizacion_general_cumplimiento",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL008-DENUNCIA-FORMAL",
+      "question": "¿Requiere la letra r) del Art. 3 de la Ley 16.752 una denuncia formal escrita para activar el deber investigativo de la DGAC, o basta el conocimiento directo del funcionario sobre los hechos?",
+      "blocks_element": "CL.L16752.T2.Art.3.r.elem.deber_de_investigacion",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL008-NORMA-INFRINGIDA-AEROLINEA",
+      "question": "¿Qué disposición reglamentaria específica (DAR, DAN, Código Aeronáutico) habría infringido la aerolínea al remover al pasajero del vuelo sin proporcionar documentación justificativa?",
+      "blocks_element": "CL.L16752.T2.Art.3.r.elem.deber_de_investigacion",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL008-INSTRUCCIONES-INTERNAS",
+      "question": "¿Existían instrucciones internas de la DGAC que limitaran la actuación del funcionario de turno en casos de denuncia de pasajeros, o que restringieran su competencia delegada para iniciar actuaciones fiscalizadoras in situ?",
+      "blocks_element": "CL.L16752.T2.Art.3.j.elem.tipicidad_subjetiva",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL008-DERIVACION-DOCUMENTAL",
+      "question": "¿Existe registro documental (correos electrónicos, actas, constancias) de la derivación efectuada por la aerolínea hacia la DGAC, o de la derivación inversa de la DGAC hacia la aerolínea?",
+      "blocks_element": "CL.L16752.T1.Art.1.elem.bucle_derivacion",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL008-CAUSA-REMOCION",
+      "question": "¿Cuál fue la razón oficial invocada por LATAM para la remoción del pasajero del vuelo (overbooking, razones de seguridad, error operacional, conducta del pasajero u otra)?",
+      "blocks_element": "CL.LPDC.Art.23.elem.nexo_causal",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL008-VUELO-ESPECIFICO",
+      "question": "¿Cuál fue el número de vuelo, ruta y fecha específica del vuelo del que fue removido el pasajero?",
+      "blocks_element": "CL.L16752.T2.Art.3.j.elem.objeto_material",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL008-CONTRATO-TRANSPORTE",
+      "question": "¿Se dispone de prueba documental del contrato de transporte aéreo (boarding pass, e-ticket, comprobante de compra) que acredite formalmente la relación de consumo?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.relacion_de_consumo",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL008-DESTINO-FINAL",
+      "question": "¿Logró finalmente el pasajero llegar a su destino, en qué condiciones, con cuánto retraso, y qué gastos adicionales documentables incurrió (alojamiento, alimentación, nuevo pasaje)?",
+      "blocks_element": "CL.L16752.T1.Art.1.elem.perjuicio_al_usuario",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL008-POTESTAD-REUBICACION",
+      "question": "¿Tiene la DGAC potestad legal para ordenar la reubicación de un pasajero removido de un vuelo, o su competencia se limita a fiscalización y sanción ex post?",
+      "blocks_element": "CL.L16752.T1.Art.1.elem.nexo_causal_omision_perjuicio",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL008-CAUSALIDAD-ESTANDAR",
+      "question": "¿Cuál es el estándar de causalidad aplicable en falta de servicio por omisión regulatoria en Chile, y existe jurisprudencia que lo aplique a la DGAC?",
+      "blocks_element": "CL.L16752.T1.Art.1.elem.nexo_causal_omision_perjuicio",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL008-NORMA-REGLAMENTARIA-DGAC",
+      "question": "¿Qué disposición reglamentaria específica (DAR, DAN, Código Aeronáutico) obligaba a la DGAC a intervenir activamente ante la denuncia del pasajero en el aeródromo?",
+      "blocks_element": "CL.CONST.T1.C1.Art.6.elem.deber_de_sujecion_normativa",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL008-DERECHO-FUNDAMENTAL",
+      "question": "¿Cuál disposición específica del Art. 19 CPR se considera vulnerada (N°2 igualdad, N°7 libertad personal y libre circulación, N°14 derecho de petición, N°24 propiedad sobre créditos), y qué tratados internacionales ratificados por Chile refuerzan el derecho afectado?",
+      "blocks_element": "CL.CONST.T1.C1.Art.5.elem.derecho_esencial_afectado",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL008-JURISPRUDENCIA-ORDEN-INST",
+      "question": "¿Existe jurisprudencia chilena que aplique el deber de garantía del orden institucional (Art. 6 inc. 1 CPR) a omisiones fiscalizadoras de órganos sectoriales como la DGAC?",
+      "blocks_element": "CL.CONST.T1.C1.Art.6.elem.garantia_orden_institucional",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL008-SANCION-APLICABLE",
+      "question": "¿Cuál es la ley específica que determina la sanción aplicable a la omisión fiscalizadora de la DGAC, y procede responsabilidad patrimonial del Estado por falta de servicio (Art. 42 LOCBGAE) y/o sumario administrativo al funcionario?",
+      "blocks_element": "CL.CONST.T1.C1.Art.6.elem.responsabilidad_y_sanciones",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL008-ABDICACION-SISTEMATICA",
+      "question": "¿Existen otros casos documentados de pasividad de la DGAC ante reclamos de pasajeros, informes de Contraloría o del SERNAC sobre deficiencias en la fiscalización aeronáutica, que permitan acreditar un patrón sistemático de abdicación regulatoria?",
+      "blocks_element": "CL.CONST.T1.C1.Art.5.elem.abdicacion_regulatoria",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL008-FACULTADES-TIEMPO-REAL",
+      "question": "¿Cuáles son las facultades concretas de la DGAC para intervenir en disputas pasajero-aerolínea en tiempo real en el aeródromo, y existe jurisprudencia de Contraloría o tribunales sobre responsabilidad por omisión fiscalizadora de la DGAC?",
+      "blocks_element": "CL.CONST.T1.C1.Art.5.elem.nexo_causal_omision_perjuicio",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL008-COMUNICACION-POSTERIOR",
+      "question": "¿Existió alguna comunicación escrita posterior de LATAM al pasajero que haya subsanado la falta de información sobre la causa de la remoción del vuelo?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.informacion_veraz",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL008-ENTIDAD-DEMANDADA",
+      "question": "¿La demanda bajo LPDC se dirige contra LATAM Airlines S.A. o contra LATAM Airlines Group S.A., y se invocará también la responsabilidad de la DGAC bajo el Código Aeronáutico además de la LPDC?",
+      "blocks_element": "CL.LPDC.Art.23.elem.sujeto_activo_proveedor",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL008-ADQUISICION-PASAJE",
+      "question": "¿El pasajero Disconzi adquirió el pasaje a título personal o fue adquirido por un tercero (empresa, agencia de viajes), lo que podría afectar su calidad de consumidor final?",
+      "blocks_element": "CL.LPDC.Art.23.elem.sujeto_pasivo_consumidor",
+      "priority": "low"
+    },
+    {
+      "id": "OQ-CL008-PROTOCOLOS-LATAM",
+      "question": "¿Existían protocolos internos de LATAM Airlines para la remoción de pasajeros de vuelos y para la entrega de información y documentación justificativa, y fueron cumplidos en este caso?",
+      "blocks_element": "CL.LPDC.Art.23.elem.negligencia",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL008-BITACORA-VUELO",
+      "question": "¿Existe registro de la aerolínea (bitácora del vuelo, informe de seguridad, registro de incidentes) que documente la remoción del pasajero y su justificación?",
+      "blocks_element": "CL.LPDC.Art.23.elem.nexo_causal",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL008-ADMISIBILIDAD-GRABACIONES",
+      "question": "¿Las grabaciones de audio realizadas por el pasajero (STG-19, STG-22, STG-12) son admisibles como prueba en sede judicial y administrativa conforme a la legislación chilena vigente?",
+      "blocks_element": "",
+      "priority": "high"
+    }
+  ],
+  "related_violations": [
+    "CL-003",
+    "CL-010"
+  ],
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "_provenance": {
+    "source": "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN/CL-008.json",
+    "vault_operations": 19,
+    "converted_by": "examples/vault_to_bundle.py"
+  }
+}

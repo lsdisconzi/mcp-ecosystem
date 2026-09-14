@@ -1,0 +1,592 @@
+{
+  "schema_version": "4.0",
+  "violation_id": "CL-013",
+  "violation_number": "CL-013",
+  "title": "False Accusation Escalation — From 'Aggression' to 'Hitting' to 'Touching'",
+  "case": {
+    "id": "I-002",
+    "name": "I-002-Chile-Santiago"
+  },
+  "jurisdiction": "CL",
+  "framework": {
+    "codes": [
+      "CHIPENCOD",
+      "CPCL",
+      "LPDC"
+    ],
+    "files": {
+      "CHIPENCOD": "CL/CHIPENCOD_CP.md",
+      "CPCL": "CL/CodigoPenal.md",
+      "LPDC": "CL/L19496_LPDC.md"
+    }
+  },
+  "category": "False Accusation / Escalation Pattern",
+  "severity": "CRITICAL",
+  "confidence": {
+    "value": 0.67,
+    "components": {
+      "CL.CPCL.C1.Art.412": 0.738,
+      "CL.CPCL.T2.P6.Art.412": 0.771,
+      "CL.CPCL.C1.Art.416": 0.786,
+      "CL.CHIPENCOD.T4.C6.Art.211": 0.814,
+      "CL.LPDC.Art.3.b": 0.743,
+      "CL.LPDC.Art.23": 0.886
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T07:03:44.653430Z",
+    "history": [
+      "2026-05-12T06:55:06.738672+00:00: value=0.0",
+      "2026-05-12T06:55:16.050741+00:00: value=0.0",
+      "2026-05-12T06:55:22.157578+00:00: value=0.0",
+      "2026-05-12T06:59:45.594523+00:00: value=0.67",
+      "2026-05-12T07:00:41.345090+00:00: value=0.67",
+      "2026-05-12T07:01:34.882341+00:00: value=0.67",
+      "2026-05-12T07:02:32.658346+00:00: value=0.67",
+      "2026-05-12T07:03:29.949505+00:00: value=0.67"
+    ],
+    "validated": true,
+    "note": "Validated by V10 pipeline check. Lowered from legacy contract value (0.96) to formula-derived value (0.57)."
+  },
+  "incident": {
+    "date": "2024-07-05",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T13:30:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "incident_timestamp": "2024-07-05T11:00:00-04:00",
+  "incident_timestamp_display": "2024-07-05 — Voo LA8159 — Aeroporto SCL",
+  "allegation_summary": "The LATAM [[SPK-stewardess-accuser]]'s accusation against the passenger exhibited a pattern of escalation designed to ensure the removal's success. What began as an unspecified verbal confrontation was progressively hardened: from 'aggression' in the initial removal order (STG-5.seg-1) to 'hitting' when the passenger contested (STG-6.seg-1: '¿Yo golpeé?') to the vaguer 'touching' or contact that could satisfy any security threshold. This escalating pattern demonstrates that the accusation was not a good-faith report but a tactical instrument calibrated to overcome each level of institutional resistance. The conduct implicates calumnia (Arts. 412, 416 CP), denuncia calumniosa (Art. 211 CP), and consumer protection violations (LPDC Arts. 3.b, 23).",
+  "legal_basis": {
+    "frameworks": [
+      {
+        "framework_code": "CPCL",
+        "framework_name": "CPCL",
+        "framework_file": "CL/CodigoPenal.md",
+        "articles": [
+          {
+            "article_id": "CL.CPCL.C1.Art.412",
+            "article_name": "Código Penal, Art. 412 — Calumnia (definición y pena)",
+            "article_text": "Es calumnia la imputacion de un delito determinado pero falso y que pueda actualmente perseguirse de oficio.",
+            "applicability_rationale": "legacy paraphrase: Calumnia: Imputacion falsa de un delito.",
+            "duty_bearer": "state",
+            "norm_type": "prohibition",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          },
+          {
+            "article_id": "CL.CPCL.T2.P6.Art.412",
+            "article_name": "Código Penal, Art. 412 — Calumnia (modalidad agravada)",
+            "article_text": "Es calumnia la imputacion de un delito determinado pero falso y que pueda actualmente perseguirse de oficio.",
+            "applicability_rationale": "legacy import",
+            "duty_bearer": "judicial",
+            "norm_type": "definition",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          },
+          {
+            "article_id": "CL.CPCL.C1.Art.416",
+            "article_name": "Código Penal, Art. 416 — Injurias graves",
+            "article_text": "Es injuria toda expresion proferida o accion ejecutada en deshonra, descredito o menosprecio de otra persona.",
+            "applicability_rationale": "legacy paraphrase: Injuria: Expresiones ofensivas que causen descrdito publico.",
+            "duty_bearer": "state",
+            "norm_type": "prohibition",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      },
+      {
+        "framework_code": "CHIPENCOD",
+        "framework_name": "CHIPENCOD",
+        "framework_file": "CL/CHIPENCOD_CP.md",
+        "articles": [
+          {
+            "article_id": "CL.CHIPENCOD.T4.C6.Art.211",
+            "article_name": "Código Penal, Art. 211 — Denuncia o acusación calumniosa",
+            "article_text": "El que imputare falsamente a alguna persona haber cometido un crimen o simple delito, siendo sabedor de la falsedad de la imputación, o el que la hiciere de malicia, incurrirá en las penas de reclusión menor en sus grados mínimo a medio y multa de once a quince unidades tributarias mensuales.",
+            "applicability_rationale": "legacy paraphrase: El que imputare falsamente a alguna persona haber cometido un crimen o simple delito, siendo sabedor de la falsedad de la imputacion, o el que la hiciere de malicia, incurrira en las penas de reclusion menor en sus grados minimo a medio y multa de once a quince unidades tributarias mensuales.",
+            "duty_bearer": "state",
+            "norm_type": "penalty",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      },
+      {
+        "framework_code": "LPDC",
+        "framework_name": "LPDC",
+        "framework_file": "CL/L19496_LPDC.md",
+        "articles": [
+          {
+            "article_id": "CL.LPDC.Art.3.b",
+            "article_name": "Ley 19.496, Art. 3(b) — Derecho a información veraz",
+            "article_text": "b) El derecho a una información veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratación y otras características relevantes de los mismos, y el deber de informarse responsablemente de ellos.",
+            "applicability_rationale": "legacy paraphrase: Son derechos y deberes basicos del consumidor: b) El derecho a una informacion veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratacion y otras caracteristicas relevantes de los mismos.",
+            "duty_bearer": "air_operator",
+            "norm_type": "right",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          },
+          {
+            "article_id": "CL.LPDC.Art.23",
+            "article_name": "Ley 19.496, Art. 23 — Infracciones del proveedor",
+            "article_text": "Comete infracción a las disposiciones de la presente ley el proveedor que, en la venta de un bien o en la prestación de un servicio, **actuando con negligencia**, causa menoscabo al consumidor debido a fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio.",
+            "applicability_rationale": "legacy paraphrase: El proveedor de un servicio sera responsable de los danos y perjuicios que cause al consumidor por la prestacion de un servicio defectuoso, incluyendo la falta de veracidad en la informacion proporcionada y el incumplimiento de las condiciones de contratacion.",
+            "duty_bearer": "air_operator",
+            "norm_type": "liability",
+            "applicability": "direct",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Responsabilidad extracontractual por hecho ilícito",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2314 from bcn.cl/leychile",
+        "Confirm applicability to corporate entities (LATAM) acting through employees under Art.2320/2322 CC"
+      ],
+      "preliminary_view": "The false accusation escalation (aggression → hitting → touching) constitutes a hecho ilícito causing moral and patrimonial damage to the passenger. Art.2314 CC establishes general tortious liability for anyone who causes damage through fault or negligence. Combined with vicarious liability (Art.2320/2322), LATAM would be liable for the conduct of its crew.",
+      "history_note": "Not previously in bundle. Standard civil tort provision relevant to false accusation causing reputational and emotional harm."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2320",
+      "candidate_name": "Responsabilidad por el hecho ajeno — empleador por dependientes",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2320 from bcn.cl/leychile",
+        "Verify that airline crew qualifies as 'dependientes' for vicarious liability purposes"
+      ],
+      "preliminary_view": "Establishes vicarious liability of employers for tortious acts of their employees committed in the exercise of their functions. LATAM crew members made escalating false accusations while performing their duties, triggering employer liability.",
+      "history_note": "Companion to Art.2314; needed to attribute crew conduct to LATAM as corporate entity."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2329",
+      "candidate_name": "Obligación de reparar todo daño imputable a malicia o negligencia",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2329 from bcn.cl/leychile",
+        "Confirm presumption of culpability applies when damage results from an act that should reasonably be attributed to fault"
+      ],
+      "preliminary_view": "Art.2329 creates a presumption of fault when damage results from conduct that by its nature should be attributed to negligence or malice. The progressive fabrication of accusations (from 'aggression' to 'hitting' to 'touching') suggests deliberate or grossly negligent conduct.",
+      "history_note": "Not previously in bundle. Strengthens the tortious liability claim by shifting burden of proof."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.133",
+      "candidate_name": "Obligaciones del transportador aéreo respecto del pasajero",
+      "framework_cache_status": "pending_fetch",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.133 (Código Aeronáutico DFL 221) from bcn.cl/leychile",
+        "Confirm article number addresses carrier obligations regarding passenger transport and denial of boarding"
+      ],
+      "preliminary_view": "The Código Aeronáutico establishes specific obligations of air carriers toward passengers. Removal from aircraft based on fabricated accusations may violate the carrier's duty to transport the passenger who holds a valid ticket and has completed boarding.",
+      "history_note": "Article number requires verification; the Código Aeronáutico (DFL 221 of 1931, updated) contains provisions on carrier obligations in the Art.126-145 range."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.145",
+      "candidate_name": "Responsabilidad del transportador por incumplimiento del contrato de transporte",
+      "framework_cache_status": "pending_fetch",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.145 from bcn.cl/leychile (DFL 221)",
+        "Verify this is the correct article addressing carrier liability for failure to perform transport"
+      ],
+      "preliminary_view": "If the carrier removes a passenger based on false accusations without substantiation, it breaches the contract of carriage. Art.145 CACH (or nearby provisions) may establish specific liability and compensation obligations.",
+      "history_note": "Exact article number needs confirmation against current consolidated text of Código Aeronáutico."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.4",
+      "candidate_name": "Derecho constitucional a la honra (Art.19 Nº4 Constitución)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text of Art.19 Nº4 of the Constitución Política de la República from bcn.cl/leychile",
+        "Assess horizontal effect (Drittwirkung) applicability against private airline"
+      ],
+      "preliminary_view": "Art.19 Nº4 CPR guarantees respect for private life and honor. While primarily a vertical right (state vs. individual), Chilean doctrine recognizes horizontal effect. The false accusation of physical aggression in a public setting (aircraft cabin) directly impugns the passenger's honor. However, direct constitutional claims against private parties typically require channeling through tort or specific statutory provisions.",
+      "history_note": "Constitutional provision; included for completeness as the foundational right underlying the calumnia/injuria claims."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.207",
+      "candidate_name": "Denuncia calumniosa ante autoridad",
+      "framework_cache_status": "pending_fetch",
+      "verification_required": [
+        "Fetch verbatim text for CL.CP.Art.207 (Código Penal) from bcn.cl/leychile",
+        "Verify whether this article or Art.211 CP is the correct provision for false reporting to authorities (as distinct from Art.211 already in bundle which addresses false imputation generally)"
+      ],
+      "preliminary_view": "If crew members activated security (as stated: 'Ya activamos seguridad') based on knowingly false accusations, Art.207 CP (or the correct nearby article addressing false denunciation before authority) may apply. The escalation pattern suggests awareness of falsity. Note: Art.211 is already in the bundle; this candidate addresses the distinct act of making a false report to security/police authorities rather than the imputation itself.",
+      "history_note": "Needs verification against Art.211 already in bundle to confirm non-overlap. The distinction is between the crime of false imputation (Art.211) and the crime of making a false report to authorities (potentially Art.207 or Art.269 CP)."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.269",
+      "candidate_name": "Denuncia o acusación calumniosa (simulación de delito)",
+      "framework_cache_status": "pending_fetch",
+      "verification_required": [
+        "Fetch verbatim text for CL.CP.Art.269 from bcn.cl/leychile",
+        "Confirm this is the provision penalizing those who falsely denounce a crime to authorities knowing it has not been committed"
+      ],
+      "preliminary_view": "If crew activated airport security alleging physical aggression ('hitting') that did not occur, Art.269 CP may apply as it penalizes false denunciation of crimes to authorities. The escalation from 'aggression' to 'hitting' to 'touching' suggests the original accusation was fabricated and then walked back when challenged.",
+      "history_note": "Alternative to Art.207 candidate above; exact article number for 'denuncia calumniosa' in Chilean CP requires verification."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.3.e",
+      "candidate_name": "Derecho a la reparación e indemnización adecuada y oportuna",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.3 letra e) from bcn.cl/leychile",
+        "Confirm this subsection addresses the consumer's right to adequate compensation"
+      ],
+      "preliminary_view": "Art.3 letra e) LPDC establishes the consumer's right to adequate and timely reparation for all damages suffered as a consequence of acts violating the consumer protection law. The false accusation caused loss of flight, humiliation, and reputational harm — all compensable damages.",
+      "history_note": "Art.3.b is already in bundle; this is a distinct subsection addressing the right to compensation rather than the right to truthful information."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.12",
+      "candidate_name": "Obligación de cumplir lo ofrecido y pactado en el contrato",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.12 from bcn.cl/leychile",
+        "Confirm this article establishes the provider's obligation to honor contractual terms"
+      ],
+      "preliminary_view": "Art.12 LPDC obliges providers to honor the terms offered or agreed upon. LATAM sold a ticket for flight LA8159 and then removed the passenger based on unsubstantiated accusations, breaching the contractual obligation to provide the transport service.",
+      "history_note": "Not in bundle. Complements Art.23 (already established) by addressing the contractual breach dimension."
+    },
+    {
+      "candidate_article_id": "CL.LPDP.Art.4",
+      "candidate_name": "Tratamiento de datos personales — principio de veracidad",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.L19628.Art.4 from bcn.cl/leychile",
+        "Assess whether recording false accusations in airline incident reports constitutes processing of inaccurate personal data"
+      ],
+      "preliminary_view": "If LATAM recorded the false accusations (aggression/hitting) in internal systems or reports to DGAC/police, this may constitute processing of inaccurate personal data in violation of Art.4 Ley 19.628, which requires that personal data be accurate and updated. Applicability depends on whether incident reports were filed containing the false characterizations.",
+      "history_note": "Speculative — depends on whether written records were created. Included because DGAC involvement (STG-7.seg-40) suggests formal reporting occurred."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.16.g",
+      "candidate_name": "Cláusulas abusivas — terminación unilateral sin causa",
+      "framework_cache_status": "pending_fetch",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.16 letra g) from bcn.cl/leychile",
+        "Verify whether unilateral removal from aircraft without substantiated cause qualifies as abusive unilateral termination under this provision"
+      ],
+      "preliminary_view": "Art.16 LPDC addresses abusive contractual clauses. If LATAM's conditions of carriage purport to allow removal based on unsubstantiated crew allegations without any evidentiary threshold, such a clause may be deemed abusive under letra g) (or the applicable subsection addressing unilateral termination without proportionate cause).",
+      "history_note": "Exact subsection letter requires verification against current text of Art.16 LPDC."
+    }
+  ],
+  "cross_references": [
+    {
+      "ref": "CL-014",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-002",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001__opus46",
+      "relation": "escalation_pattern_of_original_false_accusation"
+    },
+    {
+      "ref": "CL-001__opus46v1",
+      "relation": "escalation_pattern_of_original_false_accusation"
+    },
+    {
+      "ref": "CL-002__opus46",
+      "relation": "removal_justified_by_escalating_false_characterization"
+    },
+    {
+      "ref": "CL-003",
+      "relation": "escalating_narrative_enabled_by_institutional_collusion"
+    },
+    {
+      "ref": "CL-003__opus46",
+      "relation": "escalating_narrative_enabled_by_institutional_collusion"
+    },
+    {
+      "ref": "CL-004",
+      "relation": "cctv_concealment_allowed_false_escalation_to_persist"
+    },
+    {
+      "ref": "CL-004__opus46",
+      "relation": "cctv_concealment_allowed_false_escalation_to_persist"
+    },
+    {
+      "ref": "CL-005",
+      "relation": "exoneration_disproves_all_escalated_characterizations"
+    },
+    {
+      "ref": "CL-005__deepseek",
+      "relation": "exoneration_disproves_all_escalated_characterizations"
+    },
+    {
+      "ref": "CL-006",
+      "relation": "boarding_denial_based_on_escalated_false_accusation"
+    },
+    {
+      "ref": "CL-006__opus46",
+      "relation": "boarding_denial_based_on_escalated_false_accusation"
+    },
+    {
+      "ref": "CL-007",
+      "relation": "no_correction_of_escalated_false_narrative"
+    },
+    {
+      "ref": "CL-007__opus46",
+      "relation": "no_correction_of_escalated_false_narrative"
+    },
+    {
+      "ref": "CL-008",
+      "relation": "dgac_failed_to_challenge_escalating_accusation"
+    },
+    {
+      "ref": "CL-008__opus46",
+      "relation": "dgac_failed_to_challenge_escalating_accusation"
+    },
+    {
+      "ref": "CL-010",
+      "relation": "passenger_denied_right_to_challenge_shifting_accusation"
+    },
+    {
+      "ref": "CL-010__opus46",
+      "relation": "passenger_denied_right_to_challenge_shifting_accusation"
+    },
+    {
+      "ref": "CL-011",
+      "relation": "no_evidence_presented_despite_escalating_claims"
+    },
+    {
+      "ref": "CL-011__opus46",
+      "relation": "no_evidence_presented_despite_escalating_claims"
+    },
+    {
+      "ref": "CL-012",
+      "relation": "coaching_to_file_complaint_perpetuates_escalated_narrative"
+    },
+    {
+      "ref": "CL-012__opus46",
+      "relation": "coaching_to_file_complaint_perpetuates_escalated_narrative"
+    },
+    {
+      "ref": "CL-013__opus46",
+      "relation": "same_violation_alternate_analysis"
+    },
+    {
+      "ref": "CL-016",
+      "relation": "disembarkation_letter_contains_escalated_disproven_accusation"
+    },
+    {
+      "ref": "CL-016__gemini3flash",
+      "relation": "disembarkation_letter_contains_escalated_disproven_accusation"
+    },
+    {
+      "ref": "CL-016__grok41fast",
+      "relation": "disembarkation_letter_contains_escalated_disproven_accusation"
+    },
+    {
+      "ref": "CL-016__haikulatest",
+      "relation": "disembarkation_letter_contains_escalated_disproven_accusation"
+    },
+    {
+      "ref": "CL-016__hy3",
+      "relation": "disembarkation_letter_contains_escalated_disproven_accusation"
+    },
+    {
+      "ref": "CL-016__opus46",
+      "relation": "disembarkation_letter_contains_escalated_disproven_accusation"
+    },
+    {
+      "ref": "CL-016__opus47",
+      "relation": "disembarkation_letter_contains_escalated_disproven_accusation"
+    },
+    {
+      "ref": "CL-016__opus47version2",
+      "relation": "disembarkation_letter_contains_escalated_disproven_accusation"
+    },
+    {
+      "ref": "CL-016__sonnet4",
+      "relation": "disembarkation_letter_contains_escalated_disproven_accusation"
+    },
+    {
+      "ref": "CL-016__sonnet4.6",
+      "relation": "disembarkation_letter_contains_escalated_disproven_accusation"
+    },
+    {
+      "ref": "CL-016__sonnetlatest",
+      "relation": "disembarkation_letter_contains_escalated_disproven_accusation"
+    },
+    {
+      "ref": "CL-009",
+      "relation": "icao_standards_breached_by_unsubstantiated_escalating_accusation"
+    },
+    {
+      "ref": "CL-009__opus46",
+      "relation": "icao_standards_breached_by_unsubstantiated_escalating_accusation"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-013-ESCALATION-SEQUENCE",
+      "question": "",
+      "blocks_element": "",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-013-[[SPK-stewardess-accuser]]-IDENTITY",
+      "question": "",
+      "blocks_element": "",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-013-INTERNAL-REPORT",
+      "question": "",
+      "blocks_element": "",
+      "priority": "critical"
+    },
+    {
+      "id": "+ 15 additional",
+      "question": "",
+      "blocks_element": "",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL013-IDENTITY-ACCUSER",
+      "question": "¿Quién formuló originalmente la imputación de 'agresión', 'golpe' o 'tocamiento' contra el pasajero? ¿Fue la tripulante de cabina, otro pasajero, o el comandante de la aeronave?",
+      "blocks_element": "CL.CPCL.C1.Art.412.elem.sujeto_activo",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL013-CREW-NAME",
+      "question": "¿Consta en actas, informes internos de LATAM o registros de la DGAC la identidad completa (nombre, RUT) de la tripulante que formuló la acusación y ordenó el desembarco?",
+      "blocks_element": "CL.CPCL.T2.P6.Art.412.elem.sujeto_activo",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL013-TEXTUAL-IMPUTATION",
+      "question": "¿Existe registro documental (informe de tripulación, acta policial, formulario de seguridad, bitácora de vuelo, acta DGAC) que contenga la formulación textual precisa del delito imputado al pasajero?",
+      "blocks_element": "CL.CPCL.C1.Art.412.elem.imputacion_de_delito_determinado",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL013-ESCALATION-VERBATIM",
+      "question": "¿Existen segmentos de audio o video adicionales donde conste literalmente la progresión de acusaciones falsas (de 'agresión' a 'golpe' a 'tocamiento')?",
+      "blocks_element": "CL.CPCL.C1.Art.416.elem.expresion_o_accion_injuriosa",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL013-CCTV-AIRCRAFT",
+      "question": "¿Existen cámaras de seguridad del avión, del finger o de la zona de embarque que registren la interacción previa a la remoción y permitan descartar objetivamente la conducta imputada?",
+      "blocks_element": "CL.CPCL.C1.Art.412.elem.falsedad_de_la_imputacion",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL013-POLICE-REPORT",
+      "question": "¿Se levantó acta policial (PDI o Carabineros) o acta de la DGAC que documente la versión de los hechos, la calificación jurídica de la conducta imputada y su resultado (archivo, sobreseimiento, formalización)?",
+      "blocks_element": "CL.CPCL.T2.P6.Art.412.elem.perseguibilidad_de_oficio",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL013-FORMAL-COMPLAINT",
+      "question": "¿Se formalizó denuncia escrita ante PDI, Carabineros o Ministerio Público por parte de la tripulante o de LATAM, y si así fue, cuál fue la calificación jurídica del delito denunciado?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.elem.modalidad_tipica",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL013-CASE-OUTCOME",
+      "question": "¿Se archivó, sobreseyó o terminó de algún modo la causa penal (si existió) derivada de la imputación contra el pasajero?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.elem.falsedad_de_la_imputacion",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL013-WITNESS-TESTIMONY",
+      "question": "¿Existen declaraciones de otros pasajeros o tripulantes que presenciaron la interacción y que puedan confirmar o desmentir la versión de la acusadora respecto de la supuesta agresión?",
+      "blocks_element": "CL.CPCL.C1.Art.412.elem.dolo",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL013-CREW-PRIOR-STATEMENTS",
+      "question": "¿La tripulante modificó su versión de los hechos en declaraciones posteriores ante autoridad (DGAC, PDI, Fiscalía) o en informes internos de LATAM?",
+      "blocks_element": "CL.CHIPENCOD.Art.211.elem.conocimiento_falsedad_dolo",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL013-LATAM-PROTOCOL",
+      "question": "¿Existía un protocolo interno de LATAM que estableciera procedimientos de verificación de denuncias de agresión antes de ordenar el desembarco de un pasajero?",
+      "blocks_element": "CL.LPDC.Art.23.elem.negligencia",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL013-BARRAZA-CONTEXT",
+      "question": "¿La confirmación de Joaquín Barraza (personal de seguridad LATAM) de que el pasajero 'podía embarcar' se refiere al mismo vuelo original o a un re-embarque posterior, y en qué momento temporal exacto se produjo?",
+      "blocks_element": "CL.CPCL.C1.Art.416.elem.falsedad_de_imputacion",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL013-DGAC-FINAL-VERSION",
+      "question": "¿Cuál fue la versión final de la imputación comunicada a la DGAC y qué calificación le dio la autoridad aeronáutica?",
+      "blocks_element": "CL.CPCL.C1.Art.412.elem.perseguibilidad_de_oficio",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL013-CONTRACTUAL-DOCS",
+      "question": "¿Se dispone de documentación contractual (e-ticket, boarding pass, reserva) que acredite formalmente la relación de consumo y permita cuantificar el perjuicio patrimonial?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.relacion_de_consumo",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL013-REBOOKING-COSTS",
+      "question": "¿Se reembolsó el pasaje, se ofreció rebooking, y cuáles fueron los costos económicos totales derivados de la pérdida del vuelo (alojamiento, conexiones, nuevo pasaje)?",
+      "blocks_element": "CL.LPDC.Art.23.elem.menoscabo_consumidor",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL013-PASSENGER-MANIFEST",
+      "question": "¿Se cuenta con manifiesto de pasajeros del vuelo que permita identificar testigos presenciales y acreditar la publicidad del acto injurioso?",
+      "blocks_element": "CL.CPCL.C1.Art.416.elem.publicidad",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL013-LATAM-CGT",
+      "question": "¿Las condiciones generales de transporte de LATAM informaban al pasajero sobre la facultad discrecional de remoción y sus causales, de modo que la aerolínea pueda invocar el deber del consumidor de informarse?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.deber_consumidor_informarse",
+      "priority": "low"
+    },
+    {
+      "id": "OQ-CL013-THIRD-PARTY-CAUSE",
+      "question": "¿LATAM podría invocar que la causa de la remoción fue la denuncia de otro pasajero (hecho de tercero) y no una decisión negligente propia del proveedor?",
+      "blocks_element": "CL.LPDC.Art.23.elem.nexo_causal",
+      "priority": "medium"
+    }
+  ],
+  "related_violations": [
+    "CL-001",
+    "CL-002",
+    "CL-014"
+  ],
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "_provenance": {
+    "source": "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN/CL-013.json",
+    "vault_operations": 17,
+    "converted_by": "examples/vault_to_bundle.py"
+  }
+}
