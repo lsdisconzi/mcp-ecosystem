@@ -22,26 +22,34 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+from collections import Counter
 from pathlib import Path
 
 import pytest
 
 from violation_pack.authority_source import (
     MAX_UPLOAD_BYTES,
+    PROOF_SCHEMA_VERSION,
     PROOF_SUFFIX,
     SOURCES_DIR,
     TEXT_SUFFIX,
     SourceError,
     _PDF_EXTRACTORS,
+    collapse_whitespace,
     decode_base64_payload,
     delete_source,
+    derive_reading,
+    detect_gutter,
+    extract_pdf_reading,
     extract_pdf_text,
     fetched_filename,
     ingest_source,
     name_from_url,
     proof_stem,
     sanitise_filename,
+    split_columns,
     strip_markup,
+    strip_repeated_furniture,
     url_refusal_reason,
 )
 
@@ -293,6 +301,586 @@ def test_every_registered_pdf_reader_is_a_callable_not_a_name():
             f"{module_name} is paired with {reader!r}; a name here is looked up "
             "at extraction time and fails only on the machine that can extract"
         )
+
+
+# ---------------------------------------------------------------------------
+# PDF layout — the body column, and the account of moving it
+# ---------------------------------------------------------------------------
+
+#: Where the fixtures put the gutter. A middle-of-the-page number on purpose:
+#: the detection has to *find* it, so a fixture that used column zero would pass
+#: a split that cuts nothing off.
+_GUTTER_COLUMN = 64
+
+#: An article body and the margin citations that sit beside its lines, as an
+#: official Chilean source is laid out. The body lines are all shorter than the
+#: gutter and hold no wide gap of their own, so the only wide gap on the page is
+#: the one the layout put there.
+_ARTICLE_LINES = [
+    "Corresponderá al legislador establecer siempre las",
+    "garantías de un procedimiento y una investigación",
+    "racionales y justos.",
+    "La Constitución asegura a todas las personas",
+    "El derecho a la vida y a la integridad física",
+    "La igualdad ante la ley",
+    "El respeto y protección a la vida privada",
+    "La inviolabilidad del hogar",
+    "La libertad de conciencia",
+    "El derecho a la educación",
+]
+_ARTICLE_NOTES = [
+    "CPR Art.19° D.O. 24.10.1980",
+    "LEY N° 20.050 Art. 1° N° 10 letra a) D.O.",
+    "26.08.2005",
+    "LEY N° 19.519 Art. único",
+    "D.O. 16.06.1999",
+    "CPR Art. 19° N° 3 D.O. 24.10.1980",
+    "LEY N° 18.825 Art. único",
+    "D.O. 17.08.1989",
+    "Ley 21568 Art. ÚNICO",
+    "D.O. 03.05.2023",
+]
+
+#: The sentence those citations are threaded through, and the reason the whole
+#: layout pass exists.
+_SENTENCE = (
+    "Corresponderá al legislador establecer siempre las garantías de un "
+    "procedimiento y una investigación racionales y justos."
+)
+
+#: Four distinct lines, so that nothing in a fixture is repeated across pages by
+#: accident — repetition is what the furniture rule keys on.
+_DISTINCT_BODIES = [
+    "La Constitución asegura a todas las personas el derecho a la vida",
+    "La igualdad ante la ley es la base de todo sistema jurídico",
+    "El respeto y protección a la vida privada de la persona",
+    "La libertad de conciencia y el derecho a la educación",
+]
+
+#: Ten distinct paragraphs, one per page, every one of them indented.
+#:
+#: Ten and not four, because a paragraph indent is a gap and this fixture has to
+#: carry enough of them that the *only* reason it is not read as two columns is
+#: that an indent is nowhere near the gutter. At four pages the indents would be
+#: too rare to look like a habit and the test would pass for the wrong reason.
+_SINGLE_COLUMN_PARAGRAPHS = [
+    "La Constitución asegura a todas las personas el derecho a la vida",
+    "La igualdad ante la ley es la base de todo sistema jurídico",
+    "El respeto y protección a la vida privada de la persona",
+    "La libertad de conciencia y el derecho a la educación",
+    "La inviolabilidad del hogar es una garantía del artículo diecinueve",
+    "El derecho a la protección de la salud comprende el libre acceso",
+    "La libertad de emitir opinión no tiene más límites que los señalados",
+    "El derecho de reunión se ejerce sin permiso previo de la autoridad",
+    "La libertad de trabajo y su protección son derechos de la persona",
+    "El derecho a la seguridad social garantiza el acceso a prestaciones",
+]
+
+
+#: The paragraph indent the article fixture carries. A real page has both an
+#: indent and a gutter, and that is the only combination in which "the gap at
+#: the column" and "the first gap on the line" are different gaps.
+_ARTICLE_INDENT = 5
+
+
+def _two_column_page(body: list[str], notes: list[str], indent: int = 0) -> str:
+    """One page as a flat extractor emits a two-column official document.
+
+    The body column is padded out to the gutter and the margin note is written
+    onto the same physical line. That is the whole defect: the extractor has no
+    y-coordinate left to give, so a citation that sits *beside* a line of the
+    article arrives wedged between two words of it.
+
+    ``indent`` puts a run of spaces at the start of every body line, which is how
+    a real page looks. It matters: with an indent present the first gap on a line
+    is the indent, not the gutter, so a split that took the first gap it found
+    would cut off the heading and leave the rest — including the citation — in
+    the body.
+    """
+    out = []
+    for index, line in enumerate(body):
+        note = notes[index] if index < len(notes) else ""
+        text = " " * indent + line
+        out.append(text.ljust(_GUTTER_COLUMN) + note if note else text)
+    return "\n".join(out) + "\n"
+
+
+def _article_page() -> str:
+    """One page of a two-column source, with a citation beside every line.
+
+    Every line carries a note because that is what makes a gutter detectable: the
+    support for the column comes from how many lines share it, and a page where
+    only two of ten lines have a margin note is a page whose margin cannot be
+    told from the spacing of a single stray line.
+    """
+    return _two_column_page(_ARTICLE_LINES, _ARTICLE_NOTES, indent=_ARTICLE_INDENT)
+
+
+def _repeated_footer_page(body: str, footer: str) -> str:
+    return f"{body}\n{footer}\n"
+
+
+def test_a_margin_citation_is_not_read_into_the_sentence_it_annotates():
+    """The defect, the fixture that has it, and the fix — in that order.
+
+    The first assertion is the one that matters. Without it this test would still
+    pass if the split were deleted and everything else stayed, because `in` on
+    the clean text says nothing about whether anything was done to get there: a
+    test that never checks the fixture is broken cannot show a fix.
+    """
+    pages = [_article_page()]
+
+    assert _SENTENCE not in collapse_whitespace(" ".join(pages)), (
+        "the fixture no longer reproduces the defect, so it cannot show the "
+        "split repairing it"
+    )
+    reading = derive_reading(pages)
+    assert reading.gutter == _GUTTER_COLUMN
+    assert _SENTENCE in reading.text
+    assert reading.text.startswith("Corresponderá al legislador")
+
+
+def test_the_margin_citations_come_back_with_the_lines_they_sat_on():
+    """The note column is moved, not deleted, and it keeps its address.
+
+    On an official document the margin carries the amendment history of the very
+    numeral being quoted — which law changed it, when, and in which edition of
+    the Diario Oficial — so it is evidence for `instrument` and `version` rather
+    than clutter. Deleting it to tidy the reading would throw away the answer to
+    make the question easier to search.
+    """
+    reading = derive_reading([_article_page()])
+    assert [note["text"] for note in reading.notes] == _ARTICLE_NOTES
+    assert [note["line"] for note in reading.notes] == list(range(1, 11)), (
+        "a note that cannot say which line it annotated cannot be checked "
+        "against the page it came from"
+    )
+    assert {note["page"] for note in reading.notes} == {1}
+    assert "26.08.2005" not in reading.text
+    assert reading.text.count("26.08.2005") == 0
+
+
+def test_the_layout_pass_moves_words_without_losing_any():
+    """"Shorter" and "lossy" look identical in a string, so conservation is the check.
+
+    The margin column is the one place a reader could be forgiven for accepting a
+    deletion, so the assertion is that nothing anywhere was deleted: every word
+    of the plain reading is still in the clean reading or in the notes, no more
+    and no fewer.
+    """
+    pages = [_article_page()]
+    raw = Counter(collapse_whitespace(" ".join(pages)).split())
+    reading = derive_reading(pages)
+
+    kept = Counter(reading.text.split())
+    for note in reading.notes:
+        kept.update(note["text"].split())
+
+    assert sum(raw.values()) > 50, "the fixture is too small to prove anything"
+    assert kept == raw
+
+
+def test_a_single_column_page_is_not_read_as_two_columns():
+    """The failure mode that makes splitting dangerous, and the guard against it.
+
+    A paragraph indent is a gap too. Believing it is the gutter hands the whole
+    line to the margin and leaves a body of nothing — which is a *valid* result
+    for every function below, because a split that returns an empty left column
+    still returns a string. The reading would be empty and nothing would raise.
+    """
+    paragraphs = _SINGLE_COLUMN_PARAGRAPHS
+    pages = [
+        f"    {paragraph}\n     1º.- {paragraph.lower()}\n" for paragraph in paragraphs
+    ]
+    reading = derive_reading(pages)
+
+    assert detect_gutter(pages) is None
+    assert reading.gutter is None
+    assert reading.notes == ()
+    assert reading.furniture == ()
+    assert reading.text == collapse_whitespace(" ".join(pages))
+    assert not reading.restructured, "a document with no columns must be left alone"
+
+
+def test_one_wide_gap_on_a_page_is_not_a_gutter():
+    """A gutter is a habit down the page, not one wide space somewhere on it.
+
+    A table, a centred heading, an aligned signature block: each is a wide gap
+    that occurs once. Believing one of them is the column break would hand the
+    rest of that line to the margin, and there is nothing in the result to say
+    so.
+    """
+    lines = ["El considerando se refiere a los hechos de la causa"] * 11
+    lines.insert(4, "El considerando se refiere" + " " * 12 + "a los hechos")
+    pages = ["\n".join(lines) + "\n"]
+
+    assert detect_gutter(pages) is None
+
+
+def test_a_wide_gap_near_the_right_edge_is_not_a_gutter():
+    """The split is only believed if the body is still most of the page.
+
+    Eight lines whose wide gap leaves twenty characters on the left and eighty
+    on the right is a column break with the columns the wrong way round — or, as
+    here, not a column break at all. Without this check, a document with one odd
+    alignment would lose the body of every line it appears on.
+    """
+    pages = [("a" * 20 + " " * 20 + "b" * 80 + "\n") * 8]
+
+    assert detect_gutter(pages) is None
+
+
+def test_a_page_of_scattered_wide_gaps_has_no_gutter_to_find():
+    """Justified text puts its extra spaces all over the page; a gutter is one line.
+
+    Four wide-gap positions, each repeated often enough to look like a habit on
+    its own. Taking the most common of them would cut every line at a different
+    word — and the cut would pass the "the body is still the body" check, so this
+    spread test is doing work nothing else does.
+    """
+    rows = ["a" * 60 + " " * (12 + 4 * index) + "b" * 10 for index in range(4)]
+    pages = ["\n".join(rows * 8) + "\n"]
+
+    assert detect_gutter(pages) is None
+    assert derive_reading(pages).text.count("a" * 60) == 32, "the fixture lost rows"
+
+
+def test_a_short_cell_index_is_not_a_two_column_layout():
+    """The gutter has to be clear of the left margin, not merely consistent.
+
+    Nine index lines whose cells are two spaces apart after the ninth character.
+    The left cell is the longer one, so the body really is most of the text and
+    the "the body is still the body" check passes — the *only* thing that says
+    this is not a column break is that column eleven is where a paragraph indent
+    lives. Split here and each line becomes an article number on a row of its own
+    with the instrument it points at moved to the margin.
+
+    The gap is eleven and not one of the obvious three or four, because a margin
+    gap of one or two characters is caught by the body-share check instead. This
+    fixture is the narrow band where the two guards disagree.
+    """
+    rows = [
+        f"Art. 19.{digit}  Ley {letter}"
+        for digit, letter in zip("123456789", "ABCDEFGHI")
+    ]
+    pages = ["\n".join(rows) + "\n"]
+
+    assert detect_gutter(pages) is None
+    assert derive_reading(pages).text == collapse_whitespace(" ".join(pages))
+
+
+def test_a_line_repeated_on_every_page_is_dropped_as_furniture():
+    """Repetition *defines* furniture, so no list of known footers is needed.
+
+    A pattern list is written for the documents that already exist and misses the
+    next authority's letterhead completely. It also matters for quoting: a footer
+    lands between two words of any sentence that spans a page break, which makes
+    the sentence unquotable for a reason nothing on screen explains.
+    """
+    footer = "Documento firmado digitalmente por Ignacio Rodríguez Álvarez"
+    pages = [_repeated_footer_page(body, footer) for body in _DISTINCT_BODIES]
+    reading = derive_reading(pages)
+
+    assert footer not in reading.text
+    for body in _DISTINCT_BODIES:
+        assert body in reading.text
+    assert reading.furniture == (footer,)
+    assert reading.furniture_lines == 4
+    assert reading.furniture_chars == len(footer) * 4
+
+
+def test_a_long_passage_repeated_on_every_page_is_kept():
+    """A short line repeating is a header; a paragraph repeating is the document.
+
+    Statutes repeat their own formulations on purpose — transitional articles,
+    closing provisos, the definition of a procedure the whole act is about — and
+    a line long enough to be a paragraph is far more likely to be the act's text
+    than to be stationery. Dropping it would delete exactly the content the
+    reviewer came for, and it would do so on every page.
+    """
+    paragraph = (
+        "El procedimiento administrativo se someterá a los principios de "
+        "escrituración, conclusivo, celeridad, economía procedimental, "
+        "inexcusabilidad, contradictoriedad, imparcialidad, abstención, no "
+        "formalización, impugnabilidad, transparencia y publicidad, y será "
+        "gratuito para el interesado, sin perjuicio de lo dispuesto en el "
+        "artículo siguiente y en las leyes especiales que rijan la materia"
+    )
+    assert len(paragraph) > 160, "the fixture must be over the cap to test it"
+    pages = [_repeated_footer_page(body, paragraph) for body in _DISTINCT_BODIES]
+
+    reading = derive_reading(pages)
+
+    assert reading.furniture == ()
+    assert reading.text.count(paragraph) == len(_DISTINCT_BODIES)
+
+
+def test_a_page_marker_that_changes_on_every_page_is_still_the_same_line():
+    """Masking digits is what makes `página 1 de 4` and `página 4 de 4` one line.
+
+    Without it the marker survives on all four pages, and a marker is not
+    harmless noise: it is exactly what sits between two words of a sentence that
+    runs over a page break.
+    """
+    pages = [
+        _repeated_footer_page(body, f"página {number} de 4")
+        for number, body in enumerate(_DISTINCT_BODIES, start=1)
+    ]
+    reading = derive_reading(pages)
+
+    assert reading.furniture == ("página # de #",)
+    assert reading.furniture_lines == 4
+    assert "página" not in reading.text
+
+
+def test_a_numeral_alone_on_its_line_is_not_mistaken_for_a_page_marker():
+    """Digit masking collapses `1º.-` and `2º.-` to one key as well.
+
+    A document that numbers its articles on lines of their own therefore looks
+    exactly like a document whose every page carries the same marker. Without the
+    letters guard the pass would delete the numbering of the whole statute — and
+    a document that has silently lost its numbering still reads like a document.
+    """
+    pages = [
+        f"{number}º.-\n{body}\n"
+        for number, body in enumerate(_DISTINCT_BODIES, start=1)
+    ]
+    reading = derive_reading(pages)
+
+    assert reading.furniture == ()
+    for number in range(1, len(_DISTINCT_BODIES) + 1):
+        assert f"{number}º.-" in reading.text
+
+
+def test_a_clause_repeated_on_a_minority_of_pages_is_not_furniture():
+    """Repetition alone is not enough: a running header is on *most* pages.
+
+    Twenty pages of a judgment, three of which restate the same standard clause.
+    The clause is the document's own text, and a rule that said "seen on three
+    pages" would have deleted it three times over.
+    """
+    clause = "que el recurso debe ser fundado y tramitado conforme a la ley"
+    pages = []
+    for index, letter in enumerate("abcdefghijklmnopqrst"):
+        lines = [f"el considerando {letter} de la sentencia", f"página {index + 1} de 20"]
+        if index < 3:
+            lines.insert(1, clause)
+        pages.append("\n".join(lines) + "\n")
+    reading = derive_reading(pages)
+
+    assert reading.furniture == ("página # de #",)
+    assert reading.text.count(clause) == 3
+
+
+def test_furniture_is_reported_rather_than_quietly_removed():
+    """The removed rows come back, because a reading must never just get shorter."""
+    footer = "Documento firmado digitalmente por la Directora"
+    rows = [(page, 1, footer) for page in range(1, 5)]
+    rows += [(1, 2, "el derecho a la vida"), (2, 3, "la igualdad ante la ley")]
+
+    kept, removed = strip_repeated_furniture(rows)
+
+    assert [row[2] for row in removed] == [footer] * 4
+    assert kept == [(1, 2, "el derecho a la vida"), (2, 3, "la igualdad ante la ley")]
+
+
+def test_a_line_with_no_gap_near_the_gutter_stays_whole_in_the_body():
+    """A long body line runs past the gutter, and cutting it there would be a lie.
+
+    The conservative direction matters more than the tidy one: a body line that
+    happened to hold a wide gap is kept intact, where a margin line mistaken for
+    body would corrupt a sentence a reviewer is about to quote.
+    """
+    long_line = (
+        "El legislador establecerá siempre las garantías de un procedimiento y "
+        "una investigación racionales y justos, sin excepción alguna"
+    )
+    pages = [_two_column_page([long_line, "La Constitución asegura"], ["", "26.08.2005"])]
+    body, notes = split_columns(pages, _GUTTER_COLUMN)
+
+    assert [text for _, _, text in body] == [long_line, "La Constitución asegura"]
+    assert [text for _, _, text in notes] == ["26.08.2005"]
+
+
+def test_the_reading_records_the_extractor_version_that_produced_it():
+    """Two releases of `pypdf` do not put the same characters on the same line.
+
+    A bundle read by one and re-read by the other has a different text for the
+    same file, and the version is the only thing in the record that makes that
+    difference visible — otherwise it looks like the proof was altered.
+    """
+    pytest.importorskip("pypdf")
+    reading, extractor, warnings = extract_pdf_reading(_minimal_pdf("ARTICULO 19"))
+
+    assert extractor == "pypdf" and warnings == []
+    assert reading.extractor == "pypdf"
+    assert reading.extractor_version and reading.extractor_version[0].isdigit()
+    assert reading.derivation()["extractor_version"] == reading.extractor_version
+
+
+def test_extract_pdf_text_is_the_reading_without_the_account_of_it():
+    """Callers with no opinion about columns keep the one-value answer.
+
+    `extract_pdf_text` and `extract_pdf_reading` must not drift apart: the text
+    the simple caller gets is the text the protocol will search, because the
+    stored proof and the returned string are compared against each other.
+    """
+    pytest.importorskip("pypdf")
+    payload = _minimal_pdf("ARTICULO 19.- La igual proteccion de la ley")
+    text, extractor, warnings = extract_pdf_text(payload)
+    reading, _, _ = extract_pdf_reading(payload)
+
+    assert text == reading.text
+    assert extractor == "pypdf"
+    assert warnings == []
+
+
+def test_the_sidecar_says_which_reading_the_protocol_searched(tmp_path):
+    """A hash is only checkable if the record says what it is a hash *of*.
+
+    `text_sha256` has always been the hash of the matched text; what was never
+    recorded is what kind of text that was. An offset into a pasted passage
+    proves the quote is inside the quote and nothing about the document, and
+    nothing in the bundle used to say which of the two had been hashed.
+    """
+    bundle = _bundle(tmp_path)
+    out = ingest_source(bundle, "AUTH-CL-001-01", filename="nota.txt",
+                        data="El artículo 193 num. 8 del Código del Trabajo".encode("utf-8"))
+    proof = json.loads((bundle / out["proof"]["rel"]).read_text(encoding="utf-8"))
+
+    assert proof["schema_version"] == PROOF_SCHEMA_VERSION
+    assert proof["readings"]["matched"] == {
+        "sha256": proof["text_sha256"],
+        "chars": proof["text_chars"],
+        "basis": "text",
+    }
+    assert proof["readings"]["raw"] is None, "a text upload has no extraction to record"
+    assert proof["readings"]["derivation"] is None
+    assert proof["notes"] == []
+
+
+def test_a_read_pdf_records_both_its_reading_and_the_raw_extraction(tmp_path):
+    """The two hashes answer different questions, so both are written down.
+
+    `raw` is what the extractor produced and `matched` is what the protocol
+    searched; on a single-column one-line PDF they are the same string, and the
+    test says so rather than leaving it to be assumed.
+    """
+    pytest.importorskip("pypdf")
+    bundle = _bundle(tmp_path)
+    out = ingest_source(
+        bundle, "AUTH-CL-001-01", filename="constitucion.pdf",
+        data=_minimal_pdf("ARTICULO 19.- La igual proteccion de la ley"),
+    )
+    proof = json.loads((bundle / out["proof"]["rel"]).read_text(encoding="utf-8"))
+
+    assert proof["readings"]["matched"]["basis"] == "pdf"
+    assert proof["readings"]["matched"]["chars"] == len(out["source_content"])
+    assert proof["readings"]["raw"]["sha256"] == proof["text_sha256"]
+    assert proof["readings"]["raw"]["chars"] == proof["text_chars"]
+    derivation = proof["readings"]["derivation"]
+    assert derivation["extractor"] == "pypdf"
+    assert derivation["columns_split"] is False
+    assert derivation["furniture"] == []
+    assert proof["notes"] == []
+
+
+def test_a_pasted_passage_over_a_pdf_keeps_the_pdfs_reading_on_record(tmp_path):
+    """The case that made recorded offsets ambiguous, now recorded as such.
+
+    A PDF proof plus a typed passage is the normal request, and the matched text
+    is the paste — so an offset against it says nothing about the document, while
+    the PDF *was* read and its reading is re-derivable from the artefact. One
+    hash could not distinguish the two; `matched.basis` can.
+    """
+    pytest.importorskip("pypdf")
+    bundle = _bundle(tmp_path)
+    out = ingest_source(
+        bundle, "AUTH-CL-001-01", filename="constitucion.pdf",
+        data=_minimal_pdf("ARTICULO 19.- La igual proteccion de la ley"),
+        text="artículo 19 num. 3",
+    )
+    proof = json.loads((bundle / out["proof"]["rel"]).read_text(encoding="utf-8"))
+
+    assert proof["readings"]["matched"]["basis"] == "pasted"
+    assert proof["readings"]["matched"]["sha256"] == proof["text_sha256"]
+    assert proof["readings"]["raw"] is not None, "the PDF was still read"
+    assert proof["readings"]["raw"]["chars"] != proof["readings"]["matched"]["chars"]
+    assert (bundle / proof["text_file"]).read_text(encoding="utf-8") == "artículo 19 num. 3"
+
+
+def test_a_layout_pass_that_changed_nothing_still_records_what_it_looked_for(tmp_path):
+    """`columns_split: false` is a finding, not an absence of one.
+
+    A reader of the record has to be able to tell "this document has one column
+    and was left alone" from "this reading predates the layout pass" — otherwise
+    the next person to meet an unquotable sentence has to re-derive the answer
+    from the PDF before they can trust it.
+
+    The pypdf assertion that produced the clean reading is *not* restated here.
+    `pypdf` is what the test already skips on if it is missing, and claiming the
+    text is whatever the reader returns would make this test pass against a
+    registry that reads nothing.
+    """
+    pytest.importorskip("pypdf")
+    bundle = _bundle(tmp_path)
+    out = ingest_source(
+        bundle, "AUTH-CL-001-01", filename="constitucion.pdf",
+        data=_minimal_pdf("ARTICULO 19.- La igual proteccion de la ley"),
+    )
+    derivation = out["reading"]
+
+    assert derivation["pages"] == 1
+    assert derivation["columns_split"] is False
+    assert derivation["gutter_column"] is None
+    assert derivation["notes"] == 0 and derivation["notes_chars"] == 0
+    assert derivation["furniture_lines"] == 0
+    assert derivation["extractor"] == "pypdf"
+
+
+def test_the_margin_citations_are_recorded_beside_the_reading_not_inside_it(
+    tmp_path, monkeypatch
+):
+    """The stored proof keeps the notes, and keeps them *out of* the searched text.
+
+    On an official document the margin carries the amendment history of the very
+    numeral being quoted — which law changed it, when, and in which edition of
+    the Diario Oficial — so it is evidence for `instrument` and `version`. It is
+    also, wedged between two words, precisely what makes a sentence unquotable.
+    So it has to be recorded *and* excluded, and neither assertion implies the
+    other: dropping the notes from the sidecar would satisfy every quotation in
+    the suite.
+
+    The reader is stubbed rather than stubbed-around: the question here is what
+    `ingest_source` writes, and a fixture whose layout the extractor has to
+    reconstruct from coordinates would be testing the extractor instead.
+    """
+    def read_two_columns(_data: bytes) -> list[str]:
+        return [_article_page()]
+
+    # The registry pairs an *importable* module name with the reader, and the
+    # loop imports the module before calling the reader — so a stand-in cannot
+    # be named after itself. `json` is not imported anywhere on this path and is
+    # not pretending to be an extractor; it is a name that resolves, which is
+    # all the entry needs to be reached without the real `pypdf` deciding what
+    # this test is about.
+    monkeypatch.setattr(
+        "violation_pack.authority_source._PDF_EXTRACTORS",
+        (("json", read_two_columns),),
+    )
+    bundle = _bundle(tmp_path)
+    out = ingest_source(bundle, "AUTH-CL-001-01", filename="dto-100.pdf",
+                        data=b"%PDF-1.4 the reader below ignores these bytes")
+    proof = json.loads((bundle / out["proof"]["rel"]).read_text(encoding="utf-8"))
+
+    assert proof["readings"]["matched"]["basis"] == "pdf"
+    assert [note["text"] for note in proof["notes"]] == _ARTICLE_NOTES
+    assert len(proof["notes"]) == proof["readings"]["derivation"]["notes"]
+    assert _SENTENCE in out["source_content"], "the body is what gets searched"
+    assert "26.08.2005" not in out["source_content"], (
+        "a citation left inside the matched text is a sentence nobody can quote"
+    )
+    assert "26.08.2005" in json.dumps(proof["notes"]), "recorded, not discarded"
 
 
 def test_an_uploaded_pdf_is_read_by_the_installed_extractor(tmp_path):
@@ -675,6 +1263,11 @@ def _minimal_pdf(text: str) -> bytes:
     but not author one, and a document without a `startxref` is rejected before
     any page is parsed — so the offsets have to be tracked as the objects are
     emitted rather than faked.
+
+    Single-column on purpose. This is the fixture for the case where no gutter
+    *may* be found, so the text it puts on the page must be one run of single
+    spaces: a wide gap here would be a gutter the test would then be asserting
+    the pass ignored, which is the opposite of what the fixture is for.
     """
     body = b"BT /F1 12 Tf 20 100 Td (" + text.encode("latin-1") + b") Tj ET"
     objects = [

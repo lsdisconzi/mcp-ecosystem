@@ -34,9 +34,11 @@ import html
 import json
 import re
 import unicodedata
+from collections import Counter
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Sequence
 from urllib import error as _urlerr
 from urllib import parse as _urlparse
 from urllib import request as _urlreq
@@ -52,6 +54,15 @@ SOURCES_DIR = BUNDLE_LAYOUT["authority_sources_dir"]
 #: path component, never split on the space it contains.
 PROOF_SUFFIX = ".proof.json"
 TEXT_SUFFIX = ".text.txt"
+
+#: Version of the sidecar's shape. Absent means the flat v1 record, which is
+#: still readable: every field v1 has kept its meaning, and everything v2 adds
+#: (`readings`, `notes`) is additive. The version exists because v2 changes what
+#: `text_sha256` is a hash *of* — v1 hashed the extractor's entire output, v2
+#: hashes the body reading with the margin citations and the running furniture
+#: taken out — so a stored hash that no longer matches a re-read PDF is expected
+#: across versions, and is not on its own evidence that the proof was altered.
+PROOF_SCHEMA_VERSION = "2.0.0"
 
 MAX_FETCH_BYTES = 8 * 1024 * 1024
 MAX_UPLOAD_BYTES = 16 * 1024 * 1024
@@ -138,7 +149,15 @@ def decode_bytes(data: bytes) -> tuple[str, list[str]]:
     ]
 
 
-def _read_pypdf(data: bytes) -> str:
+def _read_pypdf(data: bytes) -> list[str]:
+    """Extract one string per page, in page order.
+
+    *Per page*, not one joined blob. A page is the unit the layout pass below
+    reasons about — "this line is on all ten pages, so it is a running header,
+    not a paragraph" — and joining here would throw away the only boundary that
+    fact is available at. Joining is still what the caller ends up doing; it just
+    happens after the pages have been looked at, instead of before.
+    """
     import io
 
     try:
@@ -147,14 +166,15 @@ def _read_pypdf(data: bytes) -> str:
         from PyPDF2 import PdfReader  # type: ignore
 
     reader = PdfReader(io.BytesIO(data))
-    return "\n".join((page.extract_text() or "") for page in reader.pages)
+    return [(page.extract_text() or "") for page in reader.pages]
 
 
-def _read_fitz(data: bytes) -> str:
+def _read_fitz(data: bytes) -> list[str]:
+    """Same contract as `_read_pypdf`: page text, one string per page."""
     import fitz  # type: ignore
 
     with fitz.open(stream=data, filetype="pdf") as doc:  # pragma: no cover - optional extra
-        return "\n".join(page.get_text() for page in doc)
+        return [page.get_text() for page in doc]
 
 
 #: Optional PDF extractors, tried in this order. `pypdf` is the maintained
@@ -170,20 +190,367 @@ def _read_fitz(data: bytes) -> str:
 #: an extractor was importable, which is to say only after a reviewer did what
 #: the warning told them to do and installed one. Holding the function removes
 #: the name entirely, so there is nothing left to drift.
-_PDF_EXTRACTORS: tuple[tuple[str, Callable[[bytes], str]], ...] = (
+_PDF_EXTRACTORS: tuple[tuple[str, Callable[[bytes], list[str]]], ...] = (
     ("pypdf", _read_pypdf),
     ("PyPDF2", _read_pypdf),
     ("fitz", _read_fitz),
 )
 
 
-def extract_pdf_text(data: bytes) -> tuple[str | None, str | None, list[str]]:
-    """Extract a PDF's text with whichever optional reader is installed.
+# ---------------------------------------------------------------------------
+# PDF layout — getting the body column out of a two-column official PDF
+# ---------------------------------------------------------------------------
+#
+# A flat PDF extraction is a rectangle of words with the page's geometry gone,
+# and official Chilean sources are laid out in two columns: the article body
+# runs down the left, and the right margin carries the legislative history
+# ("LEY N° 20.050 Art. 1° N° 10 letra a) D.O. 26.08.2005"). Both columns are
+# flattened onto the same physical line, so the citation lands *between* two
+# words of the sentence it annotates:
+#
+#     'Corresponderá al legislador establecer siempre las            26.08.2005'
+#     'garantías de un procedimiento y una investigación'
+#
+# The sentence is intact on the page and destroyed in the reading, which is
+# worse than a sentence that is simply missing: the reviewer is shown text that
+# looks like the document and cannot quote a line of it, with nothing on screen
+# to say why. Everything below exists to undo that flattening — and to leave an
+# account of what was moved, because a reading nobody can audit is the same
+# problem one level down.
 
-    Returns ``(text, extractor, warnings)``. With no reader installed the text
-    is ``None`` and the warning names the install — but the artefact is still
-    ingested by the caller, so the proof is never lost just because the venv
-    is missing a parser.
+#: A run of two or more spaces is the only mark of a column break that survives
+#: extraction: the geometry is gone, so the spacing that produced the visual
+#: gutter is all that is left to reason about.
+_GAP_RE = re.compile(r"[ \t]{2,}")
+
+#: How far a gap may sit from the detected gutter and still be it. Zero would
+#: work on the document this was written against and would break on the next
+#: one that pads a line differently, because the gutter is a visual alignment
+#: rather than an integer the producer of the PDF ever agreed on.
+_GUTTER_TOLERANCE = 2
+
+#: A gutter has to be a habit rather than an accident. A handful of widely
+#: spaced lines is a table or a signature block, and splitting there cuts the
+#: body in half.
+_MIN_GUTTER_SUPPORT = 8
+
+#: Indentation is a gap too, and it is always near the left edge. A position
+#: this close to column zero is a paragraph indent, never a column break.
+_MIN_GUTTER_COLUMN = 12
+
+#: How many *distinct* wide-gap positions a page may have before it stops
+#: looking like two columns. A real gutter is one line down the whole page; a
+#: run of justified text scatters its extra spaces across dozens of columns,
+#: and that scatter is the signal that there is no gutter to find.
+_MAX_GUTTER_CANDIDATES = 3
+
+#: After cutting, the body has to still be the body. Cutting at a paragraph
+#: indent hands the entire line to the "margin" — and a split that returns an
+#: empty left column still returns a string, so the failure would be silent.
+_MIN_BODY_SHARE = 0.6
+
+#: Furniture is a line that repeats across pages. Two pages are not enough to
+#: tell a running header from a clause a statute repeats on purpose, and the
+#: cost of being wrong is a sentence that becomes unquotable.
+_MIN_FURNITURE_PAGES = 3
+
+#: ...and it has to be short. A paragraph that genuinely repeats on three
+#: separate pages is far more likely to be the document's text than its
+#: letterhead, so a long line is left alone however often it recurs.
+_FURNITURE_MAX_CHARS = 160
+
+#: ...and it has to read as a line of text rather than as a number. Masking
+#: digits is what lets one page marker match its ten variants, so a numeral
+#: alone on its line (``1º.-``, ``2º.-``, ``3º.-``) collapses to a single key
+#: too, and a document that numbers its articles across pages would lose them
+#: all as furniture.
+_MIN_FURNITURE_LETTERS = 3
+
+_DIGITS_RE = re.compile(r"\d+")
+
+#: ``(page, line, text)``, both numbers 1-based. Every row carries its address
+#: so that a line taken out of the body can be *reported* with where it came
+#: from, instead of merely being absent.
+Row = tuple[int, int, str]
+
+
+def _gap_ends(pages: Sequence[str]) -> Counter[int]:
+    """Count, per column, how many whitespace runs end there."""
+    ends: Counter[int] = Counter()
+    for page in pages:
+        for line in page.split("\n"):
+            if not line.strip():
+                continue
+            for match in _GAP_RE.finditer(line):
+                ends[match.end()] += 1
+    return ends
+
+
+def _body_share(body_rows: Sequence[Row], note_rows: Sequence[Row]) -> float:
+    """How much of the split line content stayed on the left.
+
+    The guard that turns a wrong gutter into no gutter at all.
+    """
+    body = sum(len(text) for _, _, text in body_rows)
+    notes = sum(len(text) for _, _, text in note_rows)
+    total = body + notes
+    return 1.0 if not total else body / total
+
+
+def split_columns(
+    pages: Sequence[str], column: int | None = None
+) -> tuple[list[Row], list[Row]]:
+    """Cut every line at the gutter; return ``(body_rows, note_rows)``.
+
+    ``column=None`` means no gutter was found, and then every row is a body row.
+    Both outcomes have the same shape so the caller has no branch to forget, and
+    so "the split found nothing" cannot be confused with "the split was never
+    attempted".
+
+    The right-hand side is *returned*, never dropped. On an official document it
+    is the amendment history — which law changed this numeral, when, and in which
+    edition of the Diario Oficial — which is the answer to the question the
+    verification modal asks. Deleting it to tidy the reading would throw away the
+    evidence in order to make the evidence easier to search.
+
+    A line with no gap near the gutter stays whole in the body. That is the
+    conservative direction: a body line that happened to contain a wide gap is
+    kept intact, where a margin line mistaken for body would corrupt a sentence.
+    """
+    body: list[Row] = []
+    notes: list[Row] = []
+    for page_number, page in enumerate(pages, start=1):
+        for line_number, line in enumerate(page.split("\n"), start=1):
+            cut: int | None = None
+            if column is not None:
+                for match in _GAP_RE.finditer(line):
+                    if abs(match.end() - column) <= _GUTTER_TOLERANCE:
+                        cut = match.end()
+                        break
+            head = (line[:cut] if cut is not None else line).strip()
+            tail = (line[cut:] if cut is not None else "").strip()
+            if head:
+                body.append((page_number, line_number, head))
+            if tail:
+                notes.append((page_number, line_number, tail))
+    return body, notes
+
+
+def detect_gutter(pages: Sequence[str]) -> tuple[int, int] | None:
+    """Find the column that separates the body from a margin column.
+
+    Returns ``(column, support)``, or ``None`` when the pages do not look like a
+    two-column layout. ``None`` is the answer this should give most of the time,
+    because the two ways of being wrong are not symmetrical: not splitting a
+    document leaves the reading exactly as it is today, whereas splitting one
+    that has no gutter produces a reading missing part of every line — which
+    still looks like a document, and so cannot be noticed.
+
+    Three things have to hold before a column is believed: the gap ends there
+    often enough to be a habit, the position is well clear of the left margin,
+    and there is essentially only one such position. The last is what rules out
+    justified text, whose extra spaces land all over the place — a gutter is one
+    line down the whole page, and nothing else is.
+    """
+    wide = Counter({
+        column: count
+        for column, count in _gap_ends(pages).items()
+        if column >= _MIN_GUTTER_COLUMN and count >= _MIN_GUTTER_SUPPORT
+    })
+    if not wide or len(wide) > _MAX_GUTTER_CANDIDATES:
+        return None
+    # Most-supported first: when two wide gaps compete, the one that repeats
+    # down the page is the column break and the other is something inside the
+    # body, such as a table or an aligned list. Ties go to the smaller column,
+    # which keeps the most content in the body.
+    for column, support in sorted(wide.items(), key=lambda item: (-item[1], item[0])):
+        body, notes = split_columns(pages, column)
+        if _body_share(body, notes) >= _MIN_BODY_SHARE:
+            return column, support
+    return None
+
+
+def _repeat_key(text: str) -> str:
+    """The form in which two lines count as the same line.
+
+    Digits become ``#`` because a page marker is the one piece of furniture that
+    is *supposed* to change from page to page: ``página 1 de 10`` and
+    ``página 2 de 10`` are one line printed ten times, and an exact comparison
+    would see ten different lines and keep every one of them.
+    """
+    return _DIGITS_RE.sub("#", collapse_whitespace(text))
+
+
+def _has_words(text: str) -> bool:
+    """Whether a line carries enough letters to be a line of text.
+
+    The companion to digit masking, and the reason it cannot be let loose on
+    its own: ``1º.-`` masks to one key, and a document whose articles are
+    numbered on lines of their own would have every one of them dropped as
+    furniture. Requiring letters keeps the masking available for the page
+    marker it was for — ``página 1 de 10`` — without letting it swallow bare
+    numbering.
+    """
+    return sum(1 for char in text if char.isalpha()) >= _MIN_FURNITURE_LETTERS
+
+
+def strip_repeated_furniture(rows: Sequence[Row]) -> tuple[list[Row], list[Row]]:
+    """Drop lines that repeat across pages; return ``(kept, removed)``.
+
+    No list of known footers is involved, and that is the point: a pattern list
+    is written for the documents that already exist and silently misses the next
+    authority's letterhead. Repetition is the property that *defines* furniture
+    on any document, and it needs no vocabulary to recognise.
+
+    It matters for quoting as much as for tidiness. A running footer sits
+    between two words of a sentence that spans a page break — ``…comisiones
+    especiales, Documento generado el 15-Sep-2026 página 2 de 10 sino por el
+    tribunal…`` — so the footer does not merely add noise, it makes the sentence
+    unquotable, and a reviewer looking at the screen has no way to see that.
+
+    Removed rows come back rather than being deleted here, because "quietly
+    shorter" is what a reading must never become.
+
+    There is no separate "too few pages" early return, and adding one back would
+    be dead code: a key can only be seen on pages that exist, so requiring three
+    sightings is already a requirement of three pages, and a branch no input can
+    reach is a branch no test can hold still.
+    """
+    page_count = len({page for page, _, _ in rows})
+    pages_by_key: dict[str, set[int]] = {}
+    for page, _, text in rows:
+        key = _repeat_key(text)
+        if len(key) > _FURNITURE_MAX_CHARS or not _has_words(key):
+            continue
+        pages_by_key.setdefault(key, set()).add(page)
+    # "On most pages", not merely "on three of them": a running header is by
+    # definition on nearly every page, whereas a line that recurs on three pages
+    # of twenty is far more likely to be a clause the document repeats on
+    # purpose, and dropping it would delete the document's own text.
+    repeated = {
+        key
+        for key, seen_on in pages_by_key.items()
+        if len(seen_on) >= _MIN_FURNITURE_PAGES and len(seen_on) * 2 >= page_count
+    }
+    if not repeated:
+        return list(rows), []
+    kept = [row for row in rows if _repeat_key(row[2]) not in repeated]
+    removed = [row for row in rows if _repeat_key(row[2]) in repeated]
+    return kept, removed
+
+
+@dataclass(frozen=True)
+class PdfReading:
+    """What was read out of a PDF, and what was done to get there.
+
+    ``text`` is the reading handed to the verification protocol, so it is the
+    only field anything matches against. Everything else is the account of it:
+    which extractor and version produced it, which gutter was found, which
+    margin citations were set aside, and how much furniture was dropped. The
+    account is not decoration — a `matched_offset` in a verification record
+    means nothing without knowing which string it was measured in, and the
+    difference between a raw reading and a restructured one is exactly the kind
+    of change that makes a stored offset quietly wrong.
+    """
+
+    text: str
+    page_count: int
+    raw_chars: int
+    raw_sha256: str
+    gutter: int | None = None
+    gutter_support: int = 0
+    notes: tuple[dict[str, Any], ...] = ()
+    notes_chars: int = 0
+    furniture: tuple[str, ...] = ()
+    furniture_lines: int = 0
+    furniture_chars: int = 0
+    extractor: str | None = None
+    extractor_version: str | None = None
+
+    @property
+    def restructured(self) -> bool:
+        """Whether the reading differs from the plain extraction at all."""
+        return self.gutter is not None or bool(self.furniture)
+
+    def derivation(self) -> dict[str, Any]:
+        """The sidecar's account of how ``text`` was produced."""
+        return {
+            "extractor": self.extractor,
+            "extractor_version": self.extractor_version,
+            "pages": self.page_count,
+            "columns_split": self.gutter is not None,
+            "gutter_column": self.gutter,
+            "gutter_support": self.gutter_support,
+            "notes": len(self.notes),
+            "notes_chars": self.notes_chars,
+            "furniture_lines": self.furniture_lines,
+            "furniture_chars": self.furniture_chars,
+            "furniture": list(self.furniture),
+        }
+
+
+def derive_reading(
+    pages: Sequence[str],
+    *,
+    extractor: str | None = None,
+    extractor_version: str | None = None,
+) -> PdfReading:
+    """Turn pages of extracted text into the reading the protocol searches.
+
+    ``raw_chars``/``raw_sha256`` describe the plain extraction — every word the
+    reader saw, joined and collapsed — so the restructured reading can always be
+    compared against what it came from. They are what let a stored proof be
+    recognised as *the same document, read better*, which a single hash of the
+    cleaned text cannot say.
+    """
+    raw = collapse_whitespace(" ".join(pages))
+    gutter = detect_gutter(pages)
+    body_rows, note_rows = split_columns(pages, gutter[0] if gutter else None)
+    kept, removed = strip_repeated_furniture(body_rows)
+    return PdfReading(
+        text=collapse_whitespace(" ".join(text for _, _, text in kept)),
+        page_count=len(pages),
+        raw_chars=len(raw),
+        raw_sha256=_sha256(raw.encode("utf-8")),
+        gutter=gutter[0] if gutter else None,
+        gutter_support=gutter[1] if gutter else 0,
+        notes=tuple(
+            {"page": page, "line": line, "text": text} for page, line, text in note_rows
+        ),
+        notes_chars=sum(len(text) for _, _, text in note_rows),
+        furniture=tuple(dict.fromkeys(_repeat_key(text) for _, _, text in removed)),
+        furniture_lines=len(removed),
+        furniture_chars=sum(len(text) for _, _, text in removed),
+        extractor=extractor,
+        extractor_version=extractor_version,
+    )
+
+
+def _module_version(module_name: str) -> str | None:
+    """The reader's own version, or ``None`` when it cannot be determined.
+
+    Recorded because the reading depends on it: two releases of ``pypdf`` do not
+    place the same characters on the same line, so a bundle read by one and
+    re-read by the other has a different text for the same file. The version is
+    the only thing in the record that makes that difference visible.
+    """
+    from importlib import metadata
+
+    for candidate in (module_name, module_name.lower()):
+        try:
+            return metadata.version(candidate)
+        except (metadata.PackageNotFoundError, ValueError):
+            continue
+    return None
+
+
+def extract_pdf_reading(data: bytes) -> tuple[PdfReading | None, str | None, list[str]]:
+    """Read a PDF into a `PdfReading` with whichever optional reader is installed.
+
+    Returns ``(reading, extractor, warnings)``. With no reader installed the
+    reading is ``None`` and the warning names the install — but the artefact is
+    still ingested by the caller, so the proof is never lost just because the
+    venv is missing a parser.
     """
     tried: list[str] = []
     for module_name, reader in _PDF_EXTRACTORS:
@@ -193,19 +560,34 @@ def extract_pdf_text(data: bytes) -> tuple[str | None, str | None, list[str]]:
             tried.append(module_name)
             continue
         try:
-            text = reader(data)
+            pages = reader(data)
         except Exception as exc:  # noqa: BLE001 - a broken PDF must not 500
             return None, module_name, [
                 f"{module_name} is installed but could not read this PDF "
                 f"({type(exc).__name__}: {exc}); paste the section text instead",
             ]
-        return collapse_whitespace(text), module_name, []
+        return derive_reading(
+            pages, extractor=module_name, extractor_version=_module_version(module_name)
+        ), module_name, []
     return None, None, [
         "no PDF text extractor is installed (" + ", ".join(tried) + "); the PDF "
         "is stored and hashed as proof, but paste the passage you want matched "
         "or install pypdf (`pip install pypdf`, or the pdf extra) to have it "
         "read here",
     ]
+
+
+def extract_pdf_text(data: bytes) -> tuple[str | None, str | None, list[str]]:
+    """The reading alone, for callers that do not need the account of it.
+
+    Kept because "give me the text of this PDF" is the question most callers are
+    asking, and threading a `PdfReading` through all of them would spread the
+    layout pass into code that has no opinion about columns. `ingest_source`
+    uses `extract_pdf_reading` instead, because a stored proof is precisely the
+    caller that does need the account.
+    """
+    reading, extractor, warnings = extract_pdf_reading(data)
+    return (reading.text if reading is not None else None), extractor, warnings
 
 
 # ---------------------------------------------------------------------------
@@ -532,9 +914,11 @@ def ingest_source(
 
     artefact_text: str | None = None
     extractor: str | None = None
+    reading: PdfReading | None = None
     if data is not None:
         if suffix == ".pdf" or data[:5] == b"%PDF-":
-            artefact_text, extractor, pdf_warnings = extract_pdf_text(data)
+            reading, extractor, pdf_warnings = extract_pdf_reading(data)
+            artefact_text = reading.text if reading is not None else None
             warnings.extend(pdf_warnings)
         elif suffix in TEXT_SUFFIXES:
             artefact_text, warnings_dec = decode_bytes(data)
@@ -563,6 +947,23 @@ def ingest_source(
     # describes a document the bundle would then not contain.
     needs_text = content is None
     content_sha = _sha256(content.encode("utf-8")) if content is not None else None
+
+    # What kind of string `content` is. A reader of the record has to be able to
+    # tell a reading of the artefact from a passage a human typed, because the
+    # first can be reproduced from the bundle and the second cannot: an offset
+    # into a pasted string proves the quote is *in the quote*, and nothing about
+    # the document. That distinction was previously visible only to whoever
+    # remembered which request they had sent.
+    if pasted is not None:
+        basis = "pasted"
+    elif reading is not None:
+        basis = "pdf"
+    elif extractor == "html-strip":
+        basis = "markup"
+    elif artefact_text is not None:
+        basis = "text"
+    else:
+        basis = None
 
     # --- write everything --------------------------------------------------
     directory = sources_dir(bundle_dir)
@@ -627,6 +1028,30 @@ def ingest_source(
         ),
         "extractor": extractor,
         "whitespace_collapsed": bool(collapse),
+        "schema_version": PROOF_SCHEMA_VERSION,
+        # The one thing a stored proof must never leave to inference: which
+        # string the quote was searched for in. `matched` is the reading the
+        # protocol hashed — it is the text file on disk — and `raw` is what the
+        # extractor produced before this module touched it, so a recording whose
+        # reading was restructured can always be compared against the reading it
+        # was restructured from.
+        "readings": {
+            "matched": {
+                "sha256": content_sha,
+                "chars": len(content) if content is not None else 0,
+                "basis": basis,
+            },
+            "raw": (
+                {"sha256": reading.raw_sha256, "chars": reading.raw_chars}
+                if reading is not None else None
+            ),
+            "derivation": reading.derivation() if reading is not None else None,
+        },
+        # The margin column, kept rather than discarded: it is the amendment
+        # history of the very numeral the reviewer is quoting, so it is evidence
+        # for `instrument` and `version`, and it is also the text that had to be
+        # taken out of the body reading to make that reading quotable at all.
+        "notes": list(reading.notes) if reading is not None else [],
         "ingested_at": datetime.now(timezone.utc).isoformat(),
         "warnings": warnings,
     }
@@ -648,6 +1073,11 @@ def ingest_source(
         "text_source": proof["text_source"],
         "extractor": extractor,
         "artefact": artefact,
+        # How the reading was arrived at, for the modal to be able to say what it
+        # did — "read as two columns, 151 margin citations recorded separately"
+        # is the difference between a reviewer trusting a quote and a reviewer
+        # wondering why the text on screen is not the text in the PDF.
+        "reading": reading.derivation() if reading is not None else None,
         # The fetch provenance is repeated here because the modal has to be able
         # to say where the text came from — the content type is what chose the
         # reader, and a redirect means the page fetched is not the page named.
