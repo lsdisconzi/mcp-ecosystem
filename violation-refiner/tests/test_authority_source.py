@@ -35,6 +35,8 @@ from violation_pack.authority_source import (
     TEXT_SUFFIX,
     SourceError,
     _PDF_EXTRACTORS,
+    article_numerals,
+    attribute_citations,
     collapse_whitespace,
     decode_base64_payload,
     delete_source,
@@ -44,6 +46,7 @@ from violation_pack.authority_source import (
     extract_pdf_text,
     fetched_filename,
     ingest_source,
+    join_source_notes,
     name_from_url,
     proof_stem,
     sanitise_filename,
@@ -1034,6 +1037,457 @@ def test_re_storing_different_bytes_does_not_clobber_the_first(tmp_path):
     second = ingest_source(bundle, "AUTH-CL-001-01", filename="nota.txt", data=b"segundo")
     assert second["artefact"]["rel"] != first["artefact"]["rel"]
     assert (bundle / first["artefact"]["rel"]).read_bytes() == b"primero"
+
+
+# ---------------------------------------------------------------------------
+# The margin column, joined — a row is a line, and a line is not a citation
+# ---------------------------------------------------------------------------
+
+#: A margin whose every citation is cut across two or three rows, which is how a
+#: column of text at the edge of a page actually arrives. Eight of these ten rows
+#: are *halves* that read perfectly well as citations on their own —
+#: ``'D.O. 24.10.1980'`` is a date and an edition of the Diario Oficial,
+#: ``'Art. ÚNICO N° 1 y 2'`` reads as an article reference — and that is the
+#: defect: the rows are not wrong, they are fragments, and a fragment presented
+#: as a record is a record the document does not contain.
+_WRAPPED_NOTES = [
+    "CPR Art.19°",
+    "D.O. 24.10.1980",
+    "LEY N° 19.611 Art.",
+    "único Nº 2 D.O. 16.06.1999",
+    "Ley 21568",
+    "Art. ÚNICO N° 1 y 2",
+    "D.O. 03.05.2023",
+    "LEY N° 20.050 Art. 1° N° 10",
+    "letra a) D.O. 26.08.2005",
+    "CPR Art. 19° N° 6° D.O. 24.10.1980",
+]
+
+#: What those ten rows say, and where each citation starts and ends.
+_WRAPPED_TEXTS = [
+    "CPR Art.19° D.O. 24.10.1980",
+    "LEY N° 19.611 Art. único Nº 2 D.O. 16.06.1999",
+    "Ley 21568 Art. ÚNICO N° 1 y 2 D.O. 03.05.2023",
+    "LEY N° 20.050 Art. 1° N° 10 letra a) D.O. 26.08.2005",
+    "CPR Art. 19° N° 6° D.O. 24.10.1980",
+]
+_WRAPPED_SPANS = [(1, 1, 2), (1, 3, 4), (1, 5, 7), (1, 8, 9), (1, 10, 10)]
+
+#: A body of numbered numerals and a margin printed one numeral late.
+#:
+#: Not invented. On the reference decree ``CPR Art. 19° Nº 5°`` sits beside
+#: numeral 6, ``CPR Art. 19° N° 13`` beside 14 and ``CPR Art. 19° N° 14`` beside
+#: 15 — the margin column flows on its own grid, so a citation lands a few rows
+#: past the numeral it belongs to. A single ``numeral`` field would have to pick
+#: one of those two answers and be silently wrong about the other, four times in
+#: the fifty-six citations that document carries.
+#:
+#: Sixteen body lines with margin notes on the first nine, and both numbers are
+#: load-bearing. The gutter is only believed at eight supported rows, so nine
+#: notes are the floor; and the column is only accepted while the body keeps
+#: most of the split line content, so a page of short lines under long notes is
+#: rejected as a two-column layout and the fixture would prove nothing.
+_NUMERAL_LINES = [
+    "Artículo 19.- La Constitución asegura a todas las personas",
+    "1º.- El derecho a la vida y a la integridad física y psíquica",
+    "2º.- La igualdad ante la ley es la base de todo sistema",
+    "3º.- El respeto y protección a la vida privada y a la honra",
+    "4º.- La inviolabilidad del hogar y de las comunicaciones",
+    "5º.- La libertad de conciencia y el derecho a la educación",
+    "6º.- El derecho a la educación y a la libertad de enseñanza",
+    "La Constitución asegura a todas las personas la igualdad",
+    "El ejercicio de la soberanía reconoce los límites",
+    "Ninguna ley puede establecer diferencias arbitrarias",
+    "Los órganos del Estado deben someter su acción",
+    "El Estado está al servicio de la persona humana",
+    "Los preceptos de esta Constitución obligan a todo órgano",
+    "El terrorismo, en cualquiera de sus formas, es por",
+    "La educación tiene por objeto el pleno desarrollo",
+    "La libertad de trabajo y su protección son derechos",
+]
+
+#: Nine notes for sixteen body lines — a real margin is sparse, and the notes
+#: stop at line nine because that is all the support the gutter needs.
+_LAGGING_NOTES = [
+    "CPR Art.19° D.O. 24.10.1980",
+    "CPR Art. 19° N° 1° D.O. 24.10.1980",
+    "CPR Art. 19° Nº 2 D.O. 24.10.1980",
+    "CPR Art. 19° N° 4 D.O. 24.10.1980",
+    "CPR Art. 19° N° 5 D.O. 24.10.1980",
+    "CPR Art. 19° N° 6 D.O. 24.10.1980",
+    "Ley 21568 Art. ÚNICO, Nº 1 y 2 D.O. 03.05.2023",
+    "LEY N° 20.050 Art. 1° N° 10 letra c) D.O. 26.08.2005",
+    "LEY N° 19.611 Art. único Nº 2 D.O. 16.06.1999",
+]
+
+#: Five short lines per page. Five, so that two pages carry ten margin rows and
+#: the gutter is believed at all — the support threshold is eight — and short,
+#: because the column is only accepted while the body keeps most of the split
+#: line content, so a fixture of long lines with long notes would be rejected as
+#: a two-column layout and prove nothing about the join.
+_SHORT_LINES = [
+    "La Constitución asegura a todas las personas el derecho",
+    "a la vida y a la integridad física de la persona",
+    "y a la igualdad ante la ley, base de todo sistema jurídico",
+    "El respeto y protección a la vida privada y a la honra",
+    "La inviolabilidad del hogar y de toda comunicación privada",
+]
+_PAGE_1_NOTES = [
+    "CPR Art.19° D.O. 24.10.1980",
+    "LEY N° 20.050 Art. 1° N° 10",
+    "letra a) D.O. 26.08.2005",
+    "Ley 20414 Art. UNICO Nº 2",
+    "Ley 20516 Art. ÚNICO Nº 1 b)",
+]
+_PAGE_2_NOTES = [
+    "D.O. 11.07.2011",
+    "LEY N° 18.825 Art. único",
+    "D.O. 17.08.1989",
+    "Ley 21096 Art. único",
+    "D.O. 16.06.2018",
+]
+_CROSSING_TEXT = "Ley 20516 Art. ÚNICO Nº 1 b) D.O. 11.07.2011"
+
+#: One citation, spelled five ways. Every pair here is real margin text from the
+#: reference decree, chosen because it writes ``Art.`` with and without a period,
+#: ``19°``/``19º``/``19``, and ``N°``/``Nº``. A parser that knew one spelling
+#: would report "names no numeral" for the other four, and that reads as a
+#: citation that agrees about nothing rather than as a citation that was missed.
+_NUMERAL_SPELLINGS = [
+    ("CPR Art.19° N° 1° D.O. 24.10.1980", 1),
+    ("CPR Art. 19° Nº 2 D.O. 24.10.1980", 2),
+    ("CPR Art 19º N° 18 D.O. 24.10.1980", 18),
+    ("CPR Art. 19 N° 22 D.O. 24.10.1980", 22),
+    ("CPR Art. 19º Nº 26 D.O. 24.10.1980", 26),
+    # The amending law numbers its *own* article. That number belongs to the law
+    # and not to the Constitution, so anchoring on `N°` alone would attribute the
+    # law's article two to the article's numeral two.
+    ("LEY N° 19.611 Art. único Nº 2 D.O. 16.06.1999", None),
+    ("LEY N° 20.050 Art. 1° N° 10 letra a) D.O. 26.08.2005", None),
+    # Says where the text came from and names no numeral of the article at all.
+    ("CPR Art.19° D.O. 24.10.1980", None),
+]
+
+
+def test_a_margin_citation_wrapped_over_several_rows_comes_back_as_one():
+    """The three assertions that make this a test and not a tautology.
+
+    The first is the defect: the fixture really does print each citation as two
+    or three rows, so a reading that returned the rows would be returning
+    fragments. Without it this test would still pass if the join were deleted,
+    because `5 citations` says nothing about what the rows looked like.
+    """
+    reading = derive_reading([_two_column_page(_ARTICLE_LINES, _WRAPPED_NOTES)])
+
+    rows = [note["text"] for note in reading.notes]
+    assert rows == _WRAPPED_NOTES, "the fixture rows come back as they were printed"
+    assert "D.O. 24.10.1980" in rows and "único Nº 2 D.O. 16.06.1999" in rows, (
+        "the fixture no longer splits a citation across rows, so it cannot show "
+        "the join putting the halves back together"
+    )
+
+    assert [citation.text for citation in reading.citations] == _WRAPPED_TEXTS
+    assert [
+        (citation.page, citation.first_line, citation.last_line)
+        for citation in reading.citations
+    ] == _WRAPPED_SPANS
+    assert len(reading.citations) < len(reading.notes), (
+        "ten rows and five citations is the whole point: fewer records, the same "
+        "document"
+    )
+
+
+def test_a_new_citation_opens_at_a_law_and_never_at_an_article_reference():
+    """`Art.` continues the citation above it; only a law opens a new one.
+
+    `Ley 21383` ends a margin row and `Art. ÚNICO N° 1 y 2` starts the next, and
+    they are one citation, because the article belongs to the law named on the
+    line before. Splitting at `Art.` would make two records, and the first of
+    them — `Ley 21383` — names no article at all: a citation the document does
+    not contain, which is the thing this join exists to prevent.
+    """
+    rows = [
+        (1, 26, "Ley 21383"),
+        (1, 27, "Art. ÚNICO N° 1 y 2"),
+        (1, 28, "D.O. 25.10.2021"),
+        (1, 30, "CPR Art. 19° Nº 2"),
+        (1, 31, "D.O. 24.10.1980"),
+    ]
+
+    citations = join_source_notes(rows)
+
+    assert [citation.text for citation in citations] == [
+        "Ley 21383 Art. ÚNICO N° 1 y 2 D.O. 25.10.2021",
+        "CPR Art. 19° Nº 2 D.O. 24.10.1980",
+    ]
+    assert [
+        (citation.page, citation.first_line, citation.last_line)
+        for citation in citations
+    ] == [(1, 26, 28), (1, 30, 31)]
+
+
+def test_a_first_row_that_names_no_law_opens_a_citation_when_nothing_is_open():
+    """The law token decides where to *split*; it does not decide what to keep.
+
+    `Ley 21383` is what makes the row after it a continuation rather than a
+    second citation. On the first row of a margin there is nothing to split, so
+    the row opens a citation whatever it says — and that is not a corner case:
+    an amending law's margin starts at `Art. ÚNICO Nº 1 b)` whenever the law
+    itself is named in the body text beside it, and `D.O. 11.07.2011` on the row
+    below is where the citation is authoritative.
+
+    A join that kept only the citations it could recognise would drop the first
+    one, and the record would be a citation shorter with nothing to say so.
+    """
+    rows = [
+        (1, 40, "Art. ÚNICO Nº 1 b)"),
+        (1, 41, "D.O. 11.07.2011"),
+        (1, 43, "CPR Art. 19° N° 3 D.O. 24.10.1980"),
+    ]
+
+    citations = join_source_notes(rows)
+
+    assert citations[0].text.startswith("Art."), (
+        "the first row has to name no law, or this proves nothing about a row "
+        "that names no law"
+    )
+    assert [citation.text for citation in citations] == [
+        "Art. ÚNICO Nº 1 b) D.O. 11.07.2011",
+        "CPR Art. 19° N° 3 D.O. 24.10.1980",
+    ]
+    assert not any(c.text.startswith("D.O.") for c in citations), (
+        "the row below an unopenable first row is its continuation, not a record "
+        "of its own"
+    )
+
+
+def test_a_law_named_in_the_middle_of_a_row_does_not_open_a_citation():
+    """The row's *first* token decides, not any token the row contains.
+
+    A citation is a run of rows that began at a law, so a law named further along
+    a row is a law being cited by a citation that has already opened. Reading the
+    row from anywhere instead of from the start would cut that citation in two
+    and hand back the tail — `que modifica el Art. 19° N° 15 de la Ley 20.050
+    D.O. 11.07.2011` — as a record of its own, which is a citation the document
+    does not contain.
+
+    The reference decree cannot tell the two rules apart: every one of the 56
+    citations in its margin names its law on the first word, and none of the 95
+    rows that open nothing names one at all — its continuations are dates,
+    `D.O.`, `Art. único`, `letra a)` and bare numerals, and the only brackets in
+    the column are letter markers. So the middle row below is stipulated rather
+    than measured, and it is stipulated because a rule the corpus cannot tell
+    apart from its own inversion is a rule a later edit is free to invert.
+
+    The first and last rows, and their line numbers, are the decree's own.
+    """
+    rows = [
+        (1, 50, "Ley 20516 Art. ÚNICO Nº 1 a)"),
+        (1, 51, "que modifica el Art. 19° N° 15 de la Ley 20.050"),
+        (1, 52, "D.O. 11.07.2011"),
+        (1, 54, "CPR Art. 19° N° 3 D.O. 24.10.1980"),
+    ]
+
+    citations = join_source_notes(rows)
+
+    assert len(citations) == 2, "a law named mid-row opens no citation of its own"
+    assert [(c.first_line, c.last_line) for c in citations] == [(50, 52), (54, 54)], (
+        "the tail of a citation stays with the citation it belongs to"
+    )
+    assert citations[0].text == (
+        "Ley 20516 Art. ÚNICO Nº 1 a) que modifica el Art. 19° N° 15 de la "
+        "Ley 20.050 D.O. 11.07.2011"
+    )
+
+
+def test_the_join_is_lossless():
+    """Every word of every row reaches exactly one citation.
+
+    The rows are the audit trail, so the join has to be a re-reading and not a
+    filter. A rule that dropped the rows it could not place would make the
+    citations look cleaner and the record shorter, and only the second of those
+    would be noticed.
+    """
+    rows = [
+        (1, line, text)
+        for line, text in enumerate(_WRAPPED_NOTES + _LAGGING_NOTES, start=1)
+    ]
+    citations = join_source_notes(rows)
+
+    assert " ".join(citation.text for citation in citations) == " ".join(
+        text for _, _, text in rows
+    )
+    assert all(citation.text.strip() for citation in citations)
+
+
+def test_a_citation_printed_across_a_page_break_stays_one_citation():
+    """The margin flows over the page break, so the join has to as well.
+
+    `Ley 20516 Art. ÚNICO Nº 1 b)` is the last margin row of one page and
+    `D.O. 11.07.2011` is the first row of the next, and they are one citation.
+    Restarting the join at every page would cut the date off the law it belongs
+    to, and the date is the half that says which text is authoritative.
+    """
+    pages = [
+        _two_column_page(_SHORT_LINES, _PAGE_1_NOTES),
+        _two_column_page(_SHORT_LINES, _PAGE_2_NOTES),
+    ]
+
+    reading = derive_reading(pages)
+
+    assert reading.gutter == _GUTTER_COLUMN, (
+        "the fixture has to be read as two columns, or there is no margin to join"
+    )
+    crossing = [c for c in reading.citations if c.crosses_page]
+    assert [c.text for c in crossing] == [_CROSSING_TEXT]
+    (citation,) = crossing
+    assert (citation.page, citation.first_line) == (1, 5)
+    assert (citation.last_page, citation.last_line) == (2, 1)
+    assert _PAGE_2_NOTES[0] not in [c.text for c in reading.citations], (
+        "the page-two row is the second half of a citation, not a record of its own"
+    )
+
+
+def test_the_numeral_a_citation_sits_beside_is_not_the_numeral_it_names():
+    """Two answers, because on a real document they are two different questions.
+
+    The margin is printed one numeral late, so a citation lands beside the next
+    numeral rather than the one it is about. Collapsing this into one field would
+    make four of the reference decree's citations silently wrong and leave
+    nothing in the record to show which four. The disagreement is worth keeping
+    because it is true: it says the margin is an index and not an authority.
+    """
+    reading = derive_reading([_two_column_page(_NUMERAL_LINES, _LAGGING_NOTES)])
+
+    assert reading.gutter == _GUTTER_COLUMN, (
+        "the fixture has to be read as two columns, or there is no margin to join"
+    )
+    assert [number for _, _, number in reading.numerals] == [1, 2, 3, 4, 5, 6]
+    assert [(c.beside, c.named) for c in reading.citations] == [
+        (None, None),  # the article's own heading, before any numeral
+        (1, 1),
+        (2, 2),
+        (3, 4),  # the margin has moved on: this citation is about numeral 4
+        (4, 5),
+        (5, 6),
+        (6, None),  # three amending laws run on beside the last numeral
+        (6, None),
+        (6, None),
+    ]
+    assert [c.agrees for c in reading.citations] == [
+        None, True, True, False, False, False, None, None, None,
+    ]
+    decisive = [c for c in reading.citations if c.agrees is not None]
+    assert len(decisive) == 5, (
+        "only a citation that names a numeral can agree or disagree about one; "
+        "the rest say which law changed the text, not which numeral it changed"
+    )
+    assert all(c.named != c.beside for c in decisive if c.agrees is False)
+    assert all(c.named == c.beside for c in decisive if c.agrees is True)
+
+
+def test_a_numeral_is_recognised_by_its_marker_and_keeps_its_address():
+    """The marker is a layout hint, so it is matched loosely on purpose.
+
+    The reference decree writes them as `1º.-` and `2°.-`, and a stricter shape
+    would buy nothing: this regex decides only which numeral a citation *sits
+    beside*, and being strict about a spelling would move a label rather than
+    correct a fact.
+    """
+    rows = [
+        (1, 12, "Artículo 19.- La Constitución asegura a todas las personas"),
+        (1, 13, "1º.- El derecho a la vida y a la integridad física"),
+        (1, 14, "La igualdad ante la ley es la base"),
+        (2, 3, "2°.- El respeto y protección a la vida privada"),
+        (2, 4, "3.- La inviolabilidad del hogar"),
+    ]
+    assert article_numerals(rows) == [(1, 13, 1), (2, 3, 2), (2, 4, 3)]
+
+
+def test_the_numeral_a_citation_names_is_read_however_the_margin_spells_it():
+    """``Art.`` with or without a period, ``19°``/``19º``/``19``, ``N°``/``Nº``."""
+    rows = [
+        (1, line, text)
+        for line, (text, _) in enumerate(_NUMERAL_SPELLINGS, start=1)
+    ]
+
+    citations = attribute_citations(join_source_notes(rows), [])
+
+    assert [citation.text for citation in citations] == [
+        text for text, _ in _NUMERAL_SPELLINGS
+    ], "every one of these rows opens its own citation"
+    assert [citation.named for citation in citations] == [
+        expected for _, expected in _NUMERAL_SPELLINGS
+    ]
+    assert all(citation.beside is None for citation in citations), (
+        "no numerals were given, so nothing sits beside anything"
+    )
+
+
+def test_a_document_with_no_margin_has_no_citations_at_all():
+    """The empty answer has to be reachable, and it has to be reachable *here*.
+
+    A join that made one citation out of the first line of a single-column page
+    would put a margin citation into the record of every plain document, and the
+    field would stop meaning anything. The numerals are still found, because they
+    are in the body — the margin is the only thing that is absent.
+    """
+    reading = derive_reading(["\n".join(_NUMERAL_LINES)])
+
+    assert reading.gutter is None
+    assert reading.notes == ()
+    assert reading.citations == ()
+    assert [number for _, _, number in reading.numerals] == [1, 2, 3, 4, 5, 6]
+
+
+def test_the_joined_citations_are_stored_beside_the_rows_they_were_joined_from(
+    tmp_path, monkeypatch
+):
+    """The sidecar keeps both the rows and what they say.
+
+    `notes` is the audit trail — every row that was set aside, so nothing can go
+    missing quietly. `citations` is that same column read back as the records it
+    was printed as, which is what a reviewer wants. Keeping only the citations
+    would make the join unreviewable; keeping only the rows is what made a
+    wrapped citation arrive as four notes naming nothing.
+    """
+    def read_two_columns(_data: bytes) -> list[str]:
+        return [_two_column_page(_NUMERAL_LINES, _WRAPPED_NOTES)]
+
+    monkeypatch.setattr(
+        "violation_pack.authority_source._PDF_EXTRACTORS",
+        (("json", read_two_columns),),
+    )
+    bundle = _bundle(tmp_path)
+    out = ingest_source(bundle, "AUTH-CL-001-01", filename="dto-100.pdf",
+                        data=b"%PDF-1.4 the reader below ignores these bytes")
+    proof = json.loads((bundle / out["proof"]["rel"]).read_text(encoding="utf-8"))
+
+    assert [note["text"] for note in proof["notes"]] == _WRAPPED_NOTES, (
+        "the rows are the audit trail and stay exactly as they were read"
+    )
+    assert [citation["text"] for citation in proof["citations"]] == _WRAPPED_TEXTS
+    assert [
+        (citation["page"], citation["first_line"], citation["last_line"])
+        for citation in proof["citations"]
+    ] == _WRAPPED_SPANS, "a citation keeps the span it was joined from"
+    assert [citation["beside"] for citation in proof["citations"]] == [
+        None, 2, 4, 6, 6,
+    ]
+    assert [citation["named"] for citation in proof["citations"]] == [
+        None, None, None, None, 6,
+    ]
+    assert [citation["agrees"] for citation in proof["citations"]] == [
+        None, None, None, None, True,
+    ], "not naming a numeral is not the same as disagreeing about one"
+    assert proof["readings"]["derivation"]["citations"] == proof["citations"], (
+        "the derivation is the account of the reading, so it carries the same "
+        "citations the sidecar does"
+    )
+    assert proof["readings"]["derivation"]["notes"] == len(proof["notes"])
+    assert "Ley 21568" not in out["source_content"], (
+        "a margin citation left in the body is a sentence nobody can quote"
+    )
 
 
 # ---------------------------------------------------------------------------

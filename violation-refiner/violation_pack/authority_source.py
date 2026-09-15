@@ -35,7 +35,7 @@ import json
 import re
 import unicodedata
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Sequence
@@ -273,6 +273,30 @@ _DIGITS_RE = re.compile(r"\d+")
 #: from, instead of merely being absent.
 Row = tuple[int, int, str]
 
+#: The vocabulary a margin citation opens with. The margin is a *column*, so its
+#: text wraps on its own grid: one citation arrives as two to four rows, and the
+#: row that opens it is the one naming the law. ``Art.`` is deliberately absent —
+#: an article reference is part of a citation and never the whole of one, so it
+#: continues the citation it belongs to by not opening a new one.
+#: ``^`` is absent for the same reason: this is used only through ``.match``, and
+#: a pattern that anchors twice cannot be tested for anchoring once.
+_CITATION_START_RE = re.compile(r"(?:cpr|ley|dfl|dl|decreto|constituci)", re.IGNORECASE)
+
+#: ``1º.-`` … ``26º.-``: an article's numerals, each opening its own body row.
+#: Nothing else marks where a numeral begins — its text is not indented, and its
+#: end is simply the next numeral's marker — so this shape is the only thing in
+#: the body that says where one numeral stops and the next starts.
+#: Used through ``.match``, so it carries no ``^`` of its own.
+_NUMERAL_MARK_RE = re.compile(r"(?P<number>\d{1,2})\s*[.º°]\s*\.?\s*-")
+
+#: The numeral a citation names in its own words — ``CPR Art. 19° N° 13``. It is
+#: anchored on ``Art. 19`` rather than on ``N°`` alone, because every amending
+#: law in the margin numbers its own articles too (``LEY N° 19.611 Art. único
+#: Nº 2``), and those numbers belong to the law rather than to the Constitution.
+_CITATION_NUMERAL_RE = re.compile(
+    r"art\.?\s*19\s*[.º°]?\s*n\s*[.º°]?\s*(?P<number>\d{1,2})", re.IGNORECASE
+)
+
 
 def _gap_ends(pages: Sequence[str]) -> Counter[int]:
     """Count, per column, how many whitespace runs end there."""
@@ -439,6 +463,184 @@ def strip_repeated_furniture(rows: Sequence[Row]) -> tuple[list[Row], list[Row]]
     return kept, removed
 
 
+# ---------------------------------------------------------------------------
+# The margin column: what was set aside, and what it says
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class Citation:
+    """One margin citation, joined from the rows it was printed as.
+
+    ``page``/``first_line`` and ``last_page``/``last_line`` are the span it
+    occupies in the raw extraction, so the rows it was made of can be found
+    again. The end of the span carries its own page rather than sharing the
+    start's, because a citation really is printed across a page break:
+    ``Art. ÚNICO Nº 1 b)`` on one page and ``D.O. 11.07.2011`` on the next are
+    one citation, and a single ``line`` pair cannot say that.
+
+    ``beside`` and ``named`` are two different answers, kept apart on purpose;
+    see `attribute_citations`.
+    """
+
+    text: str
+    page: int
+    first_line: int
+    last_page: int
+    last_line: int
+    beside: int | None = None
+    named: int | None = None
+
+    @property
+    def crosses_page(self) -> bool:
+        """Whether the citation was printed across a page break."""
+        return self.last_page != self.page
+
+    @property
+    def agrees(self) -> bool | None:
+        """Whether the numeral it sits beside is the one it names.
+
+        ``None`` when either is unknown, which is not the same as a
+        disagreement: most citations name no numeral of the article at all —
+        ``CPR Art.19° D.O. 24.10.1980`` says where the text came from, not what
+        it amends — and calling those disagreements would bury the real ones.
+        """
+        if self.beside is None or self.named is None:
+            return None
+        return self.beside == self.named
+
+    def as_dict(self) -> dict[str, Any]:
+        """The sidecar's form of this citation."""
+        return {
+            "text": self.text,
+            "page": self.page,
+            "first_line": self.first_line,
+            "last_page": self.last_page,
+            "last_line": self.last_line,
+            "crosses_page": self.crosses_page,
+            "beside": self.beside,
+            "named": self.named,
+            "agrees": self.agrees,
+        }
+
+
+def join_source_notes(rows: Sequence[Row]) -> list[Citation]:
+    """Join margin rows into the citations they were printed as.
+
+    A margin row on its own is a fragment that names nothing, and handing those
+    rows to a reader as ``source_notes`` does not merely lose the citation — it
+    invents several. ``'único'`` and ``'16.06.1999'`` read as notes in their own
+    right, and so does ``'2'`` from ``Art. ÚNICO N° 1 y 2``.
+
+    A citation opens where a row *begins* with the law it cites and runs to the
+    row before the next such row, which is the whole rule. It is the row's first
+    token that decides and not any token the row contains: a citation is a run of
+    rows that has already opened, so a law named further along a row is a law
+    being cited by the citation that is running, and reading the row from
+    anywhere would cut that citation's tail off as a record of its own.
+
+    Nothing is dropped: a row that opens no citation either continues the one
+    above it or, when nothing is open, opens one itself, so the first row of a
+    margin never goes missing.
+
+    The rule is biased towards joining on purpose. A law token outside the
+    vocabulary merges two citations into one, where splitting on a guess would
+    invent a citation the document does not contain — and inventing is the
+    failure this function exists to prevent.
+    """
+    citations: list[Citation] = []
+    opened: Row | None = None
+    closed: Row | None = None
+    parts: list[str] = []
+
+    def flush() -> None:
+        nonlocal opened, closed, parts
+        if opened is not None and closed is not None:
+            citations.append(Citation(
+                text=collapse_whitespace(" ".join(parts)),
+                page=opened[0],
+                first_line=opened[1],
+                last_page=closed[0],
+                last_line=closed[1],
+            ))
+        opened = closed = None
+        parts = []
+
+    for row in rows:
+        if opened is None or _CITATION_START_RE.match(row[2]):
+            flush()
+            opened = row
+        closed = row
+        parts.append(row[2])
+    flush()
+    return citations
+
+
+def article_numerals(rows: Sequence[Row]) -> list[tuple[int, int, int]]:
+    """``(page, row, number)`` for every body row that opens a numeral.
+
+    This shape is a hint about layout and is used only to say which numeral a
+    citation *sits beside*. A body line that merely begins like a numeral — a
+    numbered list inside a numeral's own text — moves a label, and a label a few
+    rows out is a smaller wrong than a body line taken for a heading.
+    """
+    marks: list[tuple[int, int, int]] = []
+    for page, line, text in rows:
+        match = _NUMERAL_MARK_RE.match(text)
+        if match:
+            marks.append((page, line, int(match.group("number"))))
+    return marks
+
+
+def _numeral_at(
+    marks: Sequence[tuple[int, int, int]], page: int, row: int
+) -> int | None:
+    """The number of the numeral whose text ``(page, row)`` falls inside.
+
+    ``None`` before the article's first numeral, which is where a decree's
+    promulgation clause and its title sit — those rows are body text, and giving
+    them a numeral would invent one.
+    """
+    best: tuple[int, int] | None = None
+    found: int | None = None
+    for mark_page, mark_row, number in marks:
+        position = (mark_page, mark_row)
+        if position > (page, row):
+            continue
+        if best is None or position > best:
+            best, found = position, number
+    return found
+
+
+def attribute_citations(
+    citations: Sequence[Citation], marks: Sequence[tuple[int, int, int]]
+) -> list[Citation]:
+    """Record which numeral each citation sits beside, and which it names.
+
+    Two answers, kept apart because on a real document they are different
+    questions and not always the same answer. The margin column flows on its own
+    grid, so a citation is printed a few rows past the numeral it belongs to:
+    measured on the reference decree, ``CPR Art. 19° N° 13`` sits beside numeral
+    14 and ``CPR Art. 19° N° 14`` beside 15. Collapsing the two into one
+    ``numeral`` field would have made four of that document's fifty-six
+    citations silently wrong, with nothing in the record to say which four.
+
+    The disagreement is kept rather than resolved, because it is true and it is
+    useful: it says the margin is an index and not an authority, so a reader who
+    needs to know which numeral a law amended has to go and look rather than
+    trust the column position.
+    """
+    attributed: list[Citation] = []
+    for citation in citations:
+        match = _CITATION_NUMERAL_RE.search(citation.text)
+        attributed.append(replace(
+            citation,
+            beside=_numeral_at(marks, citation.page, citation.first_line),
+            named=int(match.group("number")) if match else None,
+        ))
+    return attributed
+
+
 @dataclass(frozen=True)
 class PdfReading:
     """What was read out of a PDF, and what was done to get there.
@@ -461,6 +663,8 @@ class PdfReading:
     gutter_support: int = 0
     notes: tuple[dict[str, Any], ...] = ()
     notes_chars: int = 0
+    citations: tuple[Citation, ...] = ()
+    numerals: tuple[tuple[int, int, int], ...] = ()
     furniture: tuple[str, ...] = ()
     furniture_lines: int = 0
     furniture_chars: int = 0
@@ -483,6 +687,11 @@ class PdfReading:
             "gutter_support": self.gutter_support,
             "notes": len(self.notes),
             "notes_chars": self.notes_chars,
+            "citations": [citation.as_dict() for citation in self.citations],
+            "numerals": [
+                {"page": page, "row": row, "number": number}
+                for page, row, number in self.numerals
+            ],
             "furniture_lines": self.furniture_lines,
             "furniture_chars": self.furniture_chars,
             "furniture": list(self.furniture),
@@ -507,6 +716,13 @@ def derive_reading(
     gutter = detect_gutter(pages)
     body_rows, note_rows = split_columns(pages, gutter[0] if gutter else None)
     kept, removed = strip_repeated_furniture(body_rows)
+    # The numerals are found in the body that is left, so a numeral whose marker
+    # was itself running furniture is never offered as an anchor. The citations
+    # are joined *before* they are attributed, because a fragment names no
+    # numeral: attributing rows instead of citations attaches the `2` of
+    # `Art. ÚNICO N° 1 y 2` to whichever numeral happened to be above it.
+    numerals = article_numerals(kept)
+    citations = attribute_citations(join_source_notes(note_rows), numerals)
     return PdfReading(
         text=collapse_whitespace(" ".join(text for _, _, text in kept)),
         page_count=len(pages),
@@ -518,6 +734,8 @@ def derive_reading(
             {"page": page, "line": line, "text": text} for page, line, text in note_rows
         ),
         notes_chars=sum(len(text) for _, _, text in note_rows),
+        citations=tuple(citations),
+        numerals=tuple(numerals),
         furniture=tuple(dict.fromkeys(_repeat_key(text) for _, _, text in removed)),
         furniture_lines=len(removed),
         furniture_chars=sum(len(text) for _, _, text in removed),
@@ -1052,6 +1270,16 @@ def ingest_source(
         # for `instrument` and `version`, and it is also the text that had to be
         # taken out of the body reading to make that reading quotable at all.
         "notes": list(reading.notes) if reading is not None else [],
+        # The same column, joined into the records it was printed as. `notes`
+        # above is the audit trail — every row that was set aside, so nothing can
+        # go missing quietly — and this is what those rows say, which is what a
+        # reader actually wants. A citation carries the span it came from, so it
+        # can always be taken back to the rows it was joined from.
+        "citations": (
+            [citation.as_dict() for citation in reading.citations]
+            if reading is not None
+            else []
+        ),
         "ingested_at": datetime.now(timezone.utc).isoformat(),
         "warnings": warnings,
     }
