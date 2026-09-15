@@ -221,6 +221,29 @@ code {
 .cr-detail { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
 .matrix td.cell-on { color: var(--status-note); text-align: center; }
 .matrix td.cell-off { color: var(--border-strong); text-align: center; }
+/* The segment columns are grouped by the transcript each came from, so the top
+   header row is the only place a recording is named — a flat row of `seg-36`
+   never said what it was a segment of. */
+.matrix th.mx-tr { text-transform: none; letter-spacing: 0; vertical-align: bottom; border-bottom-color: var(--border-strong); }
+.mx-tr-label { display: block; font-family: var(--mono); font-size: 0.64rem; color: var(--text-secondary); }
+.mx-tr-scope { display: block; font-family: var(--mono); font-size: 0.56rem; color: var(--text-muted); margin-top: 3px; text-transform: uppercase; }
+.matrix th.mx-seg { text-align: center; }
+/* Both the dot and the proof badge open the same modal, so both are buttons:
+   a <td> with a click handler would not be reachable by keyboard. */
+.dot-btn { display: block; width: 100%; min-height: 38px; background: transparent; border: none; padding: 0; font: inherit; color: var(--status-note); cursor: pointer; border-radius: 2px; }
+.dot-btn:hover { background: var(--status-note-dim); }
+.dot-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.proof-hit { display: inline-flex; align-items: center; background: transparent; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer; border-radius: 2px; }
+.proof-hit:hover .badge { border-color: var(--text-primary); }
+.proof-hit:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Cited-segment list inside the modal: each row reopens the segment it names. */
+.seg-jump { display: block; width: 100%; text-align: left; background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--border-strong); border-radius: 3px; padding: 9px 12px; margin-bottom: 8px; cursor: pointer; font: inherit; color: inherit; }
+.seg-jump:hover { background: var(--bg-surface); border-color: var(--border-strong); }
+.seg-jump:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.seg-jump-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.seg-jump-id { font-family: var(--mono); font-size: 0.72rem; font-weight: 600; color: var(--text-primary); }
+.seg-jump-where { font-family: var(--mono); font-size: 0.6rem; color: var(--text-muted); }
+.seg-jump-text { font-family: var(--serif); font-size: 0.84rem; font-style: italic; color: var(--text-secondary); margin-top: 4px; }
 .rr-detail { font-size: 0.82rem; color: var(--text-secondary); margin-top: 3px; }
 .rr-detail.quote { font-family: var(--serif); font-style: italic; }
 .rr-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-left: auto; flex-shrink: 0; }
@@ -327,6 +350,27 @@ code {
 
 .chip { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 0.68rem; background: var(--bg-surface); border: 1px solid var(--border-strong); padding: 4px 9px; border-radius: 12px; color: var(--text-secondary); }
 .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+/* A chip that does something. `.chip` itself is also used for inert labels, so
+   the affordance lives in its own class rather than being applied to every
+   chip — a pill that looks clickable but is not is worse than a plain one. */
+.chip-action { cursor: pointer; font-family: var(--sans); }
+.chip-action:hover { border-color: var(--accent); color: var(--accent); }
+.chip-action.is-selected { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+/* S2 segment browser — the cards these classes style were rendered unstyled
+   until the manifest join made their provenance worth reading. */
+.transcript-list { display: flex; flex-direction: column; gap: 6px; max-height: 460px; overflow-y: auto; padding-right: 4px; }
+.transcript-segment { background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--border-strong); border-radius: 3px; padding: 9px 13px; }
+.transcript-segment.is-marked { border-left-color: var(--accent); background: var(--accent-dim); }
+.transcript-segment.seg-passenger { border-left-color: var(--status-note); }
+.transcript-segment.seg-passenger.is-marked { border-left-color: var(--accent); }
+.seg-time { font-family: var(--mono); font-size: 0.68rem; color: var(--text-muted); }
+.seg-speaker { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 0.74rem; font-weight: 600; color: var(--text-secondary); margin-top: 3px; }
+.seg-text { font-family: var(--serif); font-style: italic; font-size: 0.85rem; color: var(--text-primary); margin-top: 4px; }
+.seg-actions { margin-top: 7px; }
+.seg-mark-btn { font-family: var(--mono); font-size: 0.66rem; padding: 4px 10px; border-radius: 3px; border: 1px solid var(--border-strong); background: var(--bg-surface); color: var(--text-muted); cursor: pointer; }
+.seg-mark-btn:hover { color: var(--text-primary); border-color: var(--accent); }
+.seg-mark-btn.is-marked { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
 
 /* stepper for ingest / progress */
 .progress-track { height: 6px; background: var(--bg-surface); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); margin: 8px 0; }
@@ -640,13 +684,21 @@ code {
 
   <div class="field-row">
     <div class="field"><label>Transcript <span class="req">*</span></label><select id="s2TranscriptSelect"><option value="">Loading transcripts…</option></select><div class="field-hint" id="s2TranscriptMeta"></div></div>
-    <div class="field"><label>Source ID <span class="req">*</span></label><input id="s2SourceId" value=""></div>
+    <div class="field readonly"><label>Source ID</label><input id="s2SourceId" value="" readonly><div class="field-hint">Derived from the transcript document — the canonical <code>transcript_id</code> that scopes every <code>segment_id</code> this call composes.</div></div>
   </div>
 
   <div class="block">
     <div class="block-title">Segment browser</div>
-    <div class="block-sub">Parsed from the HTML. Mark the segments this violation should cite.</div>
+    <div class="block-sub">Rows tagged <span class="badge badge-accent">manifest</span> are the segments this pack already anchors; <span class="badge badge-pass">anchored</span> means the violation JSON holds them; <span class="badge badge-warn">refined</span> means they were added during refinement and have no vault ancestor. Mark the ones to cite.</div>
     <div class="transcript-list" id="s2TranscriptList"><div class="field-hint">Loading segments…</div></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Pack evidence manifest</div>
+    <div class="block-sub">Parsed from <code>segments_manifest.json</code> — the converter's own record of every segment this pack cites: the canonical id, the legacy vault id each was re-anchored from, its role in the argument, both texts, and the anchor's notes.</div>
+    <div class="block-sub" id="s2ManifestSummary"><span class="field-hint">Loading manifest…</span></div>
+    <div class="chip-row" id="s2ManifestActions"></div>
+    <div class="record-list" id="s2ManifestSegments"><div class="field-hint">Loading manifest…</div></div>
   </div>
 
   <div class="block">
@@ -666,18 +718,18 @@ code {
 
   <div class="field-row">
     <div class="field"><label>Framework file <span class="req">*</span></label><select id="s3FrameworkFile"><option value="">No framework cache in this bundle</option></select></div>
-    <div class="field"><label>Framework code <span class="req">*</span></label><input id="s3FrameworkCode" value=""></div>
+    <div class="field readonly"><label>Framework code</label><input id="s3FrameworkCode" value="" readonly><div class="field-hint">Derived from the selected framework file — sent as <code>framework_code</code>.</div></div>
   </div>
 
   <div class="block">
     <div class="block-title">Article picker</div>
-    <div class="block-sub">Article numbers the cache actually holds. Select an article, then select its text to fill the excerpt below — this guarantees the substring match.</div>
+    <div class="block-sub">Article numbers the cache actually holds. These are labels rather than controls: the article this violation establishes is read from the bundle and shown read-only below.</div>
     <div class="chip-row" id="s3ArticleChips"><span class="field-hint">Loading cached articles…</span></div>
   </div>
 
   <div class="block">
     <div class="field-row">
-      <div class="field"><label>Article ID</label><input id="s3ArticleId" value=""></div>
+      <div class="field readonly"><label>Article ID</label><input id="s3ArticleId" value="" readonly><div class="field-hint">Derived from the article this bundle establishes — travels inside <code>article_specs</code>, never typed here.</div></div>
       <div class="field">
         <label>Norm type</label>
         <select id="s3NormType"></select>
@@ -713,7 +765,7 @@ code {
 
   <div class="block" style="margin-top:20px;">
     <div class="block-title">Elements × evidence</div>
-    <div class="block-sub">Columns are the segments the grid actually links, read off <code>proof_evidence_segments</code>. Badge shows the real proof-status weight.</div>
+    <div class="block-sub">Columns are the segments the grid actually links, read off <code>proof_evidence_segments</code>, grouped under the transcript each was taken from. Select a segment to read the transcript and the proof evidence.</div>
     <div class="matrix-wrap"><table class="matrix" id="s4Matrix"></table></div>
     <div class="score-bar-wrap">
       <span class="score-val" id="s4Score">—</span>
@@ -1019,7 +1071,7 @@ code {
     <div class="block-title">Ingest framework</div>
     <div class="field-row">
       <div class="field"><label>Markdown file</label><input id="s13CacheFile" placeholder="no framework cache in this bundle"></div>
-      <div class="field"><label>Framework code</label><input id="s13FrameworkCode" value=""></div>
+      <div class="field readonly"><label>Framework code</label><input id="s13FrameworkCode" value="" readonly><div class="field-hint">Derived from the bundle's framework cache — the code the ingester keys the collection on.</div></div>
     </div>
     <div class="btn-row"><button class="btn btn-primary" data-action="run" data-tool="framework_ingest_tool" data-step="S13">Start ingest</button></div>
     <div class="progress-track"><div class="progress-fill" style="width:0%"></div></div>
@@ -1160,10 +1212,25 @@ let state = {
   bundleId: null, title: '', violation: null,
   bundle: null, schema: null, config: null, catalog: null, bundles: [],
   intro: { provider: null, embedder: null },
-  sources: { transcripts: [], frameworks: [] },
+  sources: { transcripts: [], transcripts_json: [], frameworks: [] },
   activeTranscript: null,
+  // Whole transcript documents read only to answer "what does this segment
+  // say?" — kept out of ``activeTranscript`` so opening a modal cannot yank
+  // the transcript picker S2 is driving.
+  transcriptDocs: {},
   transcriptChosen: false,
   segmentSpecs: {},
+  // Ingested official sources, keyed by authority id: the text the protocol
+  // will hash plus where the artefact landed. Kept in state because the modal
+  // re-renders on every action (the file input cannot hold the text) and the
+  // "does the quote match" check has to run against the exact string the
+  // server hashed, not against whatever is in the DOM afterwards.
+  proofSources: {},
+  proofAuthority: null,
+  // The cached article the S3 picker last loaded, as { code, article }. Only
+  // used to keep the picked chip visibly picked — the excerpt and id live in
+  // their real inputs.
+  pickedArticle: null,
   settings: {},
 };
 
@@ -1181,8 +1248,19 @@ const API = {
   schema:  () => fetchJson('/api/schema'),
   settings: () => fetchJson('/api/settings'),
   transcript: uri => fetchJson('/api/source-transcript?uri=' + encodeURIComponent(uri)),
+  frameworkArticle: (uri, article) => fetchJson('/api/framework-article?uri=' + encodeURIComponent(uri)
+    + '&article=' + encodeURIComponent(article)),
   browse: (path, kind) => fetchJson('/api/browse?path=' + encodeURIComponent(path) + '&kind=' + kind),
   catalog: () => fetchJson('/api/catalog'),
+  // Store an authority's official source (upload / url / pasted text) under the
+  // bundle. Separate from /api/tool because it writes files rather than
+  // dispatching a tool — and the verify step still goes through /api/tool, so
+  // nothing here can flip an authority's `verified` flag on its own.
+  authoritySource: payload => fetchJson('/api/authority-source', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }),
 };
 
 async function fetchJson(url, options) {
@@ -1398,6 +1476,16 @@ function renderDrawer() {
   if (tpl) body.appendChild(tpl.content.cloneNode(true));
 }
 
+/** Provenance rows inside a modal. Shared by every modal that shows a record,
+ *  and it drops empty values rather than printing a label with nothing after it
+ *  — an empty field rendered as a field reads as "the bundle lost this". */
+function modalMetaGrid(pairs) {
+  return `<div class="modal-section"><div class="modal-section-label">Record</div>`
+    + pairs.filter(([, val]) => val !== null && val !== undefined && val !== '')
+      .map(([k, val]) => `<div class="rr-detail"><b>${escapeHtml(k)}</b> ${escapeHtml(val)}</div>`).join('')
+    + `</div>`;
+}
+
 /** Modals read the record the row pointed at. The templates are only the empty
  *  state for a bundle that does not hold that record. */
 function openModal(key) {
@@ -1414,10 +1502,7 @@ function openModal(key) {
     if (tpl) body.appendChild(tpl.content.cloneNode(true));
     else body.innerHTML = hintRow('No detail available.');
   };
-  const metaGrid = (pairs) => `<div class="modal-section"><div class="modal-section-label">Record</div>`
-    + pairs.filter(([, val]) => val !== null && val !== undefined && val !== '')
-      .map(([k, val]) => `<div class="rr-detail"><b>${escapeHtml(k)}</b> ${escapeHtml(val)}</div>`).join('')
-    + `</div>`;
+  const metaGrid = modalMetaGrid;
 
   if (key === 'match') {
     badge.textContent = 'S7 · Verification';
@@ -1428,7 +1513,7 @@ function openModal(key) {
       emptyState('match');
     } else {
       const p = authority.verification_provenance;
-      title.textContent = `${authority.id} — matched quote`;
+      title.textContent = `${authority.authority_id} — matched quote`;
       sub.textContent = [p.protocol, p.verified_at ? fmtStamp(p.verified_at) : null].filter(Boolean).join(' · ');
       body.innerHTML =
         `<div class="modal-section"><div class="modal-section-label">Quote as it appears in the source</div>`
@@ -1454,7 +1539,7 @@ function openModal(key) {
         + `<div class="note-card"><div class="note-body">${escapeHtml(check.details || '')}</div></div></div>`
         + `<div class="modal-section"><div class="modal-section-label">Authority stubs in this bundle</div>`
         + (authorities.length ? authorities.map(a => `<div class="record-row${a.verified ? ' verified' : ''}">
-             <div class="rr-main"><div class="rr-id">${escapeHtml(a.id)}</div>
+             <div class="rr-main"><div class="rr-id">${escapeHtml(a.authority_id)}</div>
                <div class="rr-detail">${escapeHtml(a.proposition_to_verify || '')}</div></div>
              <div class="rr-meta"><span class="badge badge-neutral">${a.verified ? 'verified' : 'unverified'}</span></div>
            </div>`).join('') : hintRow('No authority stubs — V07 has nothing to verify.'))
@@ -1468,6 +1553,193 @@ function openModal(key) {
   }
 
   document.getElementById('modalOverlay').classList.add('active');
+}
+
+/** Everything the pack and the corpus know about one scoped segment.
+ *
+ *  Ranked, like every other field in this file, because the three records really
+ *  do disagree: the live corpus is the document the pack cites, the violation
+ *  JSON is the pack's own transcription of it, and ``segments_manifest.json`` is
+ *  the converter's working note (it drops accents the JSON keeps, so the two
+ *  texts cannot be merged). The caller is told which one answered, and a text
+ *  that differs from the violation JSON is reported rather than hidden. */
+async function segmentDetail(scopedId) {
+  const id = String(scopedId || '');
+  const transcriptId = segmentTranscript(id);
+  const local = localSegmentId(id);
+  const corpus = corpusTranscripts().find(t => t.stem === transcriptId) || null;
+  const violationRow = (((state.violation || {}).segments) || []).find(s => s.segment_id === id) || null;
+  const manifestRow = (((manifestSegments() || {}).segments) || []).find(s => s.segment_id === id) || null;
+
+  const detail = {
+    id, transcript_id: transcriptId, local_id: local, corpus,
+    verbatim: null, translation_en: null, speaker: null, speaker_id: null,
+    start: null, end: null, source: null, error: null,
+    corpus_text: null, violation_text: (violationRow && violationRow.verbatim_es) || null,
+    role_in_argument: (violationRow || manifestRow || {}).role_in_argument || null,
+    transcription_notes: (violationRow || manifestRow || {}).transcription_notes || null,
+    legacy_segment_id: (manifestRow && manifestRow.legacy_segment_id) || null,
+    added_during_refinement: Boolean(manifestRow && manifestRow.added_during_refinement),
+    in_violation: Boolean(violationRow),
+    in_manifest: Boolean(manifestRow),
+  };
+
+  if (corpus) {
+    try {
+      const doc = await loadTranscriptDocument(corpus);
+      // The corpus keys locally (``seg-36``); accept the scoped form too, so a
+      // resolver change on the server cannot silently produce "no such segment".
+      const seg = (doc.segments || []).find(s => s.segment_id === local || s.segment_id === id) || null;
+      if (seg) {
+        detail.verbatim = seg.verbatim || '';
+        detail.corpus_text = seg.verbatim || '';
+        detail.speaker = seg.speaker || null;
+        detail.speaker_id = seg.speaker_id || null;
+        detail.start = seg.audio_offset_start;
+        detail.end = seg.audio_offset_end;
+        detail.corpus_sha256 = doc.sha256 || null;
+        detail.source = `read from ${corpus.name} · canonical corpus`;
+      } else {
+        detail.error = `${corpus.name} holds no ${local}`;
+      }
+    } catch (err) {
+      detail.error = `could not read ${corpus.name} — ${err.message}`;
+    }
+  } else {
+    detail.error = `no file in the transcript corpus is named ${transcriptId}`;
+  }
+
+  // The bundle's own record fills whatever the corpus could not answer; note the
+  // speaker/time it knows that the corpus does not, rather than discarding it.
+  if (!detail.verbatim && violationRow) {
+    detail.verbatim = violationRow.verbatim_es || '';
+    detail.source = 'the violation JSON — the corpus text was unreachable';
+  }
+  if (!detail.verbatim && manifestRow) {
+    detail.verbatim = manifestRow.verbatim_es || '';
+    detail.source = 'segments_manifest.json — the corpus text was unreachable';
+  }
+  detail.speaker = detail.speaker || (violationRow && violationRow.speaker) || null;
+  if (detail.start === null || detail.start === undefined) detail.start = violationRow && violationRow.audio_offset_start;
+  if (detail.end === null || detail.end === undefined) detail.end = violationRow && violationRow.audio_offset_end;
+  detail.translation_en = (violationRow && violationRow.translation_en)
+    || (manifestRow && manifestRow.translation_en) || null;
+  // Two records, two texts. Compared on collapsed whitespace, never raw: the
+  // corpus trims every segment while the violation JSON keeps the trailing
+  // space, and a bare `!==` reports that as a transcription difference on the
+  // two CL-030 segments that say exactly the same thing.
+  const squeezes = text => String(text || '').replace(/\s+/g, ' ').trim();
+  detail.differs_from_violation = Boolean(
+    detail.corpus_text && detail.violation_text
+    && squeezes(detail.corpus_text) !== squeezes(detail.violation_text));
+  return detail;
+}
+
+/** The proof statement behind one grid element. */
+function elementProofSection(element, weights) {
+  if (!element) {
+    return `<div class="modal-section"><div class="modal-section-label">Proof statement</div>`
+      + hintRow('The selected grid no longer holds this element — the bundle may have been re-hydrated.')
+      + `</div>`;
+  }
+  const weight = weights[element.proof_status];
+  const list = (label, values) => (values || []).length
+    ? `<div class="rr-detail"><b>${escapeHtml(label)}</b> ${escapeHtml(values.join('; '))}</div>` : '';
+  return `<div class="modal-section"><div class="modal-section-label">Proof statement</div>`
+    + `<div class="rr-id">${escapeHtml(element.label || shortId(element.element_id))}</div>`
+    + `<div class="rr-detail">${escapeHtml(element.element_id)}</div>`
+    + `<div class="rr-meta" style="margin:9px 0 0;">${tag(element.proof_status)}`
+    + `<span class="weight-note">${weight !== undefined ? `proof_weights ×${weight}` : 'no weight declared'}</span></div>`
+    + (element.doctrinal_basis
+      ? `<div class="modal-section-label" style="margin-top:16px;">Doctrinal basis</div>`
+        + `<div class="note-card"><div class="note-body">${escapeHtml(element.doctrinal_basis)}</div></div>` : '')
+    + (element.argument_es
+      ? `<div class="modal-section-label" style="margin-top:16px;">Argument on the evidence</div>`
+        + `<div class="note-card"><div class="note-body">${escapeHtml(element.argument_es)}</div></div>` : '')
+    + list('weaknesses', element.weaknesses)
+    + list('open questions', element.open_questions)
+    + `</div>`;
+}
+
+/** S4 modals — the segment behind a dot, the proof behind a badge, or both.
+ *
+ *  One payload and one renderer, because the dot is an intersection: it names a
+ *  segment *and* the element it proves, and showing only one of them is what
+ *  made an otherwise complete grid unreadable. ``opts.segment`` is a full scoped
+ *  id; ``opts.element`` is an ``element_id``. Both are resolved live from
+ *  ``state.bundle``, and the modal reopens itself for the cited segments it
+ *  lists, so the two views navigate into each other. */
+async function openEvidenceModal(opts) {
+  const segmentId = (opts && opts.segment) ? String(opts.segment) : '';
+  const elementId = (opts && opts.element) ? String(opts.element) : '';
+  const badge = document.getElementById('modalBadge');
+  const title = document.getElementById('modalTitle');
+  const sub = document.getElementById('modalSub');
+  const body = document.getElementById('modalBody');
+  const weights = (state.schema && state.schema.proof_weights) || {};
+  const element = gridElement(elementId);
+  const grid = element ? gridForElement(elementId) : null;
+
+  badge.textContent = 'S4 · Element grid';
+  title.textContent = segmentId ? shortId(segmentId)
+    : (element ? (element.label || shortId(element.element_id)) : 'Elements × evidence');
+  sub.textContent = segmentId ? `${segmentId}${grid ? ` · ${grid.article_short || grid.article_id}` : ''}`
+    : (element ? element.element_id : '');
+  // Opened before the read resolves: a click that produces no visible change is
+  // indistinguishable from a click that was swallowed.
+  body.innerHTML = '<div class="field-hint">Reading the segment…</div>';
+  document.getElementById('modalOverlay').classList.add('active');
+
+  const parts = [];
+  if (segmentId) {
+    const d = await segmentDetail(segmentId);
+    const span = [d.start, d.end].every(x => typeof x === 'number')
+      ? `${d.start.toFixed(2)}s → ${d.end.toFixed(2)}s` : 'offset not stated';
+    parts.push(`<div class="modal-section"><div class="modal-section-label">Segment</div>`
+      + `<div class="note-card"><div class="note-body">${d.verbatim
+        ? escapeHtml(d.verbatim) : '(no text available for this segment)'}</div></div>`
+      + (d.translation_en ? `<div class="rr-detail quote">${escapeHtml(d.translation_en)}</div>` : '')
+      + `<div class="rr-detail"><b>transcript</b> ${escapeHtml(transcriptLabel(d.transcript_id))}`
+        + `<span class="weight-note">${escapeHtml(d.transcript_id)}</span></div>`
+      + (d.speaker ? `<div class="rr-detail"><b>speaker</b> ${escapeHtml(d.speaker)}${
+          d.speaker_id ? ` <span class="weight-note">${escapeHtml(d.speaker_id)}</span>` : ''}</div>` : '')
+      + `<div class="rr-detail"><b>audio</b> ${escapeHtml(span)}</div>`
+      + (d.role_in_argument ? `<div class="rr-detail"><b>role in the argument</b> ${escapeHtml(d.role_in_argument)}</div>` : '')
+      + (d.legacy_segment_id ? `<div class="rr-detail"><b>re-anchored from</b> ${escapeHtml(d.legacy_segment_id)}</div>` : '')
+      + `<div class="rr-detail"><b>held by</b> ${escapeHtml([
+          d.in_manifest ? 'segments_manifest.json' : null,
+          d.in_violation ? 'the violation JSON' : null,
+          d.added_during_refinement ? 'added during refinement (no vault ancestor)' : null,
+        ].filter(Boolean).join(' · ') || 'no record in this bundle')}</div>`
+      + (d.transcription_notes ? `<div class="rr-detail"><b>notes</b> ${escapeHtml(d.transcription_notes)}</div>` : '')
+      + (d.differs_from_violation
+        ? `<div class="modal-section-label" style="margin-top:16px;">The bundle transcribes this differently</div>`
+          + `<div class="note-card"><div class="note-body">${escapeHtml(d.violation_text)}</div></div>`
+          + `<div class="field-hint">This is the violation JSON's own <code>verbatim_es</code>; the quote at the top of `
+          + `this panel is the transcript file. Neither is marked preferred — they disagree by more than spacing.</div>` : '')
+      + (d.error ? `<div class="field-hint" style="margin-top:10px;">${escapeHtml(d.error)}</div>` : '')
+      + (d.source ? `<div class="field-hint" style="margin-top:10px;">${escapeHtml(d.source)}</div>` : '')
+      + `</div>`);
+  }
+
+  parts.push(elementProofSection(element, weights));
+
+  if (element) {
+    const cited = element.proof_evidence_segments || [];
+    parts.push(`<div class="modal-section"><div class="modal-section-label">Segments cited for this element</div>`
+      + (cited.length ? cited.map(id => {
+          const picked = id === segmentId;
+          return `<button class="seg-jump" data-action="open-segment" data-segment="${escapeHtml(id)}"`
+            + ` data-element="${escapeHtml(element.element_id)}"${picked ? ' aria-current="true"' : ''}>`
+            + `<span class="seg-jump-head"><span class="seg-jump-id">${escapeHtml(shortId(id))}`
+            + `${picked ? ' · shown above' : ''}</span>`
+            + `<span class="seg-jump-where">${escapeHtml(transcriptLabel(segmentTranscript(id)))}</span></span>`
+            + `</button>`;
+        }).join('') : hintRow('This element cites no segment.'))
+      + `</div>`);
+  }
+
+  body.innerHTML = parts.join('');
 }
 
 let logSeq = 0;
@@ -1523,6 +1795,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (action === 'browse') {
       e.preventDefault();
       openBrowsePicker(t);
+    }
+    if (action === 'load-manifest-specs') {
+      e.preventDefault();
+      loadManifestSpecs(t.dataset.transcript);
     }
     if (action === 'browse-entry') {
       e.preventDefault();
@@ -1601,6 +1877,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (action === 'close-modal') document.getElementById('modalOverlay').classList.remove('active');
+
+    if (action === 'pick-article') {
+      e.preventDefault();
+      pickFrameworkArticle(t.dataset.article || '');
+    }
+
+    // The element grid's two ways in: a dot names a segment and the element it
+    // proves, a proof badge names the element alone.
+    if (action === 'open-segment') {
+      e.preventDefault();
+      openEvidenceModal({ segment: t.dataset.segment || '', element: t.dataset.element || '' });
+    }
+    if (action === 'open-proof') {
+      e.preventDefault();
+      openEvidenceModal({ element: t.dataset.element || '' });
+    }
+
+    // S6: attach the official document / url that proves one authority stub,
+    // then verify the stub against the text that was actually stored.
+    if (action === 'open-proof-form') {
+      e.preventDefault();
+      openProofModal(t.dataset.authority || '');
+    }
+    if (action === 'proof-ingest') {
+      e.preventDefault();
+      ingestProofSource(t.dataset.authority || '');
+    }
+    if (action === 'proof-verify') {
+      e.preventDefault();
+      verifyProofStub(t.dataset.authority || '');
+    }
+    if (action === 'proof-save') {
+      e.preventDefault();
+      persistProofAuthority(t.dataset.authority || '');
+    }
+
+    if (action === 'seed-manifest') {
+      e.preventDefault();
+      const prefix = t.dataset.manifestPrefix || '';
+      const added = seedManifestSpecs(prefix);
+      if (!added) {
+        pushLog('No manifest segment carried a scoped id — nothing to seed', 'S2', 'warn');
+        return;
+      }
+      pushLog(`Seeded ${added} segment spec(s) from segments_manifest.json`
+        + (prefix ? ` for ${prefix}` : ' (all transcripts)'), 'S2', 'ok');
+      // The picker follows the seed when the seed named a different transcript,
+      // so the user can see the rows they just added are the ones ticked.
+      if (prefix && corpusTranscripts().some(t2 => t2.stem === prefix)) {
+        const select = document.getElementById('s2TranscriptSelect');
+        const entry = corpusTranscripts().find(t2 => t2.stem === prefix);
+        if (select && entry && select.value !== entry.path) {
+          select.value = entry.path;
+          state.transcriptChosen = true;
+          loadSelectedTranscript();
+        }
+      }
+      renderSelectedSegments();
+    }
   });
 
   // tab switching (event delegation, works for any .tabs added via templates)
@@ -1618,21 +1953,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!btn || btn.closest('.settings-panel')) return;
     if (btn.dataset.segmentNote === 'true') return;
     const card = btn.closest('.transcript-segment');
-    const segmentId = card?.dataset.segmentId;
-    const segment = state.activeTranscript?.segments.find(s => s.segment_id === segmentId);
-    if (!card || !segment) return;
+    const scopedId = card?.dataset.scopedId;
+    const segment = state.activeTranscript?.segments.find(s => s.segment_id === card?.dataset.segmentId);
+    if (!card || !segment || !scopedId) return;
     btn.classList.toggle('is-marked');
     card.classList.toggle('is-marked');
     const selected = btn.classList.contains('is-marked');
     btn.textContent = selected ? '✓ in segment_specs' : 'Add to segment_specs';
     if (selected) {
-      state.segmentSpecs[segmentId] = {
-        segment_id: segmentId,
-        role_in_argument: 'fact',
-        translation_en: segment.verbatim,
+      // The pack already knows this segment's role and English rendering, so
+      // borrow them instead of defaulting the translation to the Spanish
+      // verbatim — the old default silently wrote Spanish into an English field.
+      const known = knownSpecFor(scopedId) || {};
+      state.segmentSpecs[scopedId] = {
+        // The tool contract takes the transcript-LOCAL id; layers.py composes
+        // the scoped form from the transcript document itself.
+        segment_id: segment.segment_id,
+        role_in_argument: known.role_in_argument || 'fact',
+        translation_en: known.translation_en || segment.verbatim,
       };
     } else {
-      delete state.segmentSpecs[segmentId];
+      delete state.segmentSpecs[scopedId];
     }
     renderSelectedSegments();
   });
@@ -1651,6 +1992,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const ok = e.target.value === e.target.dataset.confirm;
     const btn = e.target.nextElementSibling;
     if (btn) btn.disabled = !ok;
+  });
+
+  // The proof modal's quote is checked against the exact text the server
+  // hashed, so the verdict has to follow the keystroke rather than wait for a
+  // submit that the reviewer cannot see coming.
+  document.addEventListener('input', (e) => {
+    if (e.target.id === 'proofQuote') renderProofSource(state.proofAuthority);
   });
 
   // remove record rows
@@ -1729,7 +2077,11 @@ async function bootstrap() {
     const sources = await API.sources();
     state.sources = sources;
     hydrateSourceSelectors();
-    pushLog(`Discovered ${sources.transcripts.length} rendered transcripts and ${sources.frameworks.length} law files`, null, 'ok');
+    // Report both corpora: the rendered HTML is a display-only render, and only
+    // the JSON one composes ids that join the manifest and the violation JSON.
+    pushLog(`Discovered ${(sources.transcripts || []).length} rendered transcripts, `
+      + `${(sources.transcripts_json || []).length} canonical transcripts and `
+      + `${(sources.frameworks || []).length} law files`, null, 'ok');
   } catch (e) {
     pushLog(`Could not load /api/sources — ${e.message}`, null, 'warn');
   }
@@ -2046,37 +2398,168 @@ function citedSegmentIds(violation) {
   return out;
 }
 
+/** The two transcript corpora as one list, keyed by file stem.
+ *
+ *  ``/api/sources`` publishes the vendored ``html`` render *and* the canonical
+ *  ``json`` corpus. The filenames match but the id spaces do not: the rendered
+ *  file reports a display label (``STG-5``), while the JSON reports the
+ *  ``transcript_id`` that every id in ``segments_manifest.json`` and every
+ *  ``segment_id`` in the violation JSON is prefixed with. The JSON entry
+ *  therefore wins the merge — marking a row off the render produced an id like
+ *  ``STG-5.seg-1`` that joined nothing in the pack. */
+function corpusTranscripts() {
+  const byStem = new Map();
+  (state.sources.transcripts || []).forEach(t => {
+    const stem = stemOfFile(t.name);
+    byStem.set(stem, {
+      stem, kind: 'html', authoritative: false,
+      name: t.name, path: t.path, uri: t.uri,
+      source_label: t.source_id, segment_count: t.segment_count,
+      display_label: t.source_id || null,
+    });
+  });
+  // Second, so a JSON file replaces the render of the same stem.
+  (state.sources.transcripts_json || []).forEach(t => {
+    const stem = stemOfFile(t.name);
+    // The JSON entry wins the merge, but the render's own short id (``STG-7``)
+    // is the pack's name for this stage and is kept as a display label — never
+    // as an id, since it is exactly the string that fails to join the manifest.
+    const render = byStem.get(stem);
+    byStem.set(stem, {
+      stem, kind: 'json', authoritative: true,
+      name: t.name, path: t.path, uri: t.uri,
+      source_label: t.transcript_id, segment_count: t.segment_count,
+      reviewed_count: t.reviewed_count,
+      display_label: (render && render.source_label) || null,
+    });
+  });
+  return [...byStem.values()].sort((a, b) => a.stem.localeCompare(b.stem));
+}
+
 /** The transcript a bundle's segments actually came from. Hardcoding a source
  *  id meant the picker opened on the wrong file as soon as a second corpus
  *  arrived, so the bundle's own segment provenance decides it.
  *
  *  A bundle segment carries ``source_uri`` like
  *  ``Transcripts/<stem>.json#seg-18`` — bundle-relative, fragment-suffixed and
- *  not necessarily the same file as the browsable HTML corpus entry — so match
- *  on the bare stem as well as the exact path. */
+ *  not necessarily the same file as the browsable corpus entry — so match on
+ *  the bare stem as well as the exact path. The manifest's ``transcript_files``
+ *  keys are the strongest signal of all: they name the files the converter read. */
 function preferredTranscript() {
-  const list = state.sources.transcripts || [];
+  const list = corpusTranscripts();
   if (!list.length) return null;
+  const manifest = state.bundle && state.bundle.manifest;
+  const declared = Object.keys((manifest && manifest.transcript_files) || {}).map(stemOfFile);
   for (const segment of ((state.violation && state.violation.segments) || [])) {
     const uri = String(segment.source_uri || '');
     const byUri = list.find(t => t.uri === uri || t.path === uri);
     if (byUri) return byUri;
-    const wanted = [stemOfFile(uri), String(segment.segment_id || '').split('.')[0]]
+    const wanted = [stemOfFile(uri), String(segment.segment_id || '').split('.')[0], ...declared]
       .filter(Boolean);
-    const byStem = list.find(t => wanted.includes(stemOfFile(t.name)));
+    const byStem = list.find(t => wanted.includes(t.stem));
     if (byStem) return byStem;
   }
   return list[0];
 }
 
+/** The bundle's ``segments_manifest.json``, parsed and joined to the violation.
+ *
+ *  The manifest is the converter's own record of every segment this pack cites:
+ *  the canonical id (``<transcript_id>.seg-<index>`` — the form the violation
+ *  JSON and the shared ``reviewed_transcripts`` collection both key on), the
+ *  vault's ``legacy_segment_id`` each one was re-anchored from, the role the
+ *  segment plays in the argument, both texts, and the anchor's own notes.
+ *
+ *  It is the only artifact in the bundle that carries the legacy→canonical
+ *  mapping, and the only one that names ``refinement_added_segments`` (ids with
+ *  no vault ancestor, so they appear on no segment record at all). Joining on
+ *  ``segment_id`` is deliberate: the manifest's ``verbatim_es`` drops accents the
+ *  violation JSON keeps, so a text-equality join would report false mismatches.
+ *
+ *  Returns null when the bundle has no manifest, so callers can say so instead of
+ *  rendering an empty list that reads as "the pack cites nothing". */
+function manifestSegments() {
+  const raw = state.bundle && state.bundle.manifest;
+  if (!raw || !Array.isArray(raw.segments)) return null;
+  const byId = new Map((((state.violation || {}).segments) || []).map(s => [s.segment_id, s]));
+  const added = new Set(raw.refinement_added_segments || []);
+  const segments = raw.segments.filter(s => s && s.segment_id).map(s => {
+    const id = String(s.segment_id);
+    const cut = id.indexOf('.');
+    return {
+      segment_id: id,
+      transcript_id: cut === -1 ? id : id.slice(0, cut),
+      local_id: cut === -1 ? null : id.slice(cut + 1),
+      legacy_segment_id: s.legacy_segment_id || null,
+      role_in_argument: s.role_in_argument || null,
+      audio_offset_start: s.audio_offset_start,
+      audio_offset_end: s.audio_offset_end,
+      verbatim_es: s.verbatim_es || '',
+      translation_en: s.translation_en || '',
+      transcription_notes: s.transcription_notes || null,
+      added_during_refinement: added.has(id),
+      violation: byId.get(id) || null,
+    };
+  });
+  const held = new Set(segments.map(s => s.segment_id));
+  return {
+    schema_version: raw.schema_version || null,
+    violation_id: raw.violation_id || null,
+    total_declared: raw.total_segments_matched,
+    matched_audio_sources: raw.matched_audio_sources || [],
+    transcript_files: raw.transcript_files || {},
+    clip_offset_deltas: raw.clip_offset_deltas || {},
+    segments,
+    absent_from_violation: segments.filter(s => !s.violation).map(s => s.segment_id),
+    absent_from_manifest: [...byId.keys()].filter(id => !held.has(id)),
+  };
+}
+
+/** Manifest segments bucketed by the transcript each was anchored to, in the
+ *  manifest's own order. ``build_evidence_layer_tool`` takes exactly one
+ *  transcript per call, so the transcript is the natural unit for "load these
+ *  specs" — a flat 35-row list would silently mix five calls into one. */
+function manifestByTranscript(manifest) {
+  const groups = new Map();
+  (((manifest || {}).segments) || []).forEach(row => {
+    if (!groups.has(row.transcript_id)) groups.set(row.transcript_id, []);
+    groups.get(row.transcript_id).push(row);
+  });
+  return [...groups.entries()].map(([transcript_id, rows]) => ({
+    transcript_id, rows,
+    file: (manifest.transcript_files || {})[transcript_id] || null,
+  }));
+}
+
+/** What the bundle already knows about one scoped segment id, so marking a row
+ *  by hand carries the pack's own role and English rendering rather than
+ *  defaulting the translation to the Spanish verbatim. */
+function knownSpecFor(scopedId) {
+  const manifest = manifestSegments();
+  const row = manifest ? manifest.segments.find(s => s.segment_id === scopedId) : null;
+  if (row) {
+    return {
+      role_in_argument: row.role_in_argument,
+      translation_en: row.translation_en,
+      transcription_notes: row.transcription_notes,
+    };
+  }
+  const seg = (((state.violation || {}).segments) || []).find(s => s.segment_id === scopedId);
+  return seg ? {
+    role_in_argument: seg.role_in_argument,
+    translation_en: seg.translation_en,
+    transcription_notes: seg.transcription_notes,
+  } : null;
+}
+
 function hydrateSourceSelectors() {
   const select = document.getElementById('s2TranscriptSelect');
-  if (!select || !state.sources.transcripts.length) return;
-  const list = state.sources.transcripts;
+  const list = corpusTranscripts();
+  if (!select || !list.length) return;
   const current = select.value;
   const preferred = preferredTranscript();
   select.innerHTML = list.map(t =>
-    `<option value="${escapeHtml(t.path)}">${escapeHtml(t.name)} · ${t.segment_count} segments</option>`
+    `<option value="${escapeHtml(t.path)}">${escapeHtml(t.name)} · ${t.segment_count} segments${t.authoritative ? '' : ' · render only'}</option>`
   ).join('');
   // The bundle's own provenance decides the default; an explicit pick by the
   // user survives a re-hydration (this runs again on every step switch).
@@ -2086,7 +2569,13 @@ function hydrateSourceSelectors() {
     const source = list.find(t => t.path === select.value);
     if (!source) return;
     const meta = document.getElementById('s2TranscriptMeta');
-    if (meta) meta.textContent = `${source.source_id} · ${source.segment_count} segments · ${source.uri}`;
+    if (meta) {
+      meta.textContent = `${source.source_label} · ${source.segment_count} segments · `
+        + (source.authoritative
+          ? 'canonical ids — marks join the manifest and the violation JSON'
+          : 'display label only — marks will NOT join the manifest')
+        + ` · ${source.uri}`;
+    }
   };
   select.onchange = () => {
     state.transcriptChosen = true;
@@ -2098,6 +2587,109 @@ function hydrateSourceSelectors() {
   loadSelectedTranscript();
 }
 
+/** The id prefix the active transcript composes segment ids with.
+ *
+ *  ``layers.build_evidence_layer`` builds ``f"{source_id()}.{local_id}"``, so
+ *  this is the string a marked row's scoped id must begin with. For the JSON
+ *  corpus it is the ``transcript_id`` — byte-identical to the prefix
+ *  ``segments_manifest.json`` and the violation JSON both use. For the HTML
+ *  render it is only a display label (``STG-5``), which is precisely why ids
+ *  marked off the render join nothing. */
+function activeTranscriptPrefix() {
+  const t = state.activeTranscript;
+  if (!t) return '';
+  return String(t.transcript_id || t.source_id || '');
+}
+
+/** The transcript-local tail of a scoped segment id (``seg-12``). */
+function localSegmentId(scopedId) {
+  const s = String(scopedId || '');
+  const cut = s.indexOf('.');
+  return cut === -1 ? s : s.slice(cut + 1);
+}
+
+/** The transcript a scoped segment id belongs to — everything before the dot.
+ *
+ *  The pack composes ``<transcript_id>.<local_id>``, so this prefix is the only
+ *  thing in a grid column that says which recording the segment came from. */
+function segmentTranscript(scopedId) {
+  const s = String(scopedId || '');
+  const cut = s.indexOf('.');
+  return cut === -1 ? s : s.slice(0, cut);
+}
+
+/** A compact label for a transcript, for the element grid's column groups.
+ *
+ *  The canonical id is long on purpose and the rendered short id is *not*
+ *  unique — ``STG-2`` is both ``I-002_02_NAR-02_STG_2_boarding_gate`` and
+ *  ``I-002_18_NAR_LATAM_STG_2`` — so the render's label alone cannot head a
+ *  column. The incidence number inside the id is unique, so the label is
+ *  ``<incidence> · <rendered label>``, falling back to the id's descriptive tail
+ *  with underscores humanised when the bundle carries no render of it.
+ *
+ *  Display only. Every call site keeps the full scoped id in the element's
+ *  ``title`` and in the modal, because a shortened id is exactly what produced
+ *  the ``STG-5.seg-1`` marks that joined nothing in the pack. */
+function transcriptLabel(transcriptId) {
+  const id = String(transcriptId || '');
+  if (!id) return '';
+  const source = corpusTranscripts().find(t => t.stem === id);
+  const rendered = (source && source.display_label) || null;
+  const tokens = id.split('_').filter(Boolean);
+  const head = (tokens.length && /^I-\d+$/i.test(tokens[0])) ? tokens.slice(1) : tokens;
+  const incidence = (head.length && /^\d+[A-Za-z]?$/.test(head[0])) ? head[0] : '';
+  const tail = (head.length > 1 && incidence) ? head.slice(1).join(' ').replace(/_/g, ' ') : '';
+  const named = rendered || tail;
+  if (!named) return id;
+  return [incidence, named].filter(Boolean).join(' · ');
+}
+
+/** A dropdown-row label for a scoped segment: which recording, then which cut.
+ *
+ *  ``seg-36`` on its own names nothing in a multi-transcript bundle — the same
+ *  local id appears in every file, so two different cuts render identically and
+ *  the reviewer picks one at random. The transcript is what disambiguates them.
+ *
+ *  The *value* stays the full scoped id; only the visible text is qualified. An
+ *  unscoped id has no transcript to name and is returned untouched, rather than
+ *  rendered as ``seg-1 · seg-1``. */
+function segmentOptionLabel(scopedId) {
+  const id = String(scopedId || '');
+  const local = localSegmentId(id);
+  const stem = segmentTranscript(id);
+  if (!stem || stem === id) return local;
+  return `${transcriptLabel(stem)} · ${local}`;
+}
+
+/** One cached read of a transcript document, keyed by uri.
+ *
+ *  CL-030's largest source is 418 segments and ``API.transcript`` returns the
+ *  whole document, so tapping twenty dots in one grid must not mean twenty
+ *  fetches. Deliberately not ``state.activeTranscript``: that slot is S2's form
+ *  state, and reusing it would make opening a read-only modal silently change
+ *  which transcript the marking UI is pointed at. */
+async function loadTranscriptDocument(source) {
+  const uri = (source && source.uri) || '';
+  if (!uri) throw new Error('no transcript uri');
+  if (!state.transcriptDocs[uri]) state.transcriptDocs[uri] = await API.transcript(uri);
+  return state.transcriptDocs[uri];
+}
+
+/** The element a dataset names, resolved live from the bundle rather than
+ *  stashed in the DOM — clicking a grid cell after a re-hydration must never
+ *  show the element that used to be in that row. */
+function gridElement(elementId) {
+  const id = String(elementId || '');
+  if (!id) return null;
+  return elementsOf(state.violation).find(e => e.element_id === id) || null;
+}
+
+function gridForElement(elementId) {
+  const id = String(elementId || '');
+  return ((state.violation || {}).element_grids || [])
+    .find(g => (g.elements || []).some(e => e.element_id === id)) || null;
+}
+
 async function loadSelectedTranscript() {
   const select = document.getElementById('s2TranscriptSelect');
   const list = document.getElementById('s2TranscriptList');
@@ -2107,11 +2699,14 @@ async function loadSelectedTranscript() {
     return;
   }
   list.innerHTML = '<div class="field-hint">Loading segments…</div>';
-  state.segmentSpecs = {};
+  // ``state.segmentSpecs`` is keyed by the SCOPED id, so switching transcripts
+  // no longer discards the marks — a manifest-seeded run needs specs for all
+  // five source transcripts at once, and the tool call only sends the ones
+  // belonging to the transcript it is handed.
   try {
     state.activeTranscript = await API.transcript(select.value);
     const sourceId = document.getElementById('s2SourceId');
-    if (sourceId) sourceId.value = state.activeTranscript.source_id;
+    if (sourceId) sourceId.value = activeTranscriptPrefix();
     renderS2Segments();
   } catch (e) {
     state.activeTranscript = null;
@@ -2122,22 +2717,38 @@ async function loadSelectedTranscript() {
 function renderS2Segments() {
   const list = document.getElementById('s2TranscriptList');
   if (!list || !state.activeTranscript) return;
+  const prefix = activeTranscriptPrefix();
+  const manifest = manifestSegments();
+  const byId = new Map(((manifest || {}).segments || []).map(s => [s.segment_id, s]));
+  const inViolation = new Set((((state.violation || {}).segments) || []).map(s => s.segment_id));
   // Written here rather than only at fetch time: the transcript may have been
   // loaded while another step was on screen, in which case the input did not
   // exist yet and the cache-guard path never fills it.
   const sourceIdField = document.getElementById('s2SourceId');
-  if (sourceIdField) sourceIdField.value = state.activeTranscript.source_id || '';
+  if (sourceIdField) sourceIdField.value = prefix;
   list.innerHTML = state.activeTranscript.segments.map(segment => {
-    const selected = Boolean(state.segmentSpecs[segment.segment_id]);
+    const scoped = prefix ? `${prefix}.${segment.segment_id}` : segment.segment_id;
+    const selected = Boolean(state.segmentSpecs[scoped]);
+    // Whether this exact segment is one the pack already cites. This is the
+    // signal the old browser could not show: it rendered the whole corpus file
+    // with no indication of which rows the bundle actually leaned on.
+    const row = byId.get(scoped);
     const speakerClass = /passenger/i.test(segment.speaker) ? 'seg-passenger' : 'seg-other';
     const start = Number(segment.audio_offset_start);
     const end = Number(segment.audio_offset_end);
     const span = Number.isFinite(start) && Number.isFinite(end) ? `${start.toFixed(2)}s → ${end.toFixed(2)}s` : 'offset not stated';
-    return `<div class="transcript-segment ${speakerClass}${selected ? ' is-marked' : ''}" data-segment-id="${escapeHtml(segment.segment_id)}">
-      <div class="seg-time">${span} · ${escapeHtml(state.activeTranscript.source_id)}.${escapeHtml(segment.segment_id)}</div>
-      <div class="seg-speaker">${escapeHtml(segment.speaker)}</div>
+    const tags = [
+      row ? `<span class="badge badge-accent" title="cited by segments_manifest.json">manifest</span>` : '',
+      inViolation.has(scoped) ? `<span class="badge badge-pass" title="anchored in the violation JSON">anchored</span>` : '',
+      row && row.legacy_segment_id ? `<span class="chip" title="vault id this segment was re-anchored from">${escapeHtml(row.legacy_segment_id)}</span>` : '',
+      row && row.added_during_refinement ? `<span class="badge badge-warn" title="added during refinement — no vault ancestor">refined</span>` : '',
+      row && row.transcription_notes ? `<span class="badge badge-neutral" title="${escapeHtml(row.transcription_notes)}">note</span>` : '',
+    ].filter(Boolean).join('');
+    return `<div class="transcript-segment ${speakerClass}${selected ? ' is-marked' : ''}" data-segment-id="${escapeHtml(segment.segment_id)}" data-scoped-id="${escapeHtml(scoped)}">
+      <div class="seg-time">${span} · ${escapeHtml(scoped)}</div>
+      <div class="seg-speaker">${escapeHtml(segment.speaker)}${tags ? ' ' + tags : ''}</div>
       <div class="seg-text">&quot;${escapeHtml(segment.verbatim)}&quot;</div>
-      <div class="seg-actions"><button class="seg-mark-btn${selected ? ' is-marked' : ''}">${selected ? '✓ in segment_specs' : 'Add to segment_specs'}</button><button class="seg-mark-btn" data-segment-note="true">Notes</button></div>
+      <div class="seg-actions"><button class="seg-mark-btn${selected ? ' is-marked' : ''}">${selected ? '✓ in segment_specs' : 'Add to segment_specs'}</button></div>
     </div>`;
   }).join('');
   renderSelectedSegments();
@@ -2146,19 +2757,39 @@ function renderS2Segments() {
 function renderSelectedSegments() {
   const list = document.getElementById('s2SelectedSegments');
   if (!list) return;
-  const selected = Object.values(state.segmentSpecs);
-  if (!selected.length) {
+  const entries = Object.entries(state.segmentSpecs);
+  if (!entries.length) {
     list.innerHTML = '<div class="field-hint">No segments selected.</div>';
     return;
   }
-  list.innerHTML = selected.map(spec => {
-    const segment = state.activeTranscript.segments.find(s => s.segment_id === spec.segment_id);
-    if (!segment) return '';
-    const start = Number(segment.audio_offset_start);
-    const end = Number(segment.audio_offset_end);
-    const span = Number.isFinite(start) && Number.isFinite(end) ? `${start.toFixed(2)}s–${end.toFixed(2)}s` : 'offset not stated';
-    return `<div class="record-row verified"><div class="rr-main"><div class="rr-id">${escapeHtml(state.activeTranscript.source_id)}.${escapeHtml(segment.segment_id)}</div><div class="rr-detail quote">&quot;${escapeHtml(segment.verbatim)}&quot;</div></div><div class="rr-meta"><span class="hash-chip">selected</span><span class="badge badge-neutral">${span}</span></div></div>`;
-  }).join('');
+  const active = activeTranscriptPrefix();
+  const manifest = manifestSegments();
+  const byId = new Map(((manifest || {}).segments || []).map(s => [s.segment_id, s]));
+  const rows = entries.map(([scoped, spec]) => {
+    const row = byId.get(scoped);
+    const own = scoped.split('.')[0];
+    // A spec outside the picker's transcript is held, not lost, but the tool
+    // takes one transcript per call — say which call would carry it.
+    const offTranscript = active && own !== active;
+    const start = Number(spec.audio_offset_start);
+    const end = Number(spec.audio_offset_end);
+    const span = Number.isFinite(start) && Number.isFinite(end)
+      ? `${start.toFixed(2)}s–${end.toFixed(2)}s`
+      : (row ? `${Number(row.audio_offset_start).toFixed(2)}s–${Number(row.audio_offset_end).toFixed(2)}s` : 'offset not stated');
+    return `<div class="record-row${offTranscript ? ' legacy' : ' verified'}">
+      <div class="rr-main">
+        <div class="rr-id">${escapeHtml(scoped)}</div>
+        <div class="rr-detail">${escapeHtml(spec.role_in_argument)} → &quot;${escapeHtml(spec.translation_en)}&quot;</div>
+        ${row && row.legacy_segment_id ? `<div class="rr-detail">re-anchored from ${escapeHtml(row.legacy_segment_id)}</div>` : ''}
+      </div>
+      <div class="rr-meta">
+        ${offTranscript ? `<span class="badge badge-warn">sent with ${escapeHtml(own)}</span>` : '<span class="hash-chip">selected</span>'}
+        ${row && row.added_during_refinement ? '<span class="badge badge-warn">refined</span>' : ''}
+        <span class="badge badge-neutral">${span}</span>
+      </div>
+    </div>`;
+  });
+  list.innerHTML = rows.join('');
 }
 
 /* ==========================================================================
@@ -2187,7 +2818,7 @@ function seedText(value, spec) {
 }
 
 function selectedTranscript() {
-  return state.sources.transcripts.find(t => t.path === (document.getElementById('s2TranscriptSelect') || {}).value)
+  return corpusTranscripts().find(t => t.path === (document.getElementById('s2TranscriptSelect') || {}).value)
     || preferredTranscript();
 }
 
@@ -2276,10 +2907,20 @@ function defaultArgsFor(tool) {
     const transcript = selectedTranscript();
     if (transcript) {
       args.transcript_path = transcript.path;
-      args.transcript_source_id = transcript.source_id;
+      // For the canonical JSON corpus the tool ignores this and composes the
+      // prefix from the document's own transcript_id; it is still sent because
+      // the HTML render genuinely needs its display label.
+      args.transcript_source_id = transcript.source_label;
       args.transcript_bundle_uri = transcript.uri;
     }
-    args.segment_specs = Object.values(state.segmentSpecs);
+    // One transcript per call: send only the specs this call can compose an id
+    // for. Specs held for the other source transcripts are not lost — they are
+    // sent when their own transcript is selected (see the badge on each row).
+    const prefix = activeTranscriptPrefix()
+      || String((transcript && (transcript.transcript_id || transcript.source_label)) || '');
+    args.segment_specs = Object.entries(state.segmentSpecs)
+      .filter(([scoped]) => !prefix || scoped.startsWith(prefix + '.'))
+      .map(([, spec]) => spec);
   }
 
   // ``Tool`` (the pydantic model) has no ``required`` attribute of its own —
@@ -2516,6 +3157,14 @@ const STATUS_BADGE = {
 function setInput(id, value) {
   const el = document.getElementById(id);
   if (el) el.value = (value === null || value === undefined) ? '' : String(value);
+}
+/** Read a field's value as a trimmed string. A missing element reads as empty
+ *  rather than throwing, because every reader here runs against markup that a
+ *  step switch or a modal close may already have removed. */
+function inputValue(id) {
+  const el = document.getElementById(id);
+  if (!el) return '';
+  return String(el.value === null || el.value === undefined ? '' : el.value).trim();
 }
 function setText(id, value) {
   const el = document.getElementById(id);
@@ -2758,6 +3407,10 @@ function hydrateS1() {
 
 function hydrateS2() {
   const v = state.violation;
+  // Rendered first and unconditionally: the manifest is the pack's own record
+  // of the evidence, so it is worth showing even when the violation JSON has
+  // not been built yet.
+  const manifest = hydrateS2Manifest();
   if (!state.bundle) {
     setGate('s2Gate', 'Loading bundle…', 'pending');
     return;
@@ -2792,15 +3445,207 @@ function hydrateS2() {
   const browsedStem = browsed ? stemOfFile(browsed.name) : '';
   const elsewhere = browsedStem && bundleStem && browsedStem !== bundleStem;
 
+  // The manifest is the third opinion on what this pack cites, and the only
+  // one that carries the legacy ids. Report its drift rather than silently
+  // rendering whichever of the three happened to be checked first.
+  const manifestNote = manifest
+    ? `manifest declares ${manifest.segments.length}`
+      + (manifest.absent_from_violation.length ? ` · ⚠ ${manifest.absent_from_violation.length} not in the violation JSON` : '')
+      + (manifest.absent_from_manifest.length ? ` · ⚠ ${manifest.absent_from_manifest.length} in the JSON but not the manifest` : '')
+    : ' · no segments_manifest.json in this bundle';
+  const drift = Boolean(manifest && (manifest.absent_from_violation.length || manifest.absent_from_manifest.length));
+
   setGate('s2Gate',
     `${segs.length} segment(s) in the violation JSON · ${cited.size} cited by the element grid / nexus · `
-    + `${speakers.length} speaker label(s) · ${span}`
+    + `${speakers.length} speaker label(s) · ${span} · ${manifestNote}`
     + (unresolved.length ? ` · ⚠ ${unresolved.length} cited id(s) absent from the bundle` : '')
     + (elsewhere ? ` · picker shows ${browsedStem} (bundle source: ${bundleStem})` : ''),
-    unresolved.length ? 'advisory' : (elsewhere ? 'advisory' : 'met'));
+    (unresolved.length || drift || elsewhere) ? 'advisory' : 'met');
+}
+
+/** Render the pack's own ``segments_manifest.json``, joined to the violation.
+ *
+ *  Everything shown here is parsed — the role, both texts, the offsets, the
+ *  legacy vault id and the anchor notes all come out of the manifest, and the
+ *  "anchored" flag comes from matching ``segment_id`` against the violation
+ *  JSON. Joining on the id (never on text) matters: the manifest's
+ *  ``verbatim_es`` is unaccented where the violation JSON keeps the accents, so
+ *  a text-equality join reports spurious mismatches.
+ *
+ *  Returns the parsed manifest (or null) so the caller can fold the same
+ *  numbers into its gate banner instead of re-parsing. */
+function hydrateS2Manifest() {
+  const host = document.getElementById('s2ManifestSegments');
+  const manifest = manifestSegments();
+  if (!host) return manifest;
+  if (!manifest) {
+    const loaded = Boolean(state.bundle);
+    setHtml('s2ManifestSummary', loaded
+      ? hintRow('This bundle carries no segments_manifest.json.')
+      : hintRow('Loading manifest…'));
+    setHtml('s2ManifestActions', '');
+    host.innerHTML = hintRow(loaded
+      ? 'The pack was built before the converter started writing a segment manifest, so the legacy vault ids are unrecoverable from this bundle. The violation JSON below still holds the anchored segments.'
+      : 'Loading manifest…');
+    return null;
+  }
+
+  const groups = manifestByTranscript(manifest);
+  const refined = manifest.segments.filter(s => s.added_during_refinement).length;
+  const noted = manifest.segments.filter(s => s.transcription_notes).length;
+  const parts = [
+    `schema ${manifest.schema_version || '—'}`,
+    `${manifest.segments.length} segment(s) parsed`,
+  ];
+  if (manifest.total_declared !== null && manifest.total_declared !== undefined
+      && manifest.total_declared !== manifest.segments.length) {
+    parts.push(`⚠ ${manifest.total_declared} declared`);
+  }
+  parts.push(
+    `${groups.length} transcript file(s)`,
+    `${manifest.matched_audio_sources.length} audio source(s)`,
+    `${refined} added during refinement`,
+    `${noted} with anchor note(s)`,
+  );
+  setHtml('s2ManifestSummary', `<div class="field-hint">${escapeHtml(parts.join(' · '))}</div>`);
+
+  // One chip per source transcript: ``build_evidence_layer_tool`` takes a single
+  // transcript per call, so the manifest's 35 rows are really five calls.
+  setHtml('s2ManifestActions', groups.map(g =>
+    `<button class="chip" data-action="seed-manifest" data-manifest-prefix="${escapeHtml(g.transcript_id)}"`
+    + ` title="Add every manifest segment of ${escapeHtml(g.transcript_id)} to segment_specs">`
+    + `+ ${g.rows.length} from ${escapeHtml(g.transcript_id)}${g.file ? ` (${escapeHtml(g.file)})` : ' · ⚠ no transcript file entry'}</button>`
+  ).join('') + (groups.length > 1
+    ? `<button class="chip chip-done" data-action="seed-manifest" data-manifest-prefix="">+ all ${manifest.segments.length} specs</button>`
+    : ''));
+
+  const inViolation = new Set((((state.violation || {}).segments) || []).map(s => s.segment_id));
+  const rows = manifest.segments.map(row => {
+    const anchored = inViolation.has(row.segment_id);
+    const start = Number(row.audio_offset_start);
+    const end = Number(row.audio_offset_end);
+    const span = Number.isFinite(start) && Number.isFinite(end)
+      ? `${start.toFixed(2)}s–${end.toFixed(2)}s`
+      : 'offset not stated';
+    const marks = [
+      anchored
+        ? '<span class="badge badge-pass">in violation JSON</span>'
+        : '<span class="badge badge-fail" title="declared by the manifest but absent from the violation JSON">not in violation JSON</span>',
+      row.added_during_refinement
+        ? '<span class="badge badge-warn" title="added during refinement — the vault has no ancestor segment for it">refined</span>'
+        : '',
+      row.legacy_segment_id
+        ? `<span class="chip" title="what this segment was before re-anchoring">${escapeHtml(row.legacy_segment_id)}</span>`
+        : '<span class="chip" title="the manifest records no vault ancestor for this segment">no legacy id</span>',
+    ].filter(Boolean).join('');
+    // A single line pair: the Spanish verbatim is the authoritative quote and
+    // the English rendering is what the violation will actually carry.
+    const texts = row.translation_en
+      ? `<div class="rr-detail quote">&quot;${escapeHtml(row.verbatim_es)}&quot;</div>`
+        + `<div class="rr-detail">${escapeHtml(row.translation_en)}</div>`
+      : `<div class="rr-detail quote">&quot;${escapeHtml(row.verbatim_es)}&quot; <span class="badge badge-fail">no English rendering in the manifest</span></div>`;
+    return `<div class="record-row${anchored ? ' verified' : ' legacy'}" data-manifest-id="${escapeHtml(row.segment_id)}">
+      <div class="rr-main">
+        <div class="rr-id">${escapeHtml(row.segment_id)}</div>
+        <div class="rr-detail">${escapeHtml(row.role_in_argument || 'no role recorded')}</div>
+        ${texts}
+        ${row.transcription_notes ? `<div class="rr-detail">note: ${escapeHtml(row.transcription_notes)}</div>` : ''}
+      </div>
+      <div class="rr-meta">${marks}<span class="badge badge-neutral">${span}</span></div>
+    </div>`;
+  });
+  host.innerHTML = rows.join('');
+  return manifest;
+}
+
+/** Add a manifest transcript's segments (all of them when ``prefix`` is empty)
+ *  to ``segment_specs``.
+ *
+ *  Deliberately works off the manifest rather than the browsed transcript: the
+ *  manifest already holds the role and the English rendering for every segment,
+ *  so seeding is a copy, not a guess. It also means the 30
+ *  ``refinement_added_segments`` seeds correctly — those ids exist in no vault
+ *  transcript, so a corpus-driven seed would silently skip them. */
+function seedManifestSpecs(prefix) {
+  const manifest = manifestSegments();
+  if (!manifest) return 0;
+  const rows = manifest.segments.filter(row => !prefix || row.transcript_id === prefix);
+  let added = 0;
+  rows.forEach(row => {
+    if (!row.local_id) return;
+    state.segmentSpecs[row.segment_id] = {
+      segment_id: row.local_id,
+      role_in_argument: row.role_in_argument || 'fact',
+      translation_en: row.translation_en || row.verbatim_es,
+    };
+    added += 1;
+  });
+  renderSelectedSegments();
+  if (state.activeTranscript) renderS2Segments();
+  return added;
 }
 
 /* --------------------------------------------------------------------- S3 */
+
+/** Load one cached article's verbatim text into the S3 excerpt field.
+ *
+ *  The picker used to render inert chips: they named the article numbers the
+ *  cache holds but offered no way to see the text behind a number, so the
+ *  excerpt had to be pasted from somewhere else and a single typo made it fail
+ *  the byte-exact substring check. The bridge reads the bundle's own cache file,
+ *  so what lands in the textarea is text taken from the very file the norms
+ *  tool validates the excerpt against.
+ *
+ *  The id goes into `#s3ArticleId` from the cache's own `**ELI ID:**`
+ *  declaration rather than being rebuilt from the article number: the hierarchy
+ *  segments ('C1', 'T2.P6') are not derivable from 'Art. 255'/'Art. 412'.
+ *
+ *  Takes the article number rather than the clicked element, because
+ *  `hydrateS3()` re-applies the pick after every re-render — the chips remember
+ *  which article is picked, so the fields below have to remember it too.
+ */
+async function pickFrameworkArticle(article) {
+  const select = document.getElementById('s3FrameworkFile');
+  const code = (select && select.value) || '';
+  const cache = (((state.violation || {}).framework_caches) || [])
+    .find(c => c.framework_code === code);
+  const base = state.bundle && state.bundle.path;
+  const uri = (cache && cache.cache_file && base) ? `${base}/${cache.cache_file}` : '';
+  if (!uri) {
+    pushLog('No framework cache path for this bundle — cannot read an article', 'S3', 'warn');
+    return;
+  }
+  try {
+    const payload = await API.frameworkArticle(uri, article);
+    state.pickedArticle = { code, article };
+    // `.value` assignment still works on a read-only input, which is the point
+    // of using `readonly` rather than `disabled` throughout this file.
+    setInput('s3ArticleId', payload.article_id || '');
+    setInput('s3Verbatim', payload.body || '');
+    setText('s3VerbatimSource', [
+      payload.article_name || `Art. ${article}`,
+      `read from ${payload.name}`,
+      `sha256 ${String(payload.body_sha256 || '').slice(0, 12)}…`,
+    ].join(' · '));
+    document.querySelectorAll('#s3ArticleChips .chip-action').forEach(el => {
+      el.classList.toggle('is-selected', el.dataset.article === article);
+    });
+    pushLog(`Loaded Art. ${article} (${payload.article_id || 'no declared ELI id'}) from ${payload.name}`, 'S3', 'ok');
+  } catch (err) {
+    pushLog(`Could not read Art. ${article} — ${err.message}`, 'S3', 'err');
+  }
+}
+
+/** The article the user picked, but only while it still belongs to `code`'s
+ *  cache — switching frameworks must not leave a stale pick on screen. One rule,
+ *  shared by the chip highlighting and by the excerpt/id fields, so the two can
+ *  never disagree about which article is showing. */
+function pickedArticleFor(code, articles) {
+  const picked = state.pickedArticle;
+  return picked && picked.code === code && articles.includes(picked.article)
+    ? picked.article
+    : '';
+}
 
 function hydrateS3() {
   const v = state.violation;
@@ -2823,24 +3668,55 @@ function hydrateS3() {
     setInput('s3FrameworkCode', code || '');
     const articles = cache ? (cache.articles_cached || []) : [];
     if (articles.length) {
-      setHtml('s3ArticleChips', articles.map(a => `<span class="chip">Art. ${escapeHtml(a)}</span>`).join(''));
+      // Real buttons, not labels: the cache is the only thing that knows what
+      // "Art. 255" says, so the picker has to be able to fetch the text.
+      const pickedHere = pickedArticleFor(code, articles);
+      setHtml('s3ArticleChips', articles.map(a => {
+        const on = a === pickedHere;
+        return `<button class="chip chip-action${on ? ' is-selected' : ''}"`
+          + ` data-action="pick-article" data-article="${escapeHtml(a)}"`
+          + ` title="Load the cached text of Art. ${escapeHtml(a)} into the excerpt below">`
+          + `Art. ${escapeHtml(a)}</button>`;
+      }).join(''));
     } else if (disc && disc.article_count) {
       setHtml('s3ArticleChips', hintRow(`${disc.article_count} article(s) in ${disc.path} — not cached into this bundle yet.`));
     } else {
       setHtml('s3ArticleChips', hintRow(cache ? 'This cache lists no articles.' : 'No framework cache in this bundle.'));
     }
   };
-  if (select) select.onchange = syncFramework;
-  syncFramework();
-
   fillSelect('s3NormType', sch.norm_type, est[0] && est[0].norm_type, 'no established article');
-  setInput('s3ArticleId', est.length ? est[0].article_id : '');
-  setInput('s3Verbatim', est.length ? (est[0].verbatim_excerpt || '') : '');
-  const cache0 = caches[0];
-  setText('s3VerbatimSource', est.length
-    ? `${est[0].framework_cache_status || 'status unknown'} · ${est[0].applicability || 'applicability unknown'}`
-      + (cache0 && cache0.cache_file ? ` · ${cache0.cache_file}` : '')
-    : '');
+
+  /** The excerpt, id and provenance line. Exactly one article is on screen at a
+   *  time — the pick if it is still valid for the selected framework, else the
+   *  bundle's established article — and the chip row is rendered from the same
+   *  rule, so the highlighted chip and these fields cannot disagree. */
+  const renderArticle = () => {
+    const code = select ? select.value : '';
+    const cached = (caches.find(c => c.framework_code === code) || {}).articles_cached || [];
+    const picked = pickedArticleFor(code, cached);
+    if (picked) {
+      // Re-read through the very call the chip uses, so the two paths cannot
+      // render the same article differently.
+      pickFrameworkArticle(picked);
+      return;
+    }
+    // The provenance names the cache the *established* article came from, which
+    // is not necessarily the framework selected in the picker.
+    const estCache = caches.find(c => c.framework_code === (est[0] || {}).framework_code) || {};
+    setInput('s3ArticleId', est.length ? est[0].article_id : '');
+    setInput('s3Verbatim', est.length ? (est[0].verbatim_excerpt || '') : '');
+    setText('s3VerbatimSource', est.length
+      ? `${est[0].framework_cache_status || 'status unknown'} · ${est[0].applicability || 'applicability unknown'}`
+        + (estCache.cache_file ? ` · ${estCache.cache_file}` : '')
+      : '');
+  };
+
+  // Switching framework changes which articles exist, so the fields have to be
+  // re-decided too — otherwise a chip row with nothing picked would sit above a
+  // foreign framework's excerpt.
+  if (select) select.onchange = () => { syncFramework(); renderArticle(); };
+  syncFramework();
+  renderArticle();
 
   setHtml('s3Established', est.length ? est.map(a => `
     <div class="record-row verified">
@@ -2904,15 +3780,45 @@ function hydrateS4() {
       return;
     }
     const elements = grid.elements || [];
-    const cols = [...new Set(elements.flatMap(e => e.proof_evidence_segments || []))];
+    // Columns are grouped by the transcript each cited segment came from, in the
+    // order the grid first reaches for each one. A flat dedupe gave a row of
+    // ``seg-36``/``seg-82`` with nothing to say that they were two different
+    // recordings, and one ``<thead>`` row has nowhere to put that.
+    const byTranscript = new Map();
+    elements.forEach(e => (e.proof_evidence_segments || []).forEach(id => {
+      const t = segmentTranscript(id);
+      if (!byTranscript.has(t)) byTranscript.set(t, []);
+      const seen = byTranscript.get(t);
+      if (!seen.includes(id)) seen.push(id);
+    }));
+    // One group per transcript rather than per contiguous run: a transcript
+    // cited again after another one would otherwise be headed twice under the
+    // same label, which reads as two different recordings.
+    const groups = [...byTranscript.entries()].map(([transcript, ids]) => ({ transcript, ids }));
+    const cols = groups.flatMap(g => g.ids);
 
-    const head = `<thead><tr><th>Element</th><th>Proof</th>${
-      cols.map(c => `<th title="${escapeHtml(c)}">${escapeHtml(shortId(c))}</th>`).join('')}</tr></thead>`;
+    const head = `<thead>`
+      + `<tr><th rowspan="2">Element</th><th rowspan="2">Proof</th>`
+      + groups.map(g => `<th class="mx-tr" colspan="${g.ids.length}" title="${escapeHtml(g.transcript)}">`
+        + `<span class="mx-tr-label">${escapeHtml(transcriptLabel(g.transcript))}</span>`
+        + `<span class="mx-tr-scope">${g.ids.length} segment${g.ids.length === 1 ? '' : 's'}</span>`
+        + `</th>`).join('')
+      + `</tr><tr>`
+      + cols.map(c => `<th class="mx-seg" title="${escapeHtml(c)}">${escapeHtml(shortId(c))}</th>`).join('')
+      + `</tr></thead>`;
     const body = elements.map(e => {
       const cited = new Set(e.proof_evidence_segments || []);
-      return `<tr><td title="${escapeHtml(e.element_id)}">${escapeHtml(e.label || shortId(e.element_id))}</td>`
-        + `<td>${tag(e.proof_status)}<span class="weight-note">${weights[e.proof_status] !== undefined ? ` ×${weights[e.proof_status]}` : ''}</span></td>`
-        + cols.map(c => `<td class="cell-${cited.has(c) ? 'on' : 'off'}">${cited.has(c) ? '●' : '·'}</td>`).join('')
+      const name = e.label || shortId(e.element_id);
+      return `<tr><td title="${escapeHtml(e.element_id)}">${escapeHtml(name)}</td>`
+        + `<td><button class="proof-hit" data-action="open-proof" data-element="${escapeHtml(e.element_id)}"`
+        + ` title="Read the proof for &ldquo;${escapeHtml(name)}&rdquo;">`
+        + tag(e.proof_status)
+        + `<span class="weight-note">${weights[e.proof_status] !== undefined ? ` ×${weights[e.proof_status]}` : ''}</span>`
+        + `</button></td>`
+        + cols.map(c => cited.has(c)
+          ? `<td class="cell-on"><button class="dot-btn" data-action="open-segment" data-segment="${escapeHtml(c)}"`
+            + ` data-element="${escapeHtml(e.element_id)}" title="${escapeHtml(c)} proves &ldquo;${escapeHtml(name)}&rdquo; — read both">●</button></td>`
+          : `<td class="cell-off" title="${escapeHtml(c)} is not cited for this element">·</td>`).join('')
         + `</tr>`;
     }).join('');
     setHtml('s4Matrix', head + `<tbody>${body}</tbody>`);
@@ -2947,7 +3853,12 @@ function hydrateS5() {
   const segs = (v && v.segments) || [];
 
   const facts = [...new Set(nexus.map(n => n.fact_id))];
-  fillSelect('s5Fact', (facts.length ? facts : segs.map(s => s.segment_id)).map(f => ({ value: f, label: shortId(f) })),
+  // Every segment id here is scoped (``<transcript_id>.seg-N``), and the same
+  // ``seg-N`` exists in every transcript of the bundle, so the option text names
+  // the recording. The full id stays the value, because that is what the tool
+  // consumes.
+  fillSelect('s5Fact', (facts.length ? facts : segs.map(s => s.segment_id))
+    .map(f => ({ value: f, label: segmentOptionLabel(f) })),
     facts[0], 'no facts on file');
   fillSelect('s5Norm', [...new Set(nexus.map(n => n.norm_id))]
     .concat(((v && v.established_articles) || []).map(a => a.article_id))
@@ -2963,7 +3874,7 @@ function hydrateS5() {
     .map(n => `
     <div class="record-row">
       <div class="rr-main">
-        <div class="rr-id">${escapeHtml(shortId(n.fact_id))} <span class="rr-arrow">→</span> ${escapeHtml(shortId(n.norm_id))}</div>
+        <div class="rr-id">${escapeHtml(segmentOptionLabel(n.fact_id))} <span class="rr-arrow">→</span> ${escapeHtml(shortId(n.norm_id))}</div>
         <div class="rr-detail">${escapeHtml(n.element_id)} · ${escapeHtml(n.nexus_type)}</div>
         ${n.rationale_oneline ? `<div class="rr-detail">${escapeHtml(n.rationale_oneline)}</div>` : ''}
       </div>
@@ -3000,7 +3911,7 @@ function hydrateS6() {
   const elements = elementsOf(v);
 
   const next = `AUTH-${state.bundleId || 'bundle-XXX'}-${String(authorities.length + 1).padStart(2, '0')}`;
-  setInput('s6AuthorityId', authorities.some(a => a.id === next) ? '' : next);
+  setInput('s6AuthorityId', authorities.some(a => a.authority_id === next) ? '' : next);
   fillSelect('s6Type', sch.authority_type, authorities[0] && authorities[0].type, 'no authority on file');
   fillSelect('s6Protocol', sch.authority_protocol, authorities[0] && authorities[0].verification_protocol, 'no protocol on file');
   if (!document.getElementById('s6Supports').value) setInput('s6Supports', '');
@@ -3008,21 +3919,40 @@ function hydrateS6() {
     ? elements.map(e => `<span class="chip" data-element-id="${escapeHtml(e.element_id)}" title="${escapeHtml(e.element_id)}">${escapeHtml(e.label || shortId(e.element_id))}</span>`).join('')
     : '');
 
-  setHtml('s6Stubs', authorities.length ? authorities.map(a => `
+  setHtml('s6Stubs', authorities.length ? authorities.map(a => {
+    // The field is `authority_id`, not `id` — reading the bare id off the
+    // authority printed "undefined" as every stub's name, which also made the
+    // collision check above a no-op that could hand out an id already in use.
+    const id = a.authority_id;
+    const p = a.verification_provenance;
+    const files = proofArtefactsFor(id);
+    return `
     <div class="record-row${a.verified ? ' verified' : ''}">
       <div class="rr-main">
-        <div class="rr-id">${escapeHtml(a.id)}</div>
+        <div class="rr-id">${escapeHtml(id)}</div>
         <div class="rr-detail">${escapeHtml(a.proposition_to_verify || 'no proposition recorded')}</div>
         <div class="rr-detail">${escapeHtml([
           a.type ? `type: ${a.type}` : null,
           (a.supports || []).length ? `supports ${a.supports.map(shortId).join(', ')}` : 'supports nothing',
           a.research_query ? `query: ${a.research_query}` : null,
         ].filter(Boolean).join(' · '))}</div>
+        ${p ? `<div class="rr-detail"><b>Verified</b> ${escapeHtml([
+          p.protocol,
+          p.matched_offset !== undefined && p.matched_offset !== null ? `offset ${p.matched_offset}` : null,
+          p.source_uri ? `source ${p.source_uri}` : null,
+          p.source_sha256 ? `sha ${p.source_sha256.slice(0, 12)}…` : null,
+          p.verified_at ? fmtStamp(p.verified_at) : null,
+        ].filter(Boolean).join(' · '))}</div>` : ''}
+        ${p && p.matched_quote ? `<div class="rr-detail quote">&ldquo;${escapeHtml(p.matched_quote)}&rdquo;</div>` : ''}
+        ${files.length ? `<div class="rr-detail"><b>Proof on file</b> ${files.map(f => escapeHtml(`${f.path} (${fmtBytes(f.size)})`)).join(' · ')}</div>` : ''}
         ${a.fabrication_risk_note ? `<div class="rr-detail"><b>Fabrication risk:</b> ${escapeHtml(a.fabrication_risk_note)}</div>` : ''}
       </div>
       <div class="rr-meta">${tag(a.verified ? 'pass' : 'warn', a.verified ? 'badge-pass' : 'badge-warn')}
-        <span class="badge badge-neutral">${a.verified ? 'verified' : 'unverified'}</span></div>
-    </div>`).join('') : hintRow('No authority stubs in this bundle. V07 will report nothing to verify.'));
+        <span class="badge badge-neutral">${a.verified ? 'verified' : 'unverified'}</span>
+        <button class="btn btn-sm" data-action="open-proof-form" data-authority="${escapeHtml(id)}"
+          title="${p ? 'Show the official source this stub was verified against' : 'Attach the official document or url and verify this stub against it'}">${p ? 'Proof' : 'Attach proof'}</button></div>
+    </div>`;
+  }).join('') : hintRow('No authority stubs in this bundle. V07 will report nothing to verify.'));
 
   const verified = authorities.filter(a => a.verified).length;
   if (!v) setGate('s6Gate', 'Loading bundle…', 'pending');
@@ -3031,14 +3961,489 @@ function hydrateS6() {
     verified === authorities.length ? 'met' : 'advisory');
 }
 
+/* ==========================================================================
+   AUTHORITY PROOF — attach the official document, then verify the stub on it.
+   --------------------------------------------------------------------------
+   The protocol only ever flips `verified` after it finds the caller's quote
+   byte-for-byte inside the content it was handed, and it hashes *that* content.
+   So the source has to be fetched or uploaded next to the stub, and the very
+   same string has to travel back for the call — hence `state.proofSources`
+   instead of anything re-read from the DOM, and hence the match preview below,
+   which searches the exact text whose SHA256 the sidecar records.
+   ========================================================================== */
+
+/** What each authority type needs before `authority_verification` will verify it.
+ *
+ *  Mirrors the protocol including the minima it enforces: a statute is checked
+ *  against statute text through `verify_statute_external_fetch`, while
+ *  jurisprudence/doctrine/comparative go through `verify_human_attested`, which
+ *  refuses jurisprudence without court + rol + decision_date and doctrine
+ *  without author + work. Those are asked for up front because a reviewer
+ *  cannot act on a server error about a field the form never offered — and
+ *  because a rol number is exactly what a language model invents. */
+const PROOF_PLAN = {
+  statute: {
+    tool: 'verify_statute_external_fetch_tool',
+    required: ['instrument'],
+    fields: ['instrument', 'pages'],
+    hint: 'The statute itself — the bcn.cl page for the article, or an official PDF of it.',
+  },
+  jurisprudence: {
+    tool: 'verify_human_attested_tool',
+    required: ['attestor', 'court', 'rol', 'decision_date'],
+    fields: ['attestor', 'court', 'rol', 'decision_date', 'pages', 'holding_summary'],
+    hint: 'The sentencia itself. This protocol records who attested and checks the quote; it does not validate the rol against pjud.',
+  },
+  doctrine: {
+    tool: 'verify_human_attested_tool',
+    required: ['attestor', 'author', 'work'],
+    fields: ['attestor', 'author', 'work', 'pages', 'instrument', 'holding_summary'],
+    hint: 'The book or article itself, with the page the quote sits on.',
+  },
+  comparative: {
+    tool: 'verify_human_attested_tool',
+    required: ['attestor'],
+    fields: ['attestor', 'author', 'work', 'pages', 'instrument', 'holding_summary'],
+    hint: 'Foreign or comparative material. Name whoever read it.',
+  },
+};
+
+const PROOF_FIELD_LABEL = {
+  instrument: 'Instrument', pages: 'Pages / page', court: 'Court', rol: 'Rol / case number',
+  decision_date: 'Decision date', holding_summary: 'Holding, as the source states it',
+  author: 'Author', work: 'Work title', attestor: 'Attested by',
+};
+
+/** The plan for one stub, or null when its type cannot be routed. Never a
+ *  fallback plan: picking a protocol for an unknown type would verify a
+ *  comparative citation with the statute rules. */
+function proofPlanFor(authority) {
+  return PROOF_PLAN[String((authority || {}).type || '')] || null;
+}
+
+function proofFieldId(name) {
+  return 'proof' + name.replace(/^(\w)/, (c) => c.toUpperCase()).replace(/_(\w)/g, (_, c) => c.toUpperCase());
+}
+
+function proofValue(name) {
+  const el = document.getElementById(proofFieldId(name));
+  return el ? String(el.value || '').trim() : '';
+}
+
+/** The files this stub's proof left on disk. Matched on the name rather than on
+ *  a rebuilt path, because the server sanitises the authority id and this page
+ *  must not disagree with it about what the file is called. */
+function proofArtefactsFor(authorityId) {
+  const id = String(authorityId || '');
+  if (!id) return [];
+  return bundleFiles().filter(f => String(f.path).includes('/Authority sources/')
+    && String(f.name).includes(id));
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error(`the browser could not read ${file.name}`));
+    reader.onload = () => resolve(String(reader.result).split(',', 2)[1] || '');
+    reader.readAsDataURL(file);
+  });
+}
+
+/** Is this stub's verification in the bundle JSON, or only in this tab?
+ *
+ *  Every tool in this page returns the updated violation and writes nothing:
+ *  S11's "Build package" is the write gate for the whole bundle. So a verify run
+ *  from here is invisible to everyone but the browser it happened in until that
+ *  runs — and a reload silently reverts the stub. The two copies are compared
+ *  instead of tracking a flag, because a flag would have to be cleared by
+ *  whoever else writes the bundle. */
+function proofIsOnDisk(authority) {
+  const saved = ((((state.bundle || {}).violation || {}).authorities) || [])
+    .find(a => a.authority_id === (authority || {}).authority_id);
+  if (!saved) return false;
+  return saved.verified === authority.verified
+    && JSON.stringify(saved.verification_provenance || null)
+      === JSON.stringify(authority.verification_provenance || null);
+}
+
+/** Re-read only the bundle's file listing.
+ *
+ *  `bundleFiles()` reads the listing `loadBundle()` captured, so a source stored
+ *  since then is invisible under "Proof on disk" until something re-reads it.
+ *  Deliberately not a full `loadBundle()`: that also replaces `state.violation`
+ *  with the copy on disk, which would throw away a verification that has not
+ *  been written yet — precisely the state this page is designed to show. */
+async function refreshBundleFiles() {
+  if (!state.bundleId) return;
+  try {
+    const fresh = await API.bundle(state.bundleId);
+    if (state.bundle && fresh && Array.isArray(fresh.files)) state.bundle.files = fresh.files;
+  } catch (e) {
+    pushLog(`← could not re-read the bundle listing — ${e.message}`, 'S6', 'warn');
+  }
+}
+
+function proofStatus(html, isError) {
+  const el = document.getElementById('proofMatch');
+  if (!el) return;
+  el.style.color = isError ? 'var(--status-flag)' : '';
+  el.innerHTML = html;
+}
+
+/** Show what was loaded, and whether the quote would actually be found. */
+function renderProofSource(authorityId) {
+  const preview = document.getElementById('proofPreview');
+  const d = state.proofSources[authorityId];
+  if (!preview) return;
+  if (!d) { preview.innerHTML = ''; return; }
+
+  const content = d.source_content || '';
+  const quote = inputValue('proofQuote');
+  const bits = [
+    d.text_source === 'fetched' ? 'fetched from the url' : d.text_source === 'pasted' ? 'pasted text' : 'uploaded document',
+    // What the server was served matters: the content type is what selected the
+    // reader, and a page served as text/plain is the case that used to reach the
+    // protocol as markup. A redirect is shown too, because a fetch that lands on
+    // a different page than the one named is a verification problem, not a detail.
+    d.content_type ? `served as ${d.content_type}` : null,
+    d.fetched && d.final_url && d.final_url !== d.source_uri ? `redirected to ${d.final_url}` : null,
+    d.extractor ? `read with ${d.extractor}` : null,
+    `${d.chars || 0} characters`,
+    d.text_sha256 ? `sha256 ${String(d.text_sha256).slice(0, 12)}…` : null,
+    d.artefact ? `stored as ${d.artefact.rel}` : null,
+  ].filter(Boolean);
+
+  // The provenance line is kept under the verdict in every branch. It used to be
+  // *replaced* by the verdict as soon as a quote was typed — which hid exactly the
+  // facts that make the sentence above it trustworthy (which copy was searched,
+  // what the server was served, where the fetch landed, the hash the protocol
+  // will pin) at the one moment the reviewer is about to commit to them.
+  const meta = escapeHtml(bits.join(' · '));
+  const withMeta = (head) => `${head}<div class="field-hint">${meta}</div>`;
+
+  if (!content) {
+    proofStatus(withMeta('<b>Stored.</b> Nothing readable came out of it, so paste the passage instead.'), true);
+  } else if (!quote) {
+    proofStatus(withMeta('Paste the quote that must appear.'), false);
+  } else {
+    const at = content.indexOf(quote);
+    proofStatus(withMeta(at < 0
+      ? '<b>Not found verbatim</b> in the loaded text, so the protocol will refuse this quote. '
+        + 'Check the wording, or load the page again with whitespace collapsing on.'
+      : `Found verbatim at offset <b>${at}</b>.`), at < 0);
+  }
+
+  preview.innerHTML = [
+    d.warnings && d.warnings.length
+      ? d.warnings.map(w => `<div class="field-hint" style="color:var(--status-flag)">${escapeHtml(w)}</div>`).join('') : '',
+    content ? `<div class="modal-section-label">Loaded text</div>
+      <div class="note-card" style="max-height:200px;overflow:auto;"><div class="note-body">${highlightQuote(content, quote)}</div></div>` : '',
+  ].join('');
+}
+
+/** The loaded text with the quote marked, capped so a full statute page cannot
+ *  push the form buttons off screen. Escaping happens before the mark tag is
+ *  inserted, never after. */
+function highlightQuote(content, quote) {
+  // Named `cap`, not `window`: shadowing the global inside a function that also
+  // renders markup is a trap waiting for the next edit.
+  const cap = 3000;
+  const at = quote ? content.indexOf(quote) : -1;
+  if (at < 0) {
+    return escapeHtml(content.slice(0, cap)) + (content.length > cap ? ' …' : '');
+  }
+  const start = Math.max(0, at - 300);
+  return escapeHtml(content.slice(start, at))
+    + `<mark>${escapeHtml(content.slice(at, at + quote.length))}</mark>`
+    + escapeHtml(content.slice(at + quote.length, at + quote.length + cap));
+}
+
+/** The provenance of an authority that is already verified: the durable half of
+ *  "we checked this against official data". */
+function proofRecordSection(p) {
+  const uri = String(p.source_uri || '');
+  const link = /^https?:\/\//.test(uri)
+    ? `<div class="rr-detail"><b>source</b> <a href="${escapeHtml(uri)}" target="_blank" rel="noreferrer noopener">${escapeHtml(uri)}</a></div>`
+    : `<div class="rr-detail"><b>source</b> ${escapeHtml(uri || '—')}</div>`;
+  return `<div class="modal-section"><div class="modal-section-label">Already verified</div>
+    <div class="note-card"><div class="note-body">&ldquo;${escapeHtml(p.matched_quote || '')}&rdquo;</div></div>
+    ${link}
+    <div class="rr-detail"><b>protocol</b> ${escapeHtml(p.protocol || '')} · <b>offset</b> ${escapeHtml(p.matched_offset)} · <b>at</b> ${escapeHtml(fmtStamp(p.verified_at))}</div>
+    <div class="rr-detail"><b>source sha256</b> ${escapeHtml(p.source_sha256 || '')}</div>
+    ${p.notes ? `<div class="rr-detail"><b>notes</b> ${escapeHtml(p.notes)}</div>` : ''}
+  </div>`;
+}
+
+/** Re-render just the artefact list, so the file that was written a moment ago
+ *  appears without rebuilding the form the reviewer is halfway through. */
+function renderProofArtefacts(authorityId) {
+  const host = document.getElementById('proofArtefacts');
+  if (host) host.innerHTML = proofArtefactSection(authorityId);
+}
+
+/** Everything under the bundle's Authority sources/ that belongs to this stub.
+ *
+ *  The trailing slash is what keeps the `Authority sources` directory itself out
+ *  of the list: its own path is `build/<id>/Authority sources`, with nothing after
+ *  it. Matching on `f.kind` instead would be a guard no test could reach, because
+ *  the path test already refuses every entry the type test would. */
+function proofArtefactSection(authorityId) {
+  const mine = proofArtefactsFor(authorityId);
+  const all = bundleFiles().filter(f => String(f.path).includes('/Authority sources/'));
+  const list = (mine.length ? mine : all).slice(0, 12);
+  if (!list.length) return '';
+  return `<div class="modal-section"><div class="modal-section-label">Proof on disk${mine.length ? '' : ' (bundle-wide)'}</div>`
+    + list.map(f => `<div class="rr-detail">${escapeHtml(f.path)} <span class="field-hint">${escapeHtml(fmtBytes(f.size))}</span></div>`).join('')
+    + (list.length < all.length ? `<div class="field-hint">…and ${all.length - list.length} more in Authority sources/</div>` : '')
+    + `</div>`;
+}
+
+/** The S6 proof modal: attach the official source for one stub, then verify it. */
+function openProofModal(authorityId) {
+  const id = String(authorityId || '');
+  const authority = (((state.violation || {}).authorities) || []).find(a => a.authority_id === id);
+  if (!authority) { pushLog(`No authority ${id} in the loaded bundle`, 'S6', 'warn'); return; }
+
+  const plan = proofPlanFor(authority);
+  const p = authority.verification_provenance;
+  // Computed once: the note and the button below must agree, and this reads two
+  // JSON copies, so it is not something to call three times inside one render.
+  const onDisk = p ? proofIsOnDisk(authority) : true;
+  state.proofAuthority = id;
+
+  document.getElementById('modalBadge').textContent = 'S6 · Authority proof';
+  document.getElementById('modalTitle').textContent = `${id} — ${p ? 'proof on file' : 'attach the official source'}`;
+  document.getElementById('modalSub').textContent = [
+    authority.type || 'no type',
+    p ? 'verified' : 'unverified',
+    (authority.supports || []).length ? `supports ${(authority.supports || []).map(shortId).join(', ')}` : null,
+  ].filter(Boolean).join(' · ');
+
+  const control = (name, extra = '') => {
+    const fid = proofFieldId(name);
+    const req = plan && plan.required.includes(name);
+    const label = `${escapeHtml(PROOF_FIELD_LABEL[name] || name)}${req ? ' <span class="req">*</span>' : ''}`;
+    const input = name === 'holding_summary'
+      ? `<textarea id="${fid}"${extra}></textarea>`
+      : `<input id="${fid}"${name === 'decision_date' ? ' type="date"' : ''}${extra}>`;
+    return `<div class="field"><label>${label}</label>${input}</div>`;
+  };
+
+  const body = document.getElementById('modalBody');
+  body.innerHTML = [
+    authority.proposition_to_verify
+      ? `<div class="note-card"><div class="note-body">${escapeHtml(authority.proposition_to_verify)}</div></div>` : '',
+    plan
+      ? `<div class="callout">${escapeHtml(plan.hint)}</div>`
+      : `<div class="callout warning-field"><strong>This stub has no type.</strong> Set one in S6 first — the protocol refuses an authority whose type it cannot route.</div>`,
+    p ? proofRecordSection(p) : '',
+    p && !onDisk
+      ? `<div class="callout warning-field"><strong>In this page only, not in the bundle.</strong>
+          The protocol returned the updated violation but wrote nothing — S11 &ldquo;Build package&rdquo;
+          is what writes it. <em>Save to the bundle</em> keeps this proof now; a reload would
+          otherwise show the stub as unverified again.</div>` : '',
+
+    `<div class="modal-section"><div class="modal-section-label">1 · The official source</div>
+      <div class="field-row">
+        <div class="field"><label>Official page (url)</label>
+          <input id="proofUrl" placeholder="https://www.bcn.cl/leychile/navegar?idNorma=..."></div>
+        <div class="field"><label>Fetch it now</label>
+          <div class="field-hint">The server downloads the page and stores a copy here, so the proof does not depend on the page still being up.</div></div>
+      </div>
+      <div class="field"><label>…or upload the document (PDF, saved page, text)</label>
+        <input type="file" id="proofFile" accept=".pdf,.html,.htm,.txt,.md,.json,.csv,.xml"></div>
+      <div class="field"><label>…or paste the text</label>
+        <textarea id="proofPaste" rows="3" placeholder="the passage as it appears, if the file cannot be read"></textarea></div>
+      <div class="field-row">
+        <div class="field"><label>Quote that must appear verbatim <span class="req">*</span></label>
+          <textarea class="quote" id="proofQuote" rows="3"></textarea></div>
+        <div class="field"><label>Whitespace</label>
+          <label class="field-hint"><input type="checkbox" id="proofCollapse" checked> collapse runs of spaces and newlines before matching</label></div>
+      </div>
+      <div class="field-hint" id="proofMatch">Load a source, then this line says whether the quote is in the exact text that will be hashed.</div>
+      <div id="proofPreview"></div>
+      <div class="btn-row">
+        <button class="btn" data-action="proof-ingest" data-authority="${escapeHtml(id)}">Store source &amp; check quote</button>
+      </div>
+    </div>`,
+
+    plan ? `<div class="modal-section"><div class="modal-section-label">2 · What the protocol records about it</div>
+      <div class="field-row">${plan.fields.map(name => control(name)).join('')}</div>
+      ${authority.type === 'jurisprudence'
+        ? `<div class="field"><label>Instrument (optional)</label><input id="proofInstrument"></div>` : ''}
+    </div>` : '',
+
+    `<div id="proofArtefacts">${proofArtefactSection(id)}</div>`,
+
+    `<div class="btn-row">
+      <button class="btn btn-primary" data-action="proof-verify" data-authority="${escapeHtml(id)}"${plan ? '' : ' disabled'}>Verify this stub against it</button>
+      ${p && !onDisk
+        ? `<button class="btn" data-action="proof-save" data-authority="${escapeHtml(id)}">Save to the bundle</button>` : ''}
+      <button class="btn" data-action="close-modal">Cancel</button>
+    </div>`,
+  ].join('');
+
+  // Reuse whatever is already in hand: the quote that was verified last time,
+  // and the source text loaded earlier in this session.
+  if (p && p.matched_quote) setInput('proofQuote', p.matched_quote);
+  associateLabels(body);
+  document.getElementById('modalOverlay').classList.add('active');
+  renderProofSource(id);
+}
+
+/** Store the source the form is pointing at. Returns the ingest payload, or
+ *  null when there is nothing to store or the server refused it. */
+async function ingestProofSource(authorityId, opts = {}) {
+  const fileInput = document.getElementById('proofFile');
+  const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+  const url = inputValue('proofUrl').trim();
+  const paste = inputValue('proofPaste').trim();
+  if (!file && !url && !paste) {
+    proofStatus('Nothing to store — give a url, choose a file, or paste the text.', true);
+    return null;
+  }
+
+  const payload = { violation_id: state.bundleId, authority_id: authorityId };
+  if (url) {
+    payload.source_url = url;
+    // The server has no CORS problem to work around — it fetches the page
+    // itself and keeps a copy — but the exact text hashed must be the text the
+    // reviewer saw, so the page is only fetched when no file was uploaded.
+    payload.fetch_url = !file;
+  }
+  if (paste) payload.text = paste;
+  if (file) {
+    payload.filename = file.name;
+    try {
+      payload.content_base64 = await fileToBase64(file);
+    } catch (e) {
+      proofStatus(escapeHtml(e.message), true);
+      return null;
+    }
+  }
+  payload.collapse_whitespace = !!(document.getElementById('proofCollapse') || {}).checked;
+
+  proofStatus('Storing the source…', false);
+  pushLog(`→ POST /api/authority-source (${[file ? file.name : null, url ? 'url' : null, paste ? 'pasted text' : null].filter(Boolean).join(', ')})`, 'S6');
+  let data;
+  try {
+    data = await API.authoritySource(payload);
+  } catch (e) {
+    pushLog(`← authority source failed — ${e.message}`, 'S6', 'err');
+    proofStatus(`<b>Could not store the source.</b> ${escapeHtml(e.message)}`, true);
+    return null;
+  }
+
+  state.proofSources[authorityId] = data;
+  pushLog(`← stored ${data.artefact ? data.artefact.rel : data.source_uri} (${data.chars} chars)`, 'S6', 'ok');
+  renderProofSource(authorityId);
+  if (!opts.quiet) {
+    // The listing is a snapshot, so the file just written would be missing from
+    // "Proof on disk" without this — the reviewer would have no way to see that
+    // the official copy they asked for is actually being kept.
+    await refreshBundleFiles();
+    applyBundleToStep('s6');
+    renderProofArtefacts(authorityId);
+  }
+  return data;
+}
+
+/** Write the whole violation to the bundle, with the same tool S11 runs.
+ *  Nothing else in this page writes: the build and verify tools all return an
+ *  updated violation and leave the disk alone, and the `*.proof.json` sidecars
+ *  only record the source, never the stub. */
+async function persistProofAuthority(authorityId) {
+  if (!state.violation) {
+    proofStatus('No violation is loaded, so there is nothing to write.', true);
+    return;
+  }
+  const root = state.settings.bundleRoot || `build/${state.bundleId}`;
+  proofStatus('Writing the bundle…', false);
+  pushLog(`→ write_violation_json_tool(bundle_root=${root})`, 'S6');
+  try {
+    const out = await callTool('write_violation_json_tool', {
+      violation: state.violation, bundle_root: root,
+    });
+    pushLog(`← wrote ${(out && out.path) || `${root}/${state.bundleId}.json`}`, 'S6', 'ok');
+  } catch (e) {
+    pushLog(`← write_violation_json_tool failed — ${e.message}`, 'S6', 'err');
+    proofStatus(`<b>Could not write the bundle.</b> ${escapeHtml(e.message)}`
+      + '<br>The verification is still in this page only.', true);
+    return;
+  }
+  // Re-read from the file rather than trusting the call: this refreshes the
+  // artefact list and, because `proofIsOnDisk` compares the two copies, it is
+  // also what proves the write landed.
+  await loadBundle(state.bundleId);
+  applyBundleToStep('s6');
+  openProofModal(authorityId);
+  proofStatus('<b>Saved.</b> The verification is in the bundle JSON on disk.', false);
+}
+
+/** Verify the stub against the stored source. Nothing here flips `verified`:
+ *  the tool does, inside `authority_verification.py`, after it re-finds the
+ *  quote and re-hashes the text. */
+async function verifyProofStub(authorityId) {
+  const authority = (((state.violation || {}).authorities) || []).find(a => a.authority_id === authorityId);
+  const plan = proofPlanFor(authority);
+  if (!plan) { proofStatus('This stub has no type, so no protocol can be chosen.', true); return; }
+
+  const quote = inputValue('proofQuote').trim();
+  if (!quote) { proofStatus('Paste the quote the source must contain — the protocol searches for it verbatim.', true); return; }
+
+  const missing = plan.required.filter(name => !proofValue(name));
+  if (missing.length) {
+    proofStatus(`The protocol needs ${missing.map(name => `<b>${escapeHtml(PROOF_FIELD_LABEL[name] || name)}</b>`).join(', ')} before it will verify this ${escapeHtml(authority.type)}.`, true);
+    return;
+  }
+
+  const fileInput = document.getElementById('proofFile');
+  const fresh = !!(fileInput && fileInput.files && fileInput.files[0])
+    || !!inputValue('proofUrl').trim() || !!inputValue('proofPaste').trim();
+  const data = fresh || !state.proofSources[authorityId]
+    ? await ingestProofSource(authorityId, { quiet: true })
+    : state.proofSources[authorityId];
+  if (!data) return;
+  if (!data.source_content) {
+    proofStatus('The stored document has no readable text, so there is nothing to search. Paste the passage, or load the page as text.', true);
+    return;
+  }
+
+  const args = {
+    violation: state.violation,
+    violation_id: state.bundleId,
+    authority_id: authorityId,
+    source_uri: data.source_uri,
+    source_content: data.source_content,
+    target_quote: quote,
+  };
+  plan.fields.forEach(name => { const v = proofValue(name); if (v) args[name] = v; });
+
+  proofStatus('Verifying…', false);
+  pushLog(`→ ${plan.tool}(${Object.keys(args).length} args)`, 'S6');
+  try {
+    const result = await callTool(plan.tool, args, { confirm: true });
+    pushLog(`← ${plan.tool} ok`, 'S6', 'ok');
+    applyResult(plan.tool, result);
+  } catch (e) {
+    pushLog(`← ${plan.tool} failed — ${e.message}`, 'S6', 'err');
+    proofStatus(`<b>The protocol refused it.</b> ${escapeHtml(e.message)}`, true);
+    return;
+  }
+
+  applyBundleToStep('s6');
+  openProofModal(authorityId);
+  proofStatus(`<b>Verified.</b> ${escapeHtml(quote.slice(0, 80))}${quote.length > 80 ? '…' : ''} was found in the source and the stub now carries the provenance.`, false);
+}
+
 /* --------------------------------------------------------------------- S7 */
 
 function hydrateS7() {
   const v = state.violation;
   const authorities = (v && v.authorities) || [];
   const select = fillSelect('s7Authority',
-    authorities.map(a => ({ value: a.id, label: `${a.id} — ${(a.type || 'type?')} · ${(a.proposition_to_verify || '').slice(0, 48)}` })),
-    authorities[0] && authorities[0].id, 'No authority stubs in this bundle');
+    authorities.map(a => ({ value: a.authority_id, label: `${a.authority_id} — ${(a.type || 'type?')} · ${(a.proposition_to_verify || '').slice(0, 48)}` })),
+    authorities[0] && authorities[0].authority_id, 'No authority stubs in this bundle');
   setInput('s7Article', '');
   setInput('s7Quote', '');
 
@@ -3050,7 +4455,7 @@ function hydrateS7() {
       rows.push(`
         <div class="record-row verified">
           <div class="rr-main">
-            <div class="rr-id">${escapeHtml(a.id)} — matched at offset ${escapeHtml(p.matched_offset)}</div>
+            <div class="rr-id">${escapeHtml(a.authority_id)} — matched at offset ${escapeHtml(p.matched_offset)}</div>
             <div class="rr-detail quote">&ldquo;${escapeHtml(p.matched_quote || '')}&rdquo;</div>
             <div class="rr-detail">${escapeHtml([
               p.protocol, p.source_uri ? `source ${p.source_uri}` : null,
@@ -3065,7 +4470,7 @@ function hydrateS7() {
       rows.push(`
         <div class="record-row">
           <div class="rr-main">
-            <div class="rr-id">${escapeHtml(a.id)} — never verified</div>
+            <div class="rr-id">${escapeHtml(a.authority_id)} — never verified</div>
             <div class="rr-detail">${escapeHtml(a.proposition_to_verify || 'no proposition recorded')}</div>
             <div class="rr-detail">${escapeHtml(a.verification_protocol ? `declared protocol: ${a.verification_protocol}` : 'no protocol declared')}</div>
           </div>

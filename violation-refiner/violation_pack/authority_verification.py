@@ -256,6 +256,13 @@ def verify_statute_external_fetch(
         "verified": True,
         "instrument": instrument,
         "pages": pages,
+        # The same reason protocol 1 fills this in: `validation.py` reports
+        # `verified=True` with a blank `verification_protocol` as a defect, so a
+        # stub verified from a fetched page would have failed the very check
+        # that is supposed to confirm it was verified.
+        "verification_protocol": (
+            f"{provenance.protocol}; source={source_uri}; sha256={source_sha}"
+        ),
         "verification_provenance": provenance,
     })
     return _replace_authority(
@@ -354,6 +361,15 @@ def verify_human_attested(
         "pages": pages,
         "instrument": instrument,
         "holding_summary": holding_summary,
+        # `attested_by` is appended to the string a human reads, not only to
+        # provenance.notes: the attestor is the entire strength of this protocol
+        # (V11 flags it as W_HUMAN_ATTESTED_AUTHORITY), so it has to be visible
+        # wherever `verified=True` is. Blank here would also fail the
+        # `verification_protocol is blank` check in validation.py.
+        "verification_protocol": (
+            f"{provenance.protocol}; source={source_uri}; sha256={source_sha}; "
+            f"attested_by={attestor}"
+        ),
         "verification_provenance": provenance,
     })
     return _replace_authority(

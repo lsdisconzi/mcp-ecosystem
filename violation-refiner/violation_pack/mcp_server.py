@@ -44,7 +44,8 @@ from .pack import (
     write_violation_json as _write_violation_json,
     zip_bundle as _zip_bundle,
 )
-from .sources import HtmlTranscriptSource, MarkdownFrameworkSource
+from .sources import HtmlTranscriptSource, MarkdownFrameworkSource, TranscriptSource
+from .sources_json import JsonTranscriptSource
 from .validation import run_pipeline as _run_pipeline
 
 
@@ -75,9 +76,26 @@ def _v_dump(violation: Violation) -> dict:
     return json.loads(violation.model_dump_json(exclude_none=False))
 
 
-def _transcript(path: str, source_id: str, bundle_uri: str) -> HtmlTranscriptSource:
+def _transcript(path: str, source_id: str, bundle_uri: str) -> TranscriptSource:
+    """Open a transcript with the reader that matches its own format.
+
+    The two corpora do **not** share an id space. The rendered HTML yields
+    ``STG-5.seg-1``, while the canonical JSON yields
+    ``I-002_03_NAR-05_STG_5_aircraft_removal.seg-1`` — the latter being the id
+    both ``segments_manifest.json`` and the bundle's violation JSON use.
+    Dispatching on the file's suffix is what lets the evidence layer anchor to
+    the ids the pack already holds instead of composing ``STG-5.STG-5.seg-1``.
+
+    For a JSON transcript the caller's ``source_id`` is deliberately ignored:
+    the canonical id comes from the document's own ``transcript_id``, so a
+    typed label can never shift the composed ``segment_id`` off the key the
+    shared ``reviewed_transcripts`` collection stores.
+    """
+    transcript_path = Path(path)
+    if transcript_path.suffix.lower() == ".json":
+        return JsonTranscriptSource(path=transcript_path, bundle_uri=bundle_uri)
     return HtmlTranscriptSource(
-        path=Path(path), source_id=source_id, bundle_uri=bundle_uri
+        path=transcript_path, source_id=source_id, bundle_uri=bundle_uri
     )
 
 
@@ -134,8 +152,12 @@ def build_server(include_ui: bool = True):
         transcript_bundle_uri: str,
         segment_specs: list[dict],
     ) -> dict:
-        """Layer 1: anchor segments to a transcript HTML on disk.
-        Each segment_spec needs segment_id, role_in_argument, translation_en."""
+        """Layer 1: anchor segments to a transcript on disk — either the
+        rendered HTML corpus or the canonical JSON corpus, chosen by the file's
+        own suffix. Each segment_spec needs segment_id, role_in_argument and
+        translation_en; segment_id is the transcript-LOCAL id (``seg-12``), and
+        the canonical ``<transcript_id>.seg-12`` id is composed from the
+        document itself (a JSON file therefore ignores transcript_source_id)."""
         v = _v_load(violation)
         t = _transcript(transcript_path, transcript_source_id, transcript_bundle_uri)
         return _v_dump(build_evidence_layer(v, t, segment_specs))

@@ -10,6 +10,9 @@ the MCP protocol, so `./start.sh` gives you both on one port:
     POST /api/tool      invoke one tool: {"name": ..., "args": {...}}
     GET  /api/catalog   the mcp_catalog payload
     GET  /api/sources   rendered transcripts and law caches under data/
+    GET  /api/framework-article
+                        one cached article's verbatim body + declared ELI id,
+                        read from a bundle's `Legal framework/<name>.md`
     GET  /api/bundle    one bundle's real artifacts (violation JSON, contract,
                         Validation/checks.json, segments_manifest.json, files)
     GET  /api/schema    every option list the UI renders, read off the live
@@ -39,6 +42,7 @@ Design notes
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import re
 import sys
@@ -269,14 +273,18 @@ def _validation_summary(report: Any) -> dict[str, int]:
     return summary
 
 
-def discover_bundle(violation_id: str) -> dict[str, Any] | None:
-    """Read one real ``build/<violation_id>/`` bundle for the UI.
+def resolve_bundle_dir(violation_id: str) -> Path | None:
+    """``build/<violation_id>/`` when that is a real bundle directory.
 
-    Read-only and filesystem-only: it dispatches no tool and writes nothing. The
-    id must be a bare bundle-directory name that resolves to a real bundle under
-    ``build/``, so a traversal attempt, a path-shaped id and an off-sequence
-    directory are all refused with ``None`` (the caller answers 400 without
-    disclosing what actually exists).
+    The id must be a bare bundle-directory name that resolves to a real bundle
+    under ``build/``, so a traversal attempt, a path-shaped id and an
+    off-sequence directory are all refused with ``None`` (the caller answers 400
+    without disclosing what actually exists).
+
+    Containment is checked on the raw name and on the *parent's* resolved path,
+    and the candidate itself is never resolved: ``build/`` is a real directory,
+    but things inside a bundle are symlinks (``Legal framework/*.md``), so a
+    resolved containment test would start refusing legitimate bundles.
     """
     if not _BUNDLE_DIR_RE.fullmatch(violation_id or ""):
         return None
@@ -286,7 +294,17 @@ def discover_bundle(violation_id: str) -> dict[str, Any] | None:
     # resolved path is still a direct child of build/ before reading anything.
     if bundle.parent.resolve() != (root / "build").resolve():
         return None
-    if not is_bundle_dir(bundle):
+    return bundle if is_bundle_dir(bundle) else None
+
+
+def discover_bundle(violation_id: str) -> dict[str, Any] | None:
+    """Read one real ``build/<violation_id>/`` bundle for the UI.
+
+    Read-only and filesystem-only: it dispatches no tool and writes nothing.
+    """
+    root = find_workspace_root().resolve()
+    bundle = resolve_bundle_dir(violation_id)
+    if bundle is None:
         return None
 
     artifacts: dict[str, Any] = {}
@@ -428,8 +446,35 @@ def _resolve_transcript_uri(uri: str) -> Path | None:
     """Resolve a discovered transcript URI without allowing path traversal.
 
     Accepts both corpus forms: ``data/transcripts/json/*.json`` (canonical,
-    authoritative) and ``data/transcripts/html/*.html`` (a render, symlinked to
-    the OliviaLegal render tree — see ``docs/data_source_of_truth.md`` §8).
+    authoritative — per-file symlinks into ``transcription/``, see
+    ``docs/data_source_of_truth.md`` §3.2) and ``data/transcripts/html/*.html``
+    (a vendored render, real content rather than symlinks — §3.4).
+
+    Containment is checked on the **lexical** path, never on a symlink-resolved
+    one. Every ``data/transcripts/json/*.json`` is a symlink, so resolving the
+    candidate followed that link straight out of ``data/transcripts/json``, the
+    ``relative_to`` test failed, and **every** canonical URI was refused with a
+    400 while the HTML render kept working — the whole canonical corpus was
+    unreachable and it looked like a UI bug rather than a containment bug.
+
+    Containment has two separate jobs and they are worth keeping apart.
+
+    *Escaping the corpus* is prevented by the join: only ``normalised.name`` —
+    a single path component — is ever appended to the corpus directory, and
+    ``normpath`` never leaves a trailing ``..``, so no URI can address a file
+    outside ``data/transcripts/<kind>/``. No other check is load-bearing there.
+
+    *Refusing traversal-shaped URIs* is the shape test's job, and it must run
+    on the **raw** parts. ``Path.parts`` is lexical and keeps ``..``, whereas
+    ``os.path.normpath`` collapses ``json/sub/../x.json`` onto ``json/x.json`` —
+    so a shape test written against the normalised path compares a tuple with
+    itself and passes by construction, accepting the very forms it claims to
+    refuse. Requiring the raw URI to be exactly
+    ``data/transcripts/<json|html>/<name>`` — four parts, so no subdirectory and
+    no ``..`` can exist — is the real check. Without it those URIs resolve to a
+    genuine file, i.e. a path that visibly walks out of the corpus quietly reads
+    a top-level transcript, which is the same "well-formed but not what it looks
+    like" confusion that hid this bug in the first place.
     """
     data_root = find_data_root()
     if data_root is None:
@@ -442,13 +487,179 @@ def _resolve_transcript_uri(uri: str) -> Path | None:
     suffix = candidate.suffix.lower()
     if suffix not in {".json", ".html"}:
         return None
-    transcript_root = (data_root / "transcripts" / suffix.lstrip(".")).resolve()
-    resolved = (data_root.parent / candidate).resolve()
-    try:
-        resolved.relative_to(transcript_root)
-    except ValueError:
+    kind = suffix.lstrip(".")
+    if candidate.parts != ("data", "transcripts", kind, candidate.name):
         return None
+    if candidate.name in {".", ".."}:
+        return None
+    resolved = data_root / "transcripts" / kind / candidate.name
     return resolved if resolved.is_file() else None
+
+
+def transcript_uri_reason(uri: str) -> str:
+    """Explain *why* ``discover_transcript`` refused ``uri`` (diagnostics only).
+
+    ``discover_transcript`` returns ``None`` for two unrelated situations — the
+    URI never resolved to a corpus file, or it resolved but the reader could not
+    parse it. Answering both with one opaque message is how a containment bug
+    that rejected **every** canonical JSON URI was able to masquerade as a
+    broken segment browser instead of a 400 that said what was wrong. The route
+    now reports the specific reason.
+    """
+    if not uri:
+        return "no uri was supplied"
+    data_root = find_data_root()
+    if data_root is None:
+        return "no data/ directory holding law/ and transcripts/ was found"
+    if _resolve_transcript_uri(uri) is not None:
+        return "the transcript was found but its reader could not parse it"
+    candidate = Path(uri)
+    if candidate.is_absolute():
+        return "absolute paths are not accepted"
+    if candidate.parts[:2] != ("data", "transcripts"):
+        return "uri must start with data/transcripts/"
+    suffix = candidate.suffix.lower()
+    if suffix not in {".json", ".html"}:
+        return f"unsupported transcript extension {candidate.suffix or '(none)'}"
+    kind = suffix.lstrip(".")
+    # Mirrors `_resolve_transcript_uri`'s raw-parts shape test — a reason string
+    # that disagrees with the resolver is worse than no reason at all.
+    if candidate.parts != ("data", "transcripts", kind, candidate.name):
+        return (
+            f"uri must name a file directly inside data/transcripts/{kind}/ "
+            "(subdirectories and '..' are refused)"
+        )
+    return f"data/transcripts/{kind}/{candidate.name} does not exist"
+
+
+# A framework cache lives inside the bundle that recorded it, at
+# `Legal framework/<name>.md` — the exact path listed in
+# `violation.framework_caches[].cache_file`. That directory name has a space in
+# it, so it is compared as a whole path component and never split.
+_FRAMEWORK_CACHE_DIR = "Legal framework"
+
+
+def _resolve_framework_uri(uri: str) -> Path | None:
+    """Resolve a bundle's cached framework Markdown without allowing traversal.
+
+    Only one shape is accepted: ``build/<violation_id>/Legal framework/<name>.md``
+    — the cache the bundle itself recorded, which is what ``build_norms_layer_tool``
+    validates a verbatim excerpt against. A discovered-but-uncached framework
+    under ``data/law/`` is deliberately *not* accepted: filling the excerpt from
+    a file the bundle does not carry would produce a quote that cannot pass
+    validation, so the picker must not offer it.
+
+    Containment is checked on the raw ``Path.parts`` and the file is **never**
+    resolved through ``.resolve()``. Every ``build/<id>/Legal framework/*.md``
+    is itself a symlink into ``transcription/data/law/``, so resolving the
+    candidate walks out of the bundle and a resolved-containment test would
+    refuse every one of them — the same trap that once made the whole canonical
+    JSON transcript corpus unreachable (see ``_resolve_transcript_uri``). The
+    lexical shape test is what refuses ``..``; the join is what keeps the read
+    inside the bundle.
+    """
+    root = find_workspace_root()
+    candidate = Path(uri)
+    if candidate.is_absolute():
+        return None
+    parts = candidate.parts
+    if len(parts) != 4 or parts[0] != "build" or parts[2] != _FRAMEWORK_CACHE_DIR:
+        return None
+    if candidate.suffix.lower() != ".md":
+        return None
+    if not _BUNDLE_DIR_RE.fullmatch(parts[1]):
+        return None
+    if parts[3] in {".", ".."}:
+        return None
+    joined = root / "build" / parts[1] / _FRAMEWORK_CACHE_DIR / parts[3]
+    return joined if joined.is_file() else None
+
+
+def framework_uri_reason(uri: str) -> str:
+    """Explain *why* ``_resolve_framework_uri`` refused ``uri`` (diagnostics only).
+
+    Mirrors the resolver's raw-parts test exactly, for the same reason
+    ``transcript_uri_reason`` does: a reason that disagrees with the resolver
+    sends the reader after the wrong cause.
+    """
+    if not uri:
+        return "no uri was supplied"
+    candidate = Path(uri)
+    if candidate.is_absolute():
+        return "absolute paths are not accepted"
+    parts = candidate.parts
+    if len(parts) != 4 or parts[0] != "build" or parts[2] != _FRAMEWORK_CACHE_DIR:
+        return (
+            "uri must name a file directly inside "
+            f"build/<violation_id>/{_FRAMEWORK_CACHE_DIR}/ "
+            "(subdirectories and '..' are refused)"
+        )
+    if candidate.suffix.lower() != ".md":
+        return f"unsupported framework extension {candidate.suffix or '(none)'}"
+    if not _BUNDLE_DIR_RE.fullmatch(parts[1]):
+        return f"{parts[1]!r} is not a bundle id"
+    return f"build/{parts[1]}/{_FRAMEWORK_CACHE_DIR}/{parts[3]} does not exist"
+
+
+def discover_framework_article(uri: str, article: str) -> dict[str, Any] | None:
+    """Return one cached article's verbatim body plus the id the cache declares.
+
+    The body is the text as it sits in the cache, metadata block stripped, so it
+    is a byte-exact substring of the cached framework text — exactly the
+    property ``build_norms_layer_tool`` checks a verbatim excerpt for.
+    """
+    path = _resolve_framework_uri(uri)
+    if path is None:
+        return None
+    from .sources import MarkdownFrameworkSource
+
+    # Same code derivation `/api/sources` publishes, so the picker's code and
+    # this reader's code can never disagree (CPCL_CP.md -> CPCL).
+    code = path.stem.split("_")[0].upper()
+    source = MarkdownFrameworkSource(path, code, uri)
+    body = source.get_article_body(article)
+    if body is None:
+        return None
+    return {
+        "ok": True,
+        "uri": uri,
+        "name": path.name,
+        "framework_code": code,
+        "article": article,
+        # The id and title come from the cache's own metadata, never from a
+        # reconstruction of the article number: only the cache knows the
+        # hierarchy segments ('C1', 'T2.P6') and whether it declares an ELI id
+        # at all.
+        "article_id": source.get_article_eli_id(article),
+        "article_name": source.get_article_title(article),
+        "body": body,
+        "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
+        "cache_sha256": source.cache_sha256(),
+        "articles": source.articles_cached(),
+    }
+
+
+def framework_article_reason(uri: str, article: str) -> str:
+    """Explain *why* ``discover_framework_article`` returned ``None``.
+
+    Two unrelated causes share that ``None`` — an unresolvable cache, and an
+    article the cache does not hold — and collapsing them is how a containment
+    bug hid inside a generic 400 for the transcripts.
+    """
+    if not article:
+        return "no article number was supplied"
+    path = _resolve_framework_uri(uri)
+    if path is None:
+        return framework_uri_reason(uri)
+    from .sources import MarkdownFrameworkSource
+
+    code = path.stem.split("_")[0].upper()
+    known = MarkdownFrameworkSource(path, code, uri).articles_cached()
+    listed = ", ".join(known[:8]) + ("…" if len(known) > 8 else "")
+    return (
+        f"article {article!r} is not one of the {len(known)} article(s) "
+        f"{path.name} caches ({listed})"
+    )
 
 
 def _source_id_from_stem(stem: str) -> str:
@@ -889,11 +1100,27 @@ def build_ui_routes(mcp):
             return json_response(
                 {
                     "ok": False,
-                    "error": (
-                        "uri must reference a discovered transcript under "
-                        "data/transcripts/json/*.json (canonical) or "
-                        "data/transcripts/html/*.html (vendored render)."
-                    ),
+                    "error": f"could not read transcript — {transcript_uri_reason(uri)}",
+                    "uri": uri,
+                },
+                status_code=400,
+            )
+        return json_response(payload)
+
+    @mcp.custom_route("/api/framework-article", methods=["GET", "OPTIONS"])
+    async def api_framework_article(request) -> Response:
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+        uri = request.query_params.get("uri", "")
+        article = request.query_params.get("article", "")
+        payload = discover_framework_article(uri, article)
+        if payload is None:
+            return json_response(
+                {
+                    "ok": False,
+                    "error": f"could not read article — {framework_article_reason(uri, article)}",
+                    "uri": uri,
+                    "article": article,
                 },
                 status_code=400,
             )
@@ -1038,6 +1265,85 @@ def build_ui_routes(mcp):
             )
 
         return json_response({"ok": True, "tool": name, "result": result})
+
+    # -- authority sources --------------------------------------------------
+
+    @mcp.custom_route("/api/authority-source", methods=["POST", "OPTIONS"])
+    async def api_authority_source(request) -> Response:
+        """Ingest the official source behind one authority stub.
+
+        Storing and verifying are separate on purpose. This route writes only
+        into the bundle's ``Authority sources/`` directory and hands back the
+        exact text to match; the ``verified`` flag is still flipped by a
+        ``verify_*`` tool through ``/api/tool``, so the one invariant that
+        matters — only ``authority_verification.py`` may verify an authority —
+        is untouched by this feature.
+
+        The upload travels as base64 inside JSON rather than as multipart: this
+        bridge has exactly one body parser and one error shape, and adding a
+        second one for one field would mean two ways to fail.
+        """
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+
+        from .authority_source import SourceError, decode_base64_payload, ingest_source
+
+        try:
+            body = await request.json()
+        except Exception:  # noqa: BLE001 - malformed JSON is a client error
+            return json_response(
+                {"ok": False, "error": "Request body must be JSON."}, status_code=400
+            )
+        if not isinstance(body, dict):
+            return json_response(
+                {"ok": False, "error": "Request body must be a JSON object."},
+                status_code=400,
+            )
+
+        violation_id = body.get("violation_id")
+        if not isinstance(violation_id, str) or not _BUNDLE_DIR_RE.fullmatch(violation_id):
+            return json_response(
+                {"ok": False, "error": "'violation_id' must be a bundle id."}, status_code=400
+            )
+        bundle = resolve_bundle_dir(violation_id)
+        if bundle is None:
+            return json_response(
+                {"ok": False, "error": f"No bundle build/{violation_id}/ on disk."},
+                status_code=404,
+            )
+
+        authority_id = body.get("authority_id")
+        if not isinstance(authority_id, str) or not authority_id.strip():
+            return json_response(
+                {"ok": False, "error": "'authority_id' is required."}, status_code=400
+            )
+
+        data = None
+        if isinstance(body.get("content_base64"), str) and body["content_base64"].strip():
+            try:
+                data = decode_base64_payload(body["content_base64"])
+            except SourceError as exc:
+                return json_response({"ok": False, "error": str(exc)}, status_code=400)
+
+        def string_arg(key: str) -> str | None:
+            value = body.get(key)
+            return value if isinstance(value, str) and value.strip() else None
+
+        try:
+            result = ingest_source(
+                bundle,
+                authority_id.strip(),
+                source_url=string_arg("source_url"),
+                filename=string_arg("filename"),
+                data=data,
+                text=body.get("text") if isinstance(body.get("text"), str) else None,
+                do_fetch=body.get("fetch_url") is True,
+                collapse=body.get("collapse_whitespace") is True,
+            )
+        except SourceError as exc:
+            return json_response({"ok": False, "error": str(exc)}, status_code=400)
+
+        return json_response(result)
 
     # -- catalog ------------------------------------------------------------
 

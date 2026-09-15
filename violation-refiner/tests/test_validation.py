@@ -565,7 +565,10 @@ def test_v16_warns_when_a_verified_authority_names_no_protocol():
     Measured on the real corpus: this fires on exactly the two authorities that
     ``verify_statute_in_bundle`` produced before it was fixed to populate the
     field, and on no others (they are the only ``verified=True`` authorities in
-    the 81-bundle corpus).
+    the 81-bundle corpus). ``verify_statute_external_fetch`` and
+    ``verify_human_attested`` were blank in the same way and were fixed with it,
+    so all three protocols now name themselves; the authorities they produce are
+    not in the corpus yet.
     """
     prov = VerificationProvenance(
         protocol="statute_in_bundle_v1",

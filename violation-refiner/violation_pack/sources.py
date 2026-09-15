@@ -168,16 +168,23 @@ class HtmlTranscriptSource:
 # Match an article header. Captures:
 #   group 1: the identifier — digits + optional sub-tokens (e.g. '1', '19.1',
 #            '133 A', '3 letra b)') terminated by ' — ' (em dash) or ' - '.
+#   group 2: the human title to the end of the line.
 # The body is everything between this header and the next '### ' (or EOF) and
 # is sliced separately so we can strip the metadata block.
 _ARTICLE_HEADER_PATTERN = re.compile(
-    r'^###\s+Art\.\s*([^\n—\-]+?)\s*[—\-]\s+[^\n]+$',
+    r'^###\s+Art\.\s*([^\n—\-]+?)\s*[—\-]\s+([^\n]+)$',
     re.MULTILINE,
 )
 _METADATA_LINE_PATTERN = re.compile(
     r'^\s*(?:\*\*[A-Za-z][A-Za-z _]{0,30}:\*\*[^\n]*|---+|)\s*$'
 )
 _DECLARED_SHA_PATTERN = re.compile(r"\*\*Sha256:\*\*\s*([0-9a-f]{64})", re.IGNORECASE)
+# The caches declare the canonical id in the article's own metadata block, e.g.
+# '**ELI ID:** `CL.CPCL.C1.Art.269_ter`' for the header '### Art. 269 ter'. That
+# declaration is authoritative: it is the only place that knows the hierarchy
+# segments ('C1', 'T2.P6') the header omits, so the UI shows it rather than
+# reconstructing an id from the article number.
+_ELI_ID_PATTERN = re.compile(r"\*\*ELI ID:\*\*\s*`([^`]+)`")
 
 
 def _normalize_article_key(identifier: str) -> str:
@@ -223,14 +230,24 @@ class MarkdownFrameworkSource:
         # stripped. Indexed by the header identifier (e.g. '1', '19.1',
         # '133 A', '3 letra b)').
         self._articles: dict[str, str] = {}
+        # The declared ELI id and human title per identifier. Kept beside the
+        # bodies (same keys) so a caller can label an article without a second
+        # parse of the cache.
+        self._article_meta: dict[str, dict[str, str]] = {}
         headers = list(_ARTICLE_HEADER_PATTERN.finditer(self._md))
         for idx, am in enumerate(headers):
             identifier = am.group(1).strip()
             start = am.end()
             end = headers[idx + 1].start() if idx + 1 < len(headers) else len(self._md)
-            body = _strip_metadata_block(self._md[start:end])
+            raw = self._md[start:end]
+            body = _strip_metadata_block(raw)
             if body:
                 self._articles[identifier] = body
+                meta = {"title": am.group(2).strip()}
+                eli = _ELI_ID_PATTERN.search(raw)
+                if eli:
+                    meta["eli_id"] = eli.group(1).strip()
+                self._article_meta[identifier] = meta
 
     # Protocol methods --------------------------------------------------------
 
@@ -246,6 +263,34 @@ class MarkdownFrameworkSource:
     def declared_sha256(self) -> str | None:
         return self._declared_sha
 
+    def _resolve_article_key(self, article_number: str) -> str | None:
+        """Resolve a caller's article reference to a cached header identifier.
+
+        Three attempts, in order:
+
+        1. an exact header identifier ('19.1', '133 A', '3 letra b)');
+        2. a spelling-insensitive match, which is what lets a canonical ELI id
+           ('Art.269_ter', 'Art.23bis') find a header that keeps the spaces
+           ('269 ter', '23 bis');
+        3. a prefix match, so a bare number finds its sub-tokened article
+           ('133' -> '133 A') *after* an exact '133' has been ruled out.
+
+        Every accessor goes through this, so a body, its declared ELI id and
+        its title can never resolve to different articles.
+        """
+        if article_number in self._articles:
+            return article_number
+        wanted = _normalize_article_key(article_number)
+        for key in self._articles:
+            if _normalize_article_key(key) == wanted:
+                return key
+        prefix = f"{article_number} "
+        prefix_dot = f"{article_number}."
+        for key in self._articles:
+            if key.startswith(prefix) or key.startswith(prefix_dot):
+                return key
+        return None
+
     def get_article_body(self, article_number: str) -> str | None:
         """Look up an article body by identifier.
 
@@ -259,18 +304,24 @@ class MarkdownFrameworkSource:
         identifier differently from the header, because ELI ids drop the
         spaces the headers keep ('269_ter' vs '269 ter', '23bis' vs '23 bis').
         """
-        if article_number in self._articles:
-            return self._articles[article_number]
-        wanted = _normalize_article_key(article_number)
-        for key, body in self._articles.items():
-            if _normalize_article_key(key) == wanted:
-                return body
-        prefix = f"{article_number} "
-        prefix_dot = f"{article_number}."
-        for key, body in self._articles.items():
-            if key.startswith(prefix) or key.startswith(prefix_dot):
-                return body
-        return None
+        key = self._resolve_article_key(article_number)
+        return self._articles[key] if key is not None else None
+
+    def get_article_eli_id(self, article_number: str) -> str | None:
+        """The canonical id the cache declares for an article, if it declares one.
+
+        ``None`` means the cache carries no ``**ELI ID:**`` line for this
+        article — a real possibility, since the metadata block is optional.
+        Callers must not invent an id in that case: the hierarchy segments
+        ('C1', 'T2.P6') are not derivable from the header."""
+        key = self._resolve_article_key(article_number)
+        return self._article_meta.get(key, {}).get("eli_id") if key else None
+
+    def get_article_title(self, article_number: str) -> str | None:
+        """The human title from the article's header, e.g. 'Vejaciones injustas
+        por empleado publico'."""
+        key = self._resolve_article_key(article_number)
+        return self._article_meta.get(key, {}).get("title") if key else None
 
     def articles_cached(self) -> list[str]:
         def _sort_key(s: str) -> tuple:

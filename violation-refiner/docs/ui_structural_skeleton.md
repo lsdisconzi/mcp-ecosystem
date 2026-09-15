@@ -90,7 +90,7 @@ Repeatedly needed paths. Proposed: a single collapsible **Settings drawer** with
 | `F-bundles-root` | Bundles root | directory picker | `build/` in this repo, user's `CL/` in production | Parent of `CL-*` folders; S11 operates here |
 | `F-bundle-dir` | Active bundle | directory picker / list | `<bundles-root>/CL-005` | The bundle the wizard is editing; all bundle-relative paths derive from here |
 | `F-build-root` | Output / build root | directory picker | `build/` | Where `.zip` and side artifacts land |
-| `F-transcripts-dir` | Transcripts source dir | directory picker | `data/transcripts/html/` in this repo | Rendered HTML sources for S0/S2; raw JSON is kept separately for ingestion |
+| `F-transcripts-dir` | Transcripts source dir | directory picker | `data/transcripts/json/` in this repo | Canonical JSON sources for S0/S2; the rendered `data/transcripts/html/` copy is a display-only render |
 | `F-frameworks-dir` | Legal framework source dir | directory picker | `data/law/` in this repo | Source Markdown caches; selected files are copied into `<bundle-dir>/Legal framework` |
 | `F-env-file` | `.env` file | file picker | `<project-root>/.env` | Loaded by `Settings.from_env()`; created from `.env.example` |
 | `F-venv-python` | Python interpreter | file picker | `<project-root>/.venv/bin/python` | Used to spawn the MCP server / CLI |
@@ -305,29 +305,57 @@ Each step below gives: **purpose**, **user inputs**, **backing call**, **outputs
 
 ### S2 — Layer 1: Evidence segments
 
-**Purpose.** Anchor verbatim transcript quotes to real HTML artifacts, producing segments with hashes and audio offsets. This is what makes V01/V02 meaningful.
+**Purpose.** Anchor verbatim transcript quotes to real transcript artifacts, producing segments with hashes and audio offsets. This is what makes V01/V02 meaningful.
 
 **→** `build_evidence_layer` / MCP `build_evidence_layer_tool`
 **Signature:** `build_evidence_layer_tool(violation, transcript_path, transcript_source_id, transcript_bundle_uri, segment_specs)`
+
+#### The two transcript corpora (read this before touching S2)
+
+Both corpora ship the same 29 transcripts under the same filenames, but **they do
+not share an id space**:
+
+| Corpus | Reader | `source_id()` | Composed `segment_id` |
+| --- | --- | --- | --- |
+| `data/transcripts/json/*.json` | `JsonTranscriptSource` | the document's `transcript_id` | `I-002_01_NAR-01_STG_1_pre_boarding.seg-7` |
+| `data/transcripts/html/*.html` | `HtmlTranscriptSource` | a display label parsed from the filename (`STG-1`) | `STG-1.seg-7` |
+
+`layers.build_evidence_layer` composes `f"{source_id()}.{local_id}"`. Only the
+JSON corpus yields ids byte-identical to `segments_manifest.json` and to the
+violation JSON's `segments[].segment_id`; the HTML render's ids join nothing. So:
+
+- the picker is fed from the **canonical JSON corpus** (via `/api/sources`'
+  `transcripts_json`), not the render;
+- `_transcript()` dispatches on the file's own suffix, and for a JSON transcript
+  it **ignores** the caller's `transcript_source_id` — the canonical id comes
+  from the document, so a typed label cannot shift the composed id;
+- `segment_specs[].segment_id` is always the transcript-**local** form (`seg-12`),
+  never the scoped one — `layers.py` composes the scope itself.
+
+The render stays selectable for eyeballing a transcript, and the picker labels
+it `render only` with a warning that marks off it will not join.
 
 **User inputs**
 
 | ID | Field | Type | Required | Notes |
 | --- | --- | --- | --- | --- |
-| `F-s2-transcript` | `transcript_path` | **file picker** (`.html`) | yes | Discovered from `data/transcripts/html/` by the UI; the bridge accepts only discovered relative URIs |
-| `F-s2-source-id` | `transcript_source_id` | text | yes | e.g. `STG-7`. Auto-suggested from filename (see below) |
-| `F-s2-uri` | `transcript_bundle_uri` | text | no | Bundle-relative after staging, e.g. `Transcripts/timeline_aeropuerto_STG_7.html` |
+| `F-s2-transcript` | `transcript_path` | **file picker** (`.json`, `.html`) | yes | Discovered from `data/transcripts/{json,html}/` by the UI; the bridge accepts only discovered relative URIs |
+| `F-s2-source-id` | `transcript_source_id` | text, **read-only** | yes | e.g. `I-002_01_NAR-01_STG_1_pre_boarding`. Derived, never typed: filled from the loaded transcript's `transcript_id` (canonical JSON) or filename label (HTML render). Still *sent* because the HTML reader needs it — the JSON reader ignores it and composes the prefix from the document. No code reads it back, so it is display only |
+| `F-s2-uri` | `transcript_bundle_uri` | text | no | Bundle-relative, e.g. `Transcripts/I-002_01_NAR-01_STG_1_pre_boarding.json#seg-7` |
 | `F-s2-specs` | `segment_specs` | repeatable table | yes | see below |
 
-The browser calls `GET /api/source-transcript?uri=<data-relative-html-uri>` when
+The browser calls `GET /api/source-transcript?uri=<data-relative-uri>` when
 the selection changes. The returned parsed segments replace the segment list;
 marking a row builds the corresponding `segment_specs` entry without asking the
-user to retype offsets, speaker, or verbatim text.
+user to retype offsets, speaker, or verbatim text. Rows that the pack already
+cites are badged (`manifest` / `anchored` / `refined`) so the browser shows the
+bundle's own evidence rather than an undifferentiated corpus dump.
 
 Settings and S0 Browse controls use `GET /api/browse?path=<workspace-relative-path>&kind=directory|file`.
 The server rejects absolute paths and traversal outside the repository root.
 
-**Filename → `source_id` inference** (mirror this in the UI so the field auto-fills):
+**Filename → `source_id` inference** (HTML render only — the JSON reader reads
+`transcript_id` out of the document itself, which is the authoritative source):
 
 | Filename pattern | Inferred `source_id` |
 | --- | --- |
@@ -340,31 +368,62 @@ The server rejects absolute paths and traversal outside the repository root.
 
 | Column | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `segment_id` | text | yes | **scoped form `SRC.local`, e.g. `STG-7.seg-55`**. Unscoped IDs are skipped with a note |
+| `segment_id` | text | yes | **transcript-local form `seg-12`**. `layers.py` composes the scoped `<transcript_id>.seg-12` id itself |
 | `role_in_argument` | text | no | e.g. `fact`, `admission`, `contradiction` (defaults to `legacy_fact` in the normalizer) |
 | `translation_en` | textarea | no | English rendering; falls back to verbatim |
 | `transcription_notes` | textarea | no | — |
+
+Marking a row never invents these: if the bundle's manifest or violation JSON
+already holds the segment, its own `role_in_argument` and `translation_en` are
+reused. The old handler defaulted `translation_en` to the Spanish verbatim,
+which wrote Spanish into an English field.
 
 **Read-only, derived, and shown live after the call** (this is the key feedback loop):
 
 | Derived | Source |
 | --- | --- |
-| `audio_offset_start` / `audio_offset_end` | parsed from the HTML `<div class="seg-time">12.80s → 15.16s</div>` |
-| `speaker` | parsed from `<div class="seg-speaker">` |
-| `verbatim_es` | parsed from `<p class="seg-text">"…"</p>` — **never hand-typed** |
+| `audio_offset_start` / `audio_offset_end` | parsed from the segment record's own offsets |
+| `speaker` | parsed from the segment record |
+| `verbatim_es` | parsed from the segment record — **never hand-typed** |
 | `verbatim_sha256` | `sha256(verbatim_es)` |
 | `source_uri` | `<bundle_uri>#<local_id>` |
-| `source_sha256` | `sha256` of the HTML artifact bytes |
+| `source_sha256` | `sha256` of the transcript artifact bytes |
+
+**The pack evidence manifest.** `segments_manifest.json` is the converter's own
+record of every segment a built pack cites, and `/api/bundle` already serves it
+(`artifacts_present.manifest`). S2 parses it into its own block, because it is
+the only artifact that carries:
+
+| Field | Why it matters |
+| --- | --- |
+| `segment_id` | the canonical join key against the violation JSON |
+| `legacy_segment_id` | the vault id the segment was re-anchored from — recorded nowhere else |
+| `refinement_added_segments` | ids with no vault ancestor, so they appear on no source segment |
+| `role_in_argument`, `verbatim_es`, `translation_en` | the role and both texts, per segment |
+| `transcription_notes` | the anchor's own note |
+| `transcript_files` | `transcript_id → filename`, which is what makes a per-transcript seed possible |
+
+Join on `segment_id` only. The manifest's `verbatim_es` drops accents the
+violation JSON keeps (`avion` vs `avión`), so a text-equality join reports
+mismatches for segments that are in fact the same one. Report drift both ways:
+in the manifest but absent from the violation JSON, and vice versa.
+
+Because `build_evidence_layer_tool` takes **one transcript per call**, the
+manifest's 35 rows across 5 source files are really 5 calls. Each transcript's
+rows get a seed control that writes that transcript's specs, and the args builder
+sends only the specs belonging to the picked transcript — local ids carry no
+scope, so sending another transcript's id composes an id that anchors nothing.
 
 **Behaviours**
 
-- **Segment browser.** Before adding, let the user browse the parsed transcript (all segments with timecode, speaker, text) and tick rows to build `segment_specs`. This removes the main source of error (`segment_id` typos).
+- **Segment browser.** Before adding, let the user browse the parsed transcript (all segments with timecode, speaker, text) and tick rows to build `segment_specs`. This removes the main source of error (`segment_id` typos). Marks are keyed by scoped id, so switching transcripts does not discard them — a manifest-seeded run spans several files at once.
+- **Seed from the manifest.** Seeding is a copy out of the manifest, never a guess off a corpus file: the manifest already holds the role and the English rendering for every segment it declares, and the 30 `refinement_added_segments` exist in no transcript file at all.
 - If a segment ID is not found, the record is still kept but rewritten as an **unanchored legacy record**: `source_uri = legacy://{violation_id}/{segment_id}`, `transcription_notes += " | legacy-unanchored"`, and audio offsets attempted via `_parse_time_seconds` (`"12.80s"`, `"15:16"`, floats all supported). The UI must flag these rows red — they will fail V01.
 - Empty `verbatim_es` on a resolved segment is back-filled from the supplied legacy text (a real behaviour of the normalizer) — surface this as an info note, not an error.
 
-**Failure modes.** Transcript file missing/unreadable; HTML does not match the expected `transcript-segment` template → zero segments parsed; handle with "template not recognised" guidance rather than a stack trace.
+**Failure modes.** Transcript file missing/unreadable; a JSON transcript that fails its schema (`JsonTranscriptSchemaError`) or an HTML render that does not match the expected `transcript-segment` template → zero segments parsed; handle with "template not recognised" guidance rather than a stack trace. A bundle with no `segments_manifest.json` is not an error — say so and fall back to the violation JSON's own segments.
 
-**Gate.** ≥1 anchored segment (a segment whose `source_uri` is not `legacy://…`).
+**Gate.** ≥1 anchored segment (a segment whose `source_uri` is not `legacy://…`), reported alongside the manifest's declared count and any drift in either direction.
 
 ---
 
@@ -380,7 +439,8 @@ The server rejects absolute paths and traversal outside the repository root.
 | ID | Field | Type | Required | Notes |
 | --- | --- | --- | --- | --- |
 | `F-s3-framework` | `framework_path` | **file picker** (`.md`) | yes | Pre-filled from staged `Legal framework/*.md` |
-| `F-s3-code` | `framework_code` | text | yes | e.g. `CHIPENCOD`, `CPCL`, `CP`. Auto-suggested: `md.stem.split("_")[0].upper()` |
+| `F-s3-code` | `framework_code` | text, **read-only** | yes | Derived, never typed: filled from the selected framework file (`c.framework_code`), e.g. `CHIPENCOD`, `CPCL`, `CP`. Backend default when suggested: `md.stem.split("_")[0].upper()`. Still *sent* — it is a real tool argument, just not hand-entered |
+| `F-s3-article-id` | — (display only) | text, **read-only** | n/a | Mirrors the established article's `article_id` from the bundle, e.g. `CL.CPCL.C1.Art.255`. Not a top-level tool argument — established-article data travels inside `article_specs`, so nothing reads this back |
 | `F-s3-uri` | `framework_bundle_uri` | text | no | e.g. `Legal framework/CHIPENCOD_CP.md` |
 | `F-s3-articles` | `article_specs` | repeatable table | yes | established articles |
 | `F-s3-candidates` | `candidate_specs` | repeatable table | no | preliminary/uncertain articles |
@@ -411,8 +471,10 @@ The server rejects absolute paths and traversal outside the repository root.
 
 **Behaviours — the arithmetic must be explained in the UI**
 
-- **Article picker.** Parse the framework `.md` and list every `### Art. N — Name` header (the reader indexes identifiers such as `1`, `19.1`, `133 A`, `3 letra b)`). Let the user pick an article and *select text* from its body to fill `verbatim_excerpt`, guaranteeing the substring condition.
-- **Lookup semantics to mirror:** exact identifier match first, then a prefix match on `N ` or `N.` (so `133` matches `133 A` only if `133` itself is not cached). The UI's search box should implement the same fallback.
+- **Article picker.** The chips come from the selected framework cache's own `articles_cached` list — the numbers the cache really holds, not a re-parse of the markdown. They are **buttons**: clicking one loads that article's cached body into `verbatim_excerpt` and its declared id into the read-only `article_id` field, over `GET /api/framework-article?uri=build/<violation_id>/Legal%20framework/<name>.md&article=255`. Nothing is typed, so the excerpt cannot fail the byte-exact substring check by a transcription slip. The id is taken from the cache's own `**ELI ID:**` declaration and is **never reconstructed** from the article number: the hierarchy segments (`C1`, `T2.P6`) are not derivable from `Art. 412`. If a cache declares no `**ELI ID:**` line the field stays empty rather than showing an invented id.
+- **One article on screen at a time.** The chip highlight, the id and the excerpt are rendered from a single rule (`pickedArticleFor`): the picked article while it still belongs to the selected framework's cache, otherwise the bundle's established article. Re-hydrating the panel re-applies the pick instead of reverting it, and switching framework falls back to the established article rather than leaving a foreign excerpt under an empty chip row.
+- **Lookup semantics to mirror:** exact identifier match first, then a spelling-insensitive match (`269 ter` ≡ `269_ter`), then a prefix match on `N ` or `N.` (so `133` matches `133 A` only if `133` itself is not cached). Every accessor resolves through this one rule, so a body, its declared ELI id and its title can never resolve to different articles.
+- **Only the bundle's own cache is addressable.** `GET /api/framework-article` accepts exactly `build/<violation_id>/Legal framework/<name>.md` and refuses a discovered-but-uncached framework under `data/law/`: the bundle does not carry that file, so an excerpt read from it could never pass validation. Containment is checked on the raw path parts (never on a resolved path) because every `build/<id>/Legal framework/*.md` is itself a symlink.
 - **Live excerpt verification.** Show, per row: ✅ *excerpt found in cache body* / ❌ *not a substring* / ⚠️ *article body not in any cache*. This is exactly the demotion logic in the normalizer.
 - **Demotion rule.** If an article cannot be verified, the library **demotes it to a candidate** with `framework_cache_status="not_in_bundle"` and a `verification_required` hint. The UI should offer a one-click "demote to candidate" action for rows it already knows will fail, rather than letting the round-trip surprise the user.
 - **Framework cache provenance** is computed, not entered: `cache_file`, `cache_file_sha256`, `cache_self_reported_sha256` (from a `**Sha256:**` header if present), `cache_fetched_at`, `articles_cached`. Display these read-only; V03 compares the self-reported hash to the real one.
@@ -446,7 +508,7 @@ The server rejects absolute paths and traversal outside the repository root.
 | `label` | text | yes | human label |
 | `doctrinal_basis` | textarea | no | why this element exists |
 | `proof_status` | **select** | yes | `established` \| `strong` \| `contested` \| `weak` \| `missing` \| `not_applicable` \| `not_developed` |
-| `proof_evidence_segments` | multi-select | no | pick from S2 segment IDs |
+| `proof_evidence_segments` | multi-select | no | pick from S2 segment IDs — stored **scoped** (`<stem>.seg-N`), see below |
 | `argument_es` | textarea | no | the Spanish argument linking evidence → element |
 | `weaknesses` | textarea | no | — |
 | `open_questions` | list | no | link to `OpenQuestion.id` from S1 |
@@ -469,6 +531,61 @@ The server rejects absolute paths and traversal outside the repository root.
 
 **Gate.** Every established article has a grid with ≥1 element.
 
+#### The rendered grid (implemented)
+
+**`seg-36` alone is not an identifier.** The bundle stores `proof_evidence_segments`
+entries **scoped by transcript stem** — `I-002_05_NAR-07_STG_7_post_removal_investigation.seg-36` —
+because bare `seg-N` numbers repeat across every transcript in a multi-transcript
+bundle. The grid must therefore say *which* transcript each column came from, and
+the two helpers that make the id legible are:
+
+| Helper | Contract |
+| --- | --- |
+| `segmentTranscript(id)` | split on the **first** dot only; the local part may itself contain dots. Returns `""` when there is no scope (a bare `seg-1`). |
+| `transcriptLabel(stem)` | `<incidence> · <render label>`, e.g. `05 · STG-7`. **Display-only, not a key** — see the uniqueness warning below. |
+
+**The group header is keyed on `segmentTranscript(id)`, never on `transcriptLabel`.**
+`STG-N` is *not* unique: two different files in `build/` both render as `STG-2`
+(`I-002_02_NAR-02_STG_2_boarding_gate`, `I-002_18_NAR_LATAM_STG_2`). Grouping on the
+rendered label silently merges them into one column-group of the wrong size. The
+`<thead>` is two rows: a transcript group row (`colspan` per group, full scoped id
+in `title=`) over a per-segment row of local ids — so the ordinal disambiguates for
+the eye and the full id disambiguates in the data.
+
+**The dot and the proof badge are `<button>`s, not decoration.** Each `cell-on` cell
+holds `button.dot-btn` (`data-action="open-segment"`, `data-element=`, `data-segment=`),
+and each element row carries `button.proof-hit` (`data-action="open-proof"`). Both
+dispatch to one `openEvidenceModal()` — the element *without* a segment opens the
+proof statement, the dot opens the segment *inside* that element. Using a `<span>`
+would make every marker invisible to the keyboard, and dropping `data-element` from
+the dot still "looks right" while the modal opens a segment with no proof attached.
+
+**The modal reads the canonical corpus first.** `segmentDetail(id)` resolves text in
+this order and the order is load-bearing:
+
+1. `loadTranscriptDocument(...)` → `data/transcripts/json/<stem>.json` through
+   `API.transcript(` — the canonical corpus. Cached in `state.transcriptDocs`.
+2. the violation JSON's own `verbatim_es`;
+3. `segments_manifest.json` — **last**: the manifest is the record known to drop accents.
+
+The modal keeps its own cache and must **never** read through `state.activeTranscript`.
+That is S2's form state; reading a segment through it would move the S2 picker every
+time a reviewer tapped a dot mid-edit.
+
+**`differs_from_violation` is compared on collapsed whitespace, never raw.** The corpus
+trims every segment while the bundle's `verbatim_es` keeps the trailing space, so a bare
+`!==` reports a transcription dispute on segments that say exactly the same thing.
+Measured across every bundle in `build/`: **7189 segments agree byte for byte and only
+2 disagree** — both CL-030, `seg-300` and `seg-301`, differing by a trailing space
+alone, and one of them is reachable from this grid. The banner says the two records
+disagree by *more than spacing*, and names neither as preferred.
+
+> **Corpus file shape.** `data/transcripts/json/*.json` uses `index` / `text` /
+> `start` / `end` — **not** `segment_id` / `verbatim`. Joining a grid segment to its
+> text must go through `violation_pack.mcp_server._transcript(...)`, which composes
+> `segment_id` and exposes `verbatim`; reading the file directly raises
+> `KeyError: 'segment_id'`.
+
 ---
 
 ### S5 — Layer 4: Nexus matrix
@@ -482,7 +599,7 @@ The server rejects absolute paths and traversal outside the repository root.
 
 | ID | Field | Type | Required | Allowed values |
 | --- | --- | --- | --- | --- |
-| `F-s5-fact` | `fact_id` | select (S2 segments) | yes | — |
+| `F-s5-fact` | `fact_id` | select (S2 segments) | yes | **scoped** `<transcript_id>.seg-N`; the option text is qualified, see below |
 | `F-s5-norm` | `norm_id` | select (S3 articles) | yes | — |
 | `F-s5-element` | `element_id` | select (S4 elements) | yes | — |
 | `F-s5-type` | `nexus_type` | text/select | yes | e.g. `proves`, `supports`, `contradicts` |
@@ -490,6 +607,30 @@ The server rejects absolute paths and traversal outside the repository root.
 | `F-s5-rationale` | `rationale_oneline` | text | yes | one line |
 
 **Behaviours.** The three selects must be populated from state, never typed. Show a coverage matrix: any segment not cited by a nexus row, any element with no incoming nexus, any article with no nexus — these are the gaps the reviewer wants to find. V06/V07 consume this.
+
+#### A segment select must name the transcript
+
+`seg-11` is a segment of *every* transcript in the bundle, so a bare local id is
+not a label. Measured on `build/CL-030`: 34 unique nexus `fact_id`s drawn from 5
+transcripts, and `seg-11` is in two of them (`05 · STG-7` and `03 · STG-5`) — both
+rendered as `seg-11`, which makes choosing a coin flip while the two rows are
+different parts of the recording.
+
+Every call site that shows a segment goes through `segmentOptionLabel(id)`, which
+is `transcriptLabel(segmentTranscript(id)) · localSegmentId(id)` — e.g.
+`05 · STG-7 · seg-36`. It is used by the `s5Fact` picker **and** by the rendered
+`#s5NexusRows` ids, because a fixed picker with an unfixed list below it is still
+ambiguous.
+
+> **The option's `value` stays the full scoped id.** The pack joins on
+> `<transcript_id>.seg-N`, so a picker that *displays* the qualified text but
+> *submits* the shortened one would look correct and write a fact that matches
+> nothing. An unscoped id has no transcript to name and is returned unchanged,
+> rather than rendered as `seg-1 · seg-1`.
+
+Only the *segment* selects are qualified. `s5Element` legitimately uses `shortId()`
+— element ids are unique within a bundle, so there is no second id space to
+disambiguate them from.
 
 **Gate.** ≥1 nexus entry per established article.
 
@@ -539,6 +680,76 @@ Optional bibliographic fields (all text, all optional): `court`, `rol`, `decisio
 - `fabrication_risk_note` is a first-class field — render it as a warning-styled textarea, because it is the guard against LLM-fabricated citations.
 
 **Gate.** Every element with `proof_status` in {`established`, `strong`, `contested`} should be referenced by ≥1 authority `supports` (advisory, not blocking).
+
+#### S6.1 — Attach an official source and verify the stub in place
+
+**Purpose.** Let an operator attach the official document (or its URL) *to the stub it
+supports*, have the agent confirm or update the stub from that document, and keep the
+document as the proof of the validation. This replaces the "copy the URL into S7" hop:
+the artefact is stored under the authority id, so the proof and the stub it proves are
+the same record.
+
+**Entry point.** Every authority row in S6 carries a button (`data-action="open-proof-form"`,
+`data-authority="<authority_id>"`) opening the proof modal. The modal shows the stub's
+proposition, its `supports` elements and its required bibliographic field for the type
+(`PROOF_FIELD_LABEL` / `proofPlanFor`), so the operator can see what is still missing
+before verifying.
+
+**Three ways to supply the source.** All three post to the same route,
+`POST /api/authority-source` (`API.authoritySource`), which stores the document and returns
+its text plus a hash; the verify step then calls the protocol tool for the stub's `type`
+(`PROOF_PLAN`):
+
+| ID | Control | Notes |
+| --- | --- | --- |
+| `F-s6-1-url` | Official page (url) | the **server** fetches and stores a copy, so the proof does not depend on the page staying up |
+| `F-s6-1-file` | Upload (PDF, saved page, text) | travels as `content_base64` inside JSON — there is no `python-multipart` dependency; the reader is derived from the *served content type* |
+| `F-s6-1-paste` | Paste the text | for sources whose file cannot be read (no PDF library is installed: PDFs are stored and SHA-pinned with a `pip install pypdf` warning, never parsed) |
+
+| `type` | Tool (`PROOF_PLAN[type].tool`) | Required fields |
+| --- | --- | --- |
+| `statute` | `verify_statute_external_fetch_tool` | `instrument` |
+| `jurisprudence` | `verify_human_attested_tool` | `attestor`, `court`, `rol`, `decision_date` |
+| `doctrine` | `verify_human_attested_tool` | `attestor`, `author`, `work` |
+| `comparative` | `verify_human_attested_tool` | `attestor` |
+
+A stub with no `type` gets no plan, and the verify button is disabled rather than guessing
+which protocol to run.
+
+**Where the proof lands.** `<bundle root>/Authority sources/<AUTHORITY_ID>__<name>`, plus a
+`__…proof.json` sidecar recording `source_uri`, `text_sha256`, `text_chars`, `text_source`
+(`fetched` \| `uploaded` \| `pasted`), `content_type`, `extractor`, `whitespace_collapsed`
+and `warnings`. The sidecar exists because `VerificationProvenance` is `extra="forbid"`
+with a single `source_uri`; the ingest-time facts have nowhere else to go. Identical bytes
+are reused rather than re-written (`artefact.reused`), so re-ingesting the same document is
+idempotent.
+
+**The verification is not durable until the violation is written.** Every verify protocol
+*returns* an updated `Authority` and writes nothing — `write_violation_json_tool` is the
+only writer (`pack.py:write_violation_json`). Until it runs, the stub reads as verified
+in this page and comes back unverified after a reload. The modal therefore:
+
+1. compares the in-page authority with the copy in the loaded bundle (`proofIsOnDisk`) and,
+   when they differ, shows the callout **"In this page only, not in the bundle"** and a
+   **Save to the bundle** button (`data-action="proof-save"`);
+2. saves by calling `write_violation_json_tool(violation, bundle_root)`, then **re-reads**
+   the bundle so the listing and the JSON are read back from disk rather than assumed;
+3. the same write happens at S11 "Build package", so either path is sufficient.
+
+Re-reading the listing deliberately refreshes only `state.bundle.files`
+(`refreshBundleFiles`) and never `state.violation` — loading the bundle would discard the
+unwritten verification the page is there to show.
+
+**Proof on disk.** The modal's footer lists what is already stored for this stub
+(`/Authority sources/` path match + the authority id in the file name, with a bundle-wide
+fallback when this stub has nothing yet). The directory row that `/api/bundle` returns for
+`Authority sources` is excluded by the trailing slash in that path test — its own path has
+nothing after the directory name.
+
+**Live check (2026-09-15).** BR-001's doctrine stub, pasted text (123 chars, offset 64):
+verify → callout + Save → `build/BR-001/BR-001.json` on disk carries `verified: true`,
+`verification_protocol: human_attested_v1; source=…; sha256=…` and the full provenance →
+reload shows the stub still verified.
 
 ---
 
@@ -845,9 +1056,9 @@ For `qdrant_reset_collections_tool` and `neo4j_reset_database_tool` the UI must:
 | --- | --- | --- |
 | Ingest rulings | `index_path` — **file picker (JSON)** | `limit`, `skip`, `batch_size` (64), `sleep_between_batches` (0.0), `max_chunks_per_ruling` (8) |
 | Ingest transcript bundle | `bundle_root` — **directory picker** | `bundle_id` (defaults to dir name), `limit_segments`, `batch_size` (64), `sleep_between_batches` (0.0) |
-| Ingest framework | `markdown_path` — **file picker (.md)** | `framework_code` (required), `framework_name` (defaults to code), `batch_size` (64) |
+| Ingest framework | `markdown_path` — **file picker (.md)** | `framework_code` (**read-only**, derived), `framework_name` (defaults to code), `batch_size` (64) |
 
-**Behaviours.** Show a progress bar from the batch counters; `sleep_between_batches` is a rate-limit knob and should have a tooltip saying so. `framework_code` should auto-suggest using the same rule as S3 (`stem.split("_")[0].upper()`).
+**Behaviours.** Show a progress bar from the batch counters; `sleep_between_batches` is a rate-limit knob and should have a tooltip saying so. `framework_code` is rendered **read-only** and filled from the loaded bundle's `framework_caches`: it is the code the ingester keys the collection on, so a typo silently splits one framework across two collections. When the bundle carries no cache the field shows a discovered framework's code instead, and the backend's auto-suggest rule (the same `stem.split("_")[0].upper()` as S3) remains the fallback. The neighbouring cache-file field stays editable free text — it names a path, not a code. `readonly` is used rather than `disabled`, so the value stays selectable and `readStepForm()` still collects it.
 
 ---
 
@@ -898,7 +1109,7 @@ The canonical models. **All models are `extra="forbid"`** — the UI must never 
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `segment_id` | string | scoped `SRC.local` |
+| `segment_id` | string | scoped `SRC.local`, where `SRC` is the transcript's `transcript_id` |
 | `role_in_argument` | string | — |
 | `audio_offset_start` / `audio_offset_end` | float | seconds |
 | `speaker` | string | — |
@@ -1055,6 +1266,9 @@ The canonical models. **All models are `extra="forbid"`** — the UI must never 
     │   └── checks.json                validation_checks
     ├── Schema/
     │   └── element_grid_CL-005.json   element_grid
+    ├── Authority sources/             official documents kept as proof (S6.1)
+    │   ├── <AUTHORITY_ID>__page.html
+    │   └── <AUTHORITY_ID>__page.proof.json
     ├── Transcripts/                   transcripts_dir
     │   └── timeline_aeropuerto_STG_7.html
     └── Legal framework/               framework_dir

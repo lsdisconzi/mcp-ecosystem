@@ -26,6 +26,12 @@ BUNDLE_LAYOUT = {
     "element_grid":              "Schema/element_grid_{violation_id}.json",
     "transcripts_dir":           "Transcripts",
     "framework_dir":             "Legal framework",
+    #: Official sources ingested while verifying an authority (the uploaded
+    #: PDF, a copy of the fetched page, and the `.proof.json` sidecar that
+    #: records both hashes). Listed here rather than hardcoded in
+    #: `authority_source.py` so MANIFEST.txt and the bundle zip pick it up like
+    #: every other artefact.
+    "authority_sources_dir":     "Authority sources",
 }
 
 
