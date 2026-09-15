@@ -179,7 +179,11 @@ class Settings:
             llm_api_key=llm_api_key,
             llm_base_url=llm_base_url,
             llm_temperature=float(os.environ.get("LLM_TEMPERATURE", "0.1")),
-            llm_max_tokens=int(os.environ.get("LLM_MAX_TOKENS", "8000")),
+            # Output budget per call. Reasoning models (DeepSeek flash/reasoner)
+            # bill their reasoning against this same allowance, so a value too
+            # low for the prompt produces an empty `content` rather than an
+            # error -- see the budget note in llm.py.
+            llm_max_tokens=int(os.environ.get("LLM_MAX_TOKENS", "16000")),
             llm_token_budget=int(os.environ.get("LLM_TOKEN_BUDGET", "250000")),
             llm_timeout_seconds=float(os.environ.get("LLM_TIMEOUT_SECONDS", "90")),
             authority_verification_floor=float(
@@ -195,6 +199,7 @@ class Settings:
         api_key: str | None = None,
         base_url: str | None = None,
         timeout: float | None = None,
+        max_tokens: int | None = None,
     ):
         """Construct the configured LLM client. Lazy-imports llm.py so the
         core package stays import-cheap and dependency-free. Any keyword
@@ -207,4 +212,5 @@ class Settings:
             api_key=api_key or self.llm_api_key,
             base_url=base_url or self.llm_base_url,
             timeout=timeout or self.llm_timeout_seconds,
+            max_tokens=max_tokens or self.llm_max_tokens,
         )

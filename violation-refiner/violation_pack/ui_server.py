@@ -41,13 +41,19 @@ Design notes
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import hashlib
 import os
 import re
 import sys
+import threading
+import time
+import uuid
 from pathlib import Path
 from typing import Any, get_args
+
+from . import progress
 
 # ---------------------------------------------------------------------------
 # UI asset resolution
@@ -1044,6 +1050,109 @@ def describe_tools(tool_manager) -> list[dict[str, Any]]:
 
 
 # ---------------------------------------------------------------------------
+# Long-running tool calls
+# ---------------------------------------------------------------------------
+#
+# `ToolManager` invokes a *synchronous* tool directly (`mcp/server/fastmcp/
+# utilities/func_metadata.py` ends in `return fn(**arguments_parsed_dict)`), so
+# awaiting `call_tool` from a request handler runs the whole tool on the event
+# loop. Measured against the live server: a `/api/health` poll sent 0.02 s into
+# an 8.96 s `enrich_violation_tool` call was answered at 8.98 s — nothing at all
+# was served in between. A full eight-stage enrichment is minutes, which is why
+# the page could not show that a run was in progress: it could not even ask.
+#
+# `background: true` on `/api/tool` therefore returns a job id immediately and
+# runs the call on a worker thread; the page polls `/api/tool-job`. Two
+# consequences worth stating: the HTTP requests are all short (no client-side
+# timeout can abort a six-minute call), and the event loop stays free to answer
+# both the poll and everything else the page is doing.
+
+_JOB_LOCK = threading.Lock()
+_JOBS: dict[str, dict[str, Any]] = {}
+#: Insertion-ordered job ids; the oldest is dropped once `_MAX_JOBS` is reached.
+_JOB_ORDER: list[str] = []
+_MAX_JOBS = 20
+
+
+def _call_tool_blocking(tool_manager, name: str, args: dict[str, Any]) -> Any:
+    """Run one tool call to completion on the calling thread.
+
+    `call_tool` is a coroutine but calls a synchronous tool inline, so it needs
+    a loop to run in — and it must be a *different* loop from the server's, or
+    the blocking lands back on the event loop this exists to protect. The tool
+    functions are pure sync code, so a private loop per call is safe.
+    """
+    return asyncio.run(tool_manager.call_tool(name, args))
+
+
+def _job_claim(tool: str) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    """Atomically take the single running-job slot, or name who holds it.
+
+    Claiming and checking in one locked step is what makes "tap twice" safe at
+    the protocol level and not merely in the page: two requests that arrive
+    together cannot both see an idle server.
+    """
+    with _JOB_LOCK:
+        for job_id in reversed(_JOB_ORDER):
+            running = _JOBS.get(job_id)
+            if running is not None and running["status"] == "running":
+                return None, running
+        job: dict[str, Any] = {
+            "job_id": uuid.uuid4().hex[:12],
+            "tool": tool,
+            "status": "running",
+            "started": time.time(),
+            "finished": None,
+            "result": None,
+            "error": None,
+            "error_type": None,
+        }
+        _JOBS[job["job_id"]] = job
+        _JOB_ORDER.append(job["job_id"])
+        while len(_JOB_ORDER) > _MAX_JOBS:
+            _JOBS.pop(_JOB_ORDER.pop(0), None)
+        return job, None
+
+
+async def _run_job(job: dict[str, Any], tool_manager, name: str, args: dict[str, Any]) -> None:
+    """The background task behind one `/api/tool` call.
+
+    The tool's own exception is the payload, not a crash: it is stored and
+    returned by `/api/tool-job` so the page can show the same message it used to
+    read out of a 400 response.
+    """
+    try:
+        job["result"] = await asyncio.to_thread(_call_tool_blocking, tool_manager, name, args)
+        job["status"] = "done"
+    except Exception as exc:  # noqa: BLE001 - the failure is the response
+        job["status"] = "error"
+        job["error"] = str(exc)
+        job["error_type"] = type(exc).__name__
+    finally:
+        job["finished"] = time.time()
+
+
+def _job_snapshot(job_id: str) -> dict[str, Any] | None:
+    """One job as a JSON-ready dict, plus what the worker last reported."""
+    with _JOB_LOCK:
+        job = _JOBS.get(job_id)
+        payload = dict(job) if job is not None else None
+    if payload is None:
+        return None
+    # A job that failed is not an ok payload. The page branches on `status`, but
+    # `ok` is the field every other response in this bridge uses for its
+    # verdict, and a failure that reports `ok: true` would be the one place the
+    # convention lies.
+    payload["ok"] = payload["status"] != "error"
+    payload["seconds"] = round((payload.get("finished") or time.time()) - payload["started"], 1)
+    if payload["status"] == "running":
+        live = progress.snapshot()
+        if live:
+            payload["progress"] = live
+    return payload
+
+
+# ---------------------------------------------------------------------------
 # Route handlers
 # ---------------------------------------------------------------------------
 
@@ -1293,6 +1402,28 @@ def build_ui_routes(mcp):
                 status_code=409,
             )
 
+        if body.get("background") is True:
+            job, busy = _job_claim(name)
+            if job is None:
+                return json_response(
+                    {
+                        "ok": False,
+                        "busy": True,
+                        "job_id": busy["job_id"],
+                        "running_tool": busy["tool"],
+                        "error": (
+                            f"{busy['tool']} is already running; wait for it to "
+                            "finish before starting another tool."
+                        ),
+                    },
+                    status_code=409,
+                )
+            asyncio.create_task(_run_job(job, tool_manager, name, args))
+            return json_response(
+                {"ok": True, "job_id": job["job_id"], "tool": name, "status": "running"},
+                status_code=202,
+            )
+
         try:
             result = await tool_manager.call_tool(name, args)
         except Exception as exc:  # noqa: BLE001 - surface the real message to the UI
@@ -1307,6 +1438,25 @@ def build_ui_routes(mcp):
             )
 
         return json_response({"ok": True, "tool": name, "result": result})
+
+    @mcp.custom_route("/api/tool-job", methods=["GET", "OPTIONS"])
+    async def api_tool_job(request) -> Response:
+        """Poll a background tool call started with ``{"background": true}``.
+
+        Answers with ``status`` of ``running`` / ``done`` / ``error``, the tool
+        result once there is one, and — while running — whatever the worker last
+        published through ``violation_pack.progress``. Polling is deliberately
+        cheap: a running job carries no result and only the newest progress.
+        """
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+        job_id = request.query_params.get("id", "")
+        payload = _job_snapshot(job_id)
+        if payload is None:
+            return json_response(
+                {"ok": False, "error": f"Unknown job id: {job_id!r}"}, status_code=404
+            )
+        return json_response(payload)
 
     # -- authority sources --------------------------------------------------
 

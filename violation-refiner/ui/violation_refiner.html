@@ -198,6 +198,26 @@ code {
 .btn[disabled] { opacity: 0.4; cursor: not-allowed; }
 .btn-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; align-items: center; }
 
+/* Running state for a tool call. Enrichment is one LLM request per stage and
+   the nine-stage run takes minutes; before this the page showed nothing at all
+   for the whole run and the button stayed live, so a second tap read as "it
+   didn't work". The banner lives in the activity-log header because that strip
+   is mounted on every step, so a run stays visible if the reviewer navigates
+   away mid-run. */
+.run-banner { display: inline-flex; align-items: center; gap: 9px; padding: 3px 11px; border-radius: 3px; border: 1px solid var(--accent); background: var(--accent-dim); font-family: var(--mono); font-size: 0.66rem; color: var(--accent); }
+.run-banner[hidden] { display: none; }
+.run-spinner { flex: none; width: 9px; height: 9px; border: 2px solid var(--accent); border-top-color: transparent; border-radius: 50%; animation: runSpin 0.7s linear infinite; }
+.run-elapsed { color: var(--text-secondary); }
+@keyframes runSpin { to { transform: rotate(360deg); } }
+/* Step-local progress. A real track, not a spinner: once a run is minutes long,
+   "stage 4 of 8 · nexus" is the only thing that tells the reviewer whether it
+   is advancing or wedged. */
+.progress-track { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
+.progress-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.3s ease; }
+.progress-fill.indeterminate { width: 32%; margin-left: -32%; animation: progressSlide 1.5s ease-in-out infinite; }
+@keyframes progressSlide { to { margin-left: 100%; } }
+.progress-label { font-family: var(--mono); font-size: 0.68rem; color: var(--text-secondary); margin: 9px 0 12px 0; }
+
 /* drop zone */
 .drop-zone { border: 1.5px dashed var(--border-strong); border-radius: 4px; padding: 26px; text-align: center; color: var(--text-muted); font-size: 0.84rem; background: var(--bg-card); }
 .drop-zone strong { color: var(--accent); }
@@ -393,6 +413,7 @@ code {
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
+  .run-spinner, .progress-fill { animation: none !important; }
 }
 
 .fade-in { animation: fadeIn .18s ease; }
@@ -533,6 +554,11 @@ code {
   <footer class="log-strip">
     <div class="log-header" data-action="toggle-log">
       <span class="log-title">Activity</span>
+      <span class="run-banner" id="runBanner" hidden>
+        <span class="run-spinner"></span>
+        <span id="runBannerText">Running…</span>
+        <span class="run-elapsed" id="runBannerElapsed">0:00</span>
+      </span>
       <span class="log-count" id="logCount">6 events</span>
       <span class="log-caret" id="logCaret">▾</span>
     </div>
@@ -936,6 +962,10 @@ code {
 
   <div class="block" style="margin-top:22px;">
     <div class="block-title">Stream</div>
+    <div id="enrichProgressWrap" hidden>
+      <div class="progress-track"><div class="progress-fill" id="enrichProgressFill"></div></div>
+      <div class="progress-label" id="enrichProgressLabel">Starting…</div>
+    </div>
     <div class="formula-box" id="enrichStream">Nothing run in this session.</div>
   </div>
 </template>
@@ -1260,6 +1290,18 @@ const API = {
     + '&article=' + encodeURIComponent(article)),
   browse: (path, kind) => fetchJson('/api/browse?path=' + encodeURIComponent(path) + '&kind=' + kind),
   catalog: () => fetchJson('/api/catalog'),
+  // Tool calls run in the background. `ToolManager` calls a *synchronous* tool
+  // inline on the event loop, so while one ran the server answered nothing at
+  // all — measured: a health poll sent 0.02s into an 8.96s enrichment call came
+  // back at 8.98s. A full eight-stage run is minutes, so the page could not even
+  // ask whether it was still going. Two short requests instead of one silent
+  // multi-minute one: start it, then poll for progress and the result.
+  toolStart: payload => fetchJson('/api/tool', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...payload, background: true }),
+  }),
+  toolJob: id => fetchJson('/api/tool-job?id=' + encodeURIComponent(id)),
   // Store an authority's official source (upload / url / pasted text) under the
   // bundle. Separate from /api/tool because it writes files rather than
   // dispatching a tool — and the verify step still goes through /api/tool, so
@@ -1302,7 +1344,12 @@ async function fetchJson(url, options) {
   return body;
 }
 
-/** Invoke a tool on the server. Returns the tool's real result value. */
+/** Invoke a tool on the server, synchronously. Returns the tool's real result value.
+ *
+ *  Only for calls that are known to return in a moment — the S6 proof flow's
+ *  file write and verify. Anything a reviewer waits on goes through
+ *  `invokeTool`, which runs on the server's background path so the page can
+ *  show progress and stay responsive while it works. */
 async function callTool(name, args = {}, opts = {}) {
   const payload = { name, args };
   if (opts.confirm) payload.confirm = true;
@@ -1312,6 +1359,30 @@ async function callTool(name, args = {}, opts = {}) {
     body: JSON.stringify(payload),
   });
   return body.result;
+}
+
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+/** Poll one background tool call until it stops running.
+ *
+ *  Returns the final `/api/tool-job` payload — `status` is `done` or `error`,
+ *  with `result` or `error` alongside. One second is the useful cadence: the
+ *  signal worth showing is a stage boundary and stages are tens of seconds
+ *  apart, so a tighter loop would only be more requests saying "still going". */
+async function awaitJob(jobId) {
+  const startedAt = Date.now();
+  for (;;) {
+    const body = await API.toolJob(jobId);
+    if (run) {
+      // The server only sends progress while the job is running, so a poll that
+      // arrives without it must not wipe the last known stage.
+      if (body.progress) run.progress = body.progress;
+      run.seconds = (Date.now() - startedAt) / 1000;
+      renderRunState();
+    }
+    if (body.status !== 'running') return body;
+    await sleep(1000);
+  }
 }
 
 /** Tool metadata cache, filled by bootstrap(). */
@@ -3055,7 +3126,10 @@ async function submitToolPanel(name) {
     return;
   }
   document.getElementById('modalOverlay').classList.remove('active');
-  await invokeTool(name, args, { destructive: tool.destructive });
+  await invokeTool(name, args, {
+    destructive: tool.destructive,
+    button: document.getElementById('argRun'),
+  });
 }
 
 /* ==========================================================================
@@ -3075,19 +3149,166 @@ async function runBoundTool(btn) {
     openToolPanel(name);
     return;
   }
-  await invokeTool(name, args, { destructive: tool && tool.destructive });
+  await invokeTool(name, args, { destructive: tool && tool.destructive, button: btn });
+}
+
+/* --------------------------------------------------------------------------
+   RUN STATE — one call at a time, visible from the moment it starts.
+
+   Enrichment is one LLM request per stage and a full run takes minutes. Before
+   this the button stayed live and the page said nothing, so a second tap was
+   the natural thing to do and it started a *second* run against the same
+   bundle. The guard is deliberately in three places — the in-page `run` handle,
+   the disabled controls, and the server's own single-job slot — because each
+   covers a case the others cannot: a keyboard re-entry, a click that lands
+   before the first request leaves, and a second browser tab.
+   -------------------------------------------------------------------------- */
+
+/** The in-flight call: `{ tool, button, label, startedAt, seconds, progress,
+ *  timer }`, or null. Deliberately *not* in `state` — it is a handle on this
+ *  page's own request, never persisted and never re-rendered from. */
+let run = null;
+
+function fmtElapsed(seconds) {
+  const total = Math.max(0, Math.round(seconds || 0));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+}
+
+/** The one-line description of what the run is doing right now. */
+function runHeadline() {
+  if (!run) return '';
+  const p = run.progress;
+  if (p && p.stage) {
+    const of = p.total ? ` · stage ${p.index} of ${p.total}` : '';
+    return `${run.tool} — ${p.stage}${of}`;
+  }
+  // No stage yet: the tool has not reported one, which is every tool that is not
+  // an enrichment stage. Saying "starting" is honest; inventing a stage number
+  // would not be.
+  return `${run.tool} — running`;
+}
+
+/** Lock or unlock every run control, and the argument form's Run button.
+ *
+ *  Buttons that shipped disabled are left disabled: the S12 store controls and
+ *  the typed-confirmation buttons are opened by an explicit consent step, and
+ *  re-enabling them here would hand out a button the reviewer never unlocked. */
+function setRunControlsBusy(busy) {
+  document.querySelectorAll('[data-action="run"], #argRun').forEach(btn => {
+    if (busy) {
+      if (btn.dataset.freeDisabled === undefined) {
+        btn.dataset.freeDisabled = btn.disabled ? '1' : '0';
+      }
+      btn.disabled = true;
+    } else if (btn.dataset.freeDisabled !== undefined) {
+      btn.disabled = btn.dataset.freeDisabled === '1';
+      delete btn.dataset.freeDisabled;
+    }
+  });
+}
+
+/** Paint the run: the always-mounted banner, plus the step-local track. */
+function renderRunState() {
+  if (!run) {
+    setHidden('runBanner', true);
+    setHidden('enrichProgressWrap', true);
+    return;
+  }
+  const headline = runHeadline();
+  setText('runBannerText', headline);
+  setText('runBannerElapsed', fmtElapsed(run.seconds));
+  setHidden('runBanner', false);
+
+  // The track is S9-only, because S9 is the only step with a stage registry to
+  // count against. On any other step the banner is the whole indicator.
+  const p = run.progress;
+  if (!p || !state.schema || !state.schema.enrichment_stages) {
+    setHidden('enrichProgressWrap', true);
+    return;
+  }
+  setHidden('enrichProgressWrap', false);
+  const total = p.total || 0;
+  const fill = document.getElementById('enrichProgressFill');
+  if (fill) {
+    // Indeterminate until the first stage is reported — an empty bar pinned at
+    // 0% reads as "stuck", which is the impression this whole change exists to
+    // remove.
+    fill.classList.toggle('indeterminate', !(total && p.index));
+    fill.style.width = (total && p.index) ? `${Math.round(((p.index - 1) / total) * 100)}%` : '';
+  }
+  setText('enrichProgressLabel',
+    `${headline} · ${p.total ? `${p.index}/${p.total} stages · ` : ''}${fmtElapsed(run.seconds)} elapsed`);
+}
+
+function beginRun(tool, button) {
+  run = {
+    tool,
+    button: button || null,
+    label: button ? button.textContent : null,
+    startedAt: Date.now(),
+    seconds: 0,
+    progress: null,
+    timer: null,
+  };
+  if (button) button.textContent = 'Running…';
+  setRunControlsBusy(true);
+  // The elapsed clock is local on purpose: it must keep moving even when a poll
+  // is slow or the server is between stages, which is exactly when a reviewer
+  // starts wondering whether anything is happening.
+  run.timer = setInterval(() => {
+    if (!run) return;
+    run.seconds = (Date.now() - run.startedAt) / 1000;
+    renderRunState();
+  }, 1000);
+  renderRunState();
+  pushLog(`${tool} started — controls locked until it finishes`,
+          STAGE_TITLES[state.activeStep], 'warn');
+}
+
+function endRun() {
+  const finishing = run;
+  run = null;
+  if (finishing && finishing.timer) clearInterval(finishing.timer);
+  if (finishing && finishing.button && finishing.label !== null) {
+    finishing.button.textContent = finishing.label;
+  }
+  setRunControlsBusy(false);
+  renderRunState();
 }
 
 async function invokeTool(name, args, opts = {}) {
   const step = STAGE_TITLES[state.activeStep];
-  pushLog(`→ ${name}(${Object.keys(args).length} arg${Object.keys(args).length === 1 ? '' : 's'})`, step);
+  if (run) {
+    // Reachable when a second click slips through before the controls lock, or
+    // from a keyboard activation on a form control.
+    pushLog(`${name} not started — ${run.tool} is still running`, step, 'warn');
+    return;
+  }
+  const n = Object.keys(args).length;
+  pushLog(`→ ${name}(${n} arg${n === 1 ? '' : 's'})`, step);
+  beginRun(name, opts.button);
 
   let confirmRequired = opts.destructive;
   try {
-    const result = await callTool(name, args, { confirm: true });
-    pushLog(`← ${name} ok`, step, 'ok');
-    applyResult(name, result);
+    const started = await API.toolStart({ name, args, confirm: true });
+    const body = await awaitJob(started.job_id);
+    if (body.status === 'error') {
+      const err = new Error(body.error || `${name} failed`);
+      err.status = 400;
+      err.body = body;
+      throw err;
+    }
+    pushLog(`← ${name} ok · ${fmtElapsed(body.seconds)}`, step, 'ok');
+    applyResult(name, body.result);
+    return;
   } catch (e) {
+    if (e.status === 409 && e.body && e.body.busy) {
+      // The server refused because it is already running something. Reported,
+      // not shown as a failure: nothing is wrong with the click, it just lost a
+      // race with a run that is still going.
+      pushLog(`${name} not started — ${e.message}`, step, 'warn');
+      return;
+    }
     if (e.status === 409 && e.body && e.body.requires_confirmation) {
       confirmRequired = true;
       pushLog(`${name} blocked — confirmation required`, step, 'warn');
@@ -3102,6 +3323,8 @@ async function invokeTool(name, args, opts = {}) {
         <div class="btn-row" style="margin-top:14px;"><button class="btn" data-action="close-modal">Close</button></div>`;
       document.getElementById('modalOverlay').classList.add('active');
     }
+  } finally {
+    endRun();
   }
   if (confirmRequired) { /* the typed-confirmation panel already gated the click */ }
 }
@@ -3118,7 +3341,30 @@ function applyResult(name, result) {
     pushLog(`   returned ${result.length} item(s)`, STAGE_TITLES[state.activeStep]);
   }
   hydrateIntrospection(name, result);
+  refreshStepPanel();
   if (state.drawerTab === 'json') renderDrawer();
+}
+
+/** Repaint the active step from `state`.
+ *
+ *  Every panel is built by a `hydrate*` function from `state`, so a step that is
+ *  already on screen keeps whatever it last rendered. `switchStep()` and
+ *  `switchBundle()` were the only callers of `applyBundleToStep()`, so a run's
+ *  result reached the stats bar and the JSON drawer but never the panel the
+ *  button was on — S9 went on reading "Nothing run in this session." after a
+ *  successful run, and the effect was to make a run look as if it had done
+ *  nothing at all.
+ *
+ *  `applyBundleToStep()` is safe to re-run: it null-guards every field, and it
+ *  was already called twice per step switch (once from `switchStep()`, once
+ *  from the `s2` branch's own `hydrateSourceSelectors()`), which is why
+ *  `hydrateSourceSelectors()` is written to keep an explicit pick. */
+function refreshStepPanel() {
+  try {
+    applyBundleToStep(state.activeStep);
+  } catch (e) {
+    pushLog(`Panel refresh failed — ${e.message}`, STAGE_TITLES[state.activeStep], 'warn');
+  }
 }
 
 /** The S14 panel ships with example values; replace them with what the server
@@ -3215,6 +3461,13 @@ function inputValue(id) {
 function setText(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = (value === null || value === undefined) ? '' : String(value);
+}
+/** Show or hide a block by its id. Used by the run indicator, whose pieces live
+ *  in the activity-log header and so are missing on no step — but are still
+ *  looked up by id, because `setHidden` must stay safe after a step switch. */
+function setHidden(id, hidden) {
+  const el = document.getElementById(id);
+  if (el) el.hidden = Boolean(hidden);
 }
 function setHtml(id, html) {
   const el = document.getElementById(id);
@@ -3341,9 +3594,17 @@ function hydrateSettingsEnv(cfg) {
       const raw = values[k];
       const isSet = raw !== null && raw !== undefined && raw !== '';
       const shown = !isSet ? '' : (secret ? '••••••••' : String(raw));
+      // The id is derived from the setting name rather than minted, so it is
+      // stable: this host is rewritten with innerHTML on every settings refresh,
+      // and `associateLabels` cannot reach these rows (its first loop only sees
+      // controls inside their own <label>). A control with neither `id` nor
+      // `name` is one Chromium
+      // `genericFormEmptyIdAndNameAttributesForInputError` in the Issues panel,
+      // and this loop is what was producing all of them.
+      const fieldId = 'env-' + k.replace(/[^A-Za-z0-9_-]/g, '-');
       return `<div class="settings-row">
-        <div class="settings-row-label">${escapeHtml(k.toUpperCase())}</div>
-        <input type="${secret ? 'password' : 'text'}" value="${escapeHtml(shown)}" placeholder="not set" readonly>
+        <label class="settings-row-label" for="${fieldId}">${escapeHtml(k.toUpperCase())}</label>
+        <input id="${fieldId}" name="${fieldId}" type="${secret ? 'password' : 'text'}" value="${escapeHtml(shown)}" placeholder="not set" autocomplete="off" readonly>
       </div>`;
     }).join('');
     return `<div class="settings-row-sub" style="margin:12px 0 4px;">${escapeHtml(name)}</div>${rows}`;
@@ -5011,6 +5272,29 @@ function hydrateS8() {
 
 /* --------------------------------------------------------------------- S9 */
 
+/** The provenance operation prefix `enrich.enrich_violation` writes.
+ *
+ *  The S9 panel and the sidebar tick both need "has enrichment run here?", and
+ *  before this they both answered it by scanning provenance operations for
+ *  `/enrich/i`. Nothing ever matched: `enrich_violation` wrote no provenance of
+ *  its own, and none of the operations the layers it delegates to write contains
+ *  the word (measured across all 81 bundles — 493 entries, 0 matches). The
+ *  counter could not leave zero and the tick could not light up, however much a
+ *  run produced. `enrich.py` now logs one entry per stage; this constant and
+ *  `enrichTrail` are the single place that decides what counts, so the two
+ *  callers cannot drift apart again. */
+const ENRICH_OP_PREFIX = 'enrich_violation:';
+
+function enrichTrail(v) {
+  return ((v && v.provenance) || [])
+    .filter(p => String(p.operation || '').startsWith(ENRICH_OP_PREFIX));
+}
+
+/** The stage names that appear in the trail — i.e. that actually ran. */
+function enrichStagesLogged(v) {
+  return new Set(enrichTrail(v).map(p => String(p.operation).slice(ENRICH_OP_PREFIX.length)));
+}
+
 function hydrateS9() {
   const stages = (state.schema && state.schema.enrichment_stages) || [];
   const v = state.violation;
@@ -5029,10 +5313,20 @@ function hydrateS9() {
   };
   const countOf = stage => (v && STAGE_PRODUCT[stage]) ? STAGE_PRODUCT[stage](v) : 0;
   const produced = stages.filter(stage => countOf(stage) > 0);
+  const logged = enrichStagesLogged(v);
 
+  // "Ran and found nothing" and "never ran" are different facts and the count
+  // alone cannot tell them apart — `subsections` on CL-030 legitimately reports
+  // nothing, because none of its three articles is subdivided, and the panel
+  // used to present that as the stage being missing.
   setHtml('s9Stages', stages.length ? stages.map((s, i) => {
     const n = countOf(s);
-    return `<span class="chip${n ? ' chip-done' : ''}" title="${n ? `${n} item(s) in this bundle` : 'nothing in this bundle yet'}">${i + 1}. ${escapeHtml(s)}${n ? ` · ${n}` : ''}</span>`;
+    const ran = logged.has(s);
+    const why = n
+      ? `${n} item(s) in this bundle`
+      : (ran ? 'ran in the logged pass — recorded no items' : 'no output in this bundle, and no run logged');
+    const mark = n ? ` · ${n}` : (ran ? ' · ran' : '');
+    return `<span class="chip${n ? ' chip-done' : ''}" title="${escapeHtml(why)}">${i + 1}. ${escapeHtml(s)}${mark}</span>`;
   }).join('') : hintRow('No enrichment stages reported by the server.'));
 
   const cfg = (state.config && state.config.settings) || {};
@@ -5040,15 +5334,21 @@ function hydrateS9() {
     ? `Effective Settings: provider ${cfg.llm_provider || 'unset'} · model ${cfg.llm_model || 'unset'}`
     : 'No LLM provider in the effective Settings.');
 
-  const runs = ((v && v.provenance) || []).filter(p => /enrich/i.test(p.operation || '')).slice(-8).reverse();
-  setHtml('enrichStream', runs.length
-    ? runs.map(p => `${escapeHtml(fmtStamp(p.timestamp))}  ${escapeHtml(p.operation)}  ${escapeHtml(p.note || '')}`).join('\n')
-    : 'Nothing run in this session.');
+  const trail = enrichTrail(v).slice(-8).reverse();
+  setHtml('enrichStream', trail.length
+    ? trail.map(p => `${escapeHtml(fmtStamp(p.timestamp))}  ${escapeHtml(p.operation)}  ${escapeHtml(p.note || '')}`).join('\n')
+    : 'No enrichment run logged for this bundle yet.');
 
+  const withoutOutput = stages.filter(s => !countOf(s));
   setGate('s9Gate',
     `${stages.length} ENRICHMENT_STAGES · ${produced.length} with output in this bundle`
-    + (produced.length !== stages.length ? ` (missing: ${stages.filter(s => !countOf(s)).join(', ')})` : '')
-    + ` · ${runs.length} enrich run(s) logged`,
+    + (withoutOutput.length ? ` (no output from: ${withoutOutput.join(', ')})` : '')
+    + ` · ${logged.size}/${stages.length} logged in the trail`
+    // An enrichment run returns an updated violation and writes nothing: it
+    // exists in this page's memory until a write tool persists it. Without
+    // saying so the panel implies the disk changed, and S10 then validates the
+    // old file while the page shows the new one.
+    + (trail.length ? ' · held in this page until S11 writes it' : ''),
     produced.length ? 'met' : 'advisory');
 }
 
@@ -5244,7 +5544,7 @@ const STEP_PROGRESS = {
   s6: (b, v) => ((v && v.authorities) || []).length > 0,
   s7: (b, v) => ((v && v.authorities) || []).some(a => a.verified),
   s8: (b, v) => Boolean(v && v.confidence),
-  s9: (b, v) => ((v && v.provenance) || []).some(p => /enrich/i.test(p.operation || '')),
+  s9: (b, v) => enrichTrail(v).length > 0,
   s10: b => Boolean(b.validation_summary && b.validation_summary.total),
   s11: b => Boolean(b.artifacts_present && b.artifacts_present.manifest),
   s12: b => false,

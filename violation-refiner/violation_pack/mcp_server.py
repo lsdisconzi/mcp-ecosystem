@@ -669,6 +669,7 @@ def build_server(include_ui: bool = True):
             model=override.get("model", s.llm_model),
             api_key=override.get("api_key", s.llm_api_key),
             base_url=override.get("base_url", s.llm_base_url),
+            max_tokens=s.llm_max_tokens,
         )
 
     def _load_frameworks(framework_specs: list[dict] | None) -> dict:
@@ -694,18 +695,31 @@ def build_server(include_ui: bool = True):
         used for substring verification of article excerpts.
         `stages` (optional) restricts which stages run.
         `llm_override` (optional) overrides provider/model/api_key/base_url.
+
+        Each stage that runs appends one ``enrich_violation:<stage>`` provenance
+        entry, so a finished run is visible in the bundle's trail. The run also
+        publishes live progress through ``violation_pack.progress`` for the UI.
         """
-        from .enrich import enrich_violation
+        from . import progress
+        from .enrich import ENRICHMENT_STAGES, enrich_violation
         client = _build_llm_client(llm_override)
         v = _v_load(violation)
         fws = _load_frameworks(framework_specs)
-        enriched = enrich_violation(
-            v,
-            client=client,
-            frameworks=fws,
-            known_violation_ids=set(known_violation_ids or []),
-            stages=stages,
-        )
+        selected = list(stages) if stages else list(ENRICHMENT_STAGES)
+        progress.begin("enrich_violation_tool", total=len(selected))
+        try:
+            enriched = enrich_violation(
+                v,
+                client=client,
+                frameworks=fws,
+                known_violation_ids=set(known_violation_ids or []),
+                stages=selected,
+                on_stage=progress.stage,
+            )
+        except Exception as exc:  # noqa: BLE001 - report, then surface unchanged
+            progress.end("enrich_violation_tool", error=f"{type(exc).__name__}: {exc}")
+            raise
+        progress.end("enrich_violation_tool")
         return _v_dump(enriched)
 
     @mcp.tool()
@@ -719,6 +733,7 @@ def build_server(include_ui: bool = True):
         """Run a single enrichment stage. `stage` must be one of:
         segments, subsections, element_grids, nexus, candidates,
         authorities, open_questions, cross_references."""
+        from . import progress
         from .enrich import ENRICHMENT_STAGES, enrich_violation
         if stage not in ENRICHMENT_STAGES:
             raise ValueError(
@@ -727,13 +742,20 @@ def build_server(include_ui: bool = True):
         client = _build_llm_client(llm_override)
         v = _v_load(violation)
         fws = _load_frameworks(framework_specs)
-        enriched = enrich_violation(
-            v,
-            client=client,
-            frameworks=fws,
-            known_violation_ids=set(known_violation_ids or []),
-            stages=[stage],
-        )
+        progress.begin("enrich_stage_tool", total=1)
+        try:
+            enriched = enrich_violation(
+                v,
+                client=client,
+                frameworks=fws,
+                known_violation_ids=set(known_violation_ids or []),
+                stages=[stage],
+                on_stage=progress.stage,
+            )
+        except Exception as exc:  # noqa: BLE001 - report, then surface unchanged
+            progress.end("enrich_stage_tool", error=f"{type(exc).__name__}: {exc}")
+            raise
+        progress.end("enrich_stage_tool")
         return _v_dump(enriched)
 
     @mcp.tool()

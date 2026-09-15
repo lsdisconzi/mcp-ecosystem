@@ -27,7 +27,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
-from typing import Any, Protocol
+from typing import Any, Callable, Protocol
 
 
 class LLMError(RuntimeError):
@@ -45,11 +45,15 @@ class LLMClient(Protocol):
         messages: list[dict],
         *,
         temperature: float = 0.1,
-        max_tokens: int = 8000,
+        max_tokens: int | None = None,
         system: str | None = None,
     ) -> dict[str, Any]:
         """Send messages, return a parsed JSON object. Raises LLMError on
-        repeated parse / transport failures."""
+        repeated parse / transport failures.
+
+        `max_tokens` defaults to the client's configured budget, then to
+        `LLM_MAX_TOKENS`. See `_json_within_budget` for the one automatic
+        retry at a larger budget."""
         ...
 
 
@@ -93,6 +97,233 @@ def _parse_json(text: str) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
+# Output budget
+#
+# A reasoning model (DeepSeek's reasoner/flash, o1-style, ...) spends its
+# `reasoning_tokens` out of the SAME `max_tokens` allowance as the answer. The
+# enrichment prompts are large -- `_violation_snapshot` keeps every article's
+# full `verbatim_excerpt` -- so the reasoner can consume the entire allowance
+# thinking and never emit a single character of JSON. The provider then
+# answers 200 OK with `content: ""` and `finish_reason: "length"`, and all the
+# pipeline ever saw was `json.loads("")`:
+#
+#     model did not return valid JSON: Expecting value: line 1 column 1 (char 0)
+#     --- raw ---
+#
+# ...with an empty raw excerpt, which named neither the cause nor the fix.
+# The budget below is the first line of defence; the one-shot escalation in
+# `_json_within_budget` is the second.
+# ---------------------------------------------------------------------------
+
+# Initial output budget, overridable per client or per call.
+DEFAULT_MAX_TOKENS = 16000
+
+# Hard cap for the automatic escalation retry. DeepSeek accepted 131072 in a
+# probe, so this is a cost guard rather than a provider limit.
+MAX_TOKENS_CEILING = 65536
+
+# Multiplier applied to the budget for the single retry.
+_BUDGET_ESCALATION = 4
+
+# `finish_reason` values that mean "the provider cut the reply off because the
+# output budget ran out". OpenAI-compatible backends say "length"; Anthropic
+# says "max_tokens".
+_TRUNCATED_REASONS = frozenset({"length", "max_tokens", "max_output_tokens"})
+
+
+@dataclass(frozen=True)
+class Completion:
+    """The parts of a chat completion the JSON path actually needs.
+
+    `reasoning_content` is never used as the answer -- it is the model's
+    scratch pad -- but its SIZE is the single most useful diagnostic when a
+    reply comes back empty, so it is recorded here.
+    """
+
+    content: str
+    finish_reason: str | None
+    reasoning_chars: int
+    reasoning_tokens: int | None
+    completion_tokens: int | None
+
+    @property
+    def blank(self) -> bool:
+        return not self.content.strip()
+
+    @property
+    def truncated(self) -> bool:
+        return self.finish_reason in _TRUNCATED_REASONS
+
+
+def _env_positive_int(name: str, default: int) -> int:
+    raw = os.environ.get(name)
+    if not raw:
+        return default
+    try:
+        value = int(raw)
+    except ValueError:
+        return default
+    return value if value > 0 else default
+
+
+def default_max_tokens() -> int:
+    """Initial output budget. Read per call, not at import time: `.env` is
+    loaded by `Settings.from_env()`, which runs after this module imports."""
+    return _env_positive_int("LLM_MAX_TOKENS", DEFAULT_MAX_TOKENS)
+
+
+def _escalated(budget: int) -> int | None:
+    """The budget for the escalation retry, or None when there is no room."""
+    scaled = min(budget * _BUDGET_ESCALATION, MAX_TOKENS_CEILING)
+    return scaled if scaled > budget else None
+
+
+def _openai_completion(payload: dict[str, Any]) -> Completion:
+    """Read an OpenAI-compatible `chat.completions` payload."""
+    choice = payload["choices"][0]
+    message = choice.get("message") or {}
+    usage = payload.get("usage") or {}
+    details = usage.get("completion_tokens_details") or {}
+    content = message.get("content")
+    reasoning = message.get("reasoning_content")
+    return Completion(
+        content=content if isinstance(content, str) else "",
+        finish_reason=choice.get("finish_reason"),
+        reasoning_chars=len(reasoning) if isinstance(reasoning, str) else 0,
+        reasoning_tokens=details.get("reasoning_tokens"),
+        completion_tokens=usage.get("completion_tokens"),
+    )
+
+
+def _anthropic_completion(payload: dict[str, Any]) -> Completion:
+    """Read an Anthropic `messages` payload."""
+    parts = payload["content"]
+    text = "".join(
+        p.get("text", "") for p in parts
+        if isinstance(p, dict) and p.get("type") == "text"
+    )
+    usage = payload.get("usage") or {}
+    return Completion(
+        content=text,
+        finish_reason=payload.get("stop_reason"),
+        # Anthropic exposes reasoning only as signed thinking blocks, which
+        # this adapter deliberately does not request.
+        reasoning_chars=0,
+        reasoning_tokens=None,
+        completion_tokens=usage.get("output_tokens"),
+    )
+
+
+def _budget_error(
+    label: str,
+    reply: Completion,
+    budget: int,
+    *,
+    escalation: int | None,
+    refusal: str | None,
+    retried: bool,
+    cause: LLMError | None,
+) -> LLMError:
+    """Build the error for a reply that was empty or cut off by the budget."""
+    facts = ", ".join(
+        f"{name}={value}"
+        for name, value in (
+            ("finish_reason", repr(reply.finish_reason)),
+            ("completion_tokens", reply.completion_tokens),
+            ("reasoning_tokens", reply.reasoning_tokens),
+            ("reasoning_chars", reply.reasoning_chars or None),
+            ("max_tokens", budget),
+        )
+        if value is not None
+    )
+
+    if reply.blank:
+        what = f"{label}: the model returned no content ({facts})"
+    else:
+        what = f"{label}: the reply was cut off before the JSON was complete ({facts})"
+
+    lines = [what]
+    if reply.blank and (reply.reasoning_chars or reply.reasoning_tokens):
+        lines.append(
+            "reasoning_content shares the max_tokens allowance with the answer: "
+            "the model spent the whole budget thinking and never started the JSON."
+        )
+    if refusal is not None:
+        lines.append(f"the retry at {escalation} tokens was refused: {refusal}")
+    elif retried:
+        lines.append(
+            f"the retry at {escalation} tokens failed the same way, so the prompt "
+            "itself is the likely limit -- shorten it or split the stage."
+        )
+    elif escalation is None:
+        lines.append(
+            f"max_tokens ({budget}) is already at or above the "
+            f"{MAX_TOKENS_CEILING} escalation ceiling, so there was no room to retry."
+        )
+    else:
+        lines.append("raise LLM_MAX_TOKENS.")
+    if cause is not None:
+        lines.append(str(cause))
+    return LLMError("\n".join(lines))
+
+
+def _try_parse(text: str) -> tuple[dict[str, Any] | None, LLMError | None]:
+    """Parse, returning `(obj, None)` or `(None, the error to raise later)."""
+    try:
+        return _parse_json(text), None
+    except LLMError as exc:
+        return None, exc
+
+
+def _json_within_budget(
+    *,
+    label: str,
+    budget: int,
+    send: Callable[[int], Completion],
+) -> dict[str, Any]:
+    """Send at `budget`; retry once at a larger budget if the reply was empty
+    or cut off by the token cap.
+
+    Only a budget failure is retried -- a reply that is complete but garbled
+    is a prompt problem, and paying for it twice will not fix it.
+    """
+    reply = send(budget)
+    obj, cause = _try_parse(reply.content)
+    if obj is not None:
+        return obj
+
+    if not (reply.blank or reply.truncated):
+        assert cause is not None
+        raise cause
+
+    escalation = _escalated(budget)
+    if escalation is None:
+        raise _budget_error(
+            label, reply, budget,
+            escalation=None, refusal=None, retried=False, cause=cause,
+        )
+
+    try:
+        retry = send(escalation)
+    except LLMError as refused:
+        # A hard per-model ceiling turns the bigger budget into a 400. The
+        # first attempt's diagnosis is the more useful error, so keep it and
+        # name the refusal.
+        raise _budget_error(
+            label, reply, budget,
+            escalation=escalation, refusal=str(refused), retried=False, cause=cause,
+        ) from None
+
+    obj, cause = _try_parse(retry.content)
+    if obj is not None:
+        return obj
+    raise _budget_error(
+        label, retry, escalation,
+        escalation=escalation, refusal=None, retried=True, cause=cause,
+    )
+
+
+# ---------------------------------------------------------------------------
 # OpenAI-compatible backends (OpenRouter, DeepSeek, OpenAI, Ollama /v1)
 # ---------------------------------------------------------------------------
 
@@ -104,13 +335,14 @@ class OpenAICompatibleClient:
     api_key: str | None = None
     extra_headers: dict[str, str] | None = None
     timeout: float = 120.0
+    max_tokens: int | None = None
 
     def chat_json(
         self,
         messages: list[dict],
         *,
         temperature: float = 0.1,
-        max_tokens: int = 8000,
+        max_tokens: int | None = None,
         system: str | None = None,
     ) -> dict[str, Any]:
         httpx = _httpx()
@@ -125,29 +357,37 @@ class OpenAICompatibleClient:
         if self.extra_headers:
             headers.update(self.extra_headers)
 
-        body: dict[str, Any] = {
-            "model": self.model,
-            "messages": msgs,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
-            "response_format": {"type": "json_object"},
-        }
-
         url = self.base_url.rstrip("/") + "/chat/completions"
-        try:
-            r = httpx.post(url, json=body, headers=headers, timeout=self.timeout)
-        except httpx.HTTPError as exc:
-            raise LLMError(f"{self.provider}: transport error: {exc}") from exc
-        if r.status_code >= 400:
-            raise LLMError(
-                f"{self.provider}: HTTP {r.status_code} from {url}: {r.text[:1000]}"
-            )
-        try:
-            payload = r.json()
-            content = payload["choices"][0]["message"]["content"]
-        except Exception as exc:
-            raise LLMError(f"{self.provider}: malformed response: {exc}\n{r.text[:1000]}") from exc
-        return _parse_json(content)
+
+        def send(budget: int) -> Completion:
+            body: dict[str, Any] = {
+                "model": self.model,
+                "messages": msgs,
+                "temperature": temperature,
+                "max_tokens": budget,
+                "response_format": {"type": "json_object"},
+            }
+            try:
+                r = httpx.post(url, json=body, headers=headers, timeout=self.timeout)
+            except httpx.HTTPError as exc:
+                raise LLMError(f"{self.provider}: transport error: {exc}") from exc
+            if r.status_code >= 400:
+                raise LLMError(
+                    f"{self.provider}: HTTP {r.status_code} from {url}: {r.text[:1000]}"
+                )
+            try:
+                return _openai_completion(r.json())
+            except Exception as exc:
+                raise LLMError(
+                    f"{self.provider}: malformed response: {exc}\n{r.text[:1000]}"
+                ) from exc
+
+        budget = max_tokens or self.max_tokens or default_max_tokens()
+        return _json_within_budget(
+            label=f"{self.provider}/{self.model}",
+            budget=budget,
+            send=send,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -162,13 +402,14 @@ class AnthropicClient:
     base_url: str = "https://api.anthropic.com/v1"
     anthropic_version: str = "2023-06-01"
     timeout: float = 120.0
+    max_tokens: int | None = None
 
     def chat_json(
         self,
         messages: list[dict],
         *,
         temperature: float = 0.1,
-        max_tokens: int = 8000,
+        max_tokens: int | None = None,
         system: str | None = None,
     ) -> dict[str, Any]:
         httpx = _httpx()
@@ -191,29 +432,36 @@ class AnthropicClient:
         if self.api_key:
             headers["x-api-key"] = self.api_key
 
-        body: dict[str, Any] = {
-            "model": self.model,
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-            "messages": anth_messages,
-        }
-        if system:
-            body["system"] = system
-
         url = self.base_url.rstrip("/") + "/messages"
-        try:
-            r = httpx.post(url, json=body, headers=headers, timeout=self.timeout)
-        except httpx.HTTPError as exc:
-            raise LLMError(f"anthropic: transport error: {exc}") from exc
-        if r.status_code >= 400:
-            raise LLMError(f"anthropic: HTTP {r.status_code}: {r.text[:1000]}")
-        try:
-            payload = r.json()
-            parts = payload["content"]
-            text = "".join(p.get("text", "") for p in parts if p.get("type") == "text")
-        except Exception as exc:
-            raise LLMError(f"anthropic: malformed response: {exc}\n{r.text[:1000]}") from exc
-        return _parse_json(text)
+
+        def send(budget: int) -> Completion:
+            body: dict[str, Any] = {
+                "model": self.model,
+                "max_tokens": budget,
+                "temperature": temperature,
+                "messages": anth_messages,
+            }
+            if system:
+                body["system"] = system
+            try:
+                r = httpx.post(url, json=body, headers=headers, timeout=self.timeout)
+            except httpx.HTTPError as exc:
+                raise LLMError(f"anthropic: transport error: {exc}") from exc
+            if r.status_code >= 400:
+                raise LLMError(f"anthropic: HTTP {r.status_code}: {r.text[:1000]}")
+            try:
+                return _anthropic_completion(r.json())
+            except Exception as exc:
+                raise LLMError(
+                    f"anthropic: malformed response: {exc}\n{r.text[:1000]}"
+                ) from exc
+
+        budget = max_tokens or self.max_tokens or default_max_tokens()
+        return _json_within_budget(
+            label=f"anthropic/{self.model}",
+            budget=budget,
+            send=send,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -257,8 +505,14 @@ def build_client(
     api_key: str | None = None,
     base_url: str | None = None,
     timeout: float | None = None,
+    max_tokens: int | None = None,
 ) -> LLMClient:
-    """Construct an LLMClient. All arguments fall back to env vars."""
+    """Construct an LLMClient. All arguments fall back to env vars.
+
+    `max_tokens` is the output budget per call. It defaults to `LLM_MAX_TOKENS`
+    at request time, so leaving it unset is fine; passing it explicitly is how
+    `Settings.llm_max_tokens` reaches the client.
+    """
     provider = (provider or os.environ.get("LLM_PROVIDER") or "openrouter").lower().strip()
     if provider not in PROVIDER_DEFAULTS:
         raise LLMError(
@@ -277,6 +531,7 @@ def build_client(
     if provider == "anthropic":
         return AnthropicClient(
             model=model, api_key=api_key, base_url=base_url, timeout=timeout,
+            max_tokens=max_tokens,
         )
 
     # Build OpenAI-compatible client with provider-specific extras.
@@ -295,4 +550,5 @@ def build_client(
         api_key=api_key,
         extra_headers=extra_headers or None,
         timeout=timeout,
+        max_tokens=max_tokens,
     )

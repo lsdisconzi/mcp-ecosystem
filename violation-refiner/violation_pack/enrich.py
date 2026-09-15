@@ -27,9 +27,11 @@ and re-attaches confidence at the end.
 from __future__ import annotations
 
 import json
-from typing import Any, Iterable
+from datetime import datetime, timezone
+from typing import Any, Callable, Iterable
 
 from .confidence import attach_confidence
+from .law_registry import ArticleExtents, load_extents
 from .layers import (
     add_authority_stub,
     add_element_grid,
@@ -45,6 +47,7 @@ from .models import (
     EvidenceSegment,
     NexusEntry,
     OpenQuestion,
+    ProvenanceEntry,
     Violation,
 )
 from .sources import FrameworkSource, TranscriptSource
@@ -122,18 +125,39 @@ def _violation_snapshot(v: Violation) -> dict[str, Any]:
     }
 
 
-def _call(client: LLMClient, instruction: str, payload: dict, *, max_tokens: int = 8000) -> dict:
-    """One LLM call with the canonical system prompt and a user payload."""
+def _call(
+    client: LLMClient,
+    instruction: str,
+    payload: dict,
+    *,
+    stage: str | None = None,
+    max_tokens: int | None = None,
+) -> dict:
+    """One LLM call with the canonical system prompt and a user payload.
+
+    `stage` labels any LLMError with the stage that raised it: eight stages
+    hide behind a single MCP tool, so an unlabelled failure leaves the
+    operator unable to tell which prompt ran out of budget (or whether the
+    failure was a budget problem at all).
+
+    `max_tokens=None` defers to the client's configured budget, so
+    `LLM_MAX_TOKENS` actually reaches the request.
+    """
     user = (
         instruction.strip()
         + "\n\n--- INPUT ---\n"
         + json.dumps(payload, ensure_ascii=False, indent=2)
     )
-    return client.chat_json(
-        messages=[{"role": "user", "content": user}],
-        system=_SYSTEM_PROMPT,
-        max_tokens=max_tokens,
-    )
+    try:
+        return client.chat_json(
+            messages=[{"role": "user", "content": user}],
+            system=_SYSTEM_PROMPT,
+            max_tokens=max_tokens,
+        )
+    except LLMError as exc:
+        if stage is None:
+            raise
+        raise LLMError(f"enrichment stage {stage!r}: {exc}") from exc
 
 
 # ---------------------------------------------------------------------------
@@ -170,7 +194,7 @@ def propose_segment_metadata(
     if not violation.segments:
         return []
     payload = _violation_snapshot(violation)
-    resp = _call(client, _SEGMENT_PROMPT, payload)
+    resp = _call(client, _SEGMENT_PROMPT, payload, stage="segments")
     by_id = {s.segment_id: s for s in violation.segments}
     out: list[EvidenceSegment] = []
     for entry in resp.get("segments") or []:
@@ -266,7 +290,7 @@ def propose_article_subsections(
             for s in violation.segments
         ],
     }
-    resp = _call(client, _SUBSECTION_PROMPT, payload)
+    resp = _call(client, _SUBSECTION_PROMPT, payload, stage="subsections")
     out: list[dict] = []
     for item in resp.get("articles") or []:
         aid = item.get("article_id")
@@ -369,7 +393,7 @@ def propose_element_grid(
             for s in violation.segments
         ],
     }
-    resp = _call(client, _ELEMENT_GRID_PROMPT, payload)
+    resp = _call(client, _ELEMENT_GRID_PROMPT, payload, stage="element_grids")
     valid_seg_ids = {s.segment_id for s in violation.segments}
 
     def _parse(resp: dict) -> tuple[list[Element], str]:
@@ -407,7 +431,7 @@ def propose_element_grid(
     # grids commonly hurt the confidence score and miss the standard
     # doctrinal decomposition.
     if elements and (len(elements) < 6 or _grid_score(elements) < 0.65):
-        resp2 = _call(client, _ELEMENT_GRID_PROMPT, payload)
+        resp2 = _call(client, _ELEMENT_GRID_PROMPT, payload, stage="element_grids")
         elements2, article_short2 = _parse(resp2)
         if elements2 and (
             len(elements2) > len(elements)
@@ -482,7 +506,7 @@ def propose_nexus(
             for g in violation.element_grids
         ],
     }
-    resp = _call(client, _NEXUS_PROMPT, payload)
+    resp = _call(client, _NEXUS_PROMPT, payload, stage="nexus")
     valid_segs = {s.segment_id for s in violation.segments}
     valid_pairs: set[tuple[str, str]] = set()
     for g in violation.element_grids:
@@ -518,7 +542,7 @@ def propose_nexus(
     # valid pairs to work with — nexus generation is occasionally empty due
     # to LLM nondeterminism.
     if not out and valid_pairs and valid_segs:
-        resp2 = _call(client, _NEXUS_PROMPT, payload)
+        resp2 = _call(client, _NEXUS_PROMPT, payload, stage="nexus")
         out = _parse(resp2)
     return out
 
@@ -531,23 +555,46 @@ _CANDIDATES_PROMPT = """List additional articles a careful analyst would
 PROPOSE as plausibly applicable but that are NOT yet verified or are not
 in the bundle.
 
+Every other stage is bounded by its input; this one is not, so the output
+has to bound itself. The candidate space is this bundle's facts, not the
+statute book: a candidate must be reachable from a segment, article or
+element already present in the input.
+
 Rules:
+- Return AT MOST 8 candidates, most material first. That is a hard ceiling,
+  not a target — a short list is the normal result, and an empty one is
+  fine.
+- Do NOT enumerate a code. An ascending run of article numbers (Art. 150,
+  Art. 151, Art. 250, Art. 251, ...) is a failure of this stage, not
+  thoroughness: an article reached by walking a statute rather than by
+  reading the facts is not a candidate.
+- Every candidate MUST name, inside `preliminary_view`, the specific fact
+  (segment_id) or element (article_id / element_id) that makes it
+  plausible. A candidate justified only by "confirm whether there is any
+  factual basis for this" has no basis — DROP it instead of listing it for
+  completeness.
 - Use ELI-style ids: "CL.<FW>.Art.<num>". The "<FW>" segment MUST be a
   real framework code — e.g. CACH, LPC/LPDC, CC (Codigo Civil), CP/CHIPENCOD,
   CPR/CONST, L19628/LPDP, DS113 — not a placeholder like "FW".
 - For Code Civil articles, use "CC" (NOT "FW"). For Constitution articles,
   use "CPR" or "CONST". For Ley del Consumidor, "LPC" or "LPDC". For
   data protection (Ley 19.628), "LPDP" or "L19628".
+- The framework segment and the article NUMBER must come from the SAME code.
+  Do not attach a number you have read in one code to the prefix of another
+  (a Código Civil article number written as "CL.CPCL...Art.<num>"). A number
+  far above a code's own reach is the signature of this mistake, and such
+  ids are dropped before they reach the bundle.
 - Every candidate MUST list one or more concrete `verification_required`
-  steps (e.g. "Fetch verbatim text for CL.CC.Art.2314 from bcn.cl/leychile").
+  steps (e.g. "Fetch verbatim text for the candidate id from
+  bcn.cl/leychile").
 - `history_note` should explain provenance, especially if it replaces a
   previously-fabricated citation.
 - Do NOT include articles already in `established_articles`.
 - Do NOT include articles whose hypothesis demands a defendant class the
   facts plainly do not match (e.g. an article that says "el empleado publico
-  que..." against a private corporate defendant). If you must include such
-  an article for completeness, set `preliminary_view` so the FIRST sentence
-  flags the agent-fit mismatch explicitly.
+  que..." against a private corporate defendant). If such an article is
+  included anyway, its `preliminary_view` must flag the agent-fit mismatch
+  in the FIRST sentence.
 - It is fine to return an empty list.
 
 Return JSON of shape:
@@ -565,8 +612,21 @@ Return JSON of shape:
 
 # Known framework prefixes — guardrail for the candidate namespace check.
 # ``data/law/_mapping/law_registry.json`` is the authority for which codes
-# exist; this set is only a coarse prefix test, so it silently drifts from the
-# registry and must not be treated as the list of supported frameworks.
+# exist; this set is only a coarse prefix test and is deliberately *permissive*:
+# it carries the codes that are cited but not yet ingested, which the registry
+# cannot know about. It is unioned with the registry's own framework segments at
+# call time (see ``_has_known_framework``) so the two cannot drift apart.
+#
+# Measured against the committed registry, 23 frameworks the corpus actually
+# contains were missing from this set — ``ABEAR_COC``/``_PAC``/``_PCD``/``_PIAP``/
+# ``_PMD``/``_PPE``/``_PUC``/``_PVR``/``_RIC``, ``CED_OAB``, ``L8906_OAB``,
+# ``CPR_BCN``, ``D1171``, ``D6029``, ``DFL1_19653``, ``BRCL``, ``HAGUE1980``,
+# ``ILC``, ``JAC``, ``R029``, ``R431``, ``R523``, ``R770`` — so a legitimate
+# candidate for any of them (``BR.L8906_OAB.Art.34``, ``CL.CPR_BCN.Art.19``,
+# ``INT.HAGUE1980.Art.12``) was silently dropped. Several codes are spelled
+# differently on each side (``ILC_ARSIWA`` vs ``ILC``, ``HAGUE`` vs
+# ``HAGUE1980``, ``L8906``+``OAB`` vs ``L8906_OAB``), which is exactly the
+# drift a hand-maintained mirror produces.
 _KNOWN_FRAMEWORK_PREFIXES = {
     # Chilean
     "CHIPENCOD", "CPCL", "CP", "CONST", "CPR", "DAN17", "L18575", "DFL1",
@@ -589,22 +649,67 @@ def _has_known_framework(article_id: str) -> bool:
     """An ELI id looks like '<JUR>.<FW>.[T*.C*.]Art.<num>'. We accept the
     candidate only when the framework segment matches a known code — this
     blocks placeholder prefixes like 'FW' that haiku has been known to emit
-    when it forgets the real namespace."""
+    when it forgets the real namespace.
+
+    The hand-maintained set is unioned with the registry's framework segments,
+    so a code that is ingested but absent from the set is still accepted.
+    """
     parts = article_id.split(".")
     if len(parts) < 3:
         return False
-    return parts[1] in _KNOWN_FRAMEWORK_PREFIXES
+    framework = parts[1]
+    if framework in _KNOWN_FRAMEWORK_PREFIXES:
+        return True
+    extents = load_extents()
+    return extents is not None and framework in extents.framework_segments
+
+
+# Hard ceiling on the candidate list. Unlike the other seven stages, this one
+# is asked for items drawn from OUTSIDE its input — every article of every code
+# in the corpus — so "list the articles an analyst would propose" is an
+# unbounded request and the reply grew until the output budget ran out.
+# Measured live on CL-030 with deepseek-chat + the prompt below (before the
+# cap): the model walked the Chilean Penal Code in ascending order
+# (Art. 150, 151, 250, 251, 292, 293, 296, 297, 411, ...) and was still
+# emitting at `max_tokens=1500` — 8 complete candidates and counting. At the
+# 64,000-token escalation the reply was cut mid-string (`Unterminated string
+# ... char 215745`), so `_parse_json` failed and the whole 8-stage run aborted
+# at stage 5.
+#
+# The prompt states the same number, so this only fires when the model ignores
+# it — the list is a shortlist of *proposals*, and eight is already generous.
+# It is a ceiling, not a filter: nothing about correctness changes when it
+# trims, because every candidate is a research stub that still has to be
+# verified before it means anything.
+MAX_CANDIDATES = 8
 
 
 def propose_candidates(
     violation: Violation,
     client: LLMClient,
+    *,
+    extents: ArticleExtents | None = None,
+    on_reject: Callable[[str], None] | None = None,
 ) -> list[CandidateArticle]:
+    """Propose candidate articles, dropping the unverifiable and the misfiled.
+
+    ``extents`` defaults to the registry loaded from disk. Passing an empty
+    index (``ArticleExtents.from_registry({})``) disables Guardrail 2 but not
+    Guardrail 1; a *missing* registry on disk also disables Guardrail 2, since
+    a guardrail that cannot judge a number must keep it.
+
+    ``on_reject(reason)`` — if given — is called with a human-readable reason
+    for every candidate the guardrails drop, so a run can report what it
+    suppressed instead of silently shrinking the list.
+    """
     payload = _violation_snapshot(violation)
-    resp = _call(client, _CANDIDATES_PROMPT, payload)
+    resp = _call(client, _CANDIDATES_PROMPT, payload, stage="candidates")
     established_ids = {a.article_id for a in violation.established_articles}
+    idx = extents if extents is not None else load_extents()
     out: list[CandidateArticle] = []
     for c in resp.get("candidates") or []:
+        if len(out) >= MAX_CANDIDATES:
+            break
         cid = c.get("candidate_article_id")
         if not isinstance(cid, str) or cid in established_ids:
             continue
@@ -614,7 +719,23 @@ def propose_candidates(
         # will re-propose it correctly on retry; otherwise the citation
         # wasn't load-bearing in the first place.
         if not _has_known_framework(cid):
+            if on_reject is not None:
+                on_reject(f"{cid}: unknown framework segment")
             continue
+        # Guardrail 2: reject cross-code mis-attribution. Guardrail 1 only
+        # reads the framework segment, so a valid prefix on the *wrong* code
+        # passes it — measured live, the model emitted "CL.CPCL.C1.Art.2314"
+        # while describing an article of the Código Civil. Art. 2314 of the
+        # Código Civil is not an article of the Código Penal, and the id would
+        # otherwise be written into the bundle as a research stub. See
+        # ``law_registry`` for why this is a sole-owner test with an exclusive
+        # band rather than a simple "above the maximum article" test.
+        if idx is not None:
+            mis = idx.misattribution(cid)
+            if mis is not None:
+                if on_reject is not None:
+                    on_reject(mis.reason())
+                continue
         vr = c.get("verification_required") or []
         if not isinstance(vr, list) or not vr:
             continue
@@ -687,7 +808,7 @@ def propose_authorities(
             for g in violation.element_grids
         ],
     }
-    resp = _call(client, _AUTHORITY_PROMPT, payload)
+    resp = _call(client, _AUTHORITY_PROMPT, payload, stage="authorities")
     valid_elem_ids: set[str] = set()
     for g in violation.element_grids:
         valid_elem_ids.add(g.article_id)
@@ -755,7 +876,7 @@ def propose_open_questions(
         "title": violation.title,
         "element_grids": [g.model_dump() for g in violation.element_grids],
     }
-    resp = _call(client, _OPEN_Q_PROMPT, payload)
+    resp = _call(client, _OPEN_Q_PROMPT, payload, stage="open_questions")
     valid_elem_ids = {
         e.element_id for g in violation.element_grids for e in g.elements
     }
@@ -827,7 +948,7 @@ def propose_cross_references(
             for s in violation.segments[:20]
         ],
     }
-    resp = _call(client, _CROSSREF_PROMPT, payload)
+    resp = _call(client, _CROSSREF_PROMPT, payload, stage="cross_references")
     allowed = set(others)
     out: list[CrossReference] = []
     for c in resp.get("cross_references") or []:
@@ -858,6 +979,36 @@ ENRICHMENT_STAGES = [
 ]
 
 
+def _log_stage(v: Violation, stage: str, produced: int, note: str = "") -> Violation:
+    """Append the provenance entry recording that one enrichment stage ran.
+
+    The bundle's provenance trail is the S9 panel's only evidence that an
+    enrichment run happened. Before this, ``enrich_violation`` wrote none of
+    its own: the layers it delegates to log their own operations
+    (``add_authority_stub``, ``add_or_replace_element_grid``, …), and no
+    operation string anywhere in the corpus contains the word "enrich" — so the
+    panel's "enrich run(s) logged" counter could never leave zero however much
+    a run produced. Measured over all 81 bundles: 0 of 493 provenance entries
+    matched ``/enrich/i``.
+
+    ``layer`` stays ``None``: this is not one of the five canonical layers, and
+    claiming a layer number here would make the trail lie about which layer
+    function actually wrote the payload.
+
+    A stage that ran and produced nothing is logged too, with ``0 item(s)`` —
+    "the stage ran and found nothing" is a different fact from "the stage never
+    ran", and the panel cannot otherwise tell them apart.
+    """
+    entry = ProvenanceEntry(
+        timestamp=datetime.now(timezone.utc),
+        actor="enrich.enrich_violation",
+        operation=f"enrich_violation:{stage}",
+        layer=None,
+        note=f"{produced} item(s)" + (f" — {note}" if note else ""),
+    )
+    return v.model_copy(update={"provenance": [*(v.provenance or []), entry]})
+
+
 def enrich_violation(
     violation: Violation,
     *,
@@ -867,6 +1018,7 @@ def enrich_violation(
     known_violation_ids: set[str] | None = None,
     known_violation_titles: dict[str, str] | None = None,
     stages: Iterable[str] | None = None,
+    on_stage: Callable[[str, int, int], None] | None = None,
 ) -> Violation:
     """Run the enrichment stages in order, returning the enriched Violation.
 
@@ -878,21 +1030,32 @@ def enrich_violation(
 
     Failures in any single stage are surfaced as LLMError; the caller can
     choose to skip that stage and continue. Default is fail-fast.
+
+    ``on_stage(name, index, total)`` is called once as each stage starts, so a
+    caller that needs to show progress does not have to guess the order. It is
+    a reporting hook only: nothing it does can change the result.
     """
     frameworks = frameworks or {}
     known_violation_ids = known_violation_ids or set()
     selected = list(stages) if stages else list(ENRICHMENT_STAGES)
     v = violation
 
+    def _enter(stage: str) -> None:
+        if on_stage is not None:
+            on_stage(stage, selected.index(stage) + 1, len(selected))
+
     if "segments" in selected:
+        _enter("segments")
         refined = propose_segment_metadata(v, client)
         if refined:
             by_id = {s.segment_id: s for s in v.segments}
             for r in refined:
                 by_id[r.segment_id] = r
             v = v.model_copy(update={"segments": list(by_id.values())})
+        v = _log_stage(v, "segments", len(refined or []))
 
     if "subsections" in selected:
+        _enter("subsections")
         refinements = propose_article_subsections(v, frameworks, client)
         if refinements:
             ref_by_id = {r["article_id"]: r for r in refinements}
@@ -912,8 +1075,11 @@ def enrich_violation(
                     "subsections_invoked": r["subsections_invoked"],
                 }))
             v = v.model_copy(update={"established_articles": new_articles})
+        v = _log_stage(v, "subsections", len(refinements or []))
 
     if "element_grids" in selected:
+        _enter("element_grids")
+        grids_built = 0
         for art in list(v.established_articles):
             # Indirect-predicate articles anchor materiality (e.g. Art. 211
             # calumnia as predicate for Art. 193 N° 8 ocultación); they do
@@ -926,6 +1092,7 @@ def enrich_violation(
             grid = propose_element_grid(v, art.article_id, client)
             if grid is not None:
                 v = add_element_grid(v, grid)
+                grids_built += 1
         # Promote applicability from "supporting" to "direct" for articles
         # whose grid is materially strong (weighted_score >= 0.70 and at
         # least one element established). This reflects the standard
@@ -948,34 +1115,53 @@ def enrich_violation(
                 new_articles.append(art)
         if promoted:
             v = v.model_copy(update={"established_articles": new_articles})
+        v = _log_stage(v, "element_grids", grids_built)
 
     if "nexus" in selected:
+        _enter("nexus")
         entries = propose_nexus(v, client)
         if entries:
             v = build_nexus_layer(v, entries)
+        v = _log_stage(v, "nexus", len(entries or []))
 
     if "candidates" in selected:
-        cands = propose_candidates(v, client)
+        _enter("candidates")
+        rejected: list[str] = []
+        cands = propose_candidates(v, client, on_reject=rejected.append)
         if cands:
             existing = {c.candidate_article_id: c for c in v.candidate_articles}
             for c in cands:
                 existing[c.candidate_article_id] = c
             v = v.model_copy(update={"candidate_articles": list(existing.values())})
+        # A guardrail that drops a proposal is a fact about the run, and the
+        # provenance trail is where the panel can see it. Without the note a
+        # suppressed candidate is indistinguishable from one never proposed.
+        note = ""
+        if rejected:
+            note = f"{len(rejected)} proposed id(s) rejected — {rejected[0]}"
+            if len(rejected) > 1:
+                note += f" (+{len(rejected) - 1} more)"
+        v = _log_stage(v, "candidates", len(cands or []), note=note)
 
     if "authorities" in selected:
+        _enter("authorities")
         stubs = propose_authorities(v, client)
         for s in stubs:
             v = add_authority_stub(v, **s)
+        v = _log_stage(v, "authorities", len(stubs or []))
 
     if "open_questions" in selected:
+        _enter("open_questions")
         oqs = propose_open_questions(v, client)
         if oqs:
             by_id = {q.id: q for q in v.open_questions}
             for q in oqs:
                 by_id[q.id] = q
             v = v.model_copy(update={"open_questions": list(by_id.values())})
+        v = _log_stage(v, "open_questions", len(oqs or []))
 
     if "cross_references" in selected:
+        _enter("cross_references")
         xrefs = propose_cross_references(
             v, known_violation_ids, client,
             known_violation_titles=known_violation_titles,
@@ -985,6 +1171,7 @@ def enrich_violation(
             for x in xrefs:
                 by_ref[x.ref] = x
             v = v.model_copy(update={"cross_references": list(by_ref.values())})
+        v = _log_stage(v, "cross_references", len(xrefs or []))
 
     # Re-attach confidence so it reflects the new element grids.
     v = attach_confidence(v)

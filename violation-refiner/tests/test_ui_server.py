@@ -22,6 +22,9 @@ import json
 import re
 import shutil
 import subprocess
+import threading
+import time
+from html.parser import HTMLParser
 from pathlib import Path
 
 import pytest
@@ -59,12 +62,33 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 HTML_PATH = REPO_ROOT / "ui" / UI_FILENAME
 
 #: API routes the bridge promises. `/health` is MCP-owned and asserted too.
-EXPECTED_API_ROUTES = {"/", "/api/health", "/api/tools", "/api/tool", "/api/catalog", "/api/sources", "/api/source-transcript", "/api/framework-article", "/api/browse", "/api/bundles", "/api/bundle", "/api/schema", "/api/settings", "/api/authority-source", "/api/authority-source/delete", "/api/authority-source/reading"}
+EXPECTED_API_ROUTES = {"/", "/api/health", "/api/tools", "/api/tool", "/api/tool-job", "/api/catalog", "/api/sources", "/api/source-transcript", "/api/framework-article", "/api/browse", "/api/bundles", "/api/bundle", "/api/schema", "/api/settings", "/api/authority-source", "/api/authority-source/delete", "/api/authority-source/reading"}
 
 
 @pytest.fixture(scope="module")
 def server():
     return build_server()
+
+
+@pytest.fixture(autouse=True)
+def _clean_jobs_and_progress():
+    """Reset the two process-wide slots around every test.
+
+    `/api/tool` refuses a second call while one is running, and both the registry
+    and the progress slot live at module scope — so a test that leaves a job
+    "running" (a `TestClient` that exits before its `create_task` ever ran) would
+    make every later test see a busy server, and mid-flight assertions would pass
+    for the wrong reason.
+    """
+    from violation_pack import progress, ui_server
+
+    progress._slot.clear()
+    ui_server._JOBS.clear()
+    ui_server._JOB_ORDER.clear()
+    yield
+    progress._slot.clear()
+    ui_server._JOBS.clear()
+    ui_server._JOB_ORDER.clear()
 
 
 @pytest.fixture(scope="module")
@@ -111,7 +135,20 @@ def _js_function(name: str) -> str:
     html = HTML_PATH.read_text(encoding="utf-8")
     match = re.search(rf"^(?:async )?function {re.escape(name)}\(", html, re.M)
     assert match, f"{name}() is not defined at top level in the UI page"
-    opening = html.index("{", match.start())
+    # The *body* brace, not the first brace on the line: a default argument like
+    # `opts = {}` opens and closes before the body does, and starting the depth
+    # count there returns the signature alone — every assertion on it then passes
+    # for the wrong reason. Skip the parameter list first.
+    paren = html.index("(", match.start())
+    depth = 0
+    for i in range(paren, len(html)):
+        if html[i] == "(":
+            depth += 1
+        elif html[i] == ")":
+            depth -= 1
+            if depth == 0:
+                break
+    opening = html.index("{", i)
     depth = 0
     for i in range(opening, len(html)):
         if html[i] == "{":
@@ -939,6 +976,315 @@ def test_cors_preflight_is_answered(client):
 
 
 # ---------------------------------------------------------------------------
+# Long-running tool calls — the background job path
+#
+# The MCP SDK invokes *synchronous* tools directly on the event loop
+# (`mcp/server/fastmcp/utilities/func_metadata.py` ends in
+# `return fn(**arguments_parsed_dict)`), so the whole server — `/api/health`
+# included — goes dark for the duration of a call. Measured against the live
+# server: a health poll sent 0.02 s into an 8.96 s `enrich_violation_tool` call
+# was answered at 8.98 s. A full eight-stage enrichment is minutes, so "show the
+# pipeline is running" is impossible while the call owns the loop; the page
+# could not even ask. `background: true` moves the call to a worker thread and
+# `/api/tool-job` reports on it.
+# ---------------------------------------------------------------------------
+
+def _wait_for_job(client, job_id, *, timeout=15.0):
+    """Poll `/api/tool-job` until the job leaves `running`."""
+    deadline = time.monotonic() + timeout
+    body = {"status": "running"}
+    while time.monotonic() < deadline:
+        body = client.get("/api/tool-job", params={"id": job_id}).json()
+        if body["status"] != "running":
+            return body
+        time.sleep(0.02)
+    raise AssertionError(f"job {job_id} never finished (last: {body})")
+
+
+def _start_background(client, name, args=None):
+    return client.post(
+        "/api/tool",
+        json={"name": name, "args": args or {}, "background": True},
+    )
+
+
+def _minimal_bridge(tool_body):
+    """A bridge app whose registry holds exactly one tool, defined by the test.
+
+    `enrich_violation_tool` is the only tool that takes minutes, and calling it
+    here would need an LLM. What these tests are about is the transport, not the
+    enrichment, so they mount a tool that blocks on an event the test controls —
+    the only way to hold a job mid-flight and observe the server around it.
+    """
+    from mcp.server.fastmcp import FastMCP
+
+    from violation_pack.ui_server import build_ui_routes
+
+    app = FastMCP("bridge-test")
+    app.tool()(tool_body)
+    build_ui_routes(app)
+    return app
+
+
+def test_post_api_tool_background_returns_a_job_id(client):
+    res = _start_background(client, "llm_provider_info_tool")
+    assert res.status_code == 202
+    body = res.json()
+    assert body["ok"] is True
+    assert body["status"] == "running"
+    assert body["tool"] == "llm_provider_info_tool"
+    assert body["job_id"]
+
+
+def test_background_job_reaches_done_with_the_real_result(client):
+    job_id = _start_background(client, "llm_provider_info_tool").json()["job_id"]
+
+    done = _wait_for_job(client, job_id)
+    assert done["status"] == "done"
+    assert done["ok"] is True
+    assert done["job_id"] == job_id
+    assert done["error"] is None
+    assert done["seconds"] >= 0
+    # Same payload as the synchronous path: the job changes where the call runs,
+    # not what it returns.
+    sync = client.post("/api/tool", json={"name": "llm_provider_info_tool", "args": {}})
+    assert done["result"] == sync.json()["result"]
+
+
+def test_a_finished_job_stops_publishing_progress(client):
+    """`progress` is a live read, not history — a stale slot on a dead job would
+    let the page draw a spinner next to a result that is already in."""
+    from violation_pack import progress
+
+    job_id = _start_background(client, "llm_provider_info_tool").json()["job_id"]
+    done = _wait_for_job(client, job_id)
+    assert "progress" not in done
+
+    # Even with a slot still filled from some other run, `running` is the gate.
+    progress.begin("some_other_tool", total=3)
+    progress.end("some_other_tool")
+    assert "progress" not in _wait_for_job(client, job_id)
+
+
+def test_api_tool_job_404s_an_unknown_id(client):
+    res = client.get("/api/tool-job", params={"id": "nope"})
+    assert res.status_code == 404
+    assert "Unknown job id" in res.json()["error"]
+
+
+def test_a_background_job_leaves_the_event_loop_free():
+    """The measurement that forced this design, as a test.
+
+    Before the job path the loop was owned by the tool: an 8.96 s call answered
+    `/api/health` 8.98 s late, so *nothing* was served in between. Here the tool
+    is provably parked mid-call (`entered` is set from inside it) and the server
+    still answers both the probe and the poll — and refuses a second run rather
+    than interleaving two writers into one bundle.
+    """
+    released = threading.Event()
+    entered = threading.Event()
+
+    def block_tool(tag: str = "x") -> dict:
+        """Park until the harness releases it."""
+        entered.set()
+        released.wait(timeout=10)
+        return {"tag": tag}
+
+    client = TestClient(_minimal_bridge(block_tool).streamable_http_app())
+    with client:
+        try:
+            started = _start_background(client, "block_tool", {"tag": "A"})
+            assert started.status_code == 202
+            job_id = started.json()["job_id"]
+            assert entered.wait(timeout=15), "the worker thread never reached the tool"
+
+            # Parked inside the tool. These are only served because the loop is free.
+            assert client.get("/api/health").status_code == 200
+            live = client.get("/api/tool-job", params={"id": job_id}).json()
+            assert live["status"] == "running"
+            assert live["ok"] is True
+            assert live["result"] is None
+
+            # Double-tap: refused at the server, naming the run in flight.
+            busy = _start_background(client, "block_tool", {"tag": "B"})
+            assert busy.status_code == 409
+            assert busy.json()["busy"] is True
+            assert busy.json()["running_tool"] == "block_tool"
+            assert busy.json()["job_id"] == job_id
+
+            released.set()
+            done = _wait_for_job(client, job_id)
+            assert done["status"] == "done"
+            assert done["result"] == {"tag": "A"}
+            # The slot is genuinely reusable, not merely claimable: the next tap
+            # is accepted *and* runs.
+            again = _start_background(client, "block_tool", {"tag": "C"})
+            assert again.status_code == 202
+            assert _wait_for_job(client, again.json()["job_id"])["result"] == {"tag": "C"}
+        finally:
+            released.set()
+
+
+def test_a_failing_background_job_reports_the_error():
+    """A tool that raises must land in the job.
+
+    `asyncio.create_task` would otherwise leave the exception in a task nobody
+    awaits ("Task exception was never retrieved") and the page would poll a job
+    that never leaves `running` — a spinner that outlives the failure.
+    """
+    def boom_tool() -> dict:
+        """Always raises."""
+        raise ValueError("kaboom")
+
+    client = TestClient(_minimal_bridge(boom_tool).streamable_http_app())
+    with client:
+        job_id = _start_background(client, "boom_tool").json()["job_id"]
+        done = _wait_for_job(client, job_id)
+        assert done["status"] == "error"
+        # `ok` is this bridge's verdict field everywhere else; a failed job must
+        # not be the one response that reports `ok: true`.
+        assert done["ok"] is False
+        # `ToolManager` wraps whatever the tool raised, so the message — not the
+        # type — is what the page has to show.
+        assert "Error executing tool boom_tool" in done["error"]
+        assert "kaboom" in done["error"]
+
+
+# ---------------------------------------------------------------------------
+# Progress publication — the seam that makes the spinner honest
+# ---------------------------------------------------------------------------
+
+def _segment_violation() -> dict:
+    """A violation with one segment, so the `segments` stage has work to do."""
+    from violation_pack.models import EvidenceSegment, Incident, Violation
+
+    sha = "a" * 64
+    return json.loads(
+        Violation(
+            violation_id="CL-PROGRESS",
+            title="Progress publication",
+            severity="LOW",
+            incident=Incident(date="2025-01-01", location="SCL"),
+            segments=[
+                EvidenceSegment(
+                    segment_id="STG-1.seg-1",
+                    role_in_argument="unclassified",
+                    audio_offset_start=0.0,
+                    audio_offset_end=1.5,
+                    speaker="SPK",
+                    verbatim_es="no me consta",
+                    verbatim_sha256=sha,
+                    translation_en="",
+                    source_uri="Transcripts/t.html#seg-1",
+                    source_sha256=sha,
+                )
+            ],
+        ).model_dump_json()
+    )
+
+
+def test_a_running_job_publishes_the_stage_it_is_on(client, monkeypatch):
+    """The seam behind "there should be a clear display that it is running".
+
+    A job id alone tells the page that *something* is in flight; it cannot say
+    which of eight stages, and eight stages is minutes. `/api/tool-job` answers
+    with whatever `violation_pack.progress` holds, and the slot is filled by the
+    `on_stage` hook. Both halves are exercised here against the real bridge and
+    the real tool, because either one silently returning nothing looks exactly
+    like a slow run.
+
+    The LLM is blocked inside the `segments` stage so the mid-flight state can
+    be observed at all — a stage that finished would have moved the slot on.
+    """
+    entered = threading.Event()
+    released = threading.Event()
+
+    class _BlockingLLM:
+        def chat_json(self, *, messages, system=None, max_tokens=None):
+            entered.set()
+            released.wait(timeout=10)
+            return {"segments": []}
+
+    monkeypatch.setattr("violation_pack.llm.build_client", lambda **kw: _BlockingLLM())
+
+    started = client.post(
+        "/api/tool",
+        json={
+            "name": "enrich_violation_tool",
+            "args": {
+                "violation": _segment_violation(),
+                "stages": ["segments", "subsections"],
+            },
+            "background": True,
+        },
+    )
+    assert started.status_code == 202
+    job_id = started.json()["job_id"]
+    try:
+        assert entered.wait(timeout=15), "the enrichment stage never reached the LLM"
+        live = client.get("/api/tool-job", params={"id": job_id}).json()
+        assert live["status"] == "running"
+        assert live["progress"]["tool"] == "enrich_violation_tool"
+        assert live["progress"]["stage"] == "segments"
+        assert live["progress"]["index"] == 1
+        assert live["progress"]["total"] == 2
+        assert live["progress"]["running"] is True
+    finally:
+        released.set()
+
+    done = _wait_for_job(client, job_id)
+    assert done["status"] == "done"
+    # A finished job carries no progress: a stale slot would let the page draw a
+    # spinner next to a result that is already in.
+    assert "progress" not in done
+    # And the run is not invisible after the fact — one provenance entry per
+    # stage is what the S9 panel and the sidebar tick read.
+    assert [p["operation"] for p in done["result"]["provenance"]] == [
+        "enrich_violation:segments",
+        "enrich_violation:subsections",
+    ]
+
+
+def test_a_failing_enrichment_job_records_the_error_in_the_slot(client, monkeypatch):
+    """The polling page must be able to tell "failed" from "still going".
+
+    The client fails *inside* the first stage rather than at construction: only
+    then has `progress.begin` run, which is the state this test is about — and
+    only then does the failure carry the stage label that tells the operator
+    which of eight prompts went wrong.
+    """
+    from violation_pack import progress
+    from violation_pack.llm import LLMError
+
+    class _FailingLLM:
+        def chat_json(self, *, messages, system=None, max_tokens=None):
+            raise LLMError("model did not return valid JSON")
+
+    monkeypatch.setattr("violation_pack.llm.build_client", lambda **kw: _FailingLLM())
+
+    job_id = client.post(
+        "/api/tool",
+        json={
+            "name": "enrich_violation_tool",
+            "args": {"violation": _segment_violation(), "stages": ["segments"]},
+            "background": True,
+        },
+    ).json()["job_id"]
+
+    done = _wait_for_job(client, job_id)
+    assert done["status"] == "error"
+    assert done["ok"] is False
+    assert "enrichment stage 'segments'" in done["error"]
+    # The slot is closed with the same message, so a poll that lands after the
+    # stage label was lost still reports a failure rather than nothing.
+    snap = progress.snapshot()
+    assert snap["running"] is False
+    assert snap["stage"] == "segments"
+    assert "model did not return valid JSON" in snap["error"]
+    progress._slot.clear()
+
+
+# ---------------------------------------------------------------------------
 # Drift guards — the whole point of wiring the UI
 # ---------------------------------------------------------------------------
 
@@ -1688,6 +2034,119 @@ def test_every_hydration_target_exists_in_the_markup():
         "hydration targets with no matching element: "
         f"{sorted(targets - declared)}"
     )
+
+
+def test_the_run_indicator_elements_exist_in_the_markup():
+    """The banner and the step-local track are written by id, so a rename would
+    leave `setText`/`setHidden` silently no-op and the run would look frozen."""
+    html = HTML_PATH.read_text(encoding="utf-8")
+    for element_id in ("runBanner", "runBannerText", "runBannerElapsed",
+                       "enrichProgressWrap", "enrichProgressFill", "enrichProgressLabel"):
+        assert f'id="{element_id}"' in html, f"#{element_id} is missing from the markup"
+    # The banner starts hidden: an empty accent strip on every page load would
+    # read as a stalled run.
+    assert re.search(r'id="runBanner"[^>]*\bhidden\b', html)
+
+
+def test_the_s9_run_filter_matches_the_hook_and_nothing_else():
+    """Executed, not regexed: this filter is why the counter sat at zero.
+
+    `enrich_violation` wrote no provenance of its own, so every operation string
+    in the corpus was scanned for `/enrich/i` and none matched (0 of 493 entries
+    across 81 bundles). Now the hook writes `enrich_violation:<stage>`, and the
+    filter must key on that — an operation that merely mentions enrichment is a
+    different thing from a stage that ran.
+    """
+    script = "\n".join([
+        _js_const("ENRICH_OP_PREFIX"),
+        _js_function("enrichTrail"),
+        _js_function("enrichStagesLogged"),
+        "const doc = { provenance: [",
+        "  { operation: 'layers.add_element_grid::add_or_replace_element_grid', note: 'x' },",
+        "  { operation: 'enrich_violation:segments', note: '35 item(s)' },",
+        "  { operation: 'enrich_violation:cross_references', note: '12 item(s)' },",
+        "  { operation: 'enrichment_notes', note: 'mentions the word, is not the hook' },",
+        "  { note: 'no operation at all' },",
+        "] };",
+        "console.log(JSON.stringify({",
+        "  ops: enrichTrail(doc).map(p => p.operation),",
+        "  stages: [...enrichStagesLogged(doc)],",
+        "  emptyDoc: enrichTrail({}).length,",
+        "  nullDoc: enrichTrail(null).length,",
+        "  noTrail: enrichTrail({ provenance: [{ note: 'x' }] }).length,",
+        "}));",
+    ])
+    got = _run_js(script)
+    assert got["ops"] == ["enrich_violation:segments", "enrich_violation:cross_references"]
+    assert got["stages"] == ["segments", "cross_references"]
+    # The shapes a half-loaded bundle actually hands these helpers.
+    assert got["emptyDoc"] == 0
+    assert got["nullDoc"] == 0
+    assert got["noTrail"] == 0
+
+
+def test_the_s9_gate_and_the_sidebar_tick_share_one_definition_of_ran():
+    """They used to hold two copies of the same `/enrich/i` scan. One helper
+    means they cannot drift into disagreeing about whether a run happened."""
+    assert "enrichTrail(" in _js_function("hydrateS9")
+    step_progress = re.search(
+        r"const STEP_PROGRESS = \{(.*?)\n\};", HTML_PATH.read_text(encoding="utf-8"), re.S
+    )
+    assert step_progress, "STEP_PROGRESS map not found in the UI"
+    assert "enrichTrail(" in step_progress.group(1)
+
+
+def test_the_s9_gate_counts_runs_off_the_full_trail_not_the_display_slice():
+    """The list is capped for display; the count must not be.
+
+    `slice(-8)` on an eight-stage run hides the ninth entry, so a count taken
+    from the slice under-reports exactly when the run is complete.
+    """
+    body = _js_function("hydrateS9")
+    assert "enrichStagesLogged(v)" in body
+    assert "logged.size" in body
+
+
+def test_apply_result_refreshes_the_step_panel():
+    """The bug the reviewer saw: the run succeeded and the panel never moved.
+
+    `invokeTool` → `applyResult` updated `state` and re-rendered the drawer, but
+    only a *step switch* re-ran the step's hydrator — so a tool button on the
+    step you were already looking at appeared to do nothing at all. Verified
+    live: a sentinel written into `state.violation` left the DOM byte-identical
+    until `hydrateS8()` was called by hand.
+    """
+    body = _js_function("applyResult")
+    assert "refreshStepPanel()" in body, (
+        "applyResult() must re-hydrate the active step, or a tool run on the "
+        "step you are looking at leaves the panel showing the previous result"
+    )
+
+
+def test_the_run_path_is_background_and_guarded_against_a_second_tap():
+    """Three guards, three failure modes.
+
+    A synchronous `/api/tool` call owns the event loop for its whole run, so the
+    page cannot poll — and a full enrichment is minutes. `background: true` plus
+    a job poll is the only shape that can show progress at all.
+    """
+    body = _js_function("invokeTool")
+    assert "API.toolStart(" in body and "awaitJob(" in body, (
+        "invokeTool() must go through the background job path; a synchronous "
+        "call blocks the server, so nothing can be shown while it runs"
+    )
+    # Guard 1 — a second tap in this page.
+    assert re.search(r"if \(run\)", body), "invokeTool() lost its re-entrancy guard"
+    assert "busy" in body, "invokeTool() no longer handles the server's 409 busy"
+    # The lock is released on every exit path, including a throw.
+    assert "finally" in body and "endRun()" in body
+
+    # Guard 2 — the controls themselves.
+    lock = _js_function("setRunControlsBusy")
+    assert '[data-action="run"]' in lock and "#argRun" in lock
+    # A button that shipped disabled (the S12 store controls, the typed
+    # confirmations) must not be handed back unlocked.
+    assert "freeDisabled" in lock
 
 
 def test_tool_manager_list_tools_is_synchronous(server):
@@ -3604,4 +4063,108 @@ def test_deleting_a_stored_source_replaces_the_payload_and_says_what_it_broke():
     )
     assert not [c for c in bad["calls"] if c.get("kind") == "refresh"], (
         "a failed removal re-read the listing as though the files were gone"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Form fields must be nameable
+# ---------------------------------------------------------------------------
+
+def _render_settings_env(settings: dict, secrets: dict | None = None) -> str:
+    """The rows the page's own `hydrateSettingsEnv` writes for these settings.
+
+    The host is a stub that keeps the HTML string instead of parsing it — the
+    function under test *builds* a string, so asserting on that string is
+    asserting on what the browser is handed. `escapeHtml` and `hintRow` are
+    pulled from the page as well, so nothing here restates the page's escaping.
+
+    Keys are lowercase because that is what `cfg.settings` carries (the row
+    heading is the only uppercased part).
+    """
+    script = "\n".join([
+        "const captured = {};",
+        "const document = { getElementById: () => ({ set innerHTML(v) { captured.html = v; } }) };",
+        _js_function("escapeHtml"),
+        _js_function("hintRow"),
+        _js_function("hydrateSettingsEnv"),
+        f"hydrateSettingsEnv({json.dumps({'settings': settings, 'secrets': secrets or {}})})",
+        "console.log(JSON.stringify(captured.html));",
+    ])
+    return _run_js(script)
+
+
+def test_every_effective_setting_row_names_its_field():
+    """Chromium's `genericFormEmptyIdAndNameAttributesForInputError` fires once
+    per control with neither an `id` nor a `name`; the Issues panel showed one
+    per row here.
+
+    These ids cannot come from `associateLabels`. That helper walks `<label>`
+    elements and takes the control out of `label.parentElement`, so it needs the
+    label and the control to share an immediate parent — a settings row put the
+    label text in a `<div>` beside the input, which is why all 15 rows stayed
+    anonymous. The host is also rewritten with `innerHTML` on every settings
+    refresh, so the builder has to name its own fields.
+    """
+    html = _render_settings_env({"llm_model": "deepseek-chat", "llm_max_tokens": "16000"})
+    inputs = re.findall(r"<input[^>]*>", html)
+    assert len(inputs) == 2, f"expected one input per setting, got {html}"
+    ids = []
+    for tag in inputs:
+        found = re.search(r'\bid="([^"]+)"', tag)
+        assert found, f"a settings field has no id, so Chromium reports it: {tag}"
+        assert re.search(r'\bname="([^"]+)"', tag), f"a settings field has no name: {tag}"
+        ids.append(found.group(1))
+    assert sorted(ids) == ["env-llm_max_tokens", "env-llm_model"], (
+        f"the id is not derived from the setting name: {ids}"
+    )
+
+
+def test_a_settings_label_points_at_its_field():
+    """An id alone silences the warning; a `<label for>` is the point of it. The
+    label element is what `associateLabels` would have needed to see in the first
+    place, so this also guards the row markup from regressing to a `<div>`."""
+    html = _render_settings_env({"llm_model": "deepseek-chat"})
+    ids = re.findall(r'<input[^>]*\bid="([^"]+)"', html)
+    fors = re.findall(r'<label[^>]*\bfor="([^"]+)"', html)
+    assert ids and fors == ids, f"the field is not labelled by the row: {html}"
+
+
+class _StartTags(HTMLParser):
+    """Every start tag with its parsed attributes, so an assertion can see the
+    attribute *list* the browser will see rather than a regex's view of one.
+
+    A regex capture like ``id="([^"]+)"`` cannot tell a well-formed id from one
+    that closed its attribute early: the injected quote just ends the capture and
+    the malformed tag reads as correct. Verified with the mutation harness — that
+    is the one mutation this test missed before it parsed.
+    """
+
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self.tags: list[tuple[str, dict]] = []
+
+    def handle_starttag(self, tag, attrs):
+        self.tags.append((tag, dict(attrs)))
+
+    handle_startendtag = handle_starttag
+
+
+def _input_attrs(html: str) -> list[dict]:
+    parser = _StartTags()
+    parser.feed(html)
+    return [attrs for tag, attrs in parser.tags if tag == "input"]
+
+
+def test_a_setting_name_cannot_break_out_of_its_id_attribute():
+    """The id is interpolated straight into the tag, so it must be derived from a
+    restricted character set: a setting name is server-supplied text, and one
+    containing a quote would otherwise close the attribute and add its own."""
+    html = _render_settings_env({'EVIL" ONFOCUS="x<y>': "v"})
+    attrs = _input_attrs(html)
+    assert len(attrs) == 1, html
+    assert set(attrs[0]) == {"id", "name", "type", "value", "placeholder", "autocomplete", "readonly"}, (
+        f"a setting name closed an attribute and started another: {attrs[0]}"
+    )
+    assert re.fullmatch(r"env-[A-Za-z0-9_-]*", attrs[0]["id"]), (
+        f"a setting name reached the id attribute unsanitised: {attrs[0]['id']!r}"
     )

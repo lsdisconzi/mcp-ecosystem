@@ -128,7 +128,7 @@ Repeatedly needed paths. Proposed: a single collapsible **Settings drawer** with
 | | `LLM_API_KEY` | *(empty)* | password |
 | | `LLM_BASE_URL` | *(empty)* | text |
 | | `LLM_TEMPERATURE` | `0.1` | number (slider 0–2) |
-| | `LLM_MAX_TOKENS` | `8000` | number |
+| | `LLM_MAX_TOKENS` | `16000` | number |
 | | `LLM_TOKEN_BUDGET` | `250000` | number |
 | | `LLM_TIMEOUT_SECONDS` | `90.0` | number |
 | Provider keys | `OPENROUTER_API_KEY` | *(empty)* | password |
