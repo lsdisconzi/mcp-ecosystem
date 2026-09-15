@@ -49,6 +49,7 @@ from violation_pack.authority_source import (
     join_source_notes,
     name_from_url,
     proof_stem,
+    read_source,
     sanitise_filename,
     split_columns,
     strip_markup,
@@ -1697,6 +1698,255 @@ def test_delete_source_makes_the_stored_source_storable_again(tmp_path):
         "the replacement did not land on the old name, so the bundle now holds two"
     )
     assert again["artefact"]["reused"] is False, "the document was not actually removed"
+
+
+# ---------------------------------------------------------------------------
+# Reading a stored source back
+# ---------------------------------------------------------------------------
+
+_STEM = "AUTH-CL-001-01__decreto"
+
+
+def _store(root: Path, record: dict | None = None, *, text: str | None = None,
+           document: bytes = b"%PDF-1.4 nothing readable in here") -> Path:
+    """One stored source built to order: the document, its text, and its sidecar.
+
+    `ingest_source` is the only thing that writes these, so a fixture that goes
+    through it can only ever test the shape ingest writes *today*. Reading a record
+    back is exactly the place where a record written by an earlier build has to keep
+    working, and the way to test that is to write the record.
+    """
+    bundle = _bundle(root)
+    directory = bundle / SOURCES_DIR
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / f"{_STEM}.pdf").write_bytes(document)
+    full: dict = {
+        "authority_id": "AUTH-CL-001-01",
+        "violation_id": "CL-001",
+        "source_uri": f"{SOURCES_DIR}/{_STEM}.pdf",
+        "artefact": {"name": f"{_STEM}.pdf", "rel": f"{SOURCES_DIR}/{_STEM}.pdf"},
+        "text_file": None,
+        "text_sha256": None,
+        "needs_text": False,
+        "schema_version": PROOF_SCHEMA_VERSION,
+    }
+    if text is not None:
+        (directory / f"{_STEM}{TEXT_SUFFIX}").write_text(text, encoding="utf-8")
+        full["text_file"] = f"{SOURCES_DIR}/{_STEM}{TEXT_SUFFIX}"
+        full["text_sha256"] = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    full.update(record or {})
+    (directory / f"{_STEM}{PROOF_SUFFIX}").write_text(
+        json.dumps(full, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    return bundle
+
+
+def test_a_stored_source_reads_back_as_the_text_a_quote_was_matched_in(tmp_path):
+    """The round trip the route exists for."""
+    text = "Artículo 19 N° 3 establece siempre garantías de un procedimiento racional."
+    bundle = _store(tmp_path, text=text)
+
+    back = read_source(bundle, "AUTH-CL-001-01", f"{_STEM}.pdf")
+
+    assert back["source_content"] == text
+    assert back["chars"] == len(text)
+    assert back["text_sha256"] == hashlib.sha256(text.encode("utf-8")).hexdigest()
+    assert back["text_matches_record"] is True
+    assert back["files"] == sorted([
+        f"{SOURCES_DIR}/{_STEM}.pdf",
+        f"{SOURCES_DIR}/{_STEM}{TEXT_SUFFIX}",
+        f"{SOURCES_DIR}/{_STEM}{PROOF_SUFFIX}",
+    ])
+    assert back["warnings"] == []
+
+
+def test_the_text_a_stored_pdf_reads_back_is_the_one_a_quote_will_match(tmp_path):
+    """Through the real reader, because this is the promise the route makes: the
+    string the bundle hands back tomorrow is the string the protocol hashed today,
+    so a `matched_offset` recorded against it keeps meaning what it meant."""
+    bundle = _bundle(tmp_path)
+    pdf = _minimal_pdf("El articulo 19 num 3 establece siempre garantias")
+    stored = ingest_source(bundle, "AUTH-CL-001-01", filename="decreto.pdf", data=pdf)
+
+    back = read_source(bundle, "AUTH-CL-001-01", stored["artefact"]["name"])
+
+    assert back["source_content"] == stored["source_content"]
+    assert back["text_sha256"] == stored["text_sha256"]
+    assert back["artefact"]["rel"] == stored["artefact"]["rel"], (
+        "the page names the stored file from this; the read reported only the sidecar, "
+        "so the pane's `stored as …` line was blank for every source kept earlier"
+    )
+    assert back["artefact"]["sha256"] == stored["artefact"]["sha256"]
+    assert back["artefact"]["bytes"] == len(pdf)
+    assert back["reading"] is not None and back["reading"]["extractor"] == "pypdf"
+    assert back["reading_recorded"] is True
+    assert back["citations_recorded"] is True
+    assert back["warnings"] == []
+    quote = stored["source_content"][:24]
+    assert back["source_content"].find(quote) == stored["source_content"].find(quote)
+
+
+def test_the_record_reads_back_with_the_margin_it_holds(tmp_path):
+    """The citations and numerals are lifted out of the derivation, which is where
+    the sidecar keeps them; the raw rows set aside are lifted from the top level,
+    which is where *it* keeps them. Two sources for one answer is worth pinning."""
+    citations = [{"text": "CPR Art. 19° N° 3 D.O. 24.10.1980", "page": 1, "first_line": 12,
+                  "last_page": 1, "last_line": 12, "crosses_page": False,
+                  "beside": 2, "named": 3, "agrees": False}]
+    rows = [{"page": 1, "line": 12, "text": "CPR Art. 19° N° 3 D.O. 24.10.1980"}]
+    bundle = _store(tmp_path, text="Artículo 19 N° 2.-", record={
+        "notes": rows,
+        "citations": citations,
+        "readings": {"derivation": {"citations": citations, "numerals": [{"page": 1, "row": 40, "number": 2}]}},
+    })
+
+    back = read_source(bundle, "AUTH-CL-001-01", f"{_STEM}{PROOF_SUFFIX}")
+
+    assert back["citations"] == citations
+    assert back["numerals"] == [{"page": 1, "row": 40, "number": 2}]
+    assert back["notes"] == rows
+    assert back["citations_recorded"] is True
+    assert back["reading_recorded"] is True
+    assert back["schema_version"] == PROOF_SCHEMA_VERSION
+
+
+def test_a_record_written_before_the_margin_was_kept_says_so_rather_than_none(tmp_path):
+    """An empty citation list and an unrecorded one are different answers, and the
+    second is not one this function may invent: "no margin citations" is a claim
+    about the document, and a record carrying no `citations` key does not make it.
+    Nothing is wrong with such a record, so it is not a warning either."""
+    bundle = _store(tmp_path, text="Artículo 19 N° 2.-")
+
+    back = read_source(bundle, "AUTH-CL-001-01", f"{_STEM}.pdf")
+
+    assert back["citations"] == []
+    assert back["citations_recorded"] is False
+    assert back["reading_recorded"] is False
+    assert back["reading"] is None
+    assert back["warnings"] == [], "an older record is not a damaged one"
+
+
+def test_a_text_that_no_longer_hashes_to_its_record_is_reported(tmp_path):
+    """The one failure a reviewer cannot see for themselves: every quote matched
+    against this text would be attributed to a document the record does not
+    describe."""
+    bundle = _store(tmp_path, text="Artículo 19 N° 2.-")
+    (bundle / SOURCES_DIR / f"{_STEM}{TEXT_SUFFIX}").write_text(
+        "otra cosa distinta", encoding="utf-8")
+
+    back = read_source(bundle, "AUTH-CL-001-01", f"{_STEM}.pdf")
+
+    assert any("hashes" in w for w in back["warnings"]), back["warnings"]
+    assert back["source_content"] == "otra cosa distinta", (
+        "the text was withheld, so a caller cannot see the file it is being warned about"
+    )
+    assert back["text_sha256"] != back["record"]["text_sha256"]
+    assert back["text_matches_record"] is False
+
+
+def test_a_text_file_that_is_gone_is_reported_and_leaves_nothing_to_match(tmp_path):
+    bundle = _store(tmp_path, text="Artículo 19 N° 2.-")
+    (bundle / SOURCES_DIR / f"{_STEM}{TEXT_SUFFIX}").unlink()
+
+    back = read_source(bundle, "AUTH-CL-001-01", f"{_STEM}.pdf")
+
+    assert any(f"{_STEM}{TEXT_SUFFIX}" in w for w in back["warnings"]), back["warnings"]
+    assert back["source_content"] is None
+    assert back["chars"] == 0
+    assert back["needs_text"] is True
+
+
+def test_a_document_with_no_sidecar_reads_back_as_unrecorded(tmp_path):
+    """A document dropped into the directory by hand. It is still listed and still
+    readable; what is missing is the account of how it was read."""
+    bundle = _bundle(tmp_path)
+    directory = bundle / SOURCES_DIR
+    directory.mkdir(parents=True)
+    (directory / f"{_STEM}.pdf").write_bytes(b"%PDF-1.4")
+
+    back = read_source(bundle, "AUTH-CL-001-01", f"{_STEM}.pdf")
+
+    assert back["sidecar"] is None
+    assert back["record"] == {}
+    assert back["artefact"]["rel"] == f"{SOURCES_DIR}/{_STEM}.pdf", (
+        "the document was reported as absent because its record was: the file is "
+        "found from the group, which is the only source that knows it is there"
+    )
+    assert back["citations_recorded"] is False
+    assert back["reading"] is None
+    assert any(PROOF_SUFFIX in w for w in back["warnings"]), back["warnings"]
+
+
+def test_a_sidecar_naming_a_file_outside_the_directory_is_reported_not_followed(tmp_path):
+    """The names in a sidecar are data, not instructions: the record is a file on
+    disk like any other, and a hand-edited one could name anything."""
+    bundle = _store(tmp_path, record={"text_file": "../../etc/passwd", "text_sha256": "0" * 64})
+
+    back = read_source(bundle, "AUTH-CL-001-01", f"{_STEM}.pdf")
+
+    assert any("../../etc/passwd" in w for w in back["warnings"]), back["warnings"]
+    assert back["source_content"] is None
+
+
+def test_a_stored_source_reads_back_from_any_one_of_its_files(tmp_path):
+    """The listing hands the server whichever file sorts first, which for a pasted
+    or text source is the sidecar and for a document is the document. Both have to
+    answer the same thing, because the page does not choose."""
+    bundle = _store(tmp_path, text="Artículo 19 N° 2.-")
+
+    by_document = read_source(bundle, "AUTH-CL-001-01", f"{_STEM}.pdf")
+    by_sidecar = read_source(bundle, "AUTH-CL-001-01", f"{_STEM}{PROOF_SUFFIX}")
+
+    assert by_sidecar["source_content"] == by_document["source_content"]
+    assert by_sidecar["citations"] == by_document["citations"]
+    assert by_sidecar["stem"] == by_document["stem"] == _STEM
+
+
+def test_reading_a_stored_source_back_writes_nothing(tmp_path):
+    """Read-only means read-only: this runs on every modal open."""
+    bundle = _store(tmp_path, text="Artículo 19 N° 2.-")
+    directory = bundle / SOURCES_DIR
+    before = {path.name: path.read_bytes() for path in directory.iterdir()}
+
+    read_source(bundle, "AUTH-CL-001-01", f"{_STEM}.pdf")
+
+    after = {path.name: path.read_bytes() for path in directory.iterdir()}
+    assert after == before
+
+
+def test_reading_back_refuses_a_name_that_does_not_exist(tmp_path):
+    """The name must be checked against the filesystem, not only grouped by stem:
+    the stem of a companion that was never written is the stem of the document that
+    was, so the group comes back non-empty either way."""
+    bundle = _store(tmp_path, text="Artículo 19 N° 2.-")
+
+    with pytest.raises(SourceError, match="no stored source"):
+        read_source(bundle, "AUTH-CL-001-01", f"AUTH-CL-001-01__fantasma{PROOF_SUFFIX}")
+
+
+def test_reading_back_refuses_a_name_that_belongs_to_another_stub(tmp_path):
+    bundle = _store(tmp_path, text="Artículo 19 N° 2.-")
+
+    with pytest.raises(SourceError, match="AUTH-CL-001-01"):
+        read_source(bundle, "AUTH-CL-001-02", f"{_STEM}.pdf")
+
+
+@pytest.mark.parametrize(
+    "verb, action",
+    [(read_source, "read"), (delete_source, "removed")],
+    ids=["read", "delete"],
+)
+def test_the_two_verbs_that_reach_a_stored_source_name_their_own_verb(tmp_path, verb, action):
+    """One rule, two refusals, and the refusals go straight to the browser. Sharing
+    the rule is the point; sharing the sentence is not, because it would answer a
+    click on Remove with "nothing was read". Both callers are checked rather than
+    the newer one alone, so a third caller finds the rule already worded for it."""
+    bundle = _store(tmp_path, text="Artículo 19 N° 2.-")
+
+    with pytest.raises(SourceError, match=rf"is not a file name — no source was {action}$"):
+        verb(bundle, "AUTH-CL-001-01", "../CL-001.json")
+    with pytest.raises(SourceError, match=rf"only a file this stub wrote can be {action} from here$"):
+        verb(bundle, "AUTH-CL-001-02", f"{_STEM}.pdf")
 
 
 # ---------------------------------------------------------------------------

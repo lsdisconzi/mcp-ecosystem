@@ -1277,6 +1277,15 @@ const API = {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   }),
+  // Read a stored source back. The store returns the text it just read, so
+  // before this route the pane could only ever show a source loaded in the
+  // session that loaded it: a proof stored last week was on disk, listed, and
+  // its recorded reading, margin citations and numerals were unreachable from
+  // the page that wrote them. A GET because nothing here can change a bundle.
+  authoritySourceReading: payload => fetchJson('/api/authority-source/reading?'
+    + 'violation_id=' + encodeURIComponent(payload.violation_id)
+    + '&authority_id=' + encodeURIComponent(payload.authority_id)
+    + '&name=' + encodeURIComponent(payload.name)),
 };
 
 async function fetchJson(url, options) {
@@ -4146,12 +4155,22 @@ function proofStatus(html, isError) {
  *    document it was found in; attaching the official copy of an instrument
  *    beside a translation (or replacing a proof) leaves the old wording in the
  *    box, and the old wording is not in the new document.
- *  - Every word is in the loaded text but not consecutively: a PDF's text layer
- *    returns its margin notes and page furniture inside the sentence. The
- *    official DTO-100 copy this was diagnosed on renders art. 19 N° 3 as
- *    "…establecer siempre las 26.08.2005 garantías de un procedimiento y una
- *    investigación racionales y justos", with `procedimiento` split across a page
- *    break, so only a run that reads continuously can match.
+ *  - Every word is in the loaded text but not consecutively: something is printed
+ *    inside the sentence. A PDF's text layer returns its margin notes and page
+ *    furniture inside the body, and a word broken across a page break splits a
+ *    sentence the document does contain. The official DTO-100 copy this was
+ *    diagnosed on renders art. 19 N° 3 as "…establecer siempre las 26.08.2005
+ *    garantías de un procedimiento y una investigación racionales y justos", with
+ *    `procedimiento` split across the break, so only a run that reads continuously
+ *    can match.
+ *
+ *  The second note is conditional, because the honest cause depends on what the
+ *  reading did. A record that says how the document was read — `d.reading`, which
+ *  the sidecar has carried since the margin was kept — already has the margin
+ *  column taken out of the body, so an interruption that survives is printed in
+ *  the document itself. A record that does not say (stored before that, or read
+ *  out of a text layer by hand) may still hold the margin inside the body, and
+ *  then the remedy is to read it again rather than to hunt for a typo.
  *
  *  Both notes name a remedy that keeps the match verbatim; neither weakens it. */
 function proofRefusalNote(authorityId, quote, content) {
@@ -4170,10 +4189,27 @@ function proofRefusalNote(authorityId, quote, content) {
   const words = quote.split(/\s+/).filter(w => w.length >= 4);
   const text = String(content || '');
   if (words.length >= 2 && words.every(w => text.includes(w))) {
+    const reading = d.reading || null;
+    const tail = ' Quote a run that reads continuously: the protocol cannot match across an '
+      + 'interruption that is printed inside the sentence.';
+    if (reading) {
+      const kept = [
+        reading.columns_split ? 'the margin column' : null,
+        (reading.furniture_lines || 0) > 0
+          ? `${reading.furniture_lines} repeated lines of page furniture` : null,
+      ].filter(Boolean);
+      const aside = kept.length
+        ? `It has ${escapeHtml(kept.join(' and '))} set aside from the body — recorded separately `
+          + 'beside the text, and not searched. '
+        : 'It read the body as a single column and set nothing aside from it. ';
+      return '<b>Every word of this quote is in the loaded text, but not in a row.</b> ' + aside
+        + 'So what is still interrupting the sentence is printed in the document itself, most often '
+        + 'a word broken across a page break.' + tail;
+    }
     return '<b>Every word of this quote is in the loaded text, but not in a row.</b> '
-      + 'Margin notes and page furniture can land inside a sentence when the text was read out of a '
-      + 'PDF, and the protocol cannot match across the interruption. Quote a run that reads '
-      + 'continuously.';
+      + 'Nothing here records how this document was read, so the loaded text may still hold the '
+      + 'margin notes and page furniture that a PDF\'s text layer puts inside a sentence. Storing '
+      + 'the document again reads it as columns and takes the margin out of the body.' + tail;
   }
   return '<b>Not found verbatim</b> in the loaded text, so the protocol will refuse this quote. '
     + 'Check the wording, or load the page again with whitespace collapsing on.';
@@ -4193,6 +4229,86 @@ function proofPreviewIsStale(authorityId, content, quote) {
   if (seen && seen.id === authorityId && seen.content === content && seen.quote === quote) return false;
   state.proofPreview = { id: authorityId, content, quote };
   return true;
+}
+
+/** Which numeral a margin citation is evidence about, as two separate answers.
+ *
+ *  `beside` is the numeral the citation is printed next to, `named` is the one its
+ *  own text gives. They govern different articles wherever an amendment was added
+ *  beside a sentence an earlier one produced — `CPR Art. 19° Nº 2` standing beside
+ *  numeral 3 in the official DTO-100 copy, which is how a superseded article
+ *  reads. Collapsing them into one field would hide the only case worth reading
+ *  the margin for, so both are printed and the disagreement is coloured.
+ *
+ *  `agrees` is null when either numeral is unknown, and that is a third answer, not
+ *  the same one as "no": an unnumbered margin is not a contradiction. */
+function proofNumeralPair(c) {
+  const known = v => v !== null && v !== undefined;
+  const beside = known(c.beside) ? `beside ${c.beside}` : 'no numeral beside it';
+  const named = known(c.named) ? `names ${c.named}` : 'names none';
+  const verdict = c.agrees === true ? 'agrees' : c.agrees === false ? 'differs' : 'unattributed';
+  return `${beside}, ${named} — ${verdict}`;
+}
+
+/** The margin column, as the reading recorded it.
+ *
+ *  A consolidated legal text carries its amendment citations in the margin, and a
+ *  citation printed inside the sentence it annotates is what makes that sentence
+ *  unmatchable. The reader sets them aside from the body; setting them aside is
+ *  only honest if they can be read back, which is what this section is.
+ *
+ *  Where `beside` and `named` disagree the margin is evidence of a later amendment
+ *  than the body sentence beside it — a reviewer quoting the body would never see
+ *  that, and quoting the margin would not be verbatim in the body. Nothing here is
+ *  a verdict: the protocol still decides, and these citations are not searched at
+ *  all. */
+function proofMarginSection(d) {
+  if (!d) return '';
+  if (d.citations_recorded === false) {
+    // `citations_recorded` and not the length: a record written before the margin
+    // was kept has no `citations` key, and an empty list there means nothing was
+    // looked for rather than nothing was found.
+    return '<div class="modal-section-label">Margin</div>'
+      + '<div class="field-hint">This record was written before the margin was kept, so it cannot '
+      + 'say whether this document has one. Storing the document again records it.</div>';
+  }
+  const reading = d.reading || null;
+  const citations = d.citations || [];
+  if (!reading && !citations.length) return '';
+
+  const notes = d.notes || [];
+  const numerals = d.numerals || [];
+  const counts = [
+    `${citations.length} citation${citations.length === 1 ? '' : 's'}`,
+    `${numerals.length} numeral${numerals.length === 1 ? '' : 's'}`,
+    notes.length ? `${notes.length} rows set aside` : null,
+  ].filter(Boolean).join(' · ');
+  const how = [
+    reading ? (reading.columns_split ? 'read as two columns' : 'read as one column') : null,
+    reading && (reading.furniture_lines || 0) > 0
+      ? `${reading.furniture_lines} repeated lines of page furniture dropped` : null,
+  ].filter(Boolean).join(' · ');
+
+  const shown = citations.slice(0, 8);
+  const rows = shown.map(c => {
+    const where = c.crosses_page
+      ? `p${c.page} l${c.first_line} → p${c.last_page} l${c.last_line}`
+      : `p${c.page} l${c.first_line}`;
+    const flag = c.agrees === false ? ' style="color:var(--status-flag)"' : '';
+    return `<div style="margin-top:4px;"><span${flag}>${escapeHtml(String(c.text || ''))}</span>`
+      + `<div class="field-hint"${flag}>${escapeHtml(where)} · ${escapeHtml(proofNumeralPair(c))}</div></div>`;
+  }).join('');
+  const more = citations.length > shown.length
+    ? `<div class="field-hint">…and ${citations.length - shown.length} more, in the record beside `
+      + 'the document.</div>' : '';
+
+  return `<div class="modal-section-label">Margin — ${escapeHtml(counts)}</div>`
+    + `<div class="field-hint">${escapeHtml(how ? how + ' · ' : '')}kept out of the body and `
+    + 'recorded here instead; these citations are not searched, and a quote has to be taken from '
+    + 'the body.</div>'
+    + (rows ? `<div class="note-card" style="max-height:180px;overflow:auto;"><div class="note-body">`
+      + rows + more + '</div></div>'
+      : '<div class="field-hint">No citation was found in the margin.</div>');
 }
 
 /** Show what was loaded, and whether the quote would actually be found. */
@@ -4260,6 +4376,9 @@ function renderProofSource(authorityId) {
       ? d.warnings.map(w => `<div class="field-hint" style="color:var(--status-flag)">${escapeHtml(w)}</div>`).join('') : '',
     content ? `<div class="modal-section-label">Loaded text</div>
       <div class="note-card" style="max-height:200px;overflow:auto;"><div class="note-body">${highlightQuote(content, quote)}</div></div>` : '',
+    // Last, under the text it was taken out of: the margin citations are not part
+    // of the searched text, so the section has to be visibly *beside* it.
+    proofMarginSection(d),
   ].join('');
 }
 
@@ -4572,6 +4691,49 @@ function openProofModal(authorityId) {
   associateLabels(body);
   document.getElementById('modalOverlay').classList.add('active');
   renderProofSource(id);
+  // Not awaited, and called on every open: a source stored in an earlier session
+  // has nothing in `state.proofSources`, so the pane would otherwise sit on "no
+  // source loaded" over a source that is listed two panels down.
+  loadStoredProofReading(id);
+}
+
+/** Read a source that is already on disk back into the pane.
+ *
+ *  The store returns the text it has just read, so `state.proofSources` could only
+ *  ever hold a source loaded in the session that loaded it: a proof stored
+ *  yesterday was listed on disk and its recorded reading, margin citations and
+ *  numerals were unreachable from the page that wrote them. Called once per open,
+ *  never awaited — the form has to appear at once — and the pane is re-rendered
+ *  when the record lands.
+ *
+ *  The payload is kept in `state.proofSources`, not passed to the renderer: that
+ *  string is the one the server hashed, and `proofPreviewIsStale` compares it by
+ *  reference so that typing does not rebuild the pane over a fresh copy. */
+async function loadStoredProofReading(authorityId) {
+  const stored = proofArtefactsFor(authorityId);
+  if (!stored.length) return;
+  if (state.proofSources[authorityId]) return;
+  if (state.proofReadPending === authorityId) return;
+  state.proofReadPending = authorityId;
+  let data = null;
+  try {
+    data = await API.authoritySourceReading({
+      violation_id: state.bundleId, authority_id: authorityId, name: stored[0].name,
+    });
+  } catch (e) {
+    // Logged rather than put in the verdict: the verdict belongs to the quote, and
+    // a source that is on disk but unreadable is a fact about the bundle. The
+    // modal stays on "no source" and the reviewer can store it again.
+    pushLog(`← could not read ${stored[0].name} back — ${e.message}`, 'S6', 'warn');
+  } finally {
+    if (state.proofReadPending === authorityId) state.proofReadPending = null;
+  }
+  // Something stored in the meantime is newer than this record, and it is the one
+  // that was just read out of the document the reviewer is looking at.
+  if (!data || state.proofSources[authorityId]) return;
+  state.proofSources[authorityId] = data;
+  pushLog(`← read ${data.name} back (${data.chars} chars, ${(data.citations || []).length} margin citations)`, 'S6');
+  renderProofSource(authorityId);
 }
 
 /** Store the source the form is pointing at. Returns the ingest payload, or
@@ -4689,6 +4851,19 @@ async function verifyProofStub(authorityId) {
   if (!data) return;
   if (!data.source_content) {
     proofStatus('The stored document has no readable text, so there is nothing to search. Paste the passage, or load the page as text.', true);
+    return;
+  }
+  // Refused, not merely warned about. Verifying re-hashes `source_content` and
+  // writes the result into the stub as `source_sha256`, while the sidecar beside
+  // the document goes on stating the hash of the text that was read. If the text on
+  // disk has been edited since — which the read route reports and cannot prevent —
+  // the two would disagree, both stubs would call themselves verified, and nothing
+  // would say which hash covers the quote. Only the read route sets
+  // `text_matches_record`; an ingest payload is what it says it is.
+  if (data.text_matches_record === false) {
+    proofStatus('<b>The stored text no longer matches the record of how it was read.</b> '
+      + 'Something has changed the file since. Store the document again — verifying now would '
+      + 'write a hash into the stub that the document\'s own record contradicts.', true);
     return;
   }
 

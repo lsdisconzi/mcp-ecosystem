@@ -1375,6 +1375,85 @@ def proof_group(directory: Path, name: str) -> list[Path]:
     )
 
 
+def _stored_source_group(
+    bundle_dir: Path, authority_id: str, name: str, *, action: str
+) -> tuple[Path, str, list[Path]]:
+    """Resolve one stored source of ``authority_id`` from any one of its file names.
+
+    Shared by the two verbs that reach a source already on disk — reading it back
+    and removing it — because "which files are this stub's source" has to be one
+    answer. Two copies of the rule drift, and the copy that drifts *downwards* is
+    the one that hands `delete_source` a name it should have refused.
+
+    Every refusal here is about what may be reached rather than about the request
+    being well formed, and ``action`` only supplies the verb those refusals are
+    worded with (the messages go straight to the browser). It is the past
+    participle, in a passive: ``read`` and ``removed`` are the two callers, and
+    both have to read as the answer to a click a reviewer just made.
+
+    - The name must be a plain file name. A NUL byte, ``a/b`` and ``..\\x`` are all
+      traversal attempts arriving as "a filename", and `Path()` raises on the first
+      of them rather than returning it, so all three are checked before `Path()`
+      sees the string.
+    - It must carry the ``<authority_id>__`` prefix ingest writes. A name belonging
+      to another stub is a real limit and not an oversight: a stub whose id was
+      edited after its proof was stored keeps that proof on disk, and it has to be
+      reached on the filesystem rather than from here.
+    - The path built from it must still be a direct child of ``Authority sources/``.
+      Belt and braces, exactly as `resolve_bundle_dir` does it: the name is
+      separator-free by now, and this confirms the resolution anyway before
+      anything is read or unlinked.
+    - The file it names must exist. This is *not* redundant with the group being
+      non-empty, because the group is found by *stem*: naming a companion that was
+      never written — ``X.proof.json`` for a source stored as ``X.pdf`` alone —
+      resolves to the very group the real document is in. Without this check the
+      name given is never verified against the filesystem at all, and a request for
+      a file that does not exist reaches one that does. The action is named in the
+      past tense because a repeated click on Remove must be told the file is gone
+      rather than handed a success it did not have.
+    """
+    if not isinstance(bundle_dir, Path):
+        raise SourceError("bundle_dir must be a Path")
+    if not bundle_dir.is_dir():
+        raise SourceError(f"bundle directory {bundle_dir} does not exist")
+    if not (bundle_dir / f"{bundle_dir.name}.json").is_file():
+        # The same gate `ingest_source` applies. Here it is not about where a file
+        # would be written but about what may be reached: `delete_source` is the
+        # only function in the module that destroys anything, so it refuses to
+        # touch a directory that is not a bundle even if it happens to hold an
+        # `Authority sources/` of its own.
+        raise SourceError(f"{bundle_dir.name} is not a bundle (no {bundle_dir.name}.json)")
+    if not str(authority_id or "").strip():
+        raise SourceError("authority_id is required")
+    authority_id = authority_id.strip()
+
+    raw = str(name or "")
+    if (
+        not raw.strip()
+        or any(char in raw for char in ("/", "\\", "\x00"))
+        or raw != Path(raw).name
+    ):
+        raise SourceError(f"{raw!r} is not a file name — no source was {action}")
+    if not raw.startswith(f"{authority_id}__"):
+        raise SourceError(
+            f"{raw} is not a stored source of {authority_id}; only a file this "
+            f"stub wrote can be {action} from here"
+        )
+
+    directory = bundle_dir / SOURCES_DIR
+    if not directory.is_dir():
+        raise SourceError(f"no {SOURCES_DIR}/ directory in {bundle_dir.name}")
+    if (directory / raw).parent.resolve() != directory.resolve():
+        raise SourceError(f"{raw!r} does not resolve inside {SOURCES_DIR}/")
+    if not (directory / raw).is_file():
+        # `is_file` follows a symlink, so a link to a real file inside the bundle
+        # resolves and a dangling one does not; `delete_source` unlinks the link
+        # itself and never its target, which is covered where that happens.
+        raise SourceError(f"no stored source named {raw} under {SOURCES_DIR}/")
+
+    return directory, raw, proof_group(directory, raw)
+
+
 def delete_source(bundle_dir: Path, authority_id: str, name: str) -> dict[str, Any]:
     """Remove one stored source: the document, its sidecar and its matched text.
 
@@ -1387,63 +1466,19 @@ def delete_source(bundle_dir: Path, authority_id: str, name: str) -> dict[str, A
     from the bundle. That matters because deleting proof is irreversible and the
     bundle may hold the only copy: a browser that got the grouping wrong — or that
     sent a name on purpose — must not be able to reach a file the reviewer was
-    never shown. Two checks therefore stand in front of the unlink, and both are
-    about *what may be deleted* rather than about the request being well formed:
-    the name must be a plain file of this stub, carrying the ``<authority_id>__``
-    prefix ingest writes, and it must resolve inside ``Authority sources/``.
+    never shown. The guards that stand in front of the unlink are therefore about
+    *what may be deleted* rather than about the request being well formed, and they
+    live in `_stored_source_group` because reading a source back needs exactly the
+    same ones.
 
     Refusing a name that belongs to another stub is a real limit, not an oversight:
     a stub whose id was edited after its proof was stored keeps that proof on disk
     and it is listed bundle-wide in the modal, but it has to be removed from the
     filesystem rather than from here.
     """
-    if not isinstance(bundle_dir, Path):
-        raise SourceError("bundle_dir must be a Path")
-    if not bundle_dir.is_dir():
-        raise SourceError(f"bundle directory {bundle_dir} does not exist")
-    if not (bundle_dir / f"{bundle_dir.name}.json").is_file():
-        # The same gate `ingest_source` applies. Here it is not about where a file
-        # would be written but about what may be *unlinked*: this is the only
-        # function in the module that destroys anything, so it refuses to touch a
-        # directory that is not a bundle even if it happens to hold an
-        # `Authority sources/` of its own.
-        raise SourceError(f"{bundle_dir.name} is not a bundle (no {bundle_dir.name}.json)")
-    if not str(authority_id or "").strip():
-        raise SourceError("authority_id is required")
-    authority_id = authority_id.strip()
-
-    raw = str(name or "")
-    # The separators are checked before `Path()` sees the string: a NUL byte,
-    # ``a/b`` and ``..\\x`` are all traversal attempts arriving as "a filename",
-    # and `Path()` raises on the first of them rather than returning it.
-    if (
-        not raw.strip()
-        or any(char in raw for char in ("/", "\\", "\x00"))
-        or raw != Path(raw).name
-    ):
-        raise SourceError(f"{raw!r} is not a file name — nothing was deleted")
-    if not raw.startswith(f"{authority_id}__"):
-        raise SourceError(
-            f"{raw} is not a stored source of {authority_id}; only a file this "
-            "stub wrote can be removed from here"
-        )
-
-    directory = bundle_dir / SOURCES_DIR
-    if not directory.is_dir():
-        raise SourceError(f"no {SOURCES_DIR}/ directory in {bundle_dir.name}")
-
-    # Belt and braces, exactly as `resolve_bundle_dir` does it: the name is now
-    # separator-free, and this confirms the path built from it is still a direct
-    # child of the directory before anything is unlinked.
-    if (directory / raw).parent.resolve() != directory.resolve():
-        raise SourceError(f"{raw!r} does not resolve inside {SOURCES_DIR}/")
-
-    group = proof_group(directory, raw)
-    if not group:
-        raise SourceError(
-            f"no stored source named {raw} under {SOURCES_DIR}/ — it may already "
-            "have been removed"
-        )
+    directory, raw, group = _stored_source_group(
+        bundle_dir, authority_id, name, action="removed"
+    )
 
     removed: list[str] = []
     freed = 0
@@ -1470,6 +1505,222 @@ def delete_source(bundle_dir: Path, authority_id: str, name: str) -> dict[str, A
         # but the page it cites is not.
         "deleted": removed,
         "freed_bytes": freed,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Reading a stored proof back
+# ---------------------------------------------------------------------------
+
+def read_source(bundle_dir: Path, authority_id: str, name: str) -> dict[str, Any]:
+    """Read back one stored source: its sidecar record and the text it was searched in.
+
+    `ingest_source` returns the text it has just read, so the modal could show a
+    source the reviewer had loaded a moment ago — and nothing else. A source stored
+    in an earlier session is on disk and listed under "Proof on disk", but there was
+    no way to ask the bundle what it says, which made the reading, the margin
+    citations and the numerals *write-only*: legible by opening the `.proof.json` in
+    an editor, and invisible to the page that had just recorded them. That is
+    backwards. The recorder is where someone would go to check the recording.
+
+    Two fields deserve saying out loud, because they are the two ways a caller can
+    be misled and neither is visible from the file listing:
+
+    - ``reading_recorded``. A sidecar written before the reading was recorded has no
+      ``readings`` key at all, and an empty citation list then means "nothing was
+      looked for" rather than "nothing was there". A reader handed those two as one
+      would conclude this document has no margin, which is a claim about the
+      document that this record does not make.
+    - ``warnings``. The text is returned with the hash of the bytes on disk *and*
+      the hash the record gives, and the comparison is made here rather than left to
+      the caller. A text file that no longer hashes to its own record is the one
+      failure this function can meet that a reviewer cannot see for themselves: the
+      sidecar would go on naming a SHA256 that the file under it does not have, and
+      every quote matched against that text would be attributed to a document the
+      record does not describe. The text is still returned — a caller that cannot
+      see it can do nothing at all with the file — but it is never returned silently.
+
+    Read-only: nothing here writes. The name is resolved by `_stored_source_group`,
+    the same rule `delete_source` uses, so "a stored source of this stub" is one
+    sentence in the module rather than one per verb.
+    """
+    directory, raw, group = _stored_source_group(
+        bundle_dir, authority_id, name, action="read"
+    )
+    warnings: list[str] = []
+
+    sidecar = next((path for path in group if path.name.endswith(PROOF_SUFFIX)), None)
+    record: dict[str, Any] = {}
+    if sidecar is None:
+        # A document dropped into the directory by hand, or one whose sidecar was
+        # removed on its own. The document is still listed and is still readable;
+        # what is missing is the account of how it was read, and saying so is the
+        # only honest answer — silently reporting "no margin citations" would be a
+        # claim about a document nothing has read.
+        warnings.append(
+            f"no {PROOF_SUFFIX} beside {raw}, so there is no record of how this "
+            "document was read"
+        )
+    else:
+        try:
+            loaded = json.loads(sidecar.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            warnings.append(f"could not read {sidecar.name} ({exc})")
+        else:
+            if isinstance(loaded, dict):
+                record = loaded
+            else:
+                warnings.append(f"{sidecar.name} does not hold a record")
+
+    readings = record.get("readings") if isinstance(record.get("readings"), dict) else {}
+    derivation = readings.get("derivation") if isinstance(readings.get("derivation"), dict) else None
+
+    # Where the text lives. Ingest writes it beside the document whenever the
+    # reading is not the document's own bytes, and records `needs_text` when nothing
+    # readable came out at all, so these two fields answer the question without the
+    # reader having to guess a reader for the artefact.
+    #
+    # Both names come out of a file on disk, which makes them data and not
+    # instructions: a sidecar edited by hand could name `../../etc/passwd`. The name
+    # is therefore required to be exactly `Authority sources/<basename>` — the shape
+    # this module writes — and anything else is reported rather than followed.
+    def _sibling(rel: Any) -> Path | None:
+        if not isinstance(rel, str) or not rel:
+            return None
+        wanted = Path(rel).name
+        if rel != f"{SOURCES_DIR}/{wanted}" or not (directory / wanted).is_file():
+            warnings.append(f"the record names {rel}, which is not a file of this source")
+            return None
+        return directory / wanted
+
+    content: str | None = None
+    text_rel = record.get("text_file") if isinstance(record.get("text_file"), str) else None
+    if isinstance(text_rel, str) and text_rel:
+        text_path = _sibling(text_rel)
+        if text_path is not None:
+            try:
+                content = text_path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as exc:
+                warnings.append(f"could not read {text_path.name} ({exc})")
+    elif record and not record.get("needs_text"):
+        # No text file and nothing recorded as unreadable, so the document *is* the
+        # text: ingest writes a companion only when the reading differs from the
+        # artefact's bytes, which is why this branch can only be reached for an
+        # upload of plain text. The hash check below is what proves that reading of
+        # the record rather than trusting it — bytes that are not the text the
+        # record hashes cannot pass it.
+        artefact = record.get("artefact") if isinstance(record.get("artefact"), dict) else {}
+        artefact_path = _sibling(artefact.get("rel"))
+        if artefact_path is not None:
+            try:
+                content, decode_warnings = decode_bytes(artefact_path.read_bytes())
+            except OSError as exc:
+                warnings.append(f"could not read {artefact_path.name} ({exc})")
+            else:
+                warnings.extend(decode_warnings)
+
+    text_sha256 = _sha256(content.encode("utf-8")) if content is not None else None
+    recorded_sha = record.get("text_sha256")
+    if content is not None and isinstance(recorded_sha, str) and recorded_sha != text_sha256:
+        warnings.append(
+            "the text on disk no longer hashes to the SHA256 the record gives "
+            f"({recorded_sha[:12]}… recorded, {str(text_sha256)[:12]}… on disk); "
+            "the quote this source was verified with was matched in the other one"
+        )
+
+    # The document: everything of this stem that is neither the record nor the text
+    # taken out of the document. Chosen from the group rather than from the record's
+    # own `artefact.rel`, so a sidecar removed by hand does not also hide the file it
+    # was written about.
+    document = next(
+        (
+            path
+            for path in group
+            if path is not sidecar and not path.name.endswith(TEXT_SUFFIX)
+        ),
+        None,
+    )
+
+    return {
+        "ok": True,
+        "authority_id": authority_id,
+        "name": raw,
+        "stem": proof_stem(raw),
+        "files": [f"{SOURCES_DIR}/{path.name}" for path in group],
+        # The document itself, not the record of it, and found the way the group
+        # knows it rather than by trusting the record's own copy of the name. The
+        # page names the stored file from this — `stored as Authority sources/…` —
+        # and a read that reported only the sidecar left that line blank on every
+        # source stored in an earlier session. An `artefact` hashed here would be a
+        # second opinion about a file the sidecar already hashes, so the record's
+        # digest is repeated rather than recomputed.
+        "artefact": (
+            {
+                "name": document.name,
+                "rel": f"{SOURCES_DIR}/{document.name}",
+                "path": str(document),
+                "sha256": (
+                    record["artefact"].get("sha256")
+                    if isinstance(record.get("artefact"), dict) else None
+                ),
+                "bytes": document.stat().st_size,
+            }
+            if document is not None
+            else None
+        ),
+        "sidecar": (
+            {
+                "name": sidecar.name,
+                "rel": f"{SOURCES_DIR}/{sidecar.name}",
+                "path": str(sidecar),
+                "bytes": sidecar.stat().st_size,
+            }
+            if sidecar is not None
+            else None
+        ),
+        # The record as written, for a caller that wants a field this function does
+        # not lift out. The lifted fields below exist so the common case does not
+        # have to know the sidecar's shape.
+        "record": record,
+        "source_uri": record.get("source_uri"),
+        "source_url": record.get("source_url"),
+        "text_file": text_rel,
+        "source_content": content,
+        "chars": len(content) if content is not None else 0,
+        "text_sha256": text_sha256,
+        # Asked separately from the warning above because it is asked by a
+        # different caller. A reviewer checking the record can be told what to look
+        # at; a *verification* about to run must be stopped, and it is stopped on
+        # this and not on the presence of a sentence: `verifyProofStub` reads
+        # `source_content` and, without this, would record a `source_sha256` of the
+        # drifted text while the sidecar beside it went on stating the other. One of
+        # the two would be wrong and neither would say so.
+        #
+        # True when there is nothing to compare: a missing text is reported by
+        # `needs_text`, and warning twice about one absence is how a caller learns to
+        # ignore warnings.
+        "text_matches_record": (
+            content is None or not isinstance(recorded_sha, str) or recorded_sha == text_sha256
+        ),
+        "needs_text": content is None,
+        "reading": derivation,
+        # Which of the two accounts this record actually contains. Both keys are
+        # written by every current record, so they agree today — each is checked on
+        # its own key because the sentence the reader is shown is about the thing it
+        # names, and the two can diverge in a record written by a build between the
+        # two.
+        #
+        # The distinction is not pedantry. A record written before the margin was
+        # kept has no `citations` key at all, and an empty citation list then means
+        # "nothing was looked for" rather than "nothing was there" — the second is a
+        # claim about the document, and this record does not make it.
+        "reading_recorded": isinstance(record.get("readings"), dict),
+        "citations_recorded": "citations" in record,
+        "citations": (derivation or {}).get("citations") or [],
+        "numerals": (derivation or {}).get("numerals") or [],
+        "notes": record.get("notes") or [],
+        "schema_version": record.get("schema_version"),
+        "warnings": warnings,
     }
 
 

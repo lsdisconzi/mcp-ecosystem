@@ -59,7 +59,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 HTML_PATH = REPO_ROOT / "ui" / UI_FILENAME
 
 #: API routes the bridge promises. `/health` is MCP-owned and asserted too.
-EXPECTED_API_ROUTES = {"/", "/api/health", "/api/tools", "/api/tool", "/api/catalog", "/api/sources", "/api/source-transcript", "/api/framework-article", "/api/browse", "/api/bundles", "/api/bundle", "/api/schema", "/api/settings", "/api/authority-source", "/api/authority-source/delete"}
+EXPECTED_API_ROUTES = {"/", "/api/health", "/api/tools", "/api/tool", "/api/catalog", "/api/sources", "/api/source-transcript", "/api/framework-article", "/api/browse", "/api/bundles", "/api/bundle", "/api/schema", "/api/settings", "/api/authority-source", "/api/authority-source/delete", "/api/authority-source/reading"}
 
 
 @pytest.fixture(scope="module")
@@ -2133,6 +2133,127 @@ def test_delete_route_answers_the_preflight(client, proof_workspace):
 
 
 # ---------------------------------------------------------------------------
+# S6 — reading a stored source back
+# ---------------------------------------------------------------------------
+
+def test_reading_route_hands_back_the_text_the_store_returned(client, proof_workspace):
+    """The round trip: what the store handed the browser, the bundle hands it again
+    — without a second upload, which is the only way it could be had before."""
+    stored = _stored_source(client, proof_workspace)
+    directory = proof_workspace / "Authority sources"
+    before = {p.name: p.read_bytes() for p in directory.iterdir()}
+
+    res = client.get("/api/authority-source/reading", params={
+        "violation_id": "CL-001", "authority_id": "AUTH-CL-001-01",
+        "name": stored["artefact"]["name"],
+    })
+    assert res.status_code == 200, res.text
+    payload = res.json()
+    assert payload["source_content"] == stored["source_content"]
+    assert payload["text_sha256"] == stored["text_sha256"]
+    assert payload["text_matches_record"] is True
+    assert payload["warnings"] == []
+    assert payload["sidecar"]["name"] == stored["proof"]["name"]
+    assert {p.name: p.read_bytes() for p in directory.iterdir()} == before, (
+        "a GET changed the bundle"
+    )
+
+
+def test_reading_route_hands_back_the_margin_the_record_holds(client, proof_workspace):
+    """The half the route exists for. The reading, the citations and the numerals
+    are in the sidecar, and before this route the page that wrote them could not
+    read them: the only way to see a stored source's margin was to open the JSON in
+    an editor."""
+    stored = _stored_source(client, proof_workspace)
+    sidecar = proof_workspace / stored["proof"]["rel"]
+    record = json.loads(sidecar.read_text(encoding="utf-8"))
+    record["citations"] = [{
+        "text": "CPR Art. 19° N° 3 D.O. 24.10.1980", "page": 1, "first_line": 5,
+        "last_page": 1, "last_line": 5, "crosses_page": False,
+        "beside": 2, "named": 3, "agrees": False,
+    }]
+    record["notes"] = [{"page": 1, "line": 5, "text": "CPR Art. 19° N° 3 D.O. 24.10.1980"}]
+    record["readings"] = {"derivation": {
+        "citations": record["citations"], "numerals": [{"page": 1, "row": 9, "number": 2}],
+    }}
+    sidecar.write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    res = client.get("/api/authority-source/reading", params={
+        "violation_id": "CL-001", "authority_id": "AUTH-CL-001-01",
+        "name": stored["artefact"]["name"],
+    })
+    assert res.status_code == 200, res.text
+    payload = res.json()
+    assert payload["citations"] == record["citations"]
+    assert payload["numerals"] == [{"page": 1, "row": 9, "number": 2}]
+    assert payload["notes"] == record["notes"]
+    assert payload["citations_recorded"] is True
+    assert payload["reading_recorded"] is True
+    assert payload["source_content"] == stored["source_content"]
+
+
+def test_reading_route_says_a_text_that_drifted_from_its_record(client, proof_workspace):
+    """Reported, not raised: `verifyProofStub` refuses on the flag, and a caller
+    looking at the record is told which file to compare."""
+    stored = _stored_source(client, proof_workspace)
+    (proof_workspace / stored["artefact"]["rel"]).write_text("otra cosa", encoding="utf-8")
+
+    res = client.get("/api/authority-source/reading", params={
+        "violation_id": "CL-001", "authority_id": "AUTH-CL-001-01",
+        "name": stored["artefact"]["name"],
+    })
+    assert res.status_code == 200, res.text
+    payload = res.json()
+    assert payload["text_matches_record"] is False
+    assert any("hashes" in w for w in payload["warnings"]), payload["warnings"]
+    assert payload["source_content"] == "otra cosa"
+
+
+def test_reading_route_refuses_a_name_that_is_not_stored(client, proof_workspace):
+    _stored_source(client, proof_workspace)
+    res = client.get("/api/authority-source/reading", params={
+        "violation_id": "CL-001", "authority_id": "AUTH-CL-001-01",
+        "name": "AUTH-CL-001-01__fantasma.proof.json",
+    })
+    assert res.status_code == 400
+    assert "no stored source" in res.json()["error"]
+
+
+def test_reading_route_refuses_a_name_that_is_a_path(client, proof_workspace):
+    stored = _stored_source(client, proof_workspace)
+    marker = (proof_workspace / "CL-001.json").read_text(encoding="utf-8")
+    res = client.get("/api/authority-source/reading", params={
+        "violation_id": "CL-001", "authority_id": "AUTH-CL-001-01",
+        "name": "AUTH-CL-001-01__../CL-001.json",
+    })
+    assert res.status_code == 400, res.text
+    assert (proof_workspace / "CL-001.json").read_text(encoding="utf-8") == marker
+    assert (proof_workspace / stored["artefact"]["rel"]).is_file()
+
+
+def test_reading_route_requires_a_bundle_and_an_authority(client, proof_workspace):
+    _stored_source(client, proof_workspace)
+    gone = client.get("/api/authority-source/reading", params={
+        "violation_id": "CL-777", "authority_id": "AUTH-CL-001-01", "name": "x.html",
+    })
+    assert gone.status_code == 404
+
+    no_authority = client.get("/api/authority-source/reading", params={
+        "violation_id": "CL-001", "authority_id": "  ", "name": "x.html",
+    })
+    assert no_authority.status_code == 400
+
+    no_name = client.get("/api/authority-source/reading", params={
+        "violation_id": "CL-001", "authority_id": "AUTH-CL-001-01",
+    })
+    assert no_name.status_code == 400
+
+
+def test_reading_route_answers_the_preflight(client, proof_workspace):
+    assert client.options("/api/authority-source/reading").status_code == 204
+
+
+# ---------------------------------------------------------------------------
 # S6 — the page must name the authority by the field the model actually has
 # ---------------------------------------------------------------------------
 
@@ -2266,6 +2387,8 @@ def _render_proof_source(source: dict, quote: str, authority: dict | None = None
         _js_function("proofPreviewIsStale"),
         _js_const("PROOF_NO_SOURCE"),
         _js_function("highlightQuote"),
+        _js_function("proofNumeralPair"),
+        _js_function("proofMarginSection"),
         _js_function("renderProofSource"),
         f"fakeEl('proofQuote').value = {json.dumps(quote)};",
         "renderProofSource('AUTH-1');",
@@ -2453,6 +2576,361 @@ def test_a_quote_brought_over_from_another_source_is_named_and_not_blamed_on_the
     assert "Found verbatim" in same["match"], "a quote in its own source was not accepted"
 
 
+# ---------------------------------------------------------------------------
+# S6 — the reading and the margin it set aside
+# ---------------------------------------------------------------------------
+
+def _dto_reading(**overrides) -> dict:
+    """The payload `GET /api/authority-source/reading` returns for the DTO-100 copy."""
+    reading = {
+        "extractor": "pypdf",
+        "columns_split": True,
+        "gutter_column": 1,
+        "furniture_lines": 37,
+        "citations": [
+            {"text": "CPR Art. 19° N° 3 D.O. 24.10.1980", "page": 1, "first_line": 5,
+             "last_page": 1, "last_line": 5, "crosses_page": False,
+             "beside": 3, "named": 3, "agrees": True},
+            {"text": "CPR Art. 19° Nº 14 D.O. 26.08.2005", "page": 5, "first_line": 46,
+             "last_page": 5, "last_line": 46, "crosses_page": False,
+             "beside": 15, "named": 14, "agrees": False},
+            {"text": "Ley 20516 Art. ÚNICO Nº 1 b) D.O. 11.07.2011", "page": 1,
+             "first_line": 53, "last_page": 2, "last_line": 6, "crosses_page": True,
+             "beside": None, "named": None, "agrees": None},
+        ],
+    }
+    reading.update(overrides)
+    return {
+        "ok": True,
+        "authority_id": "AUTH-1",
+        "name": "CL.CPR.Art.19.N3__DTO-100_03-MAY-2023.pdf",
+        "source_uri": "Authority sources/CL.CPR.Art.19.N3__DTO-100_03-MAY-2023.pdf",
+        "source_content": _DTO_SPLICED,
+        "chars": len(_DTO_SPLICED),
+        "text_sha256": "c11f86b8" * 8,
+        "text_matches_record": True,
+        "reading_recorded": True,
+        "citations_recorded": True,
+        "reading": reading,
+        "citations": reading["citations"],
+        "numerals": [{"page": 1, "row": 9, "number": 3}],
+        "notes": [{"page": 1, "line": 5, "text": "CPR Art. 19° N° 3 D.O. 24.10.1980"}],
+        "warnings": [],
+    }
+
+
+def _render_margin(record: dict) -> str:
+    """Run `proofMarginSection` on one record and return the markup it wrote.
+
+    The section is the pane's only account of the margin, and which rows it shows
+    is decided at runtime from the record — a regex over the function's own source
+    would pass on a version that renders nothing.
+    """
+    script = "\n".join([
+        _js_function("escapeHtml"),
+        _js_function("proofNumeralPair"),
+        _js_function("proofMarginSection"),
+        f"console.log(JSON.stringify({{ html: proofMarginSection({json.dumps(record)}) }}));",
+    ])
+    return _run_js(script)["html"]
+
+
+def test_a_record_that_never_kept_the_margin_says_so_rather_than_showing_none():
+    """An older sidecar has no `citations` key, and rendering that as "no citation
+    was found in the margin" would be a claim the record cannot make: nothing was
+    looked for. The flag is what separates the two, so it is asserted on its own."""
+    html = _render_margin({
+        "source_uri": "Authority sources/AUTH-1__x.pdf",
+        "source_content": "algo",
+        "citations_recorded": False,
+        "reading_recorded": False,
+        "citations": [],
+    })
+    assert "written before the margin was kept" in html, html
+    assert "No citation was found" not in html, "an unrecorded margin was reported as an empty one"
+
+
+def test_a_text_source_with_no_reading_and_no_margin_adds_nothing_to_the_pane():
+    """Nothing to say is said by saying nothing: a pasted passage has no margin
+    column and no reading, and a "Margin — 0 citations" heading over it would be
+    noise on every text source in the bundle."""
+    assert _render_margin({
+        "source_uri": "Authority sources/AUTH-1__page.html",
+        "source_content": "texto pegado",
+        "reading": None, "citations_recorded": True, "citations": [],
+    }) == ""
+
+
+def test_the_margin_a_reading_set_aside_is_readable_from_the_pane():
+    """The point of keeping the margin is being able to read it back.
+
+    Both numerals are shown for every citation, because they are different answers:
+    the DTO-100 copy prints `Nº 14` beside numeral 15 of the sentence it amends, and
+    a reviewer reading only one of the two would take the margin for an index it is
+    not. The page and line are there because a citation with no position cannot be
+    found in the document it was taken out of.
+    """
+    html = _render_margin(_dto_reading())
+    assert "Margin —" in html and "3 citations" in html and "1 numeral" in html
+    assert "read as two columns" in html
+    assert "37 repeated lines of page furniture dropped" in html
+    assert "not searched" in html, "the pane must say these citations are not part of the text"
+    assert "CPR Art. 19° N° 3 D.O. 24.10.1980" in html
+    assert "p5 l46" in html
+    assert "beside 15, names 14 — differs" in html, "the two answers were collapsed into one"
+    assert "beside 3, names 3 — agrees" in html
+    assert "p1 l53 → p2 l6" in html, "a citation crossing a page lost the half after the break"
+
+
+def test_an_unattributed_citation_is_not_reported_as_a_disagreement():
+    """`agrees` is null when either numeral is unknown — the page-break citation has
+    neither — and null is a third answer. Rendering it as "differs" would turn a
+    citation the reader could not place into a contradiction with the body."""
+    html = _render_margin(_dto_reading())
+    assert "no numeral beside it, names none — unattributed" in html
+    assert "— differs" in html  # the real disagreement, still reported
+
+
+def test_only_the_first_citations_are_listed_and_the_rest_are_counted():
+    """A consolidated article can carry a hundred margin rows, and the pane sits
+    under the loaded text inside a `max-height` card. The count is what makes the
+    truncation honest: a list that silently stopped at eight would read as the whole
+    margin."""
+    many = [{"text": f"CPR Art. {n}° D.O. 24.10.1980", "page": 1, "first_line": n,
+             "last_page": 1, "last_line": n, "crosses_page": False,
+             "beside": n, "named": n, "agrees": True} for n in range(1, 15)]
+    html = _render_margin(_dto_reading(citations=many, numerals=[], notes=[]))
+    assert "14 citations" in html
+    assert "CPR Art. 1° D.O. 24.10.1980" in html and "CPR Art. 8° D.O. 24.10.1980" in html
+    assert "CPR Art. 9° D.O. 24.10.1980" not in html, "the list was not capped"
+    assert "…and 6 more" in html, "the rest of the margin was dropped without a count"
+
+
+def test_a_reading_that_already_took_the_margin_out_blames_the_body_not_the_record():
+    """Once the reading has the margin column out, an interruption that survives it
+    is printed in the body — a word split across a page break. Saying "stored before
+    the margin was kept, store it again" there would send the reviewer to re-read a
+    document that has already been read, and re-reading cannot join a word the
+    document itself splits."""
+    out = _render_proof_source(_dto_reading(), _DTO_SENTENCE)
+    assert "not in a row" in out["match"]
+    assert "the margin column" in out["match"], "the reading's own work was not reported"
+    assert "not searched" in out["match"], "the note must say the margin is not searched"
+    assert "printed in the document itself" in out["match"], "the body was not named as the cause"
+    assert "Store the document again" not in out["match"], "the reviewer was sent to re-read it"
+
+
+def _load_stored(authority_id: str, *, fails: bool = False, again: bool = False,
+                 preload: dict | None = None, replace_while_loading: bool = False) -> dict:
+    """Run `loadStoredProofReading` under node against a fake `API`.
+
+    The read-back is the only thing that makes a source stored in an earlier session
+    visible, so what it does — one request, for the file that is actually on disk,
+    landing in `state.proofSources` and re-rendering the pane — is the contract. It
+    is also the only place the page decides *not* to re-render, which a regex over
+    the source cannot check.
+    """
+    record = _dto_reading()
+    # Workspace-relative, the way `/api/bundle` reports them: `proofArtefactsFor`
+    # matches on `/Authority sources/` inside the path, so a bundle-relative fixture
+    # would make every stub look like it has nothing on disk — and a test that
+    # proved the read never happens would pass for the wrong reason.
+    files = [
+        {"name": "CL-001.json", "path": "build/CL-001/CL-001.json", "size": 10},
+        {"name": "CL.CPR.Art.19.N3__DTO-100_03-MAY-2023.pdf",
+         "path": "build/CL-001/Authority sources/CL.CPR.Art.19.N3__DTO-100_03-MAY-2023.pdf",
+         "size": 20},
+        {"name": "CL.CPR.Art.19.N3__DTO-100_03-MAY-2023.proof.json",
+         "path": "build/CL-001/Authority sources/CL.CPR.Art.19.N3__DTO-100_03-MAY-2023.proof.json",
+         "size": 30},
+    ]
+    body = "throw new Error('the server refused it');" if fails else (
+        "return JSON.parse(" + json.dumps(json.dumps(record)) + ");")
+    script = "\n".join([
+        "const els = {};",
+        "function fakeEl(id) { return els[id] || (els[id] = { id, innerHTML: '',"
+        " style: {}, value: '', textContent: '', files: null }); }",
+        "const document = { getElementById: (id) => fakeEl(id) };",
+        "const state = { bundleId: 'CL-001', proofPreview: null, proofReadPending: null,"
+        + " proofSources: JSON.parse(" + json.dumps(json.dumps(preload or {})) + "),"
+        + " bundle: { files: JSON.parse(" + json.dumps(json.dumps(files)) + ") } };",
+        "const log = [];",
+        "function pushLog(msg, step, kind) { log.push([msg, kind]); }",
+        "const calls = [];",
+        "let renders = 0;",
+        "function renderProofSource() { renders++; }",
+        "const API = { authoritySourceReading: async (p) => { calls.push(p); " + body + " } };",
+        _js_function("bundleFiles"),
+        _js_function("proofArtefactsFor"),
+        _js_function("loadStoredProofReading"),
+        (f"const pending = loadStoredProofReading({json.dumps(authority_id)});"),
+        (f"loadStoredProofReading({json.dumps(authority_id)});" if again else ""),
+        ("state.proofSources[" + json.dumps(authority_id) + "] = { source_content: 'newer' };"
+         if replace_while_loading else ""),
+        "pending.then(() => console.log(JSON.stringify({",
+        "  calls: calls,",
+        "  sources: Object.fromEntries(Object.entries(state.proofSources)"
+        "    .map(([k, v]) => [k, v && v.source_content ? v.source_content.length : v])),",
+        "  renders: renders,",
+        "  log: log,",
+        "  pending: state.proofReadPending,",
+        "})));",
+    ])
+    return _run_js(script)
+
+
+def test_a_source_stored_in_an_earlier_session_is_read_back_into_the_pane():
+    """The gap this closes: the store returns the text it has just read, so a proof
+    stored yesterday was listed on disk with nothing in `state.proofSources`, and the
+    pane said "no source loaded" over a document that is right there. One request,
+    for a file that is actually on disk, and the pane re-renders with it.
+    """
+    out = _load_stored("CL.CPR.Art.19.N3")
+    assert len(out["calls"]) == 1, out["calls"]
+    assert out["calls"][0] == {
+        "violation_id": "CL-001", "authority_id": "CL.CPR.Art.19.N3",
+        "name": "CL.CPR.Art.19.N3__DTO-100_03-MAY-2023.pdf",
+    }, "the read did not name the stored document"
+    assert out["sources"] == {"CL.CPR.Art.19.N3": len(_DTO_SPLICED)}, (
+        "the record did not reach the page")
+    assert out["renders"] == 1, "the pane was not redrawn over the record that arrived"
+    assert out["pending"] is None, "the in-flight mark outlived the request"
+    assert any("3 margin citations" in row[0] for row in out["log"]), out["log"]
+
+
+def test_a_record_already_in_hand_is_not_fetched_again_or_fetched_over():
+    """Three ways this must not fire: a source the reviewer has just stored (its
+    payload is newer than anything on disk), two opens in quick succession (the first
+    request is still in flight), and a store that lands *while* the read is out —
+    the store is the document the reviewer is looking at, and the record would
+    replace it with the one it supersedes."""
+    held = {"CL.CPR.Art.19.N3": {"source_content": "lo que ya estaba"}}
+    already = _load_stored("CL.CPR.Art.19.N3", preload=held)
+    assert already["calls"] == [], "a source already in hand was fetched again"
+    assert already["sources"]["CL.CPR.Art.19.N3"] == len("lo que ya estaba")
+    assert already["renders"] == 0
+
+    twice = _load_stored("CL.CPR.Art.19.N3", again=True)
+    assert len(twice["calls"]) == 1, "a second open while the first was in flight asked twice"
+
+    raced = _load_stored("CL.CPR.Art.19.N3", replace_while_loading=True)
+    assert raced["sources"]["CL.CPR.Art.19.N3"] == len("newer"), (
+        "a slow read-back overwrote the source the reviewer had just stored"
+    )
+    assert raced["renders"] == 0, "the pane was redrawn over the newer source"
+
+
+def test_a_stub_with_no_proof_on_disk_is_not_asked_about():
+    """Most stubs have no source stored, and the route refuses an empty name — so a
+    read per open would put a 400 in the log for every stub the reviewer looks at."""
+    out = _load_stored("CL.SIN.FUENTE")
+    assert out["calls"] == [], "a stub with nothing on disk was asked about"
+    assert out["log"] == [] and out["renders"] == 0
+
+
+def test_a_record_that_cannot_be_read_leaves_the_pane_alone_and_says_why():
+    """Logged, not put in the verdict: the verdict is about the quote, and a record
+    the server cannot read is a fact about the bundle. The modal stays on its neutral
+    prompt, which is true — nothing is loaded — and the log names the file."""
+    out = _load_stored("CL.CPR.Art.19.N3", fails=True)
+    assert out["sources"] == {}
+    assert out["renders"] == 0, "the pane was redrawn over a read that failed"
+    assert out["pending"] is None, "a failed read left the in-flight mark behind"
+    assert any(row[1] == "warn" and "the server refused it" in row[0] for row in out["log"]), out["log"]
+
+
+def _verify_stored(source: dict) -> dict:
+    """Run `verifyProofStub` with one source already in hand and nothing typed into
+    the form, and report what the protocol was sent.
+
+    `callTool` records its arguments instead of reaching a tool, so the run ends in
+    the page's own "Verified." line — which is what makes a guard test able to fail:
+    a guard that is missing shows up as a verification that happened.
+    """
+    html = HTML_PATH.read_text(encoding="utf-8")
+    authority = {
+        "authority_id": "AUTH-1", "type": "statute",
+        "instrument": "Constitución Política de la República, Art. 19 N° 3",
+        "verified": True, "verification_provenance": None,
+    }
+    script = "\n".join([
+        "const els = {};",
+        "function fakeEl(id) { return els[id] || (els[id] = { id, innerHTML: '', style: {},"
+        " value: '', textContent: '', files: [],"
+        " classList: { add() {}, remove() {} } }); }",
+        "const document = { getElementById: (id) => fakeEl(id) };",
+        "const logs = [];",
+        "function pushLog(m, s, k) { logs.push([String(m), k]); }",
+        "const state = { bundleId: 'CL-001', proofSources: {}, proofPreview: null,"
+        + " violation: " + json.dumps({"violation_id": "CL-001", "authorities": [authority]})
+        + ", settings: {} };",
+        _extract_proof_plan(html),
+        re.search(r"const PROOF_FIELD_LABEL = \{.*?\n\};", html, re.S).group(0),
+        _js_function("proofPlanFor"),
+        _js_function("proofFieldId"),
+        _js_function("proofValue"),
+        _js_function("escapeHtml"),
+        _js_function("inputValue"),
+        _js_function("proofStatus"),
+        "let ingestCalls = 0;",
+        "const ingestProofSource = async () => { ingestCalls++; return null; };",
+        "const sent = [];",
+        "const callTool = async (tool, args) => { sent.push([tool, args]); return { ok: true }; };",
+        "const applyResult = () => {};",
+        "const openProofModal = () => {};",
+        "const applyBundleToStep = () => {};",
+        _js_function("verifyProofStub"),
+        "state.proofSources['AUTH-1'] = JSON.parse(" + json.dumps(json.dumps(source)) + ");",
+        "fakeEl(proofFieldId('instrument')).value = 'Constitución Política de la República';",
+        f"fakeEl('proofQuote').value = {json.dumps(_DTO_SENTENCE)};",
+        "verifyProofStub('AUTH-1').then(() => console.log(JSON.stringify({",
+        "  match: fakeEl('proofMatch').innerHTML,",
+        "  ingestCalls: ingestCalls,",
+        "  sent: sent,",
+        "})));",
+    ])
+    return _run_js(script)
+
+
+def test_verifying_from_a_stored_record_is_possible_without_storing_the_source_again():
+    """The other half of the read-back, and the reason the record has to be kept by
+    reference. `verifyProofStub` uses whatever is in `state.proofSources`, and before
+    the read-back there was nothing there for a source stored in an earlier session —
+    so it fell through to `ingestProofSource`, found no file, url or paste, and told
+    the reviewer there was nothing to store. The stub's recorded `source_uri` alone
+    was never enough: the text has to be the text, and it is on disk."""
+    out = _verify_stored(_dto_reading())
+    assert out["ingestCalls"] == 0, "the stored source was not used; the upload was asked for again"
+    assert len(out["sent"]) == 1, out["sent"]
+    tool, args = out["sent"][0]
+    # Fixed by the stub's type in `PROOF_PLAN`, not chosen from the source: a statute
+    # always goes through the external-fetch protocol from this modal.
+    assert tool == "verify_statute_external_fetch_tool", tool
+    assert args["source_content"] == _DTO_SPLICED, "the protocol was not sent the stored text"
+    assert args["source_uri"] == "Authority sources/CL.CPR.Art.19.N3__DTO-100_03-MAY-2023.pdf"
+    assert "Verified." in out["match"], out["match"]
+
+
+def test_a_stored_text_that_no_longer_matches_its_record_is_not_verified():
+    """A refusal, not a warning. Verifying hashes `source_content` and writes the
+    result into the stub, while the sidecar beside the document goes on stating the
+    hash of the text that was read. If the file changed since — which the read route
+    reports and cannot prevent — the stub and the record would disagree, both would
+    call themselves proof, and nothing would say which hash covers the quote."""
+    drifted = dict(_dto_reading(), text_matches_record=False,
+                   warnings=["the text on disk no longer hashes to the SHA256 the record gives"])
+    out = _verify_stored(drifted)
+    assert "no longer matches the record" in out["match"], out["match"]
+    assert "Store the document again" in out["match"]
+    assert out["sent"] == [], "the protocol was run over text the record contradicts"
+    assert "Verified." not in out["match"]
+
+    # An ingest payload is what it says it is and carries no such flag; an absent
+    # flag must not read as a mismatch, or no freshly stored source could be
+    # verified at all.
+    assert "Verified." in _verify_stored(_stored_pdf_source(_DTO_SPLICED))["match"]
+
+
 def test_the_modal_fills_the_required_fields_from_the_stub_without_overwriting_typed_ones():
     """The protocol refuses to run without a field the stub already carries, so a
     re-verify must not cost the reviewer a re-type of the instrument they verified
@@ -2519,6 +2997,8 @@ def test_typing_in_the_quote_box_does_not_rebuild_the_loaded_text_every_keystrok
         _js_function("proofPreviewIsStale"),
         _js_const("PROOF_NO_SOURCE"),
         _js_function("highlightQuote"),
+        _js_function("proofNumeralPair"),
+        _js_function("proofMarginSection"),
         _js_function("renderProofSource"),
         "fakeEl('proofQuote').value = 'garantías de un procedimiento';",
         "renderProofSource('AUTH-1');",
@@ -2578,6 +3058,8 @@ def test_deleting_the_source_clears_the_verdict_with_the_pane():
         _js_function("proofPreviewIsStale"),
         _js_const("PROOF_NO_SOURCE"),
         _js_function("highlightQuote"),
+        _js_function("proofNumeralPair"),
+        _js_function("proofMarginSection"),
         _js_function("renderProofSource"),
         "fakeEl('proofQuote').value = 'establecer siempre las garantías';",
         "renderProofSource('AUTH-1');",
@@ -2702,7 +3184,13 @@ def _render_proof_modal(authority: dict, disk_authority: dict | None,
         _js_function("proofPreviewIsStale"),
         _js_const("PROOF_NO_SOURCE"),
         _js_function("highlightQuote"),
+        _js_function("proofNumeralPair"),
+        _js_function("proofMarginSection"),
         _js_function("renderProofSource"),
+        # Stubbed, not lifted: this harness is about the modal's fields and disk
+        # state, and the read-back would need a `fetch`. The page's own function is
+        # exercised against a fake `API` in its own test.
+        "const loadStoredProofReading = async () => {};",
         _js_function("openProofModal"),
         "Object.keys(PROOF_FIELD_LABEL).forEach(n => {"
         f"  const v = {json.dumps(preset or {})}[n];"

@@ -1402,6 +1402,50 @@ def build_ui_routes(mcp):
 
         return json_response(result)
 
+    @mcp.custom_route("/api/authority-source/reading", methods=["GET", "OPTIONS"])
+    async def api_authority_source_reading(request) -> Response:
+        """Read back one stored source for a stub that already has proof on disk.
+
+        ``POST /api/authority-source`` answers with the text it has just read, so
+        the modal can only ever show a source loaded in this session. A source
+        stored yesterday is on disk, is listed under "Proof on disk", and is
+        described in its sidecar — and there was no way to ask: the reading, the
+        margin citations and the numerals were write-only, legible by opening the
+        ``.proof.json`` in an editor and invisible to the page that recorded them.
+        That is backwards, because the recorder is where someone goes to check the
+        recording.
+
+        A GET, and the only one of the three source routes that cannot change the
+        bundle. The three parameters travel as query strings rather than a body
+        because that is what the method means: the request *names* a source, it does
+        not carry one. ``name`` is the same argument the delete route takes, and is
+        resolved by the same rule — the caller has the file listing and does not
+        decide which files make up a source.
+
+        The payload is whatever ``read_source`` returns, including its ``warnings``:
+        a text file that no longer hashes to its own record is reported there rather
+        than raised, because a caller that cannot see the text can do nothing at all
+        with the file, and the mismatch is not a reason to withhold it.
+        """
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+
+        from .authority_source import SourceError, read_source
+
+        bundle, authority_id, error, status_code = bundle_target({
+            "violation_id": request.query_params.get("violation_id", ""),
+            "authority_id": request.query_params.get("authority_id", ""),
+        })
+        if error:
+            return json_response({"ok": False, "error": error}, status_code=status_code)
+
+        try:
+            result = read_source(bundle, authority_id, request.query_params.get("name", ""))
+        except SourceError as exc:
+            return json_response({"ok": False, "error": str(exc)}, status_code=400)
+
+        return json_response(result)
+
     # -- catalog ------------------------------------------------------------
 
     @mcp.custom_route("/api/catalog", methods=["GET", "OPTIONS"])
