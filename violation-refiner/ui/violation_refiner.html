@@ -1227,6 +1227,14 @@ let state = {
   // server hashed, not against whatever is in the DOM afterwards.
   proofSources: {},
   proofAuthority: null,
+  // The loaded text last handed to the pane, as { id, content, quote }. The pane
+  // is rebuilt only when one of those three moved, so typing a quote does not
+  // re-escape the whole document on every keystroke.
+  proofPreview: null,
+  // The stored source whose delete button is armed. One click only arms: removing
+  // a proof unlinks the bundle's only copy of an official document, and there is
+  // nothing here that can put it back, so the second click is the consent.
+  proofDelete: null,
   // The cached article the S3 picker last loaded, as { code, article }. Only
   // used to keep the picked chip visibly picked — the excerpt and id live in
   // their real inputs.
@@ -1257,6 +1265,14 @@ const API = {
   // dispatching a tool — and the verify step still goes through /api/tool, so
   // nothing here can flip an authority's `verified` flag on its own.
   authoritySource: payload => fetchJson('/api/authority-source', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }),
+  // Remove a stored source so a stale document can be replaced. The body names
+  // one file; the server decides which companions go with it, because deleting
+  // proof must not be left to whatever the browser thinks the grouping is.
+  authoritySourceDelete: payload => fetchJson('/api/authority-source/delete', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -1911,6 +1927,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (action === 'proof-save') {
       e.preventDefault();
       persistProofAuthority(t.dataset.authority || '');
+    }
+    // Replacing a proof: the stored copy goes first, so "store source" is the
+    // only copy the bundle ends up holding. Arming is not a formality — this
+    // unlinks the only copy of an official document the bundle has, and the page
+    // has no way to get it back.
+    if (action === 'proof-delete') {
+      e.preventDefault();
+      state.proofDelete = {
+        authority: t.dataset.authority || '',
+        name: t.dataset.name || '',
+      };
+      renderProofArtefacts(t.dataset.authority || state.proofAuthority || '');
+    }
+    if (action === 'proof-delete-cancel') {
+      e.preventDefault();
+      state.proofDelete = null;
+      renderProofArtefacts(state.proofAuthority || '');
+    }
+    if (action === 'proof-delete-now') {
+      e.preventDefault();
+      deleteProofSource(t.dataset.authority || '', t.dataset.name || '');
     }
 
     if (action === 'seed-manifest') {
@@ -4014,6 +4051,12 @@ const PROOF_FIELD_LABEL = {
   author: 'Author', work: 'Work title', attestor: 'Attested by',
 };
 
+/** What `#proofMatch` says when no source is loaded. One string, used both by
+ *  the modal's own markup and by the render that clears the pane: a verdict is
+ *  about a *loaded* text, so it must not outlive it and go on claiming a match
+ *  for a document that is no longer in the pane. */
+const PROOF_NO_SOURCE = 'Load a source, then this line says whether the quote is in the exact text that will be hashed.';
+
 /** The plan for one stub, or null when its type cannot be routed. Never a
  *  fallback plan: picking a protocol for an unknown type would verify a
  *  comparative citation with the statute rules. */
@@ -4090,15 +4133,89 @@ function proofStatus(html, isError) {
   el.innerHTML = html;
 }
 
+/** Why a verbatim search can fail while the wording is right.
+ *
+ *  Every protocol matches with `source_content.find(target_quote)` and nothing
+ *  else, so the protocol's own refusal — "target_quote not found verbatim" — can
+ *  never say which of several very different situations produced it. This page is
+ *  the only place that can, and "check the wording" is the wrong explanation in
+ *  the two cases that actually reach a reviewer:
+ *
+ *  - The quote in the box is the one this stub was verified with last time, and
+ *    it was matched in a *different* source. A quote is evidence about the
+ *    document it was found in; attaching the official copy of an instrument
+ *    beside a translation (or replacing a proof) leaves the old wording in the
+ *    box, and the old wording is not in the new document.
+ *  - Every word is in the loaded text but not consecutively: a PDF's text layer
+ *    returns its margin notes and page furniture inside the sentence. The
+ *    official DTO-100 copy this was diagnosed on renders art. 19 N° 3 as
+ *    "…establecer siempre las 26.08.2005 garantías de un procedimiento y una
+ *    investigación racionales y justos", with `procedimiento` split across a page
+ *    break, so only a run that reads continuously can match.
+ *
+ *  Both notes name a remedy that keeps the match verbatim; neither weakens it. */
+function proofRefusalNote(authorityId, quote, content) {
+  const d = state.proofSources[authorityId] || {};
+  const authority = (((state.violation || {}).authorities) || [])
+    .find(a => a.authority_id === authorityId);
+  const p = (authority || {}).verification_provenance || {};
+  const was = String(p.source_uri || '');
+  const now = String(d.source_uri || '');
+  if (was && now && was !== now && String(p.matched_quote || '').trim() === quote) {
+    return `<b>That quote came with the stub, not from this document.</b> It is the text that was `
+      + `matched in <code>${escapeHtml(was)}</code>, and a quote is evidence only about the document `
+      + `it was found in — a translation is never verbatim. The box holds it again because the stub `
+      + `does. Quote the passage as <code>${escapeHtml(now)}</code> words it.`;
+  }
+  const words = quote.split(/\s+/).filter(w => w.length >= 4);
+  const text = String(content || '');
+  if (words.length >= 2 && words.every(w => text.includes(w))) {
+    return '<b>Every word of this quote is in the loaded text, but not in a row.</b> '
+      + 'Margin notes and page furniture can land inside a sentence when the text was read out of a '
+      + 'PDF, and the protocol cannot match across the interruption. Quote a run that reads '
+      + 'continuously.';
+  }
+  return '<b>Not found verbatim</b> in the loaded text, so the protocol will refuse this quote. '
+    + 'Check the wording, or load the page again with whitespace collapsing on.';
+}
+
+/** Whether the loaded-text pane has to be rebuilt.
+ *
+ *  `renderProofSource` runs on every keystroke in the quote box, and the pane is
+ *  the expensive half of it: it escapes and hands the whole loaded document to the
+ *  browser, up to the ingest cap (8 MiB). Nothing about that text moves while the
+ *  reviewer types — only the quote does — so the pane is rebuilt when the stub, the
+ *  loaded string or the quote has changed, and left alone otherwise. The comparison
+ *  is by reference and exact: the string in `state.proofSources` is the one the
+ *  server hashed, not a copy rebuilt per keystroke. */
+function proofPreviewIsStale(authorityId, content, quote) {
+  const seen = state.proofPreview;
+  if (seen && seen.id === authorityId && seen.content === content && seen.quote === quote) return false;
+  state.proofPreview = { id: authorityId, content, quote };
+  return true;
+}
+
 /** Show what was loaded, and whether the quote would actually be found. */
 function renderProofSource(authorityId) {
   const preview = document.getElementById('proofPreview');
   const d = state.proofSources[authorityId];
   if (!preview) return;
-  if (!d) { preview.innerHTML = ''; return; }
+  if (!d) {
+    preview.innerHTML = '';
+    // The verdict is cleared with the pane: it is about the text that was loaded,
+    // so leaving the last one standing would let the modal go on claiming a match
+    // after its source was deleted. Deleting proof is the path that gets here with
+    // a fresh verdict already written.
+    proofStatus(PROOF_NO_SOURCE, false);
+    // No source, so there is nothing the next render could be a repeat of.
+    state.proofPreview = null;
+    return;
+  }
 
   const content = d.source_content || '';
   const quote = inputValue('proofQuote');
+  // Looked up once: the verdict needs it, and so does the decision about the pane.
+  const at = quote ? content.indexOf(quote) : -1;
   const bits = [
     d.text_source === 'fetched' ? 'fetched from the url' : d.text_source === 'pasted' ? 'pasted text' : 'uploaded document',
     // What the server was served matters: the content type is what selected the
@@ -4121,17 +4238,22 @@ function renderProofSource(authorityId) {
   const meta = escapeHtml(bits.join(' · '));
   const withMeta = (head) => `${head}<div class="field-hint">${meta}</div>`;
 
+  // Asked before the verdict is written, because the verdict is the half that is
+  // *always* rewritten: it is what changes while the reviewer types, and a stale
+  // pane must never be able to swallow it.
+  const stale = proofPreviewIsStale(authorityId, content, quote);
+
   if (!content) {
     proofStatus(withMeta('<b>Stored.</b> Nothing readable came out of it, so paste the passage instead.'), true);
   } else if (!quote) {
     proofStatus(withMeta('Paste the quote that must appear.'), false);
+  } else if (at < 0) {
+    proofStatus(withMeta(proofRefusalNote(authorityId, quote, content)), true);
   } else {
-    const at = content.indexOf(quote);
-    proofStatus(withMeta(at < 0
-      ? '<b>Not found verbatim</b> in the loaded text, so the protocol will refuse this quote. '
-        + 'Check the wording, or load the page again with whitespace collapsing on.'
-      : `Found verbatim at offset <b>${at}</b>.`), at < 0);
+    proofStatus(withMeta(`Found verbatim at offset <b>${at}</b>.`), false);
   }
+
+  if (!stale) return;
 
   preview.innerHTML = [
     d.warnings && d.warnings.length
@@ -4150,7 +4272,17 @@ function highlightQuote(content, quote) {
   const cap = 3000;
   const at = quote ? content.indexOf(quote) : -1;
   if (at < 0) {
-    return escapeHtml(content.slice(0, cap)) + (content.length > cap ? ' …' : '');
+    // Nothing to mark, so the only use this view has is "find the wording in
+    // here" — and a head-only view hides it. The official DTO-100 copy this was
+    // diagnosed on reads to 32,302 characters and the sentence the protocol accepts
+    // starts at 3,473, past a 3,000-character window: the reviewer could not read
+    // the words they were being asked to quote. Bounded rather than unbounded
+    // because a fetched page may be megabytes (the ingest cap is 8 MiB) and this
+    // string goes to innerHTML.
+    const ceiling = 200000;
+    return escapeHtml(content.slice(0, ceiling))
+      + (content.length > ceiling
+        ? ` … <i>(${content.length - ceiling} more characters are in the loaded text)</i>` : '');
   }
   const start = Math.max(0, at - 300);
   return escapeHtml(content.slice(start, at))
@@ -4181,6 +4313,65 @@ function renderProofArtefacts(authorityId) {
   if (host) host.innerHTML = proofArtefactSection(authorityId);
 }
 
+/** The stem that ties one stored source's files together.
+ *
+ *  Mirrors `proof_stem` in `authority_source.py`, and does so only for *display*:
+ *  the server recomputes the group from the one file name it is handed, so a
+ *  grouping that disagreed here would change what a button says, never what gets
+ *  unlinked. Both companions of a document carry multi-part suffixes, so they are
+ *  peeled before the extension — read the other way round, the sidecar
+ *  `X.proof.json` has stem `X.proof`, looks like a source of its own, and the
+ *  document's own delete button would leave the sidecar behind naming a file that
+ *  is gone. */
+function proofStem(name) {
+  const base = String(name || '').split('/').pop();
+  for (const suffix of ['.proof.json', '.text.txt']) {
+    if (base.endsWith(suffix) && base.length > suffix.length) return base.slice(0, -suffix.length);
+  }
+  const dot = base.lastIndexOf('.');
+  return dot > 0 ? base.slice(0, dot) : base;
+}
+
+/** One stored source: its files, and how to remove them.
+ *
+ *  A stored source is up to three files — the document, its `.proof.json` sidecar
+ *  and the matched `.text.txt` — so they are shown and deleted as one thing:
+ *  three buttons per document would be three ways to say the same sentence, and
+ *  deleting the document while keeping the sidecar would leave a claim on disk
+ *  about a file that is no longer there.
+ *
+ *  Only this stub's own files get a button. The bundle-wide fallback lists
+ *  another stub's proof, which the server refuses to delete by name, so offering
+ *  the control would promise something the route will not do. */
+function proofArtefactGroup(group, authorityId, removable) {
+  const rows = group.files.map(f =>
+    `<div class="rr-detail">${escapeHtml(f.path)} <span class="field-hint">${escapeHtml(fmtBytes(f.size))}</span></div>`);
+  const name = escapeHtml((group.files[0] || {}).name || '');
+  const id = escapeHtml(authorityId);
+
+  if (!removable) return rows.join('');
+
+  // The armed state is kept in `state`, not read back off the DOM: the listing is
+  // re-rendered on every store and every listing refresh, and a confirm step that
+  // lived in the markup would be wiped by either.
+  const armed = !!state.proofDelete
+    && state.proofDelete.authority === String(authorityId)
+    && proofStem(state.proofDelete.name) === group.stem;
+
+  if (!armed) {
+    return rows.join('') + `<div class="btn-row">`
+      + `<button class="btn btn-sm" data-action="proof-delete" data-authority="${id}" data-name="${name}"`
+      + ` title="Remove this stored source so it can be replaced">Delete this source</button></div>`;
+  }
+  return rows.join('') + `<div class="btn-row">`
+    + `<button class="btn btn-sm" data-action="proof-delete-now" data-authority="${id}" data-name="${name}">`
+    + `Delete ${group.files.length} file${group.files.length === 1 ? '' : 's'} for good</button>`
+    + `<button class="btn btn-sm" data-action="proof-delete-cancel">Keep them</button></div>`
+    + `<div class="field-hint" style="color:var(--status-flag)">This unlinks this source from disk — the document, `
+    + `its sidecar and its matched text. The bundle holds no other copy, and nothing in this page can put it back. `
+    + `Store the replacement next.</div>`;
+}
+
 /** Everything under the bundle's Authority sources/ that belongs to this stub.
  *
  *  The trailing slash is what keeps the `Authority sources` directory itself out
@@ -4192,10 +4383,80 @@ function proofArtefactSection(authorityId) {
   const all = bundleFiles().filter(f => String(f.path).includes('/Authority sources/'));
   const list = (mine.length ? mine : all).slice(0, 12);
   if (!list.length) return '';
+
+  // Grouped by stem so one stored source is one row-block. `files[0]` is handed
+  // to the server as the name of the source to remove: the route recomputes the
+  // group from any one of a source's files, and the listing is sorted by path, so
+  // this is stable without the page having to agree on which file "the" file is.
+  const groups = [];
+  list.forEach(f => {
+    const stem = proofStem(f.name);
+    const seen = groups.find(g => g.stem === stem);
+    if (seen) seen.files.push(f); else groups.push({ stem, files: [f] });
+  });
+
   return `<div class="modal-section"><div class="modal-section-label">Proof on disk${mine.length ? '' : ' (bundle-wide)'}</div>`
-    + list.map(f => `<div class="rr-detail">${escapeHtml(f.path)} <span class="field-hint">${escapeHtml(fmtBytes(f.size))}</span></div>`).join('')
+    + groups.map(g => proofArtefactGroup(g, authorityId, !!mine.length)).join('')
     + (list.length < all.length ? `<div class="field-hint">…and ${all.length - list.length} more in Authority sources/</div>` : '')
     + `</div>`;
+}
+
+/** Remove one stored source — document, sidecar and matched text — from the bundle.
+ *
+ *  Nothing here deletes on a single click: the first click arms the button and the
+ *  second one is the consent, because this unlinks the only copy of an official
+ *  document the bundle holds. The one name sent is enough for the server to decide
+ *  the group, so this can only ever remove a source the reviewer was looking at.
+ *
+ *  Replacing a proof is a delete followed by a store, in that order, and the loaded
+ *  payload is dropped in between on purpose: it was read out of the file that just
+ *  went away, so keeping it would let the next verify record a `source_uri` naming
+ *  a document that no longer exists. */
+async function deleteProofSource(authorityId, name) {
+  proofStatus('Removing the stored source…', false);
+  pushLog(`→ POST /api/authority-source/delete (${name})`, 'S6');
+
+  let out;
+  try {
+    out = await API.authoritySourceDelete({
+      violation_id: state.bundleId,
+      authority_id: authorityId,
+      name,
+    });
+  } catch (e) {
+    pushLog(`← could not remove ${name} — ${e.message}`, 'S6', 'err');
+    proofStatus(`<b>Could not remove the stored source.</b> ${escapeHtml(e.message)}`, true);
+    return;
+  }
+
+  delete state.proofSources[authorityId];
+  state.proofDelete = null;
+  const deleted = out.deleted || [];
+  deleted.forEach(rel => pushLog(`← removed ${rel}`, 'S6', 'ok'));
+
+  await refreshBundleFiles();
+  applyBundleToStep('s6');
+  renderProofSource(authorityId);
+  renderProofArtefacts(authorityId);
+
+  // A recorded verification of an *uploaded* source names the artefact that has
+  // just gone, so the stub now cites something the bundle does not hold. Said out
+  // loud rather than repaired: the stub is only ever written by the write gate,
+  // and a page that quietly dropped the claim would be hiding exactly the
+  // inconsistency worth seeing. A source fetched by url records the url instead,
+  // so nothing matches there — right, because that page is still up.
+  const authority = (((state.violation || {}).authorities) || []).find(a => a.authority_id === authorityId);
+  const uri = String((((authority || {}).verification_provenance) || {}).source_uri || '');
+  const orphaned = !!uri && deleted.includes(uri);
+
+  const freed = out.freed_bytes ? ` (${escapeHtml(fmtBytes(out.freed_bytes))} freed)` : '';
+  proofStatus(`<b>Removed ${deleted.length} file${deleted.length === 1 ? '' : 's'}${freed}.</b> `
+    + `${escapeHtml(name)} and its companions are off disk — store the replacement next.`
+    + (orphaned
+      ? `<div class="field-hint" style="color:var(--status-flag)">This stub's verification names `
+        + `<b>${escapeHtml(uri)}</b>, which has just been removed, so that record now points at nothing. `
+        + `Verifying the replacement is what repairs it.</div>`
+      : ''), false);
 }
 
 /** The S6 proof modal: attach the official source for one stub, then verify it. */
@@ -4210,6 +4471,10 @@ function openProofModal(authorityId) {
   // JSON copies, so it is not something to call three times inside one render.
   const onDisk = p ? proofIsOnDisk(authority) : true;
   state.proofAuthority = id;
+  // Rebuilt from scratch, so an armed delete from a previous look at this stub
+  // does not come back: consent to remove one source must not survive the modal
+  // being closed and reopened.
+  state.proofDelete = null;
 
   document.getElementById('modalBadge').textContent = 'S6 · Authority proof';
   document.getElementById('modalTitle').textContent = `${id} — ${p ? 'proof on file' : 'attach the official source'}`;
@@ -4260,7 +4525,7 @@ function openProofModal(authorityId) {
         <div class="field"><label>Whitespace</label>
           <label class="field-hint"><input type="checkbox" id="proofCollapse" checked> collapse runs of spaces and newlines before matching</label></div>
       </div>
-      <div class="field-hint" id="proofMatch">Load a source, then this line says whether the quote is in the exact text that will be hashed.</div>
+      <div class="field-hint" id="proofMatch">${PROOF_NO_SOURCE}</div>
       <div id="proofPreview"></div>
       <div class="btn-row">
         <button class="btn" data-action="proof-ingest" data-authority="${escapeHtml(id)}">Store source &amp; check quote</button>
@@ -4284,8 +4549,26 @@ function openProofModal(authorityId) {
   ].join('');
 
   // Reuse whatever is already in hand: the quote that was verified last time,
-  // and the source text loaded earlier in this session.
+  // and the source text loaded earlier in this session. The recorded quote is
+  // reused *and* attributed: when it turns out not to be in the source now
+  // loaded, `renderProofSource` says which document it was matched in, because
+  // the reviewer is standing here to attach a different one.
   if (p && p.matched_quote) setInput('proofQuote', p.matched_quote);
+  // The stub already carries every field the protocol reads, including the ones
+  // it refuses to run without, so fill the blanks from it rather than making the
+  // reviewer re-type the instrument they verified with a moment ago. Blanks only:
+  // a value already in the box is never overwritten, and a field the stub does
+  // not carry stays empty (the whole point of `required` is that a human supplies
+  // what the bundle cannot know).
+  if (plan) {
+    plan.fields.forEach(name => {
+      const recorded = authority[name];
+      if (proofValue(name) || typeof recorded !== 'string' || !recorded) return;
+      // `decision_date` arrives as a datetime string and the control is a date
+      // input, which accepts only the day part.
+      setInput(proofFieldId(name), name === 'decision_date' ? recorded.slice(0, 10) : recorded);
+    });
+  }
   associateLabels(body);
   document.getElementById('modalOverlay').classList.add('active');
   renderProofSource(id);

@@ -58,6 +58,41 @@ The core library never imports `qdrant_client` or `neo4j`. That keeps the
 install footprint to one dependency (Pydantic), with the stores pulled in
 only through the `[qdrant]` / `[neo4j]` extras.
 
+The `[pdf]` extra (`pypdf>=4`) is the same shape: it is optional, and without
+it an uploaded PDF is still **stored and SHA-pinned as proof** — the source
+ingest reports `needs_text` and names the package to install, and the proof
+modal asks for the passage instead. With it, the PDF's text layer is read, the
+extracted text is written beside the document as a `__…text.txt`, and
+`text_sha256` can be re-derived from the bundle without a PDF parser.
+
+A stored proof is **replaceable**. Each file listed under *Proof on disk* in the
+S6.1 modal carries a **Delete this source** button; clicking it asks once more
+(*Delete N files for good* / *Keep them*) and then removes the document and its
+two companions — the sidecar and the matched text — because a sidecar without
+its document claims a proof that is gone. Store the replacement the same way you
+stored the original (url, upload, or paste), verify the stub, and save the
+violation; the new ingest reuses the same file name, so the proof directory does
+not accumulate duplicates. Nothing in the page repairs an already-verified stub
+whose record named the removed file — that stub says so on screen, and verifying
+the replacement is what fixes it.
+
+A refused quote is **explained**, not left to guesswork. All three protocols match
+verbatim with a plain substring search, so a refusal means "that exact string is
+not in this text" — which can be true while the wording is right. The modal names
+the two causes that are *not* the wording: a quote that came with the stub from a
+*previous* verification against a different source (the quote box is pre-filled
+from the stub's `matched_quote`, so attaching a replacement document hands you the
+old document's sentence, and a translation is never verbatim), and a quote whose
+every word is in the text but not in a row — what happens when a reading drops
+page furniture inside a sentence, as the BCN decree text does with an amendment's
+`D.O.` date. It also shows the loaded text in full when it cannot mark the quote
+(up to 200,000 characters), so the passage being asked about is readable, and
+fills the fields the protocol requires from the stub, so a blank `instrument`
+cannot refuse a quote that is verbatim. The line that verdict sits on is a
+statement about the text currently loaded, so deleting a stored proof clears it
+along with the preview instead of leaving the last `Found verbatim at offset …`
+standing over an empty pane.
+
 ## Layout
 
 ```

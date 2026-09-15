@@ -68,16 +68,6 @@ TEXT_SUFFIXES = frozenset({
 
 MARKUP_SUFFIXES = frozenset({".html", ".htm", ".xhtml", ".xml"})
 
-#: Optional PDF extractors, tried in this order. `pypdf` is the maintained
-#: successor of `PyPDF2`; `fitz` is PyMuPDF. None is a hard dependency of this
-#: project, so a PDF upload without one of them still stores the artefact and
-#: its hash and simply reports that no text was extracted.
-_PDF_EXTRACTORS: tuple[tuple[str, str], ...] = (
-    ("pypdf", "read_pypdf"),
-    ("PyPDF2", "read_pypdf"),
-    ("fitz", "read_fitz"),
-)
-
 
 class SourceError(Exception):
     """Raised when an official source cannot be ingested.
@@ -167,6 +157,26 @@ def _read_fitz(data: bytes) -> str:
         return "\n".join(page.get_text() for page in doc)
 
 
+#: Optional PDF extractors, tried in this order. `pypdf` is the maintained
+#: successor of `PyPDF2`; `fitz` is PyMuPDF. Installing one is optional (see the
+#: `pdf` extra), so a PDF upload without any of them still stores the artefact
+#: and its hash and simply reports that no text was extracted.
+#:
+#: The reader is stored as the *callable*, not as its name. The previous form
+#: paired a module name with a string and resolved it through `globals()`, so
+#: `_read_pypdf` vs `read_pypdf` — a single leading underscore — was the
+#: difference between reading a PDF and a `KeyError` reported as "pypdf is
+#: installed but could not read this PDF". That lookup could only ever run once
+#: an extractor was importable, which is to say only after a reviewer did what
+#: the warning told them to do and installed one. Holding the function removes
+#: the name entirely, so there is nothing left to drift.
+_PDF_EXTRACTORS: tuple[tuple[str, Callable[[bytes], str]], ...] = (
+    ("pypdf", _read_pypdf),
+    ("PyPDF2", _read_pypdf),
+    ("fitz", _read_fitz),
+)
+
+
 def extract_pdf_text(data: bytes) -> tuple[str | None, str | None, list[str]]:
     """Extract a PDF's text with whichever optional reader is installed.
 
@@ -176,14 +186,14 @@ def extract_pdf_text(data: bytes) -> tuple[str | None, str | None, list[str]]:
     is missing a parser.
     """
     tried: list[str] = []
-    for module_name, helper in _PDF_EXTRACTORS:
+    for module_name, reader in _PDF_EXTRACTORS:
         try:
             __import__(module_name)
         except ImportError:
             tried.append(module_name)
             continue
         try:
-            text = globals()[helper](data)
+            text = reader(data)
         except Exception as exc:  # noqa: BLE001 - a broken PDF must not 500
             return None, module_name, [
                 f"{module_name} is installed but could not read this PDF "
@@ -193,7 +203,8 @@ def extract_pdf_text(data: bytes) -> tuple[str | None, str | None, list[str]]:
     return None, None, [
         "no PDF text extractor is installed (" + ", ".join(tried) + "); the PDF "
         "is stored and hashed as proof, but paste the passage you want matched "
-        "or install pypdf to have it read here",
+        "or install pypdf (`pip install pypdf`, or the pdf extra) to have it "
+        "read here",
     ]
 
 
@@ -503,12 +514,18 @@ def ingest_source(
             filename = f"{authority_id}__upload.pdf"
         else:
             filename = f"{authority_id}__{'upload.bin' if data is not None else 'note.txt'}"
-    elif data is not None:
+    elif data is not None and not filename.startswith(f"{authority_id}__"):
         # Prefix the reviewer's filename with the authority id. Two stubs
         # verified against two different sentencias otherwise land as
         # `sentencia.pdf` and `sentencia-2.pdf`, and the bundle no longer says
         # which proof belongs to which proposition — the one question this
         # directory exists to answer.
+        #
+        # Skipped when the name already carries it, because the file the
+        # reviewer just picked may *be* this bundle's own stored copy: re-reading
+        # a bundle then prefixed it a second time, and since the name differs
+        # `_unique_path` cannot recognise the bytes, so the same document was
+        # stored twice and the sidecar pointed at the copy.
         filename = f"{authority_id}__{filename}"
     filename = sanitise_filename(filename)
     suffix = Path(filename).suffix.lower()
@@ -567,11 +584,18 @@ def ingest_source(
         stem = Path(filename).stem
 
     # The text is stored separately whenever it is not already the artefact's
-    # own bytes — a PDF, or an upload whose reading disagreed with what the
-    # reviewer pasted. Without this the bundle would hold a document whose
-    # SHA256 is nowhere in the record and a hash whose text is nowhere on disk.
+    # own bytes — a PDF, an HTML page, an upload whose reading disagreed with
+    # what the reviewer pasted. Without this the bundle would hold a document
+    # whose SHA256 is nowhere in the record and a hash whose text is nowhere on
+    # disk, and `text_sha256` would only be checkable by re-running the very
+    # reader a reviewer may not have installed.
+    #
+    # The comparison is against the bytes, not against `artefact_text`: a PDF
+    # that reads *cleanly* has `artefact_text == content`, so asking the reading
+    # whether the text is already on disk answers "yes" for the one format where
+    # the text is certainly not on disk. Only bytes can answer that question.
     text_rel: str | None = None
-    if content is not None and (data is None or artefact_text != content):
+    if content is not None and (data is None or data != content.encode("utf-8")):
         text_name = f"{stem}{TEXT_SUFFIX}"
         (directory / text_name).write_text(content, encoding="utf-8")
         text_rel = f"{SOURCES_DIR}/{text_name}"
@@ -638,6 +662,156 @@ def ingest_source(
             "path": str(proof_path),
         },
         "warnings": warnings,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Removing a stored proof
+# ---------------------------------------------------------------------------
+
+def proof_stem(name: str) -> str:
+    """The stem shared by every file of one stored source.
+
+    Both companions of an artefact are multi-part suffixes, and ``Path.suffix``
+    peels off only the last component of one: ``X.proof.json`` would come back as
+    ``X.proof``, so the sidecar would look like a source of its own and deleting
+    the document would leave it behind pointing at a file that is no longer
+    there. The two known companions are therefore stripped first, longest first so
+    ``.proof.json`` cannot be read as a bare ``.json``, and only then the
+    artefact's own extension.
+
+    The rule is deliberately *not* injective: an upload whose own name ends in
+    ``.text.txt`` shares a stem with its companions only by accident, so its files
+    show as two entries rather than one. Two entries a reviewer can each delete is
+    the safe failure — guessing harder means a prefix rule, and a prefix rule lets
+    deleting ``X.pdf`` take an unrelated ``X.anexo.pdf`` with it.
+    """
+    base = Path(str(name or "")).name
+    for suffix in (PROOF_SUFFIX, TEXT_SUFFIX):
+        if base.endswith(suffix) and len(base) > len(suffix):
+            return base[: -len(suffix)]
+    return base[: len(base) - len(Path(base).suffix)]
+
+
+def proof_group(directory: Path, name: str) -> list[Path]:
+    """The files that make up the source one of whose files is ``name``.
+
+    Ingest writes the artefact, its ``.proof.json`` sidecar and — whenever the
+    text is not the artefact's own bytes — the matched ``.text.txt``, all three
+    off one stem. Scanning the directory and comparing stems, rather than
+    rebuilding the three names, is what keeps this right for a source with no text
+    file at all (pasted text, a PDF handed to the protocol as the artefact itself)
+    and for the second copy ``_unique_path`` mints as ``X-2.pdf``: a distinct stem
+    is a distinct source, and is deleted on its own.
+
+    Files that do not exist are never returned, so the caller's list is exactly
+    what is about to be removed.
+    """
+    stem = proof_stem(name)
+    if not stem or stem in {".", ".."}:
+        return []
+    return sorted(
+        (path for path in directory.iterdir()
+         if path.is_file() and proof_stem(path.name) == stem),
+        key=lambda path: path.name,
+    )
+
+
+def delete_source(bundle_dir: Path, authority_id: str, name: str) -> dict[str, Any]:
+    """Remove one stored source: the document, its sidecar and its matched text.
+
+    The three go together because the two companions are meaningless without the
+    document. A sidecar left behind names a file the bundle no longer holds, so it
+    would go on claiming a proof that is not there — the one question this
+    directory exists to answer.
+
+    The caller names *one* file and this function decides what else goes with it,
+    from the bundle. That matters because deleting proof is irreversible and the
+    bundle may hold the only copy: a browser that got the grouping wrong — or that
+    sent a name on purpose — must not be able to reach a file the reviewer was
+    never shown. Two checks therefore stand in front of the unlink, and both are
+    about *what may be deleted* rather than about the request being well formed:
+    the name must be a plain file of this stub, carrying the ``<authority_id>__``
+    prefix ingest writes, and it must resolve inside ``Authority sources/``.
+
+    Refusing a name that belongs to another stub is a real limit, not an oversight:
+    a stub whose id was edited after its proof was stored keeps that proof on disk
+    and it is listed bundle-wide in the modal, but it has to be removed from the
+    filesystem rather than from here.
+    """
+    if not isinstance(bundle_dir, Path):
+        raise SourceError("bundle_dir must be a Path")
+    if not bundle_dir.is_dir():
+        raise SourceError(f"bundle directory {bundle_dir} does not exist")
+    if not (bundle_dir / f"{bundle_dir.name}.json").is_file():
+        # The same gate `ingest_source` applies. Here it is not about where a file
+        # would be written but about what may be *unlinked*: this is the only
+        # function in the module that destroys anything, so it refuses to touch a
+        # directory that is not a bundle even if it happens to hold an
+        # `Authority sources/` of its own.
+        raise SourceError(f"{bundle_dir.name} is not a bundle (no {bundle_dir.name}.json)")
+    if not str(authority_id or "").strip():
+        raise SourceError("authority_id is required")
+    authority_id = authority_id.strip()
+
+    raw = str(name or "")
+    # The separators are checked before `Path()` sees the string: a NUL byte,
+    # ``a/b`` and ``..\\x`` are all traversal attempts arriving as "a filename",
+    # and `Path()` raises on the first of them rather than returning it.
+    if (
+        not raw.strip()
+        or any(char in raw for char in ("/", "\\", "\x00"))
+        or raw != Path(raw).name
+    ):
+        raise SourceError(f"{raw!r} is not a file name — nothing was deleted")
+    if not raw.startswith(f"{authority_id}__"):
+        raise SourceError(
+            f"{raw} is not a stored source of {authority_id}; only a file this "
+            "stub wrote can be removed from here"
+        )
+
+    directory = bundle_dir / SOURCES_DIR
+    if not directory.is_dir():
+        raise SourceError(f"no {SOURCES_DIR}/ directory in {bundle_dir.name}")
+
+    # Belt and braces, exactly as `resolve_bundle_dir` does it: the name is now
+    # separator-free, and this confirms the path built from it is still a direct
+    # child of the directory before anything is unlinked.
+    if (directory / raw).parent.resolve() != directory.resolve():
+        raise SourceError(f"{raw!r} does not resolve inside {SOURCES_DIR}/")
+
+    group = proof_group(directory, raw)
+    if not group:
+        raise SourceError(
+            f"no stored source named {raw} under {SOURCES_DIR}/ — it may already "
+            "have been removed"
+        )
+
+    removed: list[str] = []
+    freed = 0
+    for path in group:
+        try:
+            freed += path.stat().st_size
+            path.unlink()
+        except OSError as exc:
+            raise SourceError(
+                f"could not remove {path.name} ({exc}); {len(removed)} of "
+                f"{len(group)} file(s) of this source are already gone"
+            ) from exc
+        removed.append(f"{SOURCES_DIR}/{path.name}")
+
+    return {
+        "ok": True,
+        "authority_id": authority_id,
+        "name": raw,
+        # Bundle-relative, in the same shape as `artefact.rel`. That makes them
+        # directly comparable with the `source_uri` a verification records, which
+        # is how a caller can tell that a saved provenance now points at nothing.
+        # A source that was fetched by url records the *url* as its `source_uri`,
+        # however, so nothing here matches it — correctly: the local copy is gone
+        # but the page it cites is not.
+        "deleted": removed,
+        "freed_bytes": freed,
     }
 
 

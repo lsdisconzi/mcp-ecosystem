@@ -297,6 +297,27 @@ def resolve_bundle_dir(violation_id: str) -> Path | None:
     return bundle if is_bundle_dir(bundle) else None
 
 
+def bundle_target(body: Any) -> tuple[Path | None, str, str, int]:
+    """Resolve the ``violation_id`` + ``authority_id`` pair the source routes take.
+
+    Returns ``(bundle, authority_id, error, status)``, with an empty error when the
+    pair is good. Shared by both routes rather than repeated, because this is where
+    a *safety* decision is made — which bundle, and which stub — and one of those
+    routes deletes files from that bundle. Two copies of this check are two chances
+    for the two routes to disagree about what a stub is.
+    """
+    violation_id = body.get("violation_id")
+    if not isinstance(violation_id, str) or not _BUNDLE_DIR_RE.fullmatch(violation_id):
+        return None, "", "'violation_id' must be a bundle id.", 400
+    bundle = resolve_bundle_dir(violation_id)
+    if bundle is None:
+        return None, "", f"No bundle build/{violation_id}/ on disk.", 404
+    authority_id = body.get("authority_id")
+    if not isinstance(authority_id, str) or not authority_id.strip():
+        return None, "", "'authority_id' is required.", 400
+    return bundle, authority_id.strip(), "", 200
+
+
 def discover_bundle(violation_id: str) -> dict[str, Any] | None:
     """Read one real ``build/<violation_id>/`` bundle for the UI.
 
@@ -1049,6 +1070,27 @@ def build_ui_routes(mcp):
     def json_response(payload: Any, status_code: int = 200) -> JSONResponse:
         return JSONResponse(payload, status_code=status_code, headers=CORS)
 
+    async def read_json_object(request) -> tuple[dict[str, Any] | None, JSONResponse | None]:
+        """Parse a JSON object body, or the refusal to send back.
+
+        Both source routes take the same single-object body, and this bridge has
+        exactly one body parser and one error shape on purpose: the upload travels
+        as base64 inside JSON rather than as multipart so that there is no second
+        way to fail.
+        """
+        try:
+            body = await request.json()
+        except Exception:  # noqa: BLE001 - malformed JSON is a client error
+            return None, json_response(
+                {"ok": False, "error": "Request body must be JSON."}, status_code=400
+            )
+        if not isinstance(body, dict):
+            return None, json_response(
+                {"ok": False, "error": "Request body must be a JSON object."},
+                status_code=400,
+            )
+        return body, None
+
     # -- the UI itself ------------------------------------------------------
 
     @mcp.custom_route("/", methods=["GET"])
@@ -1288,35 +1330,13 @@ def build_ui_routes(mcp):
 
         from .authority_source import SourceError, decode_base64_payload, ingest_source
 
-        try:
-            body = await request.json()
-        except Exception:  # noqa: BLE001 - malformed JSON is a client error
-            return json_response(
-                {"ok": False, "error": "Request body must be JSON."}, status_code=400
-            )
-        if not isinstance(body, dict):
-            return json_response(
-                {"ok": False, "error": "Request body must be a JSON object."},
-                status_code=400,
-            )
+        body, refusal = await read_json_object(request)
+        if refusal is not None:
+            return refusal
 
-        violation_id = body.get("violation_id")
-        if not isinstance(violation_id, str) or not _BUNDLE_DIR_RE.fullmatch(violation_id):
-            return json_response(
-                {"ok": False, "error": "'violation_id' must be a bundle id."}, status_code=400
-            )
-        bundle = resolve_bundle_dir(violation_id)
-        if bundle is None:
-            return json_response(
-                {"ok": False, "error": f"No bundle build/{violation_id}/ on disk."},
-                status_code=404,
-            )
-
-        authority_id = body.get("authority_id")
-        if not isinstance(authority_id, str) or not authority_id.strip():
-            return json_response(
-                {"ok": False, "error": "'authority_id' is required."}, status_code=400
-            )
+        bundle, authority_id, error, status_code = bundle_target(body)
+        if error:
+            return json_response({"ok": False, "error": error}, status_code=status_code)
 
         data = None
         if isinstance(body.get("content_base64"), str) and body["content_base64"].strip():
@@ -1332,7 +1352,7 @@ def build_ui_routes(mcp):
         try:
             result = ingest_source(
                 bundle,
-                authority_id.strip(),
+                authority_id,
                 source_url=string_arg("source_url"),
                 filename=string_arg("filename"),
                 data=data,
@@ -1340,6 +1360,43 @@ def build_ui_routes(mcp):
                 do_fetch=body.get("fetch_url") is True,
                 collapse=body.get("collapse_whitespace") is True,
             )
+        except SourceError as exc:
+            return json_response({"ok": False, "error": str(exc)}, status_code=400)
+
+        return json_response(result)
+
+    @mcp.custom_route("/api/authority-source/delete", methods=["POST", "OPTIONS"])
+    async def api_authority_source_delete(request) -> Response:
+        """Remove one stored source, so a stale document can be replaced.
+
+        The body names *one* file, and which other files belong to it — the
+        ``.proof.json`` sidecar and the matched ``.text.txt`` — is decided inside
+        the bundle by ``proof_group``, never by the browser. That split is the
+        point of the route: deleting proof is irreversible, the bundle may hold the
+        only copy of the document, and a client that got the grouping wrong (or
+        sent a name on purpose) must not be able to reach a file the reviewer was
+        never shown.
+
+        Separate from ``POST /api/authority-source`` rather than a verb inside it,
+        because the two do opposite things to the bundle and only one of them can
+        destroy proof — a route that reads as a store should never be able to
+        unlink because of a field it did not expect.
+        """
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+
+        from .authority_source import SourceError, delete_source
+
+        body, refusal = await read_json_object(request)
+        if refusal is not None:
+            return refusal
+
+        bundle, authority_id, error, status_code = bundle_target(body)
+        if error:
+            return json_response({"ok": False, "error": error}, status_code=status_code)
+
+        try:
+            result = delete_source(bundle, authority_id, body.get("name"))
         except SourceError as exc:
             return json_response({"ok": False, "error": str(exc)}, status_code=400)
 

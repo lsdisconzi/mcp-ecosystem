@@ -704,7 +704,7 @@ its text plus a hash; the verify step then calls the protocol tool for the stub'
 | --- | --- | --- |
 | `F-s6-1-url` | Official page (url) | the **server** fetches and stores a copy, so the proof does not depend on the page staying up |
 | `F-s6-1-file` | Upload (PDF, saved page, text) | travels as `content_base64` inside JSON — there is no `python-multipart` dependency; the reader is derived from the *served content type* |
-| `F-s6-1-paste` | Paste the text | for sources whose file cannot be read (no PDF library is installed: PDFs are stored and SHA-pinned with a `pip install pypdf` warning, never parsed) |
+| `F-s6-1-paste` | Paste the text | for sources whose file carries no text layer at all (a scanned PDF) or whose reader is not installed |
 
 | `type` | Tool (`PROOF_PLAN[type].tool`) | Required fields |
 | --- | --- | --- |
@@ -716,13 +716,39 @@ its text plus a hash; the verify step then calls the protocol tool for the stub'
 A stub with no `type` gets no plan, and the verify button is disabled rather than guessing
 which protocol to run.
 
+**Reading a PDF needs the `pdf` extra.** `authority_source.py` holds `_PDF_EXTRACTORS` as
+`(module_name, callable)` pairs tried in order — `pypdf`, `PyPDF2`, `fitz`, of which only
+`pypdf` is declared (the `pdf` extra, and `all`). Without any of them a PDF is still
+**stored and SHA-pinned as proof**, but the route reports `needs_text` with a warning
+naming `pip install pypdf`, and the modal asks for the passage instead. The registry stores
+the *function*, never its name: the first version paired a module name with the string
+`"read_pypdf"` and resolved it through `globals()`, so `read_pypdf` vs `_read_pypdf` was a
+single underscore between reading a document and a `KeyError` reported as "pypdf is
+installed but could not read this PDF" — and because the loop imports the module first and
+skips it on `ImportError`, that lookup could only ever run *after* a reviewer had done what
+the warning told them and installed one.
+
 **Where the proof lands.** `<bundle root>/Authority sources/<AUTHORITY_ID>__<name>`, plus a
 `__…proof.json` sidecar recording `source_uri`, `text_sha256`, `text_chars`, `text_source`
-(`fetched` \| `uploaded` \| `pasted`), `content_type`, `extractor`, `whitespace_collapsed`
+(`fetched` \| `upload` \| `pasted`), `content_type`, `extractor`, `whitespace_collapsed`
 and `warnings`. The sidecar exists because `VerificationProvenance` is `extra="forbid"`
 with a single `source_uri`; the ingest-time facts have nowhere else to go. Identical bytes
 are reused rather than re-written (`artefact.reused`), so re-ingesting the same document is
 idempotent.
+
+**The matched text is written down beside the artefact.** When the text is not already the
+artefact's own bytes — a PDF, an HTML page, or an upload whose reading disagrees with the
+paste — it is stored as a `__…text.txt`, and `text_file` names it. The test is against the
+**bytes** (`data != content.encode("utf-8")`), not against the extracted reading: a PDF
+that reads *cleanly* has `artefact_text == content`, so asking the reading whether the text
+is already on disk answers yes for the one format where the text is certainly not on disk,
+leaving `text_sha256` naming a string that exists only inside the PDF and forcing anyone
+auditing the bundle to install the same parser to re-derive the hash.
+
+The authority prefix is added to the filename only when it is not already there, so a
+reviewer who picks this bundle's *own* stored copy (which is already named
+`<AUTHORITY_ID>__…`) re-uses the artefact instead of minting a duplicate under a
+double-prefixed name that `_unique_path` cannot recognise by content.
 
 **The verification is not durable until the violation is written.** Every verify protocol
 *returns* an updated `Authority` and writes nothing — `write_violation_json_tool` is the
@@ -740,16 +766,167 @@ Re-reading the listing deliberately refreshes only `state.bundle.files`
 (`refreshBundleFiles`) and never `state.violation` — loading the bundle would discard the
 unwritten verification the page is there to show.
 
-**Proof on disk.** The modal's footer lists what is already stored for this stub
-(`/Authority sources/` path match + the authority id in the file name, with a bundle-wide
-fallback when this stub has nothing yet). The directory row that `/api/bundle` returns for
-`Authority sources` is excluded by the trailing slash in that path test — its own path has
-nothing after the directory name.
+**Proof on disk.** The modal's footer lists what is already stored for this stub. The set
+is `proofArtefactsFor` — a `/Authority sources/` path match **and** the authority id in the
+file name — and the fallback when this stub has nothing yet belongs to the listing, not to
+the set: `proofArtefactSection` shows the whole directory and labels it *(bundle-wide)*.
+Keeping the id test inside `proofArtefactsFor` is what stops one stub's *Delete this source*
+button from being offered for another stub's document. The directory row that `/api/bundle`
+returns for `Authority sources` is excluded by the trailing slash in that path test — its
+own path has nothing after the directory name.
+
+**Replacing a stored source.** Every stored source of *this* stub carries a
+**Delete this source** button (`data-action="proof-delete"`), which exists so a stale or
+wrong document can be replaced rather than lived with: delete, then attach the replacement.
+The three files of a source — the document, its `.proof.json` sidecar and its
+`__…text.txt` — are shown and removed as **one** entry, because the two companions are
+meaningless without the document: a sidecar left behind names a file the bundle no longer
+holds, and would go on claiming a proof that is not there. The grouping is by stem
+(`proofStem` in the page, `proof_stem` in the module), which is why `X-2.pdf` — the
+neighbour `_unique_path` mints for a same-named upload with different bytes — is a
+*different* source and is deleted on its own.
+
+The browser sends **one** file name and the bundle decides the rest
+(`POST /api/authority-source/delete`, `delete_source` + `proof_group`). Deleting proof is
+irreversible and the bundle may hold the only copy of an official document, so the browser
+is not allowed to name the set: it gets the grouping wrong, or sends a name on purpose, and
+a file the reviewer was never shown disappears. Two checks stand in front of the unlink,
+and both are about *what may be deleted* rather than about the request being well formed —
+the name must be a plain file carrying the `<AUTHORITY_ID>__` prefix ingest writes, and it
+must resolve inside `Authority sources/`. A name that is a path is **refused, never
+normalised**: `Path(name).name` is the right habit for an *upload* (see
+`sanitise_filename`) and the bug here, because `sub/<AUTHORITY_ID>__x.pdf` would then be
+accepted as the real file.
+
+Two clicks, because the page has no `window.confirm` precedent and a one-click unlink of an
+irreplaceable document is the one place a dialog is not enough: the first click arms the
+button (`state.proofDelete`), the second is the consent, and the group's own count is on the
+button (`Delete 3 files for good`). Arming is matched on the **stem**, so clicking the row
+the reviewer can actually read — the sidecar — arms the whole source rather than a fragment.
+
+Removing a source also drops the loaded payload (`state.proofSources[authorityId]`): it was
+read out of the file that just went away, and reusing it would hand the protocol a
+`source_uri` naming a deleted document and pin a verification to text no bundle holds. When
+the stub is already verified, its recorded `source_uri` still names the removed file — the
+stub's JSON is only ever written by the write gate — so the modal says so instead of
+repairing it silently: *"This stub's verification names …, which has just been removed, so
+that record now points at nothing. Verifying the replacement is what repairs it."* A source
+fetched by url records the **url**, so nothing matches there, correctly: the local copy is
+gone but the page it cites is not.
+
+Removing from disk is not the same as un-verifying: nothing in the page clears `verified`.
+A stub whose proof was deleted and not replaced goes to S6 with its verification intact and
+a provenance pointing at a file that is no longer there.
+
+**Reading the loaded text, and what a refusal means.** The modal shows the verdict and the
+text together, because the two questions a reviewer has when a quote is refused — *what is
+in there* and *why did it not match* — are answered by the same pane. Three details are
+load-bearing:
+
+1. **The pane is not truncated into uselessness.** Verbatim matching is a plain
+   `content.indexOf(quote)`, so the passage a reviewer is being asked to quote can sit
+   anywhere in a document of any length (the ingest cap is 8 MiB). When a quote cannot be
+   marked, the pane shows the loaded text up to 200,000 characters and says how many more
+   there are (`highlightQuote`). The first version capped the *unmarked* view at 3,000 and
+   so hid the very passage the refusal was about — the CL-030 sentence it asks for sits at
+   offset 3,473 of a 32,302-character reading.
+2. **A refusal explains itself.** `proofRefusalNote` names the two causes that are *not*
+   the wording. It is only consulted when the quote is absent, so the matched case can
+   never reach it:
+   - the quote came from a **different source** than the one now loaded. Provenance is per
+     *verification*, so a stub's `matched_quote` may be a string found in the source the
+     stub was previously verified against, and the box is prefilled from `matched_quote`.
+     Attaching a replacement document therefore hands the reviewer the old document's
+     sentence — and a quote is evidence only about the document it was found in, so a
+     translation is never verbatim. The note names the old and the new `source_uri` and
+     says the box holds it because the stub does;
+   - **every word is in the text, but not in a row.** A reading can drop page furniture
+     *inside* a sentence: CL-030's DTO-100 splits `establecer siempre las garantías de un
+     procedimiento y una investigación racionales y justos` with the amendment annotation
+     `26.08.2005`. The protocol cannot match across the interruption, so the note asks for
+     a run that reads continuously instead.
+3. **The required fields are filled from the stub.** `instrument` is required for `statute`
+   and is present on the authority, so leaving the box blank refuses a quote that *is*
+   verbatim — a refusal about a different thing entirely. The modal fills every field the
+   plan asks for that is still empty from the authority (`decision_date` sliced to date
+   precision) and never overwrites what the reviewer typed.
+
+The pane is the expensive half of that render and `renderProofSource` runs on every `input`
+event in the quote box, so the loaded text is escaped and handed to the DOM once per
+*change* rather than once per keystroke: `state.proofPreview` holds `{id, content, quote}`
+and a render whose three fields are unchanged writes only the verdict (`proofPreviewIsStale`).
+The verdict is deliberately *outside* that guard — it is the half that always changes while
+the reviewer types, and a stale pane must not be able to swallow it. The comparison is by
+reference, which is exact here: the string in `state.proofSources` is the one the server
+hashed, not a copy rebuilt per keystroke.
+
+The converse also holds: a verdict is a statement about a **loaded** text, so it may not
+outlive it. When a source is deleted the pane is emptied and re-rendered, and the no-source
+branch of `renderProofSource` now writes the neutral prompt back into `#proofMatch` — the
+same string the modal's own markup ships, held once as `PROOF_NO_SOURCE` so the cleared line
+and the initial line cannot drift apart — and writes it *not* as an error. Without that, the
+modal kept showing the last verdict (`Found verbatim at offset 98.`) over an empty pane, for
+a document no longer loaded.
+
+**Live check (2026-09-15, delete then replace).** A scratch bundle holding 9 files (one
+source, its `-2` same-name sibling, and a second stub's proof) against the running server:
+`POST /api/authority-source/delete` named by the **sidecar** removed exactly the three files
+of that stem (99,715 bytes), left the `-2` sibling and the other stub's proof alone, and
+re-storing the same 66,670-byte PDF reused the same names with `reused: false` — the proof
+really went and really came back. Eight refusals (a path, `./name`, `../…`, another stub's
+file, an unknown name, a blank authority id, a missing bundle, a non-string name) all
+answered 400/404 with the directory byte-for-byte unchanged. In the page: one button per
+source naming the document, arm → *Delete 3 files for good* / *Keep them*, cancel disarms,
+confirm reports *"Removed 3 files (97.4 KB freed)…"* and the page's own file list drops to 0.
+
+Note on the 2026-09-15 live check above: the uploaded-PDF source it describes is no longer in
+`build/CL-030/Authority sources/` — the three `CL.CPR.Art.19.N3__DTO-100_03-MAY-2023.*` files
+were removed through `delete_source`, the package's only `unlink()` site (every delete test
+runs against a throwaway workspace), leaving the four tracked `CL.DOCTRINE.ETCHEBERRY__*` files.
+The paragraph records what was measured, not what is on disk today; re-uploading the same
+document restores the same names and hashes.
 
 **Live check (2026-09-15).** BR-001's doctrine stub, pasted text (123 chars, offset 64):
 verify → callout + Save → `build/BR-001/BR-001.json` on disk carries `verified: true`,
 `verification_protocol: human_attested_v1; source=…; sha256=…` and the full provenance →
 reload shows the stub still verified.
+
+**Live check (2026-09-15, a refusal diagnosed on real data).** CL-030's `CL.CPR.Art.19.N3`
+stub with the official 97,608-byte `DTO-100_03-MAY-2023.pdf` attached through `F-s6-1-file`:
+the box was prefilled with `The legislator must always establish the guarantees of a
+rational and just procedure and investigation.` and the modal refused it. The refusal was
+**correct**. That sentence is what the stub's *previous* verification recorded —
+`statute_in_bundle_v1` against `Legal framework/CONST.md`, offset 3,687 of a 9,767-character
+file — while the protocol the stub now runs is `statute_external_fetch_v1` against a
+document that does not contain it. Re-run through the page's own `renderProofSource` against
+the document's 32,302-character reading, the three messages come out in order: the "came
+with the stub, not from this document" note for the English sentence; "every word of this
+quote is in the loaded text, but not in a row" for the sentence as the law writes it (split
+by `26.08.2005`); and `Found verbatim at offset 3535` for `garantías de un procedimiento y
+una investigación racionales y justos`. The `Instrument` field — required for `statute` and
+present on the stub — was blank before this change, so the *same* quote would have been
+refused twice over.
+
+Four tests cover it, each with its negative branch: a quote with a word missing outright
+must *not* be explained as scrambled, and a quote the reviewer typed must *not* be presented
+as the stub's. Three mutations reintroduce the memo's defect in each direction — rebuilt
+every keystroke, keyed on the source alone, and hoisted above the verdict — and all three
+are caught; two more cover the cleared-pane reset (dropped, and written as an error) and are
+caught as well. Worth remembering when reading the live evidence: a **pasted** passage *is* the
+matched text (`content = pasted or artefact_text`), so a reviewer who pastes the quote to
+get past a refusal makes it match at offset 0; the sidecar stays honest about it
+(`text_source: "pasted"`, `text_chars: 121`, and the artefact's own `sha256`), and the
+metadata line under the verdict reads `pasted text · 121 characters`.
+
+**Live check (2026-09-15, uploaded PDF).** CL-030's `CL.CPR.Art.19.N3` stub, the official
+66,670-byte `DTO-100_03-MAY-2023.pdf` (Decreto 100, BCN/leychile) uploaded through
+`F-s6-1-file` against the running server: the modal reports
+`Found verbatim at offset 498. / uploaded document · read with pypdf · 31303 characters ·
+sha256 f104f71e4db9…`, the sidecar flips from `needs_text: true, text_chars: 0,
+extractor: null` to `needs_text: false, text_chars: 31303, extractor: "pypdf",
+warnings: []`, and `text_file` names a `__…text.txt` on disk whose SHA-256 equals the
+recorded `text_sha256` — so the proof is re-checkable without a PDF parser. Re-ingesting
+the same document leaves the directory at 9 files: no duplicate artefact.
 
 ---
 

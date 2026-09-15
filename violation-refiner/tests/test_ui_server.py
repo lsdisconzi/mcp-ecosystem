@@ -59,7 +59,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 HTML_PATH = REPO_ROOT / "ui" / UI_FILENAME
 
 #: API routes the bridge promises. `/health` is MCP-owned and asserted too.
-EXPECTED_API_ROUTES = {"/", "/api/health", "/api/tools", "/api/tool", "/api/catalog", "/api/sources", "/api/source-transcript", "/api/framework-article", "/api/browse", "/api/bundles", "/api/bundle", "/api/schema", "/api/settings", "/api/authority-source"}
+EXPECTED_API_ROUTES = {"/", "/api/health", "/api/tools", "/api/tool", "/api/catalog", "/api/sources", "/api/source-transcript", "/api/framework-article", "/api/browse", "/api/bundles", "/api/bundle", "/api/schema", "/api/settings", "/api/authority-source", "/api/authority-source/delete"}
 
 
 @pytest.fixture(scope="module")
@@ -121,6 +121,20 @@ def _js_function(name: str) -> str:
             if depth == 0:
                 return html[match.start() : i + 1]
     raise AssertionError(f"unbalanced braces in {name}()")
+
+
+def _js_const(name: str) -> str:
+    """The source of one top-level ``const name = ...;`` declaration from the page.
+
+    Cut at the first end-of-line `;`, which is how the page's simple (single
+    expression) constants are written. A restated copy of one of these in a test
+    would defeat the point — the tests exist to check the page's own string — so
+    the declaration is pulled from the file, like `_js_function` does.
+    """
+    html = HTML_PATH.read_text(encoding="utf-8")
+    match = re.search(rf"^const {re.escape(name)} = .*?;\n", html, re.M | re.S)
+    assert match, f"const {name} is not declared at top level in the UI page"
+    return match.group(0)
 
 
 def _run_js(script: str):
@@ -1850,6 +1864,274 @@ def test_authority_source_route_answers_the_preflight(client, proof_workspace):
     assert client.options("/api/authority-source").status_code == 204
 
 
+def _stored_source(client, proof_workspace, **overrides):
+    """Store one upload through the route and return the sidecar's own record."""
+    payload = {
+        "violation_id": "CL-001",
+        "authority_id": "AUTH-CL-001-01",
+        "filename": "decreto.html",
+        "content_base64": base64.b64encode("el artículo 19 num. 3".encode("utf-8")).decode("ascii"),
+        **overrides,
+    }
+    res = client.post("/api/authority-source", json=payload)
+    assert res.status_code == 200, res.text
+    return res.json()
+
+
+def test_delete_route_removes_one_source_and_leaves_the_rest(client, proof_workspace):
+    """The replacement flow: the stored copy goes, and only the stored copy.
+
+    A stored source is up to three files off one name, so the reviewer names the
+    one they can see and the bundle decides the rest. What must *survive* is
+    asserted as carefully as what must go: another stub's proof, and the `-2`
+    neighbour `_unique_path` makes for a same-named upload with different bytes.
+    That neighbour is the near-miss a grouping built on the prefix alone would
+    sweep up.
+    """
+    first = _stored_source(client, proof_workspace)
+    other = _stored_source(client, proof_workspace, authority_id="AUTH-CL-001-02")
+    second = _stored_source(
+        client, proof_workspace,
+        content_base64=base64.b64encode("otra norma distinta".encode("utf-8")).decode("ascii"),
+    )
+    assert second["artefact"]["name"] == first["artefact"]["name"].replace(".html", "-2.html"), (
+        "the second upload of the same name did not land beside the first"
+    )
+
+    stored = proof_workspace / "Authority sources"
+    before = {p.name for p in stored.iterdir()}
+    doomed = {first["artefact"]["name"], first["proof"]["name"]}
+
+    res = client.post("/api/authority-source/delete", json={
+        "violation_id": "CL-001",
+        "authority_id": "AUTH-CL-001-01",
+        "name": first["artefact"]["name"],
+    })
+    assert res.status_code == 200, res.text
+    payload = res.json()
+    assert payload["ok"] is True
+    assert set(payload["deleted"]) == {f"Authority sources/{name}" for name in doomed}, payload
+    assert payload["freed_bytes"] > 0, "nothing was actually unlinked"
+
+    after = {p.name for p in stored.iterdir()}
+    assert after == before - doomed, (
+        "the delete took a file it was not pointed at, or left one of the source's own files behind"
+    )
+    for kept in (other, second):
+        assert (stored / kept["artefact"]["name"]).is_file(), (
+            "a different source was removed by deleting this one"
+        )
+        assert (stored / kept["proof"]["name"]).is_file()
+
+
+def test_delete_route_lets_the_same_document_be_stored_again(client, proof_workspace):
+    """Delete then re-upload is the flow the page is built for.
+
+    The identical bytes are *reused* on the way back in — `_unique_path` will not
+    mint `-2` for content it already holds — so this asserts the round trip
+    restores exactly the three files that went, with no `-2` residue.
+    """
+    first = _stored_source(client, proof_workspace, content_base64=base64.b64encode(
+        b"<html><body>el art\xc3\xadculo 19 num. 3</body></html>"
+    ).decode("ascii"))
+    stored = proof_workspace / "Authority sources"
+    before = {p.name for p in stored.iterdir()}
+
+    res = client.post("/api/authority-source/delete", json={
+        "violation_id": "CL-001", "authority_id": "AUTH-CL-001-01",
+        "name": first["artefact"]["name"],
+    })
+    assert res.status_code == 200, res.text
+    assert not list(stored.iterdir()), (
+        "removing the only source left something behind in the directory"
+    )
+
+    again = _stored_source(client, proof_workspace, content_base64=base64.b64encode(
+        b"<html><body>el art\xc3\xadculo 19 num. 3</body></html>"
+    ).decode("ascii"))
+    assert again["artefact"]["name"] == first["artefact"]["name"], (
+        "re-storing the same document minted a second copy"
+    )
+    assert {p.name for p in stored.iterdir()} == before, (
+        "the replacement is not the same set of files the removed source had"
+    )
+
+
+def test_delete_route_removes_the_matched_text_when_the_source_kept_one(client, proof_workspace):
+    """A third file, when the text is not the artefact's own bytes.
+
+    The text file's name is nowhere in the request, so a list the browser had to
+    compute is where this goes wrong; the sidecar records it and the group is read
+    off the directory instead.
+    """
+    res = client.post("/api/authority-source", json={
+        "violation_id": "CL-001",
+        "authority_id": "AUTH-CL-001-01",
+        "filename": "pagina.html",
+        "content_base64": base64.b64encode(
+            b"<html><body><p>el art\xc3\xadculo 19</p></body></html>"
+        ).decode("ascii"),
+    })
+    assert res.status_code == 200, res.text
+    payload = res.json()
+    sidecar_rel = payload["proof"]["rel"]
+    sidecar = json.loads((proof_workspace / sidecar_rel).read_text(encoding="utf-8"))
+    assert sidecar["text_file"], (
+        "a markup upload whose text differs from its bytes must keep a text file"
+    )
+    text_file = proof_workspace / sidecar["text_file"]
+    assert text_file.is_file()
+
+    res = client.post("/api/authority-source/delete", json={
+        "violation_id": "CL-001", "authority_id": "AUTH-CL-001-01",
+        "name": payload["artefact"]["name"],
+    })
+    assert res.status_code == 200, res.text
+    assert {f"Authority sources/{text_file.name}", sidecar_rel} <= set(res.json()["deleted"]), (
+        "the matched text was left behind with nothing pointing at it"
+    )
+    assert not text_file.exists()
+    assert not (proof_workspace / sidecar_rel).exists(), (
+        "the sidecar outlived the document, so it still claims a proof that is gone"
+    )
+
+
+def test_delete_route_can_be_named_by_any_file_of_the_source(client, proof_workspace):
+    """The sidecar's name is enough, because that is what the modal lists."""
+    stored = _stored_source(client, proof_workspace)
+    res = client.post("/api/authority-source/delete", json={
+        "violation_id": "CL-001", "authority_id": "AUTH-CL-001-01",
+        "name": stored["proof"]["name"],
+    })
+    assert res.status_code == 200, res.text
+    assert not (proof_workspace / stored["artefact"]["rel"]).exists()
+
+
+def test_delete_route_refuses_a_name_that_is_not_this_stub_source(client, proof_workspace):
+    """Only a file this stub wrote can be removed by name.
+
+    The modal lists every proof in the bundle, so the browser is one bug away from
+    offering a delete for a file that belongs to somebody else's stub. The route
+    is the last thing between that and the filesystem.
+    """
+    other = _stored_source(client, proof_workspace, authority_id="AUTH-CL-001-02")
+    res = client.post("/api/authority-source/delete", json={
+        "violation_id": "CL-001", "authority_id": "AUTH-CL-001-01",
+        "name": other["artefact"]["name"],
+    })
+    assert res.status_code == 400, res.text
+    assert "AUTH-CL-001-01" in res.json()["error"]
+    assert (proof_workspace / other["artefact"]["rel"]).is_file(), (
+        "another stub's proof was removed by a name that was refused"
+    )
+
+
+@pytest.mark.parametrize("template", [
+    "sub/{name}",
+    "./{name}",
+    "Authority sources/{name}",
+    "../CL-001/Authority sources/{name}",
+])
+def test_delete_route_refuses_a_path_that_would_normalise_to_a_real_file(
+    client, proof_workspace, template,
+):
+    """The refusal cannot be judged by the status code alone.
+
+    Every name here resolves to a file this stub really wrote if it is normalised
+    first — `Path(name).name`, the habit this module's own `sanitise_filename`
+    uses for *uploads*, where it is right. Here it would be the bug: a path the
+    reviewer never saw, accepted because its last component names a real file. So
+    the assertion is that the file survives, not that the call erred.
+    """
+    stored = _stored_source(client, proof_workspace)
+    name = template.format(name=stored["artefact"]["name"])
+    res = client.post("/api/authority-source/delete", json={
+        "violation_id": "CL-001", "authority_id": "AUTH-CL-001-01", "name": name,
+    })
+    assert res.status_code == 400, (name, res.text)
+    assert (proof_workspace / stored["artefact"]["rel"]).is_file(), (
+        f"{name!r} was normalised to a stored file and deleted"
+    )
+    assert (proof_workspace / stored["proof"]["rel"]).is_file()
+
+
+@pytest.mark.parametrize("name", [
+    "../CL-001.json",
+    "../../CL-001.json",
+    "sub/decreto.html",
+    "..\\decreto.html",
+    "Authority sources/CL-001.json",
+    "",
+    "   ",
+])
+def test_delete_route_refuses_a_name_that_is_a_path(client, proof_workspace, name):
+    """Nothing that arrives as "a filename" may reach outside the directory."""
+    bundle_json = proof_workspace / "CL-001.json"
+    marker = json.loads(bundle_json.read_text(encoding="utf-8"))
+    res = client.post("/api/authority-source/delete", json={
+        "violation_id": "CL-001", "authority_id": "AUTH-CL-001-01", "name": name,
+    })
+    assert res.status_code == 400, res.text
+    assert bundle_json.is_file(), "the bundle JSON was removed by a traversal attempt"
+    assert json.loads(bundle_json.read_text(encoding="utf-8")) == marker
+
+
+def test_delete_route_reports_a_source_that_is_already_gone(client, proof_workspace):
+    """Idempotent in effect, not silent about it: the second click says so."""
+    stored = _stored_source(client, proof_workspace)
+    body = {"violation_id": "CL-001", "authority_id": "AUTH-CL-001-01",
+            "name": stored["artefact"]["name"]}
+    assert client.post("/api/authority-source/delete", json=body).status_code == 200
+    again = client.post("/api/authority-source/delete", json=body)
+    assert again.status_code == 400
+    assert "no stored source" in again.json()["error"]
+
+
+def test_delete_route_requires_a_bundle_that_exists(client, proof_workspace):
+    res = client.post("/api/authority-source/delete", json={
+        "violation_id": "CL-777", "authority_id": "AUTH-1", "name": "x.html",
+    })
+    assert res.status_code == 404
+
+
+@pytest.mark.parametrize("violation_id", ["../../etc", "a/b", "", "with space"])
+def test_delete_route_refuses_a_bundle_id_that_is_a_path(client, proof_workspace, violation_id):
+    res = client.post("/api/authority-source/delete", json={
+        "violation_id": violation_id, "authority_id": "AUTH-1", "name": "x.html",
+    })
+    assert res.status_code in (400, 404), res.text
+    assert not (proof_workspace.parent.parent / "etc").exists()
+
+
+def test_delete_route_requires_an_authority_id(client, proof_workspace):
+    res = client.post("/api/authority-source/delete", json={
+        "violation_id": "CL-001", "authority_id": "  ", "name": "x.html",
+    })
+    assert res.status_code == 400
+
+
+def test_delete_route_rejects_malformed_bodies(client, proof_workspace):
+    bad_json = client.post("/api/authority-source/delete", content=b"{not json",
+                           headers={"content-type": "application/json"})
+    assert bad_json.status_code == 400
+    assert client.post("/api/authority-source/delete", json=["nope"]).status_code == 400
+    # The one field this route reads is `name`, and it must be a string: a list or
+    # a number is not a file name, and must not become one on the way in.
+    stored = _stored_source(client, proof_workspace)
+    for bad in (123, [stored["artefact"]["name"]], {"name": "x"}, None):
+        res = client.post("/api/authority-source/delete", json={
+            "violation_id": "CL-001", "authority_id": "AUTH-CL-001-01", "name": bad,
+        })
+        assert res.status_code == 400, (bad, res.text)
+    assert (proof_workspace / stored["artefact"]["rel"]).is_file(), (
+        "a malformed body removed a file"
+    )
+
+
+def test_delete_route_answers_the_preflight(client, proof_workspace):
+    assert client.options("/api/authority-source/delete").status_code == 204
+
+
 # ---------------------------------------------------------------------------
 # S6 — the page must name the authority by the field the model actually has
 # ---------------------------------------------------------------------------
@@ -1953,23 +2235,36 @@ def test_the_plan_asks_for_every_field_the_protocol_refuses_without():
     }
 
 
-def _render_proof_source(source: dict, quote: str) -> dict:
+def _render_proof_source(source: dict, quote: str, authority: dict | None = None) -> dict:
     """Run `renderProofSource` under node against a fake document.
 
     The status line is the only place the page says which copy of the source was
     searched, so it cannot be asserted with a regex over its own source: the
     branch that runs is chosen at runtime by whether the quote was found.
+
+    `authority` is the stub whose provenance the refusal note may have to name:
+    the note compares the quote in the box with the one that stub was verified
+    with, so the branch it takes depends on that record, not on the source alone.
+    It is re-keyed to `AUTH-1`, the id `renderProofSource` is called with — the note
+    reads the stub by that id, and its id is not what is under test.
     """
+    if authority is not None:
+        authority = {**authority, "authority_id": "AUTH-1"}
     script = "\n".join([
         "const els = {};",
         "function fakeEl(id) { return els[id] || (els[id] = { id, innerHTML: '',"
         " style: {}, value: '', textContent: '' }); }",
         "const document = { getElementById: (id) => fakeEl(id) };",
         "const state = { proofSources: { 'AUTH-1': JSON.parse("
-        + json.dumps(json.dumps(source)) + ") } };",
+        + json.dumps(json.dumps(source)) + ") },"
+        " violation: { authorities: JSON.parse("
+        + json.dumps(json.dumps([authority] if authority else [])) + ") } };",
         _js_function("escapeHtml"),
         _js_function("inputValue"),
         _js_function("proofStatus"),
+        _js_function("proofRefusalNote"),
+        _js_function("proofPreviewIsStale"),
+        _js_const("PROOF_NO_SOURCE"),
         _js_function("highlightQuote"),
         _js_function("renderProofSource"),
         f"fakeEl('proofQuote').value = {json.dumps(quote)};",
@@ -2039,6 +2334,277 @@ def test_the_verdict_stays_attached_to_where_the_searched_text_came_from():
     assert "stored as Authority sources/AUTH-1__page.html" in unreadable["match"]
 
 
+#: The passage the modal has to explain a refusal about. Modelled on what BCN
+#: serves for DTO-100 (03-MAY-2023): the sentence that verifies is
+#: "Corresponderá al legislador establecer siempre las garantías de un
+#: procedimiento y una investigación racionales y justos", but the PDF's text layer
+#: puts the amendment's margin note *inside* it and breaks one word across a page.
+_DTO_SPLICED = (
+    "Artículo único.- Introdúcense las siguientes modificaciones en la Constitución "
+    "Política de la República: 3°.- Incorpórase en el numeral 3° del artículo 19 la "
+    "siguiente oración: Corresponderá al legislador establecer siempre las 26.08.2005 "
+    "garantías de un procedimiento y una investigación racionales y justos. La ley "
+    "dictada en conformidad con este numeral no podrá afectar derechos esenciales."
+)
+#: What a reviewer copies out of the official copy *after reading it* — the sentence
+#: as the law writes it, with the page furniture removed.
+_DTO_SENTENCE = (
+    "Corresponderá al legislador establecer siempre las garantías de un "
+    "procedimiento y una investigación racionales y justos"
+)
+
+
+def _stored_pdf_source(content: str) -> dict:
+    """The payload `POST /api/authority-source` returns for an uploaded PDF."""
+    return {
+        "source_uri": "Authority sources/CL.CPR.Art.19.N3__DTO-100_03-MAY-2023.pdf",
+        "source_content": content,
+        "text_source": "upload",
+        "content_type": "application/pdf",
+        "extractor": "pypdf",
+        "chars": len(content),
+        "text_sha256": "c11f86b8" * 8,
+        "artefact": {"rel": "Authority sources/CL.CPR.Art.19.N3__DTO-100_03-MAY-2023.pdf"},
+        "warnings": [],
+    }
+
+
+def test_a_quote_whose_words_are_all_there_but_not_in_a_row_says_that():
+    """The wording was right and the protocol still refused: the PDF's text layer
+    put the amendment's margin note in the middle of the sentence, so the sentence
+    as written exists nowhere in the loaded text. "Check the wording" sends the
+    reviewer hunting for a typo that is not there — this is the note that names the
+    real cause, and it must not read as an acceptance."""
+    assert _DTO_SPLICED.find(_DTO_SENTENCE) < 0, "the fixture no longer reproduces the splice"
+    out = _render_proof_source(_stored_pdf_source(_DTO_SPLICED), _DTO_SENTENCE)
+    assert "not in a row" in out["match"], "a spliced sentence was reported as a wording problem"
+    assert "Quote a run that reads continuously" in out["match"], "no remedy named"
+    assert "Not found verbatim" not in out["match"]
+    assert "Found verbatim" not in out["match"], "the note read as an acceptance"
+
+    # The claim is "every word is here", so a quote with a word missing outright
+    # must not collect it: the loose version ("some word of this is in there")
+    # fires on any shared syllable and tells the reviewer their wording is fine
+    # when the document does not contain it.
+    mixed = _render_proof_source(_stored_pdf_source(_DTO_SPLICED), "racionales y conclusión errada")
+    assert "not in a row" not in mixed["match"], "a word-missing quote was explained as scrambled"
+    assert "Not found verbatim" in mixed["match"]
+
+
+def test_a_quote_that_cannot_be_marked_still_shows_the_text_it_would_have_marked():
+    """The loaded text is the only place the reviewer can find the wording they are
+    being asked to quote, so it cannot be truncated to its head: the DTO-100 copy
+    this was diagnosed on holds the sentence at offset 3,348 of 6,207, past the
+    window the preview used to render when nothing matched."""
+    content = "Relleno del considerando anterior. " * 130 + _DTO_SPLICED
+    assert content.find("garantías de un procedimiento") > 3000, "the passage is not past the old cap"
+    out = _render_proof_source(_stored_pdf_source(content), _DTO_SENTENCE)
+    assert "garantías de un procedimiento" in out["preview"], (
+        "the passage the refusal is about is not readable in the preview"
+    )
+
+
+def test_a_quote_brought_over_from_another_source_is_named_and_not_blamed_on_the_wording():
+    """The stub's recorded quote is prefilled into the box because it is what was
+    verified last time — but it was verified against a *different* source, and this
+    modal exists to attach a new one. A quote is evidence about the document it was
+    found in: an English translation of art. 19 N° 3 is not evidence about the
+    Spanish DTO-100, and the reviewer has to be told which document to quote."""
+    recorded = ("The legislator must always establish the guarantees of a rational "
+                "and just procedure and investigation.")
+    authority = {
+        "authority_id": "CL.CPR.Art.19.N3",
+        "type": "statute",
+        "instrument": "Constitución Política de la República, Art. 19 N° 3",
+        "verified": True,
+        "verification_provenance": {
+            "protocol": "statute_in_bundle_v1",
+            "source_uri": "Legal framework/CONST.md",
+            "source_sha256": "a42140a7" * 8,
+            "matched_quote": recorded,
+            "matched_offset": 1285,
+            "verified_at": "2026-09-13T11:02:00+00:00",
+        },
+    }
+    out = _render_proof_source(_stored_pdf_source(_DTO_SPLICED), recorded, authority)
+    assert "Legal framework/CONST.md" in out["match"], "the source it was matched in is not named"
+    assert "came with the stub" in out["match"]
+    assert "Check the wording" not in out["match"], "the real cause was blamed on the wording"
+    assert "not in a row" not in out["match"], "an absent quote was reported as a scrambled one"
+
+    # The note is about *that* quote, the one the stub recorded. A quote the
+    # reviewer typed beside the same stub is theirs, and calling it the stub's
+    # would send them looking for a source they never used.
+    typed = _render_proof_source(_stored_pdf_source(_DTO_SPLICED), _DTO_SENTENCE, authority)
+    assert "came with the stub" not in typed["match"], (
+        "a quote the reviewer typed was presented as the stub's recorded one"
+    )
+
+    # The note is about that mismatch. Loading the source it *was* matched in must
+    # fall back to the ordinary verdict rather than repeat the story.
+    same = _render_proof_source(
+        {"source_uri": "Legal framework/CONST.md",
+         "source_content": "…must be based on a previous legally held process. " + recorded,
+         "text_source": "upload", "extractor": "text", "chars": 200,
+         "artefact": {"rel": "Legal framework/CONST.md"}, "warnings": []},
+        recorded, authority,
+    )
+    assert "came with the stub" not in same["match"], "the note fired against the source it names"
+    assert "Found verbatim" in same["match"], "a quote in its own source was not accepted"
+
+
+def test_the_modal_fills_the_required_fields_from_the_stub_without_overwriting_typed_ones():
+    """The protocol refuses to run without a field the stub already carries, so a
+    re-verify must not cost the reviewer a re-type of the instrument they verified
+    with a moment ago — while a value already in the box stays theirs. This is the
+    second refusal behind the one the quote produced: the field was blank."""
+    statute = {
+        "authority_id": "CL.CPR.Art.19.N3",
+        "type": "statute",
+        "instrument": "Constitución Política de la República, Art. 19 N° 3",
+        "pages": None,
+        "verified": True,
+        "verification_provenance": {
+            "protocol": "statute_external_fetch_v1",
+            "source_uri": "Authority sources/CL.CPR.Art.19.N3__DTO-100_03-MAY-2023.pdf",
+            "matched_quote": _DTO_SENTENCE,
+            "matched_offset": 3348,
+            "verified_at": "2026-09-15T08:31:00+00:00",
+        },
+    }
+    opened = _render_proof_modal(statute, statute)
+    assert opened["values"]["instrument"] == statute["instrument"], (
+        "the required field was left blank although the stub carries it"
+    )
+    assert opened["values"]["pages"] == "", "a field with nothing recorded was invented"
+
+    typed = _render_proof_modal(statute, statute, preset={"instrument": "Art. 19 N° 3 CPR"})
+    assert typed["values"]["instrument"] == "Art. 19 N° 3 CPR", (
+        "the stub overwrote a value the reviewer had typed"
+    )
+
+    # A day is what the date control accepts, and the stub carries a datetime.
+    case = _render_proof_modal(
+        {"authority_id": "CL.CS.16622-2025", "type": "jurisprudence",
+         "court": "Corte Suprema", "rol": "16.622-2025",
+         "decision_date": "2025-04-16T00:00:00Z", "pages": "c. 4",
+         "verified": False, "verification_provenance": None},
+        None,
+    )
+    assert case["values"]["decision_date"] == "2025-04-16", "the date control got a datetime"
+    assert case["values"]["rol"] == "16.622-2025"
+    assert case["values"]["pages"] == "c. 4"
+
+
+def test_typing_in_the_quote_box_does_not_rebuild_the_loaded_text_every_keystroke():
+    """`renderProofSource` runs on the quote box's `input` event, and the pane it
+    writes is the whole loaded document, escaped — up to the ingest cap. Rebuilding
+    that per keystroke is felt as lag exactly while the reviewer is typing the quote,
+    which is the moment they are looking at the pane. The verdict is the half that
+    must be rewritten every time, so this pins both halves: the pane survives a
+    repeat render untouched (dropped content included), the verdict does not, and a
+    quote that actually moved brings the pane back."""
+    source = _stored_pdf_source(_DTO_SPLICED)
+    script = "\n".join([
+        "const els = {};",
+        "function fakeEl(id) { return els[id] || (els[id] = { id, innerHTML: '',"
+        " style: {}, value: '', textContent: '' }); }",
+        "const document = { getElementById: (id) => fakeEl(id) };",
+        "const state = { proofSources: { 'AUTH-1': JSON.parse("
+        + json.dumps(json.dumps(source)) + ") }, proofPreview: null };",
+        _js_function("escapeHtml"),
+        _js_function("inputValue"),
+        _js_function("proofStatus"),
+        _js_function("proofRefusalNote"),
+        _js_function("proofPreviewIsStale"),
+        _js_const("PROOF_NO_SOURCE"),
+        _js_function("highlightQuote"),
+        _js_function("renderProofSource"),
+        "fakeEl('proofQuote').value = 'garantías de un procedimiento';",
+        "renderProofSource('AUTH-1');",
+        "const first = fakeEl('proofPreview').innerHTML;",
+        # A sentinel stands in for "this pane was not rewritten": if the render ran,
+        # it is gone, and nothing about the real markup can be mistaken for it. The
+        # verdict gets one too, so a guard that swallowed it is visible.
+        "fakeEl('proofPreview').innerHTML = 'SENTINEL';",
+        "fakeEl('proofMatch').innerHTML = 'SENTINEL';",
+        "renderProofSource('AUTH-1');",
+        "const same = { preview: fakeEl('proofPreview').innerHTML,"
+        " verdict: fakeEl('proofMatch').innerHTML };",
+        "fakeEl('proofQuote').value = 'procedimiento y una investigación';",
+        "renderProofSource('AUTH-1');",
+        "console.log(JSON.stringify({",
+        "  first: first.length,",
+        "  previewKept: same.preview === 'SENTINEL',",
+        "  verdictRewritten: same.verdict !== 'SENTINEL',",
+        "  rebuilt: fakeEl('proofPreview').innerHTML !== 'SENTINEL',",
+        "}));",
+    ])
+    out = _run_js(script)
+    assert out["first"] > 0, "the pane was never rendered at all"
+    assert out["previewKept"], "the loaded text was rebuilt for a keystroke that changed nothing"
+    assert out["verdictRewritten"], "the verdict was swallowed by the pane's guard"
+    assert out["rebuilt"], "a quote that moved left the pane showing the old highlight"
+
+
+def test_deleting_the_source_clears_the_verdict_with_the_pane():
+    """A verdict is about a *loaded* text, so it must not outlive it.
+
+    Deleting a stored source empties the pane and then re-renders, and the render
+    used to return from the no-source branch without touching `#proofMatch` — so the
+    modal went on displaying the last verdict, "Found verbatim at offset 98." over an
+    empty pane, for a document that was no longer loaded. Pinned by value, and
+    against the page's own prompt string: the point is that the cleared line is the
+    neutral one the markup ships, not a self-consistent substitute for it.
+    """
+    source = {
+        "source_uri": "Authority sources/AUTH-1__page.html",
+        "source_content": "Corresponderá al legislador establecer siempre las garantías.",
+        "text_source": "fetched",
+        "chars": 61,
+        "warnings": [],
+    }
+    script = "\n".join([
+        "const els = {};",
+        "function fakeEl(id) { return els[id] || (els[id] = { id, innerHTML: '',"
+        " style: {}, value: '', textContent: '' }); }",
+        "const document = { getElementById: (id) => fakeEl(id) };",
+        "const state = { proofSources: { 'AUTH-1': JSON.parse("
+        + json.dumps(json.dumps(source)) + ") }, proofPreview: null };",
+        _js_function("escapeHtml"),
+        _js_function("inputValue"),
+        _js_function("proofStatus"),
+        _js_function("proofRefusalNote"),
+        _js_function("proofPreviewIsStale"),
+        _js_const("PROOF_NO_SOURCE"),
+        _js_function("highlightQuote"),
+        _js_function("renderProofSource"),
+        "fakeEl('proofQuote').value = 'establecer siempre las garantías';",
+        "renderProofSource('AUTH-1');",
+        "const loaded = { match: fakeEl('proofMatch').innerHTML,"
+        " preview: fakeEl('proofPreview').innerHTML.length };",
+        "delete state.proofSources['AUTH-1'];",
+        "renderProofSource('AUTH-1');",
+        "console.log(JSON.stringify({",
+        "  prompt: PROOF_NO_SOURCE,",
+        "  loaded: loaded,",
+        "  afterMatch: fakeEl('proofMatch').innerHTML,",
+        "  afterColor: fakeEl('proofMatch').style.color,",
+        "  afterPreview: fakeEl('proofPreview').innerHTML,",
+        "}));",
+    ])
+    out = _run_js(script)
+    assert out["loaded"]["preview"] > 0, "the pane never held the source in the first place"
+    assert out["afterPreview"] == "", "the pane was not cleared"
+    assert out["afterMatch"] == out["prompt"], (
+        "the verdict outlived the source: the modal still claims a match for a "
+        "document that is no longer loaded"
+    )
+    assert out["afterColor"] == "", (
+        "the neutral prompt was written as a failure; an empty form is not an error"
+    )
+
+
 def test_the_proof_modal_reads_back_every_field_it_renders():
     """`proofFieldId` is the only thing standing between a rendered input and the
     argument sent for it, so an unnamed field is a silently dropped parameter."""
@@ -2082,13 +2648,18 @@ _PROOF_ON_DISK_BEFORE = {
 }
 
 
-def _render_proof_modal(authority: dict, disk_authority: dict | None) -> dict:
+def _render_proof_modal(authority: dict, disk_authority: dict | None,
+                        preset: dict | None = None) -> dict:
     """Run `openProofModal` under node against a fake document.
 
     Which of the two states the modal is in is decided at runtime by comparing the
     in-memory stub with the one on disk, so neither a regex over the source nor a
     scan of the template can say whether the reviewer is shown "in this page only"
     or "already written" — the body has to be rendered.
+
+    `preset` types values into the form before it opens, so "the stub fills the
+    blanks" is asserted against a box that is *not* blank rather than only against
+    the empty case. Every field the plan renders is returned, keyed by name.
     """
     html = HTML_PATH.read_text(encoding="utf-8")
     violation = {"violation_id": "CL-900", "authorities": [authority]}
@@ -2113,6 +2684,7 @@ def _render_proof_modal(authority: dict, disk_authority: dict | None) -> dict:
         re.search(r"const PROOF_FIELD_LABEL = \{.*?\n\};", html, re.S).group(0),
         _js_function("proofPlanFor"),
         _js_function("proofFieldId"),
+        _js_function("proofValue"),
         _js_function("proofIsOnDisk"),
         _js_function("proofArtefactsFor"),
         _js_function("proofRecordSection"),
@@ -2126,13 +2698,22 @@ def _render_proof_modal(authority: dict, disk_authority: dict | None) -> dict:
         _js_function("inputValue"),
         _js_function("associateLabels"),
         _js_function("proofStatus"),
+        _js_function("proofRefusalNote"),
+        _js_function("proofPreviewIsStale"),
+        _js_const("PROOF_NO_SOURCE"),
         _js_function("highlightQuote"),
         _js_function("renderProofSource"),
         _js_function("openProofModal"),
-        "openProofModal('CL.DOCTRINE.ETCHEBERRY');",
+        "Object.keys(PROOF_FIELD_LABEL).forEach(n => {"
+        f"  const v = {json.dumps(preset or {})}[n];"
+        "  if (v !== undefined) fakeEl(proofFieldId(n)).value = v;"
+        "});",
+        f"openProofModal({json.dumps(authority.get('authority_id'))});",
         "console.log(JSON.stringify({",
         "  body: fakeEl('modalBody').innerHTML,",
         "  onDisk: proofIsOnDisk(state.violation.authorities[0]),",
+        "  values: Object.fromEntries(Object.keys(PROOF_FIELD_LABEL)",
+        "    .map(n => [n, fakeEl(proofFieldId(n)).value])),",
         "}));",
     ])
     return _run_js(script)
@@ -2245,6 +2826,71 @@ def test_saving_persists_through_the_tool_and_then_reads_the_file_back():
     assert not [c for c in bad["calls"] if c.get("kind") == "modal"]
 
 
+def test_one_stored_source_gets_one_delete_button():
+    """The grouping the button depends on, and the reason it is not per file.
+
+    A stored source is the document, its `.proof.json` sidecar and the matched
+    `.text.txt`, all off one stem. Read as three separate sources, the page would
+    offer three buttons for one document — and deleting the *document* alone
+    would leave the sidecar behind claiming a proof that is no longer there.
+    Arming is matched on the stem for the same reason: a reviewer who clicks the
+    row they can read (the sidecar) must arm the whole source, not a fragment.
+    """
+    prefix = "build/CL-900/Authority sources/CL.DOCTRINE.ETCHEBERRY__note"
+    files = [
+        {"path": f"{prefix}.pdf", "name": "CL.DOCTRINE.ETCHEBERRY__note.pdf", "kind": "file", "size": 2048},
+        {"path": f"{prefix}.proof.json", "name": "CL.DOCTRINE.ETCHEBERRY__note.proof.json", "kind": "file", "size": 1026},
+        {"path": f"{prefix}.text.txt", "name": "CL.DOCTRINE.ETCHEBERRY__note.text.txt", "kind": "file", "size": 32002},
+        {"path": "build/CL-900/Authority sources/CL.DOCTRINE.OTRO__x.txt",
+         "name": "CL.DOCTRINE.OTRO__x.txt", "kind": "file", "size": 10},
+    ]
+    state = {"bundle": {"files": files}, "proofDelete": None}
+    script = "\n".join([
+        f"const state = {json.dumps(state)};",
+        _js_function("bundleFiles"),
+        _js_function("proofArtefactsFor"),
+        _js_function("proofStem"),
+        _js_function("proofArtefactGroup"),
+        _js_function("proofArtefactSection"),
+        _js_function("escapeHtml"),
+        _js_function("fmtBytes"),
+        "const armedFromSidecar = () => {",
+        "  state.proofDelete = { authority: 'CL.DOCTRINE.ETCHEBERRY',",
+        "    name: 'CL.DOCTRINE.ETCHEBERRY__note.proof.json' };",
+        "  return proofArtefactSection('CL.DOCTRINE.ETCHEBERRY');",
+        "};",
+        "const armedFromNowhere = () => {",
+        "  state.proofDelete = { authority: 'CL.DOCTRINE.OTRO', name: 'CL.DOCTRINE.OTRO__x.txt' };",
+        "  return proofArtefactSection('CL.DOCTRINE.ETCHEBERRY');",
+        "};",
+        "console.log(JSON.stringify({",
+        "  idle: proofArtefactSection('CL.DOCTRINE.ETCHEBERRY'),",
+        "  armed: armedFromSidecar(),",
+        "  elsewhere: armedFromNowhere(),",
+        "}));",
+    ])
+    out = _run_js(script)
+    assert out["idle"].count('data-action="proof-delete"') == 1, (
+        "one stored source must offer exactly one delete control, not one per file"
+    )
+    assert 'data-name="CL.DOCTRINE.ETCHEBERRY__note.pdf"' in out["idle"], (
+        "the button did not name the source by its document"
+    )
+    for name in ("note.pdf", "note.proof.json", "note.text.txt"):
+        assert f"CL.DOCTRINE.ETCHEBERRY__{name}" in out["idle"], (
+            "a file of the source is not shown, so the reviewer cannot see what a delete takes"
+        )
+    assert out["armed"].count('data-action="proof-delete-now"') == 1
+    assert "Delete 3 files for good" in out["armed"], (
+        "arming from the sidecar's row did not arm the whole source, so the count "
+        "on the button would not match what gets unlinked"
+    )
+    assert "Delete 3 files for good" not in out["elsewhere"], (
+        "an armed delete for another stub rendered as armed here"
+    )
+    assert out["elsewhere"].count('data-action="proof-delete"') == 1
+
+
 def test_re_reading_the_listing_does_not_discard_an_unwritten_verification():
     """Why the listing refresh is not a `loadBundle()` call.
 
@@ -2269,6 +2915,8 @@ def test_re_reading_the_listing_does_not_discard_an_unwritten_verification():
         f" violation: {json.dumps(_PROOF_ON_DISK_BEFORE)} }}) }};",
         _js_function("bundleFiles"),
         _js_function("proofArtefactsFor"),
+        _js_function("proofStem"),
+        _js_function("proofArtefactGroup"),
         _js_function("proofArtefactSection"),
         _js_function("escapeHtml"),
         _js_function("fmtBytes"),
@@ -2283,6 +2931,7 @@ def test_re_reading_the_listing_does_not_discard_an_unwritten_verification():
         "    // The fallback list (a stub with no file of its own yet) is where the",
         "    // directory entry would otherwise be rendered as an artefact.",
         "    fallback: proofArtefactSection('CL.NO.SUCH.STUB'),",
+        "    own: proofArtefactSection('CL.DOCTRINE.ETCHEBERRY'),",
         "  }));",
         "})();",
     ])
@@ -2297,4 +2946,92 @@ def test_re_reading_the_listing_does_not_discard_an_unwritten_verification():
     assert "build/CL-900/Authority sources/CL.DOCTRINE.ETCHEBERRY__note.text.txt" in out["fallback"]
     assert out["verified"] is True, (
         "re-reading the listing reverted the verification the page was holding"
+    )
+    # The bundle-wide fallback is somebody else's proof: the route refuses to
+    # delete by a name that is not this stub's, so offering the button there would
+    # be a control that cannot work.
+    assert "proof-delete" not in out["fallback"], (
+        "another stub's proof was offered for deletion"
+    )
+    assert 'data-action="proof-delete"' in out["own"], (
+        "this stub's own stored source has no way to be replaced"
+    )
+
+
+def test_deleting_a_stored_source_replaces_the_payload_and_says_what_it_broke():
+    """Replacing a proof is a delete and then a store, in that order.
+
+    Two things this asserts that a reviewer cannot check by reading the button:
+    the loaded payload is dropped, because it was read out of the file that just
+    went away and reusing it would record a `source_uri` naming a deleted
+    document; and a verification that already names that file is called out,
+    because the stub's JSON keeps citing it until the replacement is verified.
+    """
+    rel = "Authority sources/CL.DOCTRINE.ETCHEBERRY__note.pdf"
+    deleted = [rel, "Authority sources/CL.DOCTRINE.ETCHEBERRY__note.proof.json",
+               "Authority sources/CL.DOCTRINE.ETCHEBERRY__note.text.txt"]
+    authority = {**_PROOF_AUTHORITY,
+                 "verification_provenance": {"source_uri": rel, "matched_quote": "la ley"}}
+    state = {"bundleId": "CL-900", "settings": {}, "violation": {"authorities": [authority]},
+             "bundle": {"violation": _PROOF_ON_DISK_BEFORE, "files": []},
+             "proofSources": {"CL.DOCTRINE.ETCHEBERRY": {"source_content": "text from the deleted file"}},
+             "proofDelete": {"authority": "CL.DOCTRINE.ETCHEBERRY", "name": "CL.DOCTRINE.ETCHEBERRY__note.pdf"},
+             "proofAuthority": "CL.DOCTRINE.ETCHEBERRY"}
+    script = "\n".join([
+        "const calls = [];",
+        "const status = [];",
+        f"const state = {json.dumps(state)};",
+        "function pushLog(m) { calls.push({ kind: 'log', m: String(m) }); }",
+        "function proofStatus(html, isError) { status.push({ html: String(html), isError }); }",
+        "function escapeHtml(s) { return String(s); }",
+        "function fmtBytes(n) { return n + ' B'; }",
+        "function applyBundleToStep(id) { calls.push({ kind: 'step', id }); }",
+        "function renderProofSource(id) { calls.push({ kind: 'renderSource', id }); }",
+        "function renderProofArtefacts(id) { calls.push({ kind: 'renderArtefacts', id }); }",
+        "async function refreshBundleFiles() { calls.push({ kind: 'refresh' }); }",
+        "const API = { authoritySourceDelete: async (payload) => {",
+        "  calls.push({ kind: 'delete', payload });",
+        "  if (FAILING) throw new Error('cannot unlink: read-only file system');",
+        f"  return {{ ok: true, deleted: {json.dumps(deleted)}, freed_bytes: 2048 }};",
+        "} };",
+        _js_function("deleteProofSource"),
+        "const FAILING = false;",
+        "(async () => {",
+        "  await deleteProofSource('CL.DOCTRINE.ETCHEBERRY', 'CL.DOCTRINE.ETCHEBERRY__note.pdf');",
+        "  console.log(JSON.stringify({ calls, status, state }));",
+        "})();",
+    ])
+    failing_script = script.replace("const FAILING = false;", "const FAILING = true;")
+    out = _run_js(script)
+
+    deletes = [c for c in out["calls"] if c.get("kind") == "delete"]
+    assert len(deletes) == 1, "the removal must be one request, naming one source"
+    assert deletes[0]["payload"] == {
+        "violation_id": "CL-900",
+        "authority_id": "CL.DOCTRINE.ETCHEBERRY",
+        "name": "CL.DOCTRINE.ETCHEBERRY__note.pdf",
+    }, "the route was not told which stub, which bundle, and which stored source"
+    kinds = [c["kind"] for c in out["calls"]]
+    assert "refresh" in kinds and "renderArtefacts" in kinds, (
+        "the listing was not re-read, so the removed files stay on screen"
+    )
+    assert out["state"]["proofSources"] == {}, (
+        "a payload read out of the deleted file was kept, so the next verify can "
+        "record a source_uri naming a document that is gone"
+    )
+    assert out["state"]["proofDelete"] is None, "the armed delete was not cleared"
+    last = out["status"][-1]
+    assert last["isError"] is False and "Removed 3 files" in last["html"]
+    assert rel in last["html"], (
+        "the stub still cites the removed file and the page did not say so"
+    )
+
+    bad = _run_js(failing_script)
+    assert bad["status"][-1]["isError"] is True, "a refused unlink was reported as success"
+    assert "Could not remove" in bad["status"][-1]["html"]
+    assert "CL.DOCTRINE.ETCHEBERRY" in bad["state"]["proofSources"], (
+        "a failed removal threw away the payload for a source that is still on disk"
+    )
+    assert not [c for c in bad["calls"] if c.get("kind") == "refresh"], (
+        "a failed removal re-read the listing as though the files were gone"
     )
