@@ -2475,6 +2475,10 @@ _DTO_SENTENCE = (
     "Corresponderá al legislador establecer siempre las garantías de un "
     "procedimiento y una investigación racionales y justos"
 )
+#: A run that is contiguous in `_DTO_SPLICED`, unlike `_DTO_SENTENCE`: the plumbing
+#: around the pane is tested with a quote that is actually found, so the pane has
+#: text to show and the refusal note — which reads the stub — is not on the path.
+_DTO_IN_ROW = "Introdúcense las siguientes modificaciones en la Constitución Política de la República"
 
 
 def _stored_pdf_source(content: str) -> dict:
@@ -2837,6 +2841,84 @@ def test_a_record_that_cannot_be_read_leaves_the_pane_alone_and_says_why():
     assert out["renders"] == 0, "the pane was redrawn over a read that failed"
     assert out["pending"] is None, "a failed read left the in-flight mark behind"
     assert any(row[1] == "warn" and "the server refused it" in row[0] for row in out["log"]), out["log"]
+
+
+def _render_pane_over_a_rebuilt_body(record: dict, quote: str) -> dict:
+    """Run `renderProofSource` three times: once to fill the pane, once with nothing
+    changed, and once after the pane element has been replaced the way
+    `openProofModal` replaces it on every open.
+
+    The third run is the one that used to do nothing. The pane is rebuilt from an
+    empty `<div id="proofPreview">` inside a body written from scratch, while
+    `state.proofPreview` still holds the last render — so a repeat by stub, text and
+    quote was a repeat *of a pane that no longer existed*, and the fresh one was left
+    blank for the rest of the session. Called with `_dto_reading()`, this is the
+    margin pane: the section it swallowed is the whole reason a stored reading is
+    read back at all.
+    """
+    script = "\n".join([
+        "const els = {};",
+        "function fakeEl(id) { return els[id] || (els[id] = { id, innerHTML: '',"
+        " style: {}, value: '', textContent: '' }); }",
+        "const document = { getElementById: (id) => fakeEl(id) };",
+        "const state = { proofSources: { 'AUTH-1': JSON.parse("
+        + json.dumps(json.dumps(record)) + ") },"
+        " violation: { authorities: [] } };",
+        _js_function("escapeHtml"),
+        _js_function("inputValue"),
+        _js_function("proofStatus"),
+        _js_function("proofRefusalNote"),
+        _js_function("proofPreviewIsStale"),
+        _js_const("PROOF_NO_SOURCE"),
+        _js_function("highlightQuote"),
+        _js_function("proofNumeralPair"),
+        _js_function("proofMarginSection"),
+        _js_function("renderProofSource"),
+        f"fakeEl('proofQuote').value = {json.dumps(quote)};",
+        "renderProofSource('AUTH-1');",
+        "const first = fakeEl('proofPreview').innerHTML;",
+        # Nothing about the pane's inputs has moved, so a marker left in it has to
+        # survive: the cache is what keeps a keystroke from re-escaping the document.
+        "fakeEl('proofPreview').innerHTML = 'MARKER';",
+        "renderProofSource('AUTH-1');",
+        "const kept = fakeEl('proofPreview').innerHTML;",
+        # `openProofModal` writes a whole new body, so this is the next open.
+        "delete els['proofPreview'];",
+        "renderProofSource('AUTH-1');",
+        "const rebuilt = fakeEl('proofPreview').innerHTML;",
+        "console.log(JSON.stringify({ first, kept, rebuilt,"
+        " match: fakeEl('proofMatch').innerHTML }));",
+    ])
+    return _run_js(script)
+
+
+def test_reopening_a_stub_writes_the_pane_again_rather_than_trusting_the_cache():
+    """The cache is keyed on what was rendered, so it has to know *where* it went.
+
+    Opening a stub, waiting for its record to be read back and reopening it left the
+    loaded text and the margin blank for the rest of the session — measured in the
+    browser against `build/CL-030`: 29,712 characters in the pane after the read, 0
+    after the reopen, while the provenance line below it went on naming the document
+    and its hash. Only the pane was cached, and only the pane was missing.
+    """
+    out = _render_pane_over_a_rebuilt_body(_dto_reading(), _DTO_IN_ROW)
+    # The quote is a run of the loaded text, so the pane is the "found" branch: a
+    # refused quote has no text to show under "Loaded text" and would prove less.
+    assert "<mark>" in out["rebuilt"], "the reopened pane lost the highlighted quote"
+    assert out["kept"] == "MARKER", (
+        "the pane was rebuilt although nothing about its inputs had changed"
+    )
+    assert len(out["rebuilt"]) == len(out["first"]), (
+        "the pane was never written again after the modal body was rebuilt, so "
+        "reopening a stub whose record had been read back showed no text and no margin"
+    )
+    assert "Margin —" in out["rebuilt"] and "3 citations" in out["rebuilt"], (
+        "the reopened pane came back without the margin the record holds"
+    )
+    # The provenance line and the pane come from one render, and the reported bug was
+    # the line surviving over a blank pane — so both halves are asserted in the run
+    # that rebuilt the body.
+    assert f"{len(_DTO_SPLICED)} characters" in out["match"], out["match"]
 
 
 def _verify_stored(source: dict) -> dict:

@@ -4223,11 +4223,23 @@ function proofRefusalNote(authorityId, quote, content) {
  *  reviewer types — only the quote does — so the pane is rebuilt when the stub, the
  *  loaded string or the quote has changed, and left alone otherwise. The comparison
  *  is by reference and exact: the string in `state.proofSources` is the one the
- *  server hashed, not a copy rebuilt per keystroke. */
+ *  server hashed, not a copy rebuilt per keystroke.
+ *
+ *  The element is part of the comparison, not just the arguments. `openProofModal`
+ *  writes a whole new modal body — and with it an empty `#proofPreview` — every time
+ *  it is opened, so a render that repeats by stub, text and quote can still be a
+ *  repeat *of a pane that no longer exists*. Reopening a stub whose record had
+ *  already been read back was blank for the rest of the session for exactly that
+ *  reason: none of the three arguments had moved, so the fresh pane was never
+ *  written to, and the cache kept saying the work was done. Measured in the browser
+ *  against `build/CL-030`: open, wait for the read, reopen — `#proofPreview` 29,712
+ *  characters before, 0 after. */
 function proofPreviewIsStale(authorityId, content, quote) {
   const seen = state.proofPreview;
-  if (seen && seen.id === authorityId && seen.content === content && seen.quote === quote) return false;
-  state.proofPreview = { id: authorityId, content, quote };
+  const node = document.getElementById('proofPreview');
+  if (seen && seen.node === node && seen.id === authorityId
+      && seen.content === content && seen.quote === quote) return false;
+  state.proofPreview = { node, id: authorityId, content, quote };
   return true;
 }
 
