@@ -125,6 +125,7 @@ def v02_verbatim_quote_match(v: Violation, sources: dict) -> CheckResult:
 def v03_article_text_hash(v: Violation, sources: dict) -> CheckResult:
     frameworks: dict[str, FrameworkSource] = sources.get("frameworks", {})
     notes: list[str] = []
+    declared_notes: list[str] = []
     has_fail = False
     has_warn = False
 
@@ -142,11 +143,20 @@ def v03_article_text_hash(v: Violation, sources: dict) -> CheckResult:
             has_fail = True
         declared = fw.declared_sha256()
         if declared and declared.lower() != actual.lower():
-            notes.append(
-                f"WARN: framework {cache.framework_code} self-reported SHA in metadata header "
-                f"({declared[:8]}…) does not match actual content SHA ({actual[:8]}…)."
+            # Informational, never a warning. The `**Sha256:**` header records
+            # the hash of the *upstream document* the article text was taken
+            # from; it is not a claim about this cache file's own bytes, and it
+            # cannot be: a file cannot contain its own SHA256. Comparing the two
+            # therefore warned on every cache that declared the header while
+            # staying silent on the ~20 that simply omit it, i.e. the warning
+            # tracked whether the header was present, not whether anything was
+            # wrong. Cache drift is caught by the `cache_file_sha256` branch
+            # above, which really does compare a recorded manifest hash against
+            # the file on disk.
+            declared_notes.append(
+                f"INFO: framework {cache.framework_code} declares source SHA "
+                f"{declared[:8]}… (cache bytes: {actual[:8]}…)."
             )
-            has_warn = True
 
     # Per-article excerpt presence
     for art in v.established_articles:
@@ -164,8 +174,13 @@ def v03_article_text_hash(v: Violation, sources: dict) -> CheckResult:
     if has_fail:
         return _result("V03", "article_text_hash", "fail", " | ".join(notes))
     if has_warn:
-        return _result("V03", "article_text_hash", "warn", " | ".join(notes))
-    return _result("V03", "article_text_hash", "pass", "All article-text hashes and excerpts match the framework cache.")
+        return _result(
+            "V03", "article_text_hash", "warn", " | ".join(notes + declared_notes)
+        )
+    detail = "All article-text hashes and excerpts match the framework cache."
+    if declared_notes:
+        detail = f"{detail} {' '.join(declared_notes)}"
+    return _result("V03", "article_text_hash", "pass", detail)
 
 
 def v04_article_exists_in_framework_cache(v: Violation, sources: dict) -> CheckResult:

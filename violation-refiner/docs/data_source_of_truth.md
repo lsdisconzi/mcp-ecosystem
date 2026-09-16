@@ -337,6 +337,20 @@ as `reviewed_transcripts.segment_id`.
 - **Removed corpus:** `transcription/data/transcripts-named/` (24 files, an older ASR
   vintage) was deleted 2026-09-13 along with its two consumer scripts. Recoverable via
   `git show a2caeff:transcription/data/transcripts-named/<file>`. Do not recreate it.
+- **A law file's `**Sha256:**` header is not the hash of that file.** 58 of the 101
+  files under `data/law/` carry one, and **none** of the 58 matches
+  `sha256(that file's bytes)` — measured, `declared == actual` is 0/58, which rules out
+  "mostly right, occasionally stale". The field records the **upstream document** the
+  text was fetched from (`Source:` names it), so it can never be satisfied by rewriting
+  the file: any edit changes the bytes, and a self-referential hash would be wrong the
+  instant it was written. The verifier therefore treats a mismatch as **INFO**, not a
+  failure — `V03 article_text_hash` passes when the framework cache matches the bytes on
+  disk and reports the declared/actual pair alongside. What this means in practice:
+  quote the cache hash when you need to prove which bytes a bundle was validated against,
+  and **do not** "fix" a header to make V03's INFO go away. Changing 58 files in a corpus
+  owned by `transcription` to remove one informational line is a bad trade, and it would
+  churn every consumer's framework-cache hash. (CL-030 is unaffected either way: it cites
+  no CONST article as established.)
 
 ---
 

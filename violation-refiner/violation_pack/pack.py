@@ -72,6 +72,11 @@ def build_manifest(root: Path, schema_version: str = "3.0") -> Path:
         f"Files included: {len(files)}",
         "",
         "format: relative_path | bytes | sha256",
+        "note: `bytes` is the UTF-8 *byte* length (len(p.read_bytes())), not a character count.",
+        "      The two differ for any non-ASCII text:",
+        "      'Authority sources/CL.CPR.Art.19.N3__DTO-100_03-MAY-2023.text.txt' is 28326 bytes and",
+        "      27763 characters, and its sidecar's text_chars field records the 27763. Verify a file",
+        "      against `bytes`; compare a character count against `text_chars`.",
         "─" * 100,
     ]
     for rel, size, sha in files:

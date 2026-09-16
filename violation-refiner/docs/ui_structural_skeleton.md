@@ -477,7 +477,7 @@ scope, so sending another transcript's id composes an id that anchors nothing.
 - **Only the bundle's own cache is addressable.** `GET /api/framework-article` accepts exactly `build/<violation_id>/Legal framework/<name>.md` and refuses a discovered-but-uncached framework under `data/law/`: the bundle does not carry that file, so an excerpt read from it could never pass validation. Containment is checked on the raw path parts (never on a resolved path) because every `build/<id>/Legal framework/*.md` is itself a symlink.
 - **Live excerpt verification.** Show, per row: ✅ *excerpt found in cache body* / ❌ *not a substring* / ⚠️ *article body not in any cache*. This is exactly the demotion logic in the normalizer.
 - **Demotion rule.** If an article cannot be verified, the library **demotes it to a candidate** with `framework_cache_status="not_in_bundle"` and a `verification_required` hint. The UI should offer a one-click "demote to candidate" action for rows it already knows will fail, rather than letting the round-trip surprise the user.
-- **Framework cache provenance** is computed, not entered: `cache_file`, `cache_file_sha256`, `cache_self_reported_sha256` (from a `**Sha256:**` header if present), `cache_fetched_at`, `articles_cached`. Display these read-only; V03 compares the self-reported hash to the real one.
+- **Framework cache provenance** is computed, not entered: `cache_file`, `cache_file_sha256`, `cache_self_reported_sha256` (from a `**Sha256:**` header if present), `cache_fetched_at`, `articles_cached`. Display these read-only. Note that `cache_self_reported_sha256` is the hash of the **upstream document named by `cache_source_url`**, not of the cache file itself — a file cannot contain its own SHA-256, and no cache in this corpus satisfies the comparison. V03 therefore reports a mismatch as an INFO note and never warns on it; what V03 actually enforces is that `cache_file_sha256` (the real bytes) still matches the live file.
 
 **Failure modes.** `framework_path` unreadable; no `### Art.` headers found → "cache format not recognised"; excerpt present but article body missing.
 
@@ -1099,7 +1099,7 @@ All three raise on failure with the prefix `verification_failed:` — parse that
 | --- | --- | --- |
 | V01 | `segment_resolution` | fail when a segment does not resolve against its transcript |
 | V02 | `verbatim_quote_match` | fail when a verbatim quote is not byte-for-byte in the transcript HTML |
-| V03 | `article_text_hash` | **warn** when the cache's self-reported SHA mismatches the real one; **fail** when an excerpt is not a substring of the cache body |
+| V03 | `article_text_hash` | **fail** when `cache_file_sha256` no longer matches the live cache file, or an excerpt is not a substring of the cache body; the `**Sha256:**` header describes the *upstream* document (not the cache file), so a mismatch there is reported as INFO — never a warning |
 | V04 | `article_exists_in_framework_cache` | fail when a cited article is absent from every cache |
 | V05 | `cross_references_resolve` | **warn** when there is no bundle-level index to resolve against |
 | V06 | `element_coverage` | fail when an established article has no element grid / no coverage |
