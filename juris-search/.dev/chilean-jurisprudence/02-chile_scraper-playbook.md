@@ -593,6 +593,9 @@ Playbook: <path> @ sha256:<grep -v '^<!-- playbook-hash:' file | shasum -a 256>
 | D3 | §5, §5.5, §6 | recalibrated to the portal's 10-row default; split page/len criteria; added step 5.5 (inert filter surface) |
 | H1 | §2, §3 | added tests 2e/2f (TSPD image, body-less F5); split Case A into A1/A2 |
 | H2 | §7 | replaced unreachable size/body criteria with a no-file-on-failure check |
+| D4 | §5, §8 | added **P1/P2 provenance criteria** — `_navigate_to_category` lands on a page that already contains a default listing, so a green "10 rows" result can be landing data. Added the landing-vs-after snapshot script |
+| D5 | §3, §5.5 | added **Case A3** — F5 rejection delivered inside the search `POST` XHR body (HTTP 200, `page_source` clean). Detection recipe + the observation that it invalidates steps 5–8 |
+| D6 | §6, §7, §8 | recorded the **real pager markup** (Bootstrap 4, `#btnPaginador_pagina_adelante`) replacing the wrong DataTables guidance; corrected step 6's failure table; added Case-A3 preconditions to §7/§8 |
 | minor | §0.5, §4, §10, §11 | `mkdir -p workspace/CL_jurisprudencia`; in-loop assertion; §11.N → §11 item N |
 
 ## Summary
@@ -600,9 +603,9 @@ Playbook: <path> @ sha256:<grep -v '^<!-- playbook-hash:' file | shasum -a 256>
 |------|--------|-------|
 | 1 Static | PASS/FAIL | |
 | 2 F5 unit | PASS/FAIL | incl. 2e/2f |
-| 3 F5 live | Case A1 (TSPD image) / Case A2 (rechazada) / Case B (through) | support_id=<n or None> |
+| 3 F5 live | Case A1 (TSPD image) / Case A2 (rechazada) / Case B (through) | support_id=<n or None>; also record **Case A3** if the search POST is filtered |
 | 4 Section map | PASS/FAIL | sections tested: ... |
-| 5 Search | PASS/FAIL | n=<n> (target 10), sample ROLs: ... |
+| 5 Search | PASS/FAIL | **P1/P2 first**, then n=<n> (target 10), sample ROLs: ... |
 | 5.5 Filter surface | OBSERVED | filter sent? Y/N |
 | 6 Pagination | PASS/FAIL | pages seen: [...], total=<n> |
 | 7 Detail+download | PASS/FAIL | path=<path|None>, size=<n> |
@@ -619,6 +622,8 @@ Playbook: <path> @ sha256:<grep -v '^<!-- playbook-hash:' file | shasum -a 256>
 
 ## Evidence
 - blocked page excerpt: <first 300 chars>
+- search XHR verdict: through | F5-filtered (status + first 120 chars of body)
+- landing vs after snapshot: <landing first id> -> <after first id>
 - one sample result dict: <json>
 - one downloaded file's first 500 chars: <text>
 ```
@@ -627,6 +632,7 @@ Playbook: <path> @ sha256:<grep -v '^<!-- playbook-hash:' file | shasum -a 256>
 
 - If a step fails and the fix is in the scraper, **fix it and rerun that step**; don't move on.
 - If a step fails and the fix is *outside* the scraper (F5 CAPTCHA, Chrome profile, network), **stop and report** — do not paper over it.
+- **If step 5.5 shows the search `POST` filtered (Case A3), stop the live run.** Steps 5–8 cannot produce meaningful evidence in that session; report them as **blocked**, and do not report them as failures of `chile_scraper.py`. Fixing Case A3 is a design change (a response interceptor), not a bug fix, and must not be attempted inside a verification pass.
 - Do not modify `CHILE_CATEGORIES` id values except to correct a verified mismatch with §4. Guessing is prohibited.
 - Do not add a `try/except` around `_assert_not_blocked`. Its job is to raise.
 - Do **not** refactor `_parse_chile_text_result`, `_navigate_to_category`, `_click_next_page`, or `_open_detail` unless the run produces a **concrete, reproducible failure** attributable to that function. "The code looks wrong" is not a failure.
@@ -641,6 +647,9 @@ Playbook: <path> @ sha256:<grep -v '^<!-- playbook-hash:' file | shasum -a 256>
 5. `/busqueda/imprimir` is unprobed as an alternative artefact source.
 6. `Compendio_Extranjería` `id_buscador` is **still unverified**.
 7. `Lineas_Jurisprudenciales` special mode is **not implemented** (a guard is suggested).
+8. **F5 rejections delivered inside an XHR body are undetectable** (Case A3). `POST /busqueda/buscar_sentencias` returns HTTP 200 with `La URL solicitada ha sido rechazada` while `driver.page_source` stays clean — so `_assert_not_blocked` never fires and `get_inteiro_links` returns the *landing page listing* as if it were search results. Fixing this needs a response-interceptor injected before navigation; it is a design change, deliberately not made in this pass.
+9. **No freshness check anywhere in the search loop.** `_wait_for_results` treats the *existence* of `[data-idsentencia]` as readiness, but `_navigate_to_category` already rendered a default listing — so it never waits for the search, and after `_click_next_page` it reads the previous page's rows (all dedupe away, `new_on_page == 0`, loop exits). Both step 5's P1 trap and step 6's stall share this root cause.
+10. **The pager markup is undocumented** in `docs/pjud-source.md` §7.1, which covers result rows only. The verified markup is now recorded in playbook §6 sub-step 6a; it should be folded into the source notes.
 
 ---
 
@@ -649,11 +658,12 @@ Playbook: <path> @ sha256:<grep -v '^<!-- playbook-hash:' file | shasum -a 256>
 Priority order to investigate:
 
 1. **F5 live step failing with Case A1/A2** → environmental. Solve CAPTCHA, restart session, retry.
-2. **`live_id != expected`** → check the map against §4 first, then the wait/paint timing. Do **not** "fix" `quote(slug, safe="")` — it is correct (see §4).
-3. **`n == 0` on search with no F5** → DOM selector (`data-idsentencia`) drift. Inspect live DOM, update **both** `_parse_search_results` and `_wait_for_results`.
-4. **Pagination stuck** → pager selector drift. Replace selector list with the observed one.
-5. **`path is None` on download** → `_open_detail` failure (row not found / page targeting), *not* an F5 body on disk — that state is unreachable (see §7).
-6. **`id_buscador`/`instancia` `None` in results** → threading broken from `cat_info` into `_parse_chile_text_result`. Trace the call chain in `_parse_search_results`.
-7. **`len(results) != 10` with no F5** → check the corpus before blaming the pager (§5 criterion 8).
+2. **Case A3: search returns a plausible 10 rows but the query has no effect** → check the `POST /busqueda/buscar_sentencias` *response body* (step 5.5), not just the status. A `200` with `La URL solicitada ha sido rechazada` means every search-dependent step this run is invalid. Environmental — stop and report.
+3. **`live_id != expected`** → check the map against §4 first, then the wait/paint timing. Do **not** "fix" `quote(slug, safe="")` — it is correct (see §4).
+4. **`n == 0` on search with no F5** → DOM selector (`data-idsentencia`) drift. Inspect live DOM, update **both** `_parse_search_results` and `_wait_for_results`.
+5. **Pagination stuck** → the pager is `#btnPaginador_pagina_adelante` (§6 sub-step 6a), already first in the selector list. If the click fires (returns `True`) and the page still does not advance, the cause is the missing freshness wait (open issue 9), not the selector.
+6. **`path is None` on download** → `_open_detail` failure (row not found / page targeting), *not* an F5 body on disk — that state is unreachable (see §7). Under Case A3, expect `path is None` for an unrelated reason: **blocked**, not failed.
+7. **`id_buscador`/`instancia` `None` in results** → threading broken from `cat_info` into `_parse_chile_text_result`. Trace the call chain in `_parse_search_results`.
+8. **`len(results) != 10` with no F5** → check the corpus before blaming the pager (§5 criterion 8).
 
 Anything else is a new bug — report it with the failing step number, the exception, and the first 500 chars of `driver.page_source`.
