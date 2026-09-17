@@ -1154,7 +1154,7 @@ warnings: V03, V05, V07, V11 (W_AUTH_DANGLING_SUPPORT), V17 (no contract view)
 | `F-s11-only` | `only` | multi-select of discovered folders | none | e.g. `CL-005 CL-007` |
 | `F-s11-extra` | `include_extra` | toggle | **off** | off ⇒ keep only `CL-<digits>`; on ⇒ also `CL-F7DD941E`-style names |
 | `F-s11-limit` | `limit` | number | none | process first N after filtering |
-| `F-s11-backup` | `write_backup` | toggle | **on** | writes `<id>.json.bak` **only if absent**; re-runs read the `.bak` as the source so re-anchoring is repeatable |
+| `F-s11-backup` | `write_backup` | toggle | **on** | writes `<id>.json.bak` on every run, holding the *previous* generation; the loader reads the live `<id>.json` first and falls back to the `.bak` only when it cannot be read |
 | `F-s11-zip` | `zip_output` | toggle | off | writes `<folder>_refined_pack.zip` next to each bundle |
 | `F-s11-enrich` | `enrich` | toggle | auto | CLI resolves: `--no-enrich` wins; else `--enrich`; else auto-on when a key exists or provider is `ollama` |
 | `F-s11-stages` | `enrich_stages` | multi-checkbox | all | comma-separated in CLI; list here |
@@ -1354,7 +1354,7 @@ The canonical models. **All models are `extra="forbid"`** — the UI must never 
 6. **Show `verified` truthfully.** `Authority.verified` defaults to `false` and only S7 flips it. No other UI path may set it.
 7. **Destructive actions** require typed confirmation and display the resolved target (§S12.4).
 8. **Idempotent replay.** Every step shows "re-run against current state" and a diff preview before applying.
-9. **Backups.** When a step rewrites `<id>.json`, honour the `write_backup` semantics: write `.bak` only if absent, and read from `.bak` when present.
+9. **Backups.** When a step rewrites `<id>.json`, honour the `write_backup` semantics: snapshot the outgoing file to `.bak` first, then read `.bak` only when the live file cannot be read — never in preference to it.
 10. **Progress and cancellation.** S9/S11/S13 are long-running; they must stream progress and support cancellation without leaving a half-written JSON (write to temp, then move).
 11. **Graceful degradation.** Missing optional extras disable their panels with an install hint rather than throwing.
 
@@ -1434,7 +1434,7 @@ The canonical models. **All models are `extra="forbid"`** — the UI must never 
 <bundles-root>/
 └── CL-005/
     ├── CL-005.json                    violation_main  (canonical state)
-    ├── CL-005.json.bak                backup (written once, read as source on re-run)
+    ├── CL-005.json.bak                previous generation (refreshed each run; read only if the live file is unreadable)
     ├── contract.json                  contract
     ├── MANIFEST.txt                   manifest
     ├── Violation bundle/README.md     readme

@@ -463,9 +463,9 @@ def test_a_segment_id_that_is_not_scoped_to_a_transcript_is_skipped(tmp_path, pr
 
 def test_a_violation_that_has_gone_back_to_the_legacy_ids_rewrites_nothing(tmp_path):
     """The reason the manifest is rebuilt from the violation and still cannot
-    become a copy of it. A stale ``<VID>.json.bak`` makes the refiner load the
-    vault's pre-re-anchor ids; rebuilding the manifest from those would let the
-    drift overwrite the only record that the conversion happened, and
+    become a copy of it. A violation still holding the vault's pre-re-anchor ids
+    — never converted, or recovered from a ``.bak`` after a failed write — would
+    otherwise overwrite the only record that the conversion happened, and
     ``check_bundle_segments`` would then agree with the wrong bundle forever."""
     bundle, _ = _drifted(tmp_path)
     before = (bundle / "segments_manifest.json").read_bytes()
@@ -478,7 +478,10 @@ def test_a_violation_that_has_gone_back_to_the_legacy_ids_rewrites_nothing(tmp_p
     assert summary["transcripts"] == [], "nothing is read from a bundle in that state"
     assert (bundle / "segments_manifest.json").read_bytes() == before
     assert any("STG-1.seg-7" in w for w in summary["warnings"])
-    assert any(".bak" in w for w in summary["warnings"])
+    assert any("vault_to_bundle" in w for w in summary["warnings"]), (
+        "the warning has to name the remedy, now that a shadowing .bak is no "
+        "longer what the loader does"
+    )
 
 
 def test_an_uncited_transcript_is_reported_not_deleted(tmp_path):

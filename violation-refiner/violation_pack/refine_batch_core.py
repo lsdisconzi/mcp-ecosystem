@@ -466,17 +466,41 @@ def _load_violation(
     transcripts: dict[str, HtmlTranscriptSource],
     frameworks: dict[str, MarkdownFrameworkSource],
 ) -> tuple[Violation, list[str]]:
-    # Prefer the original legacy bundle when a .bak snapshot exists, so
-    # re-runs re-anchor against the source instead of inheriting a
-    # previously-normalized (and possibly incomplete) Violation JSON.
-    bak = path.with_suffix(path.suffix + ".bak")
-    source_path = bak if bak.exists() else path
-    raw_text = source_path.read_text(encoding="utf-8")
+    """Load the bundle's violation, consulting ``.bak`` only as a last resort.
+
+    The live ``<VID>.json`` wins whenever it parses at all. The adjacent
+    ``.bak`` is read only when the live file cannot be read or no longer holds
+    JSON — an interrupted write — so it is a recovery snapshot and never a
+    second source of truth.
+
+    This is the reverse of the original rule, which preferred the ``.bak`` so a
+    re-run would re-anchor against the un-normalized source. That preference
+    could not be escaped once a snapshot existed, because ``_process_one``
+    wrote one only when it was *absent*: the first snapshot was frozen forever
+    and every edit made since — through ``write_violation_json_tool`` or the UI
+    — was silently discarded by the next batch run. It also forced
+    ``sync_segment_artifacts`` to carry a guard against the superseded ids a
+    shadowed load produced.
+    """
+
+    def _parse(raw_text: str) -> tuple[Violation, list[str]]:
+        try:
+            return Violation.model_validate_json(raw_text), []
+        except Exception:
+            # A legacy (pre-converter) bundle: valid JSON in an older shape,
+            # whose segments are re-anchored here against the transcripts.
+            return _normalize(json.loads(raw_text), transcripts, frameworks)
+
     try:
-        return Violation.model_validate_json(raw_text), []
-    except Exception:
-        data = json.loads(raw_text)
-        return _normalize(data, transcripts, frameworks)
+        return _parse(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        bak = path.with_suffix(path.suffix + ".bak")
+        violation, notes = _parse(bak.read_text(encoding="utf-8"))
+        return violation, [
+            f"{path.name} could not be read ({type(exc).__name__}); "
+            f"recovered from {bak.name}",
+            *notes,
+        ]
 
 
 # ---------------------------------------------------------------------------
@@ -658,9 +682,13 @@ def _process_one(
     )
 
     if write_backup:
+        # Refreshed every run rather than only when absent. The loader now reads
+        # the live JSON first, so this file exists only to hold the *previous*
+        # generation for it to fall back to after an interrupted write. Keeping
+        # the first snapshot forever would make the name a lie and the fallback
+        # worthless.
         bak = vio_json_path.with_suffix(vio_json_path.suffix + ".bak")
-        if not bak.exists():
-            bak.write_text(vio_json_path.read_text(encoding="utf-8"), encoding="utf-8")
+        bak.write_text(vio_json_path.read_text(encoding="utf-8"), encoding="utf-8")
 
     vio_json_path.write_text(
         v.model_dump_json(indent=2, exclude_none=False), encoding="utf-8"

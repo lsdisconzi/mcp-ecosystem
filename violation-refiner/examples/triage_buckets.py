@@ -359,8 +359,6 @@ def _emit_script(path: Path, buckets: dict[str, list[BundleReport]]) -> None:
         lines.append(f"VIOLATIONS=({' '.join(ids)})")
         lines.append("")
         lines.append("for v in \"${VIOLATIONS[@]}\"; do")
-        lines.append("  # refine_batch prefers <id>.json.bak when present; clear stale snapshots")
-        lines.append("  rm -f \"build/$v/$v.json.bak\"")
         lines.append("  echo \"=== Re-converting $v ===\"")
         lines.append("  \"$VENV_PY\" examples/vault_to_bundle.py \"$v\" --jurisdiction CL")
         lines.append("  echo \"=== Revalidating $v ===\"")

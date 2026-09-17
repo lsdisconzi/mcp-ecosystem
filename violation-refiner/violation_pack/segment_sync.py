@@ -111,10 +111,9 @@ def sync_segment_artifacts(violation: Violation | dict, bundle_root: Path | str)
         shown = ", ".join(stale[:3]) + ("…" if len(stale) > 3 else "")
         warnings.append(
             "nothing was written: the violation cites the vault's legacy segment ids "
-            f"({shown}) while {MANIFEST_NAME} records the converter's canonical ones. "
-            f"A stale '{doc.get('violation_id')}.json.bak' most likely shadowed the "
-            "converted violation. Re-run examples/vault_to_bundle.py (and delete the "
-            ".bak) before refining again."
+            f"({shown}) while {MANIFEST_NAME} records the converter's canonical ones, "
+            "so this violation did not come from examples/vault_to_bundle.py. Re-run "
+            "the converter for this bundle before refining it again."
         )
         return result
 
@@ -202,8 +201,9 @@ def _legacy_id_collision(grouped: dict[str, list[dict]], prev_rows: dict[str, di
     """The cited ids the manifest records *only* as legacy ids.
 
     ``validate_preflight.check_bundle_segments`` reports a bundle whose violation
-    went back to the vault's pre-re-anchor ids and holds none of the converter's —
-    the fingerprint of a stale ``<VID>.json.bak`` shadowing the converted file.
+    holds the vault's pre-re-anchor ids and none of the converter's — the
+    fingerprint of a violation that was never converted, whether a legacy tool
+    wrote it or the loader recovered it from a ``.bak`` after a failed write.
     Rebuilding the manifest from that violation would make the check agree with
     the drift and the one silent failure it exists to catch would go unseen, so
     the sync stops instead: the manifest is the pipeline's independent record of

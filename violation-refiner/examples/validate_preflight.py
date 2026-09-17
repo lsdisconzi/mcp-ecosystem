@@ -6,9 +6,9 @@ services are available before the pipeline starts. Designed to prevent the
 "source not found" class of failures documented in the CL-007 incident.
 
 Also compares each bundle's segment ids against the converter's
-``segments_manifest.json``, which catches a stale ``<VID>.json.bak`` shadowing
-the converted bundle (``refine_batch_core._load_violation`` prefers it) before
-refinement bakes the wrong content in.
+``segments_manifest.json``, which catches a bundle whose violation never went
+through the converter — a hand-written or legacy JSON, or one recovered from a
+``.bak`` after a failed write — before refinement bakes the wrong content in.
 
 Reads the bundles the converter wrote (``build/<VID>/``), so run
 ``examples/vault_to_bundle.py`` first.
@@ -90,12 +90,12 @@ def check_bundle_segments(source_root: Path, vid: str) -> list[str]:
     ``segments_manifest.json`` records both the canonical id
     (``<source>.seg-N``, what the converter writes into the bundle) and the
     vault's ``legacy_segment_id`` (``STG-7.seg-44``). Those two sets are the
-    fingerprint of the one failure that is invisible downstream: a
-    ``<VID>.json.bak`` left behind by an earlier refiner run is preferred by
-    ``refine_batch_core._load_violation`` over the live JSON, so a stale bundle
-    silently replaces the converted one and every later check passes against
-    the wrong content (V01 resolves the legacy ids against the vendored HTML
-    render, so nothing complains). Catching it here costs one dict comparison.
+    fingerprint of the one failure that is invisible downstream: a bundle whose
+    violation was replaced by one that never went through the converter — a
+    legacy file written beside it, or a ``.bak`` the loader recovered after a
+    failed write — so every later check passes against the wrong content (V01
+    resolves the legacy ids against the vendored HTML render, so nothing
+    complains). Catching it here costs one dict comparison.
     """
     errors: list[str] = []
     src = source_root / vid
@@ -132,8 +132,8 @@ def check_bundle_segments(source_root: Path, vid: str) -> list[str]:
         errors.append(
             f"[{vid}] {json_path.name} holds the vault's legacy segment ids "
             f"({sorted(stale)[:3]}…) instead of the converter's canonical ids — "
-            f"a stale {json_path.name}.bak shadowed the converted bundle. Delete "
-            "it and re-run examples/vault_to_bundle.py before refining."
+            "it did not come from examples/vault_to_bundle.py. Re-run the "
+            "converter for this bundle before refining."
         )
     else:
         errors.append(
