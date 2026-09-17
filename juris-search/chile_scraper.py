@@ -404,8 +404,23 @@ class ChileJurisprudenciaScraper:
         self._assert_not_blocked(context="waiting for results")
 
     def _click_next_page(self) -> bool:
-        """Click the pager's 'next' control. Returns True on click."""
+        """Click the pager's 'next' control. Returns True on click.
+
+        The portal does NOT use DataTables: the pager is Bootstrap 4 markup with
+        stable ids inside #paginador_top. Verified live against
+        https://juris.pjud.cl/busqueda?Civiles — clicking
+        #btnPaginador_pagina_adelante advances the JS page cursor
+        (pagina_resultados_busqueda_sentencias 0 -> 1). This markup is NOT yet
+        recorded in docs/pjud-source.md §7.1 (which covers result rows only);
+        the paging *parameters* it corresponds to are in §6.
+        The DataTables selectors are kept only as fallbacks for the
+        /busqueda/imprimir view, which is unprobed (§11).
+        """
         selectors = (
+            # Verified live — Bootstrap 4 pager. Must stay first.
+            "#btnPaginador_pagina_adelante",
+            "#paginador_top a.page-link#btnPaginador_pagina_adelante",
+            # Unprobed fallbacks (print view).
             "a.paginate_button.next:not(.disabled)",
             "li.next:not(.disabled) a",
             ".dataTables_paginate .next:not(.disabled)",
