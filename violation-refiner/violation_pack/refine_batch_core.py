@@ -28,6 +28,7 @@ from .models import (
     Violation,
 )
 from .pack import build_manifest, zip_bundle
+from .segment_sync import sync_segment_artifacts
 from .sources import HtmlTranscriptSource, MarkdownFrameworkSource, TranscriptSource
 from .sources_json import JsonTranscriptSchemaError, JsonTranscriptSource
 from .validation import run_pipeline
@@ -504,9 +505,6 @@ def _write_validation_markdown(bundle_dir: Path, violation_id: str, checks: list
 # ---------------------------------------------------------------------------
 # Per-bundle processing
 # ---------------------------------------------------------------------------
-# ---------------------------------------------------------------------------
-# Per-bundle processing
-# ---------------------------------------------------------------------------
 
 def _reconcile_contract_after_enrichment(
     bundle_dir: Path, violation: Violation, contract: dict
@@ -667,6 +665,14 @@ def _process_one(
     vio_json_path.write_text(
         v.model_dump_json(indent=2, exclude_none=False), encoding="utf-8"
     )
+
+    # This path writes the violation directly rather than through
+    # ``write_violation_json_tool``, so it has to reconcile the two artifacts the
+    # violation describes for itself — otherwise a batch run leaves the manifest
+    # and Transcripts/ describing the previous generation of this bundle. Before
+    # ``build_manifest`` so MANIFEST.txt records the transcripts as they end up.
+    sync = sync_segment_artifacts(v, bundle_dir)
+    notes.extend(f"segment_sync: {w}" for w in sync["warnings"])
 
     checks_path = bundle_dir / "Validation" / "checks.json"
     checks_path.parent.mkdir(parents=True, exist_ok=True)

@@ -3820,6 +3820,7 @@ def test_saving_persists_through_the_tool_and_then_reads_the_file_back():
         "function proofStatus(html, isError) { status.push({ html: String(html), isError }); }",
         "function pushLog(m) { calls.push({ kind: 'log', m: String(m) }); }",
         "function escapeHtml(s) { return String(s); }",
+        _js_function("describeSync"),
         _js_function("persistProofAuthority"),
         "const FAILING = " + "false" + ";",
         "(async () => {",

@@ -3276,6 +3276,25 @@ function endRun() {
   renderRunState();
 }
 
+/** What `write_violation_json_tool` did besides writing the violation JSON.
+ *
+ *  The tool is also the bundle's only writer of the two artifacts that describe
+ *  the same segments: `segments_manifest.json`, and one `Transcripts/<id>.json`
+ *  per cited transcript holding just the cited segments. Staying silent about
+ *  those would leave the reviewer reading a manifest that the page has already
+ *  replaced on disk — and the drift it displays as "not in manifest" is exactly
+ *  what the sync removes. Returns null for a result that carries no summary at
+ *  all, so an older server cannot make the log claim something it did not do. */
+function describeSync(result) {
+  if (!result || typeof result !== 'object') return null;
+  const parts = [];
+  if (result.manifest_changed) parts.push(`manifest (${result.manifest_segments} segment(s))`);
+  const files = (result.transcripts || []).filter(t => t && t.changed);
+  if (files.length) parts.push(`${files.length} transcript file(s)`);
+  if (!parts.length) return 'manifest and Transcripts/ already in step';
+  return `rewrote ${parts.join(' + ')}`;
+}
+
 async function invokeTool(name, args, opts = {}) {
   const step = STAGE_TITLES[state.activeStep];
   if (run) {
@@ -3304,11 +3323,16 @@ async function invokeTool(name, args, opts = {}) {
     // the same state the UI just applied (design intent: all steps persist).
     if (state.violation && state.bundleId) {
       try {
-        await callTool('write_violation_json_tool', {
+        const saved = await callTool('write_violation_json_tool', {
           violation: state.violation,
           bundle_root: state.settings.bundleRoot || `build/${state.bundleId}`,
         }, { confirm: false });
-        pushLog('Persisted updated violation to bundle', step, 'ok');
+        pushLog(`Persisted updated violation to bundle — ${describeSync(saved)}`, step, 'ok');
+        // The manifest and the bundle's transcripts were rewritten by that call,
+        // so the copies `loadBundle()` captured are stale: S2 would keep showing
+        // this run's segments as "not in manifest".
+        await refreshBundleFiles();
+        refreshStepPanel();
       } catch (e) {
         pushLog(`Persist failed (non-blocking) — ${e.message}`, step, 'warn');
       }
@@ -4392,18 +4416,24 @@ function proofIsOnDisk(authority) {
       === JSON.stringify(authority.verification_provenance || null);
 }
 
-/** Re-read only the bundle's file listing.
+/** Re-read the bundle's derived artifacts — the file listing and the segment
+ *  manifest.
  *
- *  `bundleFiles()` reads the listing `loadBundle()` captured, so a source stored
- *  since then is invisible under "Proof on disk" until something re-reads it.
- *  Deliberately not a full `loadBundle()`: that also replaces `state.violation`
- *  with the copy on disk, which would throw away a verification that has not
- *  been written yet — precisely the state this page is designed to show. */
+ *  `bundleFiles()` and `manifestSegments()` read what `loadBundle()` captured, so
+ *  a source stored since then is invisible under "Proof on disk" until something
+ *  re-reads it, and the manifest S2 renders is the one that predates this run's
+ *  segments. Deliberately not a full `loadBundle()`: that also replaces
+ *  `state.violation` with the copy on disk, which would throw away a verification
+ *  that has not been written yet — precisely the state this page is designed to
+ *  show. The manifest is safe to adopt because it is derived from the violation on
+ *  disk, not a second copy of it. */
 async function refreshBundleFiles() {
   if (!state.bundleId) return;
   try {
     const fresh = await API.bundle(state.bundleId);
-    if (state.bundle && fresh && Array.isArray(fresh.files)) state.bundle.files = fresh.files;
+    if (!state.bundle || !fresh) return;
+    if (Array.isArray(fresh.files)) state.bundle.files = fresh.files;
+    if (fresh.manifest) state.bundle.manifest = fresh.manifest;
   } catch (e) {
     pushLog(`← could not re-read the bundle listing — ${e.message}`, 'S6', 'warn');
   }
@@ -5095,7 +5125,8 @@ async function persistProofAuthority(authorityId) {
     const out = await callTool('write_violation_json_tool', {
       violation: state.violation, bundle_root: root,
     });
-    pushLog(`← wrote ${(out && out.path) || `${root}/${state.bundleId}.json`}`, 'S6', 'ok');
+    pushLog(`← wrote ${(out && out.path) || `${root}/${state.bundleId}.json`}`
+      + ` — ${describeSync(out)}`, 'S6', 'ok');
   } catch (e) {
     pushLog(`← write_violation_json_tool failed — ${e.message}`, 'S6', 'err');
     proofStatus(`<b>Could not write the bundle.</b> ${escapeHtml(e.message)}`

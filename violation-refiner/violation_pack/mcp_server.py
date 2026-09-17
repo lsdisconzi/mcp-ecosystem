@@ -46,6 +46,7 @@ from .pack import (
 )
 from .sources import HtmlTranscriptSource, MarkdownFrameworkSource, TranscriptSource
 from .sources_json import JsonTranscriptSource
+from .segment_sync import sync_segment_artifacts as _sync_segment_artifacts
 from .validation import run_pipeline as _run_pipeline
 
 
@@ -380,10 +381,21 @@ def build_server(include_ui: bool = True):
 
     @mcp.tool()
     def write_violation_json_tool(violation: dict, bundle_root: str) -> dict:
-        """Serialize the Violation JSON into <bundle_root>/<violation_id>.json."""
+        """Serialize the Violation JSON into <bundle_root>/<violation_id>.json,
+        then reconcile the two artifacts that describe the same segments:
+        segments_manifest.json is rebuilt from the violation's own segments
+        (legacy_segment_id carried over, never re-derived) and each
+        Transcripts/<transcript_id>.json is rewritten to hold only the segments
+        this violation cites. Idempotent: a second call with the same violation
+        changes no bytes.
+
+        This is the write gate, so it is the only place the bundle's derived
+        segment artifacts can drift from the violation it stores. Nothing is
+        written when the violation cites no segments."""
         v = _v_load(violation)
-        out = _write_violation_json(v, Path(bundle_root))
-        return {"path": str(out)}
+        root = Path(bundle_root)
+        out = _write_violation_json(v, root)
+        return {"path": str(out), **_sync_segment_artifacts(v, root)}
 
     @mcp.tool()
     def build_manifest_tool(bundle_root: str, schema_version: str = "3.0") -> dict:

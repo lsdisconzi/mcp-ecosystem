@@ -111,7 +111,7 @@ def _violation_pack_server(python: str | None = None) -> ServerEntry:
             ToolEntry("verify_human_attested_tool", "Record human-attested authority verification.", ["verification"]),
             ToolEntry("derive_confidence_tool", "Derive confidence score for a violation.", ["confidence"]),
             ToolEntry("attach_confidence_tool", "Attach confidence to a violation.", ["confidence"]),
-            ToolEntry("write_violation_json_tool", "Write violation to JSON file.", ["io"]),
+            ToolEntry("write_violation_json_tool", "Write violation to JSON + reconcile segments manifest & transcripts.", ["io"]),
             ToolEntry("build_manifest_tool", "Build manifest for violation bundle.", ["io"]),
             ToolEntry("zip_bundle_tool", "Create zip bundle.", ["io"]),
             ToolEntry("copy_source_into_bundle_tool", "Copy source files into bundle.", ["io"]),

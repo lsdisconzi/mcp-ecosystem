@@ -31,6 +31,7 @@ Public API (stable):
         build_manifest
         zip_bundle
         copy_source_into_bundle
+        sync_segment_artifacts
 
     Extensions (Protocols only — implementations live elsewhere)
         JurisprudenceProvider, VectorIndex, KnowledgeGraph
@@ -80,6 +81,7 @@ from .pack import (
     write_violation_json,
     zip_bundle,
 )
+from .segment_sync import sync_segment_artifacts
 from .extensions import JurisprudenceProvider, KnowledgeGraph, VectorIndex
 from .ingesters import (
     FrameworkIngester,
@@ -154,6 +156,7 @@ __all__ = [
     "DEFAULT_PIPELINE", "run_pipeline",
     # packaging
     "build_manifest", "copy_source_into_bundle", "write_violation_json", "zip_bundle",
+    "sync_segment_artifacts",
     # extensions
     "JurisprudenceProvider", "KnowledgeGraph", "VectorIndex",
     # ingesters
