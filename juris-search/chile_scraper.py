@@ -148,6 +148,23 @@ _F5_BODY_MARKERS = (
     "What code is in the image",
 )
 
+# ── Detail-panel readiness (measured live 2026-09-17; see
+# verification_report.md, "detail swap" evidence) ─────────────────────────
+# Clicking "Ver sentencia" does NOT open a new tab: window handles stay at 1.
+# The button's onclick calls ver_detalle_sentencia(), which AJAX-loads the
+# document and then $().show()s #capa_contenedor_detalle_sentencia — an
+# element that already exists in the DOM with display:none. Consequences:
+#   * display flips visible ~immediately (t≈0.007 s) while the document text
+#     arrives later, so *visibility is not readiness* — gate on content;
+#   * clicking HIDES #capa_resultados_busqueda_sentencias without removing its
+#     70 [data-idsentencia] nodes, so the results predicate is satisfied by
+#     invisible nodes and returns instantly.
+# Measured text length of the central panel: 94 chars before the click,
+# ~78,900 after. 1000 sits clear of both.
+_DETAIL_CONTAINER_ID = "capa_contenedor_detalle_sentencia"
+_DETAIL_PANEL_ID = "panel_contenedor_central_detalle_sentencia"
+_DETAIL_MIN_CHARS = 1000
+
 
 @dataclass
 class SearchCriteria:
@@ -301,11 +318,25 @@ class ChileJurisprudenciaScraper:
         max_pages = max(1, (max_results // per_page) + 2)
 
         # ── Page 1: run the search via UI ────────────────────────────────
+        # The landing page renders a DEFAULT listing (~1.1 s late), so a
+        # readiness check that only looks for "some rows" can pass on
+        # pre-search data (playbook §5, amendment D4b). Snapshot what is
+        # already there and require the set to CHANGE.
+        pre_search_ids = self._current_result_ids()
         self._run_search_ui(query)
-        self._wait_for_results()
+        wait_ok = self._wait_for_results(previous_ids=pre_search_ids)
 
+        retried_empty = False
         while len(entries) < max_results and page <= max_pages:
             page_entries = self._parse_search_results(query, id_buscador, cat_info)
+
+            # The id set we are about to consume. The next wait must produce
+            # something different from this, otherwise it returns on the rows
+            # we have already read.
+            current_ids = frozenset(
+                r.get("id_sentencia") for r in page_entries
+                if r.get("id_sentencia")
+            )
 
             new_on_page = 0
             for r in page_entries:
@@ -330,9 +361,24 @@ class ChileJurisprudenciaScraper:
             if len(entries) >= max_results:
                 break
             if new_on_page == 0:
-                # Either the pager is done or F5 ate the page.
                 self._assert_not_blocked(context=f"page {page} parse")
-                logger.info("Chile: no new results — stopping.")
+                # A zero-yield page is only conclusive if readiness was
+                # actually reached. If the wait timed out, the DOM may still
+                # be showing the page we already consumed — so re-click once
+                # rather than letting a single slow render silently truncate
+                # the result set (verification_report.md, issue 9).
+                if not wait_ok and not retried_empty and page < max_pages:
+                    retried_empty = True
+                    if self._click_next_page():
+                        page += 1
+                        wait_ok = self._wait_for_results(
+                            previous_ids=current_ids)
+                        continue
+                logger.warning(
+                    f"Chile: no new results on page {page} — stopping. "
+                    f"readiness_reached={wait_ok}, "
+                    f"ids_on_page={len(current_ids)}"
+                )
                 break
 
             if not self._click_next_page():
@@ -340,8 +386,8 @@ class ChileJurisprudenciaScraper:
                 break
 
             page += 1
-            self._wait_for_results()
-            time.sleep(0.5)  # small human-like gap
+            # No sleep: the change-predicate is what paces the loop now.
+            wait_ok = self._wait_for_results(previous_ids=current_ids)
 
         logger.info(f"Chile: total results: {len(entries)}")
         return entries
@@ -382,26 +428,121 @@ class ChileJurisprudenciaScraper:
         if not clicked:
             raise RuntimeError("Chile: could not locate Buscar button")
 
-    def _wait_for_results(self, timeout: Optional[int] = None):
-        """Poll until result rows appear, an explicit 'no results' state, or timeout."""
+    def _current_result_ids(self) -> frozenset:
+        """Visible [data-idsentencia] values currently in the DOM.
+
+        The portal replicates the attribute 7x per result (card + 4 title
+        spans + button + form — see verification_report.md, patch 4a), so a
+        set is required. The visibility filter is load-bearing, not cosmetic:
+        opening a detail panel HIDES the results container while leaving all
+        its nodes in the DOM (measured), so an unfiltered read would report a
+        full result set for a page that is no longer showing.
+
+        Uses offsetParent rather than is_displayed(): one round trip instead
+        of 70, and WebDriverWait re-evaluates the predicate every poll.
+        offsetParent is null for position:fixed elements; the portal's result
+        rows are in normal flow. If a future revision makes them fixed, this
+        predicate silently starts returning empty.
+
+        Never raises — returns frozenset() on any driver failure.
+        """
+        try:
+            raw = self.driver.execute_script(
+                "return Array.from(document.querySelectorAll('[data-idsentencia]'))"
+                ".filter(e => e.offsetParent !== null)"
+                ".map(e => e.getAttribute('data-idsentencia'))"
+                ".filter(Boolean);"
+            )
+        except Exception:
+            return frozenset()
+        return frozenset(raw or [])
+
+    def _wait_for_results(
+        self,
+        timeout: Optional[int] = None,
+        previous_ids: Optional[frozenset] = None,
+    ) -> bool:
+        """Wait for the result set to become ready. Returns True if it was.
+
+        Two modes:
+          previous_ids is None
+            Legacy: wait for any non-empty, visible result set.
+          previous_ids is a frozenset
+            Change mode: wait until the visible id set is non-empty AND
+            differs from previous_ids. Required after anything that mutates
+            the result set (search submit, next-page click, section nav) —
+            see verification_report.md open issue 9.
+
+        TWO measured reasons empty must never count as ready:
+          * the portal removes every row for ~2.0 s between pages, so an
+            empty window is normal mid-pagination; and
+          * WebDriverWait evaluates its predicate IMMEDIATELY (its 0.5 s
+            interval is between retries), so the first evaluation can land
+            in the sub-25 ms gap before the click clears the DOM.
+        A change predicate is correct under both orderings.
+        """
         timeout = timeout or self.wait_time
 
         def _ready(d):
             # F5 rejection page — bail immediately.
-            src = d.page_source
-            if self._is_f5_block(src):
+            if self._is_f5_block(d.page_source):
                 return True
-            # Results present?
-            if d.find_elements(By.CSS_SELECTOR, "[data-idsentencia]"):
+            current = self._current_result_ids()
+            if not current:
+                return False
+            if previous_ids is None:
                 return True
-            return False
+            return current != previous_ids
 
+        ok = True
         try:
             WebDriverWait(self.driver, timeout).until(_ready)
         except Exception:
+            ok = False
             logger.warning("Chile: timed out waiting for results")
 
         self._assert_not_blocked(context="waiting for results")
+        return ok
+
+    def _wait_for_detail(self, timeout: Optional[int] = None) -> bool:
+        """Poll until the detail panel is shown AND its document has loaded.
+
+        Distinct from _wait_for_results on purpose: the detail click replaces
+        the visible results with the detail panel, and the results predicate
+        would still be satisfied by the now-hidden result nodes (measured),
+        returning instantly with an empty panel.
+
+        Readiness is gated on CONTENT, not visibility — the container is
+        shown ~instantly while the AJAX payload lands later.
+        """
+        timeout = timeout or self.wait_time
+
+        def _ready(d):
+            if self._is_f5_block(d.page_source):
+                return True
+            try:
+                return bool(d.execute_script(
+                    "var c=document.getElementById(arguments[0]);"
+                    "if(!c || c.offsetParent===null) return false;"
+                    "var p=document.getElementById(arguments[1]);"
+                    "if(!p) return false;"
+                    "return (p.textContent||'').length >= arguments[2];",
+                    _DETAIL_CONTAINER_ID,
+                    _DETAIL_PANEL_ID,
+                    _DETAIL_MIN_CHARS,
+                ))
+            except Exception:
+                return False
+
+        ok = True
+        try:
+            WebDriverWait(self.driver, timeout).until(_ready)
+        except Exception:
+            ok = False
+            logger.warning("Chile: timed out waiting for detail panel")
+
+        self._assert_not_blocked(context="waiting for detail panel")
+        return ok
 
     def _click_next_page(self) -> bool:
         """Click the pager's 'next' control. Returns True on click.
@@ -592,21 +733,25 @@ class ChileJurisprudenciaScraper:
             return False
 
         self._navigate_to_category(categoria)
+        pre_search_ids = self._current_result_ids()
         self._run_search_ui(result.get("search_terms") or "")
-        self._wait_for_results()
+        self._wait_for_results(previous_ids=pre_search_ids)
 
         # Advance to the page where this result was found.
         for _ in range(target_page - 1):
+            page_ids = self._current_result_ids()
             if not self._click_next_page():
                 break
-            self._wait_for_results()
-            time.sleep(0.3)
+            # Paced by the change-predicate; no sleep.
+            self._wait_for_results(previous_ids=page_ids)
 
         # Find the row and click the detail button.
         try:
             rows = self.driver.find_elements(By.CSS_SELECTOR, "[data-idsentencia]")
             for row in rows:
                 if row.get_attribute("data-idsentencia") != str(id_sentencia):
+                    continue
+                if not row.is_displayed():
                     continue
                 # Try the labelled button first, then any button in the row.
                 btns = row.find_elements(
@@ -617,7 +762,10 @@ class ChileJurisprudenciaScraper:
                 for btn in btns:
                     if btn.is_displayed():
                         self.driver.execute_script("arguments[0].click();", btn)
-                        self._wait_for_results(timeout=self.wait_time)
+                        # The results predicate would still pass here — the
+                        # click hides the result nodes rather than removing
+                        # them — so wait on the detail panel itself.
+                        self._wait_for_detail(timeout=self.wait_time)
                         return True
         except Exception as e:
             logger.error(f"Chile: detail click failed: {e}")

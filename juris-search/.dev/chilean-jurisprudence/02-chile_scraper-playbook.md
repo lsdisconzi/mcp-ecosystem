@@ -1,7 +1,7 @@
 # Verification Playbook — `chile_scraper.py`
 
-<!-- pinned: chile_scraper.py @ sha1:53a163d543ecb4de425988d2f92d0233e5e4bef7 -->
-<!-- playbook-hash: sha256:f8784bcc6e95cde6db18504587e73b637ba712bd2829015d159314dfe1e31c60 (of this file with this line removed) -->
+<!-- pinned: chile_scraper.py @ sha1:a595bf7c4c46fd61de1bd0fe87e35a66fe4173c9 -->
+<!-- playbook-hash: sha256:63a4f0e7758f3b11d1f9770aeff594d6c22a85a8965514852f216e5021c4b477 (of this file with this line removed) -->
 
 Give this to the agent verbatim. It's ordered so each step either confirms a prior fix or fails loudly before the next step can mask it. The agent should **stop at the first failure** and report, rather than pressing on with downstream steps.
 
@@ -263,7 +263,9 @@ Run a **single-page** search in a fresh session.
 > **Measured refinements (D4b — added after the second re-run).** Two behaviours were observed that the guidance above must account for:
 >
 > - **The default listing renders *late*.** On a fresh profile, a read taken immediately after `_navigate_to_category` returned `n: 0`, `cantidad: ""`; the default listing (`855.792 resultados`, 70 nodes, first id `200917190`) only appeared **~1.1 s later**. So an *empty* landing snapshot is a false negative, and the `time.sleep(15)` below is load-bearing — do not skip it. It also means a freshness heuristic keyed on "`#span_cantidad_resultados` is non-empty" is **not** sufficient: the landing listing supplies a non-empty count of its own.
-> - **`[data-idsentencia]` is not one-per-result.** The selector matched **~70 nodes for 10 unique ids** on every observed result page — the attribute is repeated across nested/related nodes (the first three matches carried the *same* id). This is why `n` in the snapshot is ~70 while `len(results)` is 10, and why `get_inteiro_links`' `seen_ids` dedupe is load-bearing. Do **not** conclude from `n == 70` that the portal returned 70 rows.
+> - **`[data-idsentencia]` is not one-per-result.** The selector matched **~70 nodes for 10 unique ids** on every observed result page, i.e. exactly **7 per result**. This is why `n` in the snapshot is ~70 while `len(results)` is 10, and why `get_inteiro_links`' `seen_ids` dedupe is load-bearing. Do **not** conclude from `n == 70` that the portal returned 70 rows.
+>
+>   **Corrected (D4c).** This bullet originally added "the first three matches carried the *same* id" and implied hidden stubs and cached rows. That reconstruction is wrong. The measured anatomy is one **visible** `div.card` that **contains** the other six, all visible, all carrying the same value: 4× `span.estilo_resultado_titulo`, the `button.btn-primary` (`Ver sentencia`), and a `form`. Histogram over all 70 nodes: `40 span / 10 div.card / 10 button / 10 form`; `is_displayed()` was `True` for all 70. So there are no hidden nodes under this selector, and **scoping it to the results container removes exactly zero** (70 scoped vs 70 unscoped, measured). See `verification_report.md` open issue 11 for the real outerHTML and the correction to 03 §4a.
 
 ```python
 import time
@@ -438,9 +440,11 @@ Key facts (all verified by clicking in the live page):
 
 The click itself is therefore **not** the remaining blocker. The measured timeline around it is what matters:
 
-- Immediately after the click the row set is **cleared** (`n: 0`, `first: null`) and `#span_cantidad_resultados` still holds the **stale** count.
-- The replacement rows and the true count arrive **~1.8 s** later (`855.792` → `15.803`, first id changes).
-- `get_inteiro_links` sleeps only **0.5 s** after `_click_next_page()` and its readiness wait is an *existence* test — so it can still read the pre-click rows, dedupe every page-2 row away, take `new_on_page == 0`, and break with `pages == [1]`.
+- Immediately after the click the row set is **cleared** — measured with 0.1 s sampling in two independent fresh sessions: `n_all=0` by **t=0.022 s** (and t=0.027 s in the second run). `#span_cantidad_resultados` still holds the **stale** count.
+- It stays **empty for ≈2.0 s** (20 consecutive empty samples) and the replacement rows land at **t=2.425 s**: 70 nodes, 10 unique, **all 10 ids replaced** (`delta=20`).
+- **Corrected by measurement (D7b).** The original text here said the rows arrive at "~1.8 s" and that `_wait_for_results` "can still read the pre-click rows" because its existence test is satisfied by stale nodes. The 1.8 s figure was a single coarse sample, and the stale-row mechanism is **refuted**: no node carrying the attribute survives the click, so nothing stale remains to satisfy the predicate.
+
+  What the timing table **cannot** order is whether the predicate's *first* evaluation precedes the ~22 ms clear. `WebDriverWait.until()` evaluates its predicate **immediately** — its 0.5 s is the interval *between retries*, not a delay before the first poll. So the race is **bounded but unresolved**, and it is the mechanism consistent with the recorded failure. Either way the fix is the same: readiness must require a **changed, non-empty** row set, which is correct whether the predicate fires before the clear (stale set → no change) or after it (empty → not ready).
 
 That is exactly the "Known gap" row in the failure table below, now confirmed rather than predicted.
 
@@ -465,7 +469,7 @@ Expected: the value appears only in `get_inteiro_links` arithmetic (`per_page`, 
 |---|---|---|
 | **`pages == [1]`, `len(results) == 10`, and step 5's P1 also failed** | The search `POST` was F5-rejected, so page 1 is landing-page data and the pager advances a listing that was never queried | **Environmental — stop and report.** Do not diagnose the pager at all until step 5's P1 passes; a pager bug and a blocked search are indistinguishable from here |
 | `pages == [1]`, `len(results) == 10`, P1 passed | `_click_next_page` returned `False` — no selector matched | Check `#btnPaginador_pagina_adelante` (sub-step 6a) is present and displayed; it is already first in the selector list. If it is *missing*, the pager was not rendered — check `span_cantidad_resultados` > 10 |
-| `pages == [1]`, `len(results) == 10`, P1 passed, and `_click_next_page` returned `True` | The click fired but the result rows had not been replaced before `_parse_search_results` read the DOM — `_wait_for_results` returns immediately because stale rows still match `[data-idsentencia]`. Every page-2 row dedupes as a duplicate, `new_on_page == 0`, loop breaks | **Known gap.** Record as an open issue: the loop needs a wait for the row set to *change*, not merely exist. Same root cause as step 5's P1 (existence is used as a proxy for freshness) |
+| `pages == [1]`, `len(results) == 10`, P1 passed, and `_click_next_page` returned `True` | The click fired but the result rows had not been replaced before `_parse_search_results` read the DOM — `_wait_for_results` is an *existence* test, evaluated immediately, and the ~22 ms DOM clear vs ~2.4 s repopulation leaves it either reading the pre-click set or the ~2.0 s empty window. Every page-2 row dedupes as a duplicate, `new_on_page == 0`, loop breaks | **Confirmed live (step 6).** The loop needs a wait for the row set to *change*, not merely exist. Same root cause as step 5's P1 (existence is used as a proxy for freshness) |
 | `pages == [1]`, `len(results) < 10` | Pager never appeared because the query yielded fewer rows | Not a bug — pick a broader query (`""`) and retry |
 | F5 block on page 2 | Rapid clicks tripped F5 | Increase `time.sleep(0.5)` to 2–3 s after `_click_next_page` |
 | `RuntimeError: F5 block ... during page 2 parse` | F5 in the middle of pagination | Correct behaviour — verify the support ID in the message and log it |
@@ -620,7 +624,10 @@ Playbook: <path> @ sha256:<grep -v '^<!-- playbook-hash:' file | shasum -a 256>
 | D6 | §6, §7, §8 | recorded the **real pager markup** (Bootstrap 4, `#btnPaginador_pagina_adelante`) replacing the wrong DataTables guidance; corrected step 6's failure table; added Case-A3 preconditions to §7/§8 |
 | re-pin | header | **`d46f896d…` → `53a163d5…`**: step 6 produced a concrete reproducible failure (`_click_next_page() -> False` with `#btnPaginador_pagina_adelante` present, displayed and enabled), so the pager selector list was corrected. The pinned blob moved by design; nothing else in `chile_scraper.py` changed (blob diff = 1 hunk, +16/-1) |
 | D4b | §5 | recorded the **measured** landing behaviour: the default listing renders **~1.1 s late** (so an empty snapshot is a false negative and a non-empty count is *not* proof of freshness), and `[data-idsentencia]` matches **~70 nodes for 10 unique ids** |
+| **D4c** | §5 | corrected D4b's second bullet: the 7× replication is one **visible** card containing its own visible descendants, not "nested/related nodes" with the first three matches sharing an id. No hidden nodes exist under this selector, and scoping it is a measured no-op |
 | D7 | §6 (6a) | recorded the **measured post-fix pager state**: `_click_next_page() -> True` and cursor `0 -> 1` (control-level fix confirmed), but rows are cleared on click and the true count lands at **~1.8 s** while the loop sleeps `0.5 s` — turning the "Known gap" row into a confirmed finding |
+| **D7b** | §6 (6a) | corrected D7's timeline with the 0.1 s-sampled figures (**clear at ~22 ms**, empty for **≈2.0 s**, repopulated at **2.425 s**) and removed the refuted "satisfied by pre-click rows" mechanism. The fix is unchanged; the stated reason is not. Also corrected the failure table's "Known gap" row |
+| **D8** | Phase B, `chile_scraper.py` | **Phase B applied**: `_wait_for_results` is now a *change* predicate returning a bool, plus a separate content-gated `_wait_for_detail` for `_open_detail`; the unpaced `time.sleep(0.5)` / `0.3` calls are gone. B-1 was **not** applied (measured no-op). Evidence: `verification_report.md` new *Detail-swap* evidence block; offline coverage in `test_chile_readiness.py` (18 assertions) |
 | minor | §0.5, §4, §10, §11 | `mkdir -p workspace/CL_jurisprudencia`; in-loop assertion; §11.N → §11 item N |
 
 ## Summary
@@ -673,9 +680,9 @@ Playbook: <path> @ sha256:<grep -v '^<!-- playbook-hash:' file | shasum -a 256>
 6. `Compendio_Extranjería` `id_buscador` is **still unverified**.
 7. `Lineas_Jurisprudenciales` special mode is **not implemented** (a guard is suggested).
 8. **F5 rejections delivered inside an XHR body are undetectable** (Case A3). `POST /busqueda/buscar_sentencias` returns HTTP 200 with `La URL solicitada ha sido rechazada` while `driver.page_source` stays clean — so `_assert_not_blocked` never fires and `get_inteiro_links` returns the *landing page listing* as if it were search results. Fixing this needs a response-interceptor injected before navigation; it is a design change, deliberately not made in this pass.
-9. **No freshness check anywhere in the search loop.** `_wait_for_results` treats the *existence* of `[data-idsentencia]` as readiness, but `_navigate_to_category` already rendered a default listing — so it never waits for the search, and after `_click_next_page` it reads the previous page's rows (all dedupe away, `new_on_page == 0`, loop exits). Both step 5's P1 trap and step 6's stall share this root cause.
+9. **No freshness check anywhere in the search loop.** `_wait_for_results` treats the *existence* of `[data-idsentencia]` as readiness, but `_navigate_to_category` already rendered a default listing — so it never waits for the search, and after `_click_next_page` it can read the DOM before the rows have been replaced (or during the ~2.0 s window when they are gone). Both step 5's P1 trap and step 6's stall share this root cause. **Fixed** — readiness now requires a non-empty *changed* set (`verification_report.md` open issue 9).
 10. **The pager markup is undocumented** in `docs/pjud-source.md` §7.1, which covers result rows only. The verified markup is now recorded in playbook §6 sub-step 6a; it should be folded into the source notes.
-11. **`[data-idsentencia]` is not one-node-per-result** — it matched ~70 nodes for 10 unique ids on every observed page (the first three matches carried the same id). Consequences: `_parse_search_results` runs its full regex set ~7× more often than needed on every page, and `_open_detail`'s row loop iterates nested duplicates of the row it is hunting. Correct today only because of the `seen_ids` dedupe in `get_inteiro_links` and the early `continue` on id mismatch in `_open_detail`. Worth tightening the selector (e.g. to the row container that directly owns the attribute) once the markup is confirmed in the source notes.
+11. **`[data-idsentencia]` is not one-node-per-result** — it matched ~70 nodes for 10 unique ids on every observed page, i.e. **7 visible nodes per result** (one `div.card` containing 4 title spans, the `Ver sentencia` button and a form — see `verification_report.md` issue 11). Consequences: `_parse_search_results` runs its full regex set ~7× more often than needed on every page, and `_open_detail`'s row loop iterates nested duplicates of the row it is hunting. Correct today only because of the `seen_ids` dedupe in `get_inteiro_links` and the early `continue` on id mismatch in `_open_detail`. This is an **efficiency** issue, not a correctness one, and **scoping the selector does not help** (measured no-op) — the tidier fix, once the markup is in the source notes, is to keep **one node per `id_sentencia`** (e.g. the `div.card`, via `:not(:has([data-idsentencia]))`, or by deduping on element identity).
 
 ---
 

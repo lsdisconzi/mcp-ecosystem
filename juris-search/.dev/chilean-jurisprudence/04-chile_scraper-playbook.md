@@ -1,5 +1,11 @@
 # Where things stand, and what to do next
 
+> **Outcome (2026-09-17, added after the fact).** Both decisions were taken as recommended, and both held up.
+> - **Decision 1 — gate skipped, Phase B applied.** B-2 landed as a *change* predicate returning a bool, plus the non-terminal `new_on_page == 0` handler this doc insisted on (retry once, and only after a timed-out wait). Work order **B-1 was not applied** — the detail probe and the 7-node histogram both confirmed it is a measured no-op.
+> - **Decision 2 — playbooks committed.** `02`'s declared hash was reproducible from `HEAD` before this pass, and is again at the new revision.
+> - **One thing this doc did not anticipate.** Its §"Either way, a change-predicate is the correct fix" reasoning was applied to `get_inteiro_links`, but the same error existed one layer down in `_open_detail`: clicking `Ver sentencia` **hides** the results container without removing its 70 `[data-idsentencia]` nodes, so its post-click `_wait_for_results` was satisfied by *invisible* nodes. `_open_detail` therefore needed the fix too, and additionally a **content-gated** wait (`_wait_for_detail`), because the detail container flips `display:block` at ~7 ms while its text grows from 94 to ~78,900 chars. Full evidence in `verification_report.md` §*Detail-swap probe*.
+> - **Superseded below:** the hash table in Decision 2 and the `must equal f8784bcc...` check are now historical — the current declared hash is **`63a4f0e7…`** and the scraper pin is **`a595bf7c…`** (Phase B moved the blob; the playbook hash moved with the amendment).
+
 The agent did solid work here — two independent probes, a self-correction on an overclaim, and honest "not captured" reporting on the one piece of evidence (patch 4b's response body) that couldn't be obtained. The three commits are narrowly scoped to the report, as instructed. I'll weigh in on the two open decisions, then flag what I see in the evidence.
 
 ## Decision 1 — should Phases B/C/D wait?

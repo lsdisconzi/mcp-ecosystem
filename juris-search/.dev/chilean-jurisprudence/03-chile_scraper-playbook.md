@@ -262,6 +262,17 @@ Three things to re-run:
 
 # Next Work Order — Resolve issue 9, fix pagination
 
+> **⚠ Executed and superseded (2026-09-17).** Everything from here down is the work order as issued; it is kept because it is the record of what was asked. For the *outcome*, read `verification_report.md` (*Changes made*, *Detail-swap probe*, amendment rows `D4c`/`D7b`/`D8`) and `04-`/`05-chile_scraper-playbook.md`.
+>
+> What actually happened, against the preconditions below:
+> 1. ✅ Patches 1–6 applied and committed.
+> 2. ✅ `chile_scraper.py` was at `53a163d5…` with a clean tree when the work order started.
+> 3. ❌ **§0.3 ran the other way.** Phase A *did* produce playbook amendments — §A.2's decision table was rebuilt and B-1 marked not applicable — so the playbook hash is **not** `f8784bcc…`. It is now **`63a4f0e7…`**, and the scraper pin is **`a595bf7c…`**. Any hash assertion below (`§After applying` 1, precondition 3) is against the **old** revision and will fail by design.
+> 4. ⚠ Phase B was started **before** Phase C's re-run of step 6, on doc 04's argument that a change predicate is correct under both orderings of the race. The per-iteration instrumentation is therefore still owed, now against the new code path (Phase C below).
+> 5. ⚠ `04` refuted this section's `scope` clause: B-1 ("scope the result container") is a **measured no-op** and was **not** applied; B-2 was applied with a different rationale than the one written here.
+>
+> **`Phase A.1`–`A.2` and `Phase B` in this document are superseded by §Phase A.2 / §Phase B earlier in this file.** Do not re-run them from here.
+
 **Deliverable:** a scraper that reliably returns more than one page from `juris.pjud.cl`, verified against steps 5–8 of the playbook, with the mechanism of the fix recorded in the source notes.
 
 **Supersedes:** the "Not fixed in this pass" clause in `verification_report.md` open issue 9.
@@ -341,9 +352,13 @@ for t in (0.0, 0.3, 0.8, 1.4, 2.0, 3.0):
 
 | Observation | Meaning | Branch |
 |---|---|---|
-| Node count stays >0 throughout, but **unique ids don't change** | Non-result nodes (hidden stubs / cached rows / templates) are pinning the selector. **Issue 11 is the cause of issue 9.** | **B-1** |
-| Node count drops to 0 briefly, then repopulates with new ids at ~1.8 s | Rows are cleared; predicate fires on a *different* condition, or fires before the clear. **Issue 11 is a red herring for this symptom.** | **B-2** |
-| Both: some nodes persist with stale ids AND new result nodes appear | Combined. **B-1 applied first**, then re-measure. | **B-1, then re-run A.2** |
+| Node count stays >0 throughout, but **unique ids don't change** | Nodes carrying the attribute survive the click, so an *existence* predicate is satisfied by rows the loop has already read. **This is not the same as "hidden stubs":** the live set is one visible card plus its own six visible descendants, so scoping the selector removes nothing (measured — see `verification_report.md` issue 11). | **B-2** |
+| Node count drops to 0 briefly, then repopulates with new ids | Rows are cleared, but the predicate fires on a condition that does not require a *change* — and `WebDriverWait` evaluates it immediately, i.e. possibly before the clear. **Measured: `n_all=0` within ~22 ms, repopulated at ~2.4 s.** | **B-2**, then re-run A.2 |
+| Both: some nodes persist with stale ids AND new result nodes appear | The change predicate covers this too: it requires the live set to be non-empty **and** different from the set already consumed. | **B-2** |
+
+**B-1 was removed from this work order.** Its stated rationale — that hidden stubs / cached rows / templates pin the selector — was a reconstruction, and A.2 returned branch B-2. Scoping `[data-idsentencia]` to the results container is a **measured no-op** (70 nodes scoped, 70 unscoped). Do not apply it.
+
+**A.2 cannot order the predicate's first poll.** `WebDriverWait.until()` evaluates the predicate immediately and uses its `interval` only *between* retries, so a timing table bounds the DOM clear but not the first evaluation. Do not read a "node count is 0 at t=0.022 s, therefore the predicate returned False" conclusion out of this table — it does not follow.
 
 ### A.3 — Record the findings
 
@@ -352,7 +367,7 @@ Append to `verification_report.md` under *Evidence*:
 - Actual container selector (from A.1.1).
 - Node count vs unique count (from A.1.2), with the outerHTML + ancestor chain of the first three matches.
 - The A.2 timing table verbatim.
-- One line: `issue 9 mechanism: <B-1|B-2|combined>`, with the observation that establishes it.
+- One line: `issue 9 mechanism: B-2`, with the observation that establishes it.
 
 **Do not write any code yet.** If A.2 is ambiguous, extend the timing table with finer intervals rather than guessing.
 
@@ -360,51 +375,61 @@ Append to `verification_report.md` under *Evidence*:
 
 ## Phase B — Apply the fix
 
+> **Status: applied** (2026-09-17) as commit `chile: gate result readiness on row-set change; separate detail wait`.
+> Four places where this section's draft diverged from what measurement supported, all reflected below:
+> **B-1 is skipped entirely** (scoping is a measured no-op); the helper uses **`offsetParent`, not
+> `is_displayed()`** (70 round trips per poll otherwise); the detail wait is gated on **content, not
+> visibility** (the container is shown ~instantly; the document arrives later); and `new_on_page == 0`
+> stays terminal **except** when the preceding wait timed out.
+
 The fix has **two parts**, and Phase A determines how much of part 1 is needed.
 
-### B-1 — Scope the selector (if A.2 showed stale-id persistence)
+### B-1 — Scope the selector — **NOT APPLICABLE**
 
-Introduce a module-level constant:
+A.2 returned branch **B-2**, and scoping `[data-idsentencia]` to `#capa_resultados_busqueda_sentencias` was measured to remove **zero** nodes (70 scoped vs 70 unscoped, 10 unique either way). The container holds every card carrying the attribute and nothing else. **Do not apply this step.** The reasoning that motivated it — hidden stubs or cached rows pinning the selector — came from reconstructed markup that does not exist in the live DOM (`verification_report.md`, issue 11).
 
-```python
-# Scoped to the live results container; excludes hidden stubs and cached
-# rows that also carry [data-idsentencia]. Verified live on <DATE> — see
-# verification_report.md, Phase A.2. Fold into docs/pjud-source.md §7.1.
-_RESULT_SCOPE = "#capa_resultados_busqueda_sentencias [data-idsentencia]"
-```
-
-Replace every `[data-idsentencia]` selector inside `_wait_for_results`, `_parse_search_results`, and `_open_detail`'s row loop with `_RESULT_SCOPE`. Do not change the parse regex or the dedupe logic — those are correct once the input set is correct.
-
-Add a helper:
+The helper below *is* required, however: B-2 consumes it. It is defined once, and it does **not** scope the selector.
 
 ```python
 def _current_result_ids(self) -> frozenset:
-    """Unique data-idsentencia values in the live results container.
-    Excludes hidden nodes. Returns frozenset() if the container is absent."""
+    """Visible data-idsentencia values in the DOM. Returns frozenset() on any
+    driver failure.
+
+    Uses offsetParent, not is_displayed(): one round trip instead of 70, and
+    WebDriverWait re-evaluates the predicate on every poll. The visibility
+    filter is load-bearing — opening a detail panel HIDES the results
+    container while leaving its nodes in the DOM (measured).
+    """
     try:
-        nodes = self.driver.find_elements(By.CSS_SELECTOR, _RESULT_SCOPE)
+        raw = self.driver.execute_script(
+            "return Array.from(document.querySelectorAll('[data-idsentencia]'))"
+            ".filter(e => e.offsetParent !== null)"
+            ".map(e => e.getAttribute('data-idsentencia'))"
+            ".filter(Boolean);"
+        )
     except Exception:
         return frozenset()
-    return frozenset(
-        n.get_attribute("data-idsentencia")
-        for n in nodes
-        if n.is_displayed() and n.get_attribute("data-idsentencia")
-    )
+    return frozenset(raw or [])
 ```
+
+> `offsetParent` is `null` for `position: fixed` elements. The portal's result rows are in normal flow (measured); if a future revision makes them fixed, this predicate silently starts returning empty.
 
 ### B-2 — Change the readiness predicate (always; both branches benefit)
 
 The current predicate is *existence*: `if d.find_elements(...): return True`. Replace with a *change* predicate when a previous snapshot is available, and existence only when it isn't:
 
 ```python
-def _wait_for_results(self, timeout=None, previous_ids=None):
-    """Wait for the result set to become ready.
+def _wait_for_results(self, timeout=None, previous_ids=None) -> bool:
+    """Wait for the result set to become ready. Returns True if it was.
 
-    If previous_ids is given (frozenset), wait until the live result ids
-    differ from it AND the container is non-empty. This is required after
-    any action that mutates the result set (search, next-page click):
-    existence alone is satisfied by stale nodes and by the landing page's
-    default listing (see verification_report.md, D4b).
+    previous_ids is None  -> legacy: any non-empty visible set.
+    previous_ids is a set -> change mode: non-empty AND different from it.
+
+    Empty must never count as ready, for two measured reasons: the portal
+    removes every row for ~2.0 s between pages, and WebDriverWait evaluates
+    the predicate immediately (its interval is between retries only), so the
+    first evaluation can land in the sub-25 ms gap before the click clears
+    the DOM. A change predicate is correct under both orderings.
     """
     timeout = timeout or self.wait_time
 
@@ -418,33 +443,99 @@ def _wait_for_results(self, timeout=None, previous_ids=None):
             return True
         return current != previous_ids
 
+    ok = True
     try:
         WebDriverWait(self.driver, timeout).until(_ready)
     except Exception:
+        ok = False
         logger.warning("Chile: timed out waiting for results")
 
     self._assert_not_blocked(context="waiting for results")
+    return ok
 ```
+
+The return value matters: the caller has to be able to tell "the rows changed" from "the wait gave up", because only the first says anything about whether the page was exhausted. See **B-2b**.
 
 **Call sites to update:**
 
 - **`get_inteiro_links`.** Before `_run_search_ui`, take `pre = self._current_result_ids()`; after, call `_wait_for_results(previous_ids=pre)`. This replaces the "landing snapshot vs after" freshness check that open issue D4b flagged as missing.
-- **`get_inteiro_links` loop.** Before `_click_next_page`, take `pre = self._current_result_ids()`; after the click, call `_wait_for_results(previous_ids=pre)`. Do **not** keep the trailing `time.sleep(0.5)`.
-- **`_open_detail`.** Two distinct waits: (a) before clicking `Ver sentencia`, `_wait_for_results(previous_ids=frozenset())` to ensure the results are loaded; (b) after clicking, a **different** predicate — the detail panel has loaded, not the results. Add a small private helper `_wait_for_detail(timeout)` that polls for `#capa_contenedor_detalle_sentencia` (or the observed detail container) being visible and `#capa_carga` hidden. Do not overload `_wait_for_results` for this. If the exact detail container is unknown, capture it in Phase A while you're already on the page — it's one extra `find_elements`.
+- **`get_inteiro_links` loop.** Snapshot the ids **of the page just parsed** (`current_ids`, from `page_entries`) and pass them to the wait that follows the next `_click_next_page()`. Do **not** keep the trailing `time.sleep(0.5)`: the change predicate is what paces the loop now.
+- **`_open_detail`.** Two distinct waits: (a) **before** the click, `_wait_for_results(previous_ids=pre_search_ids)` so the row is really on screen; (b) **after** the click, a *different* predicate — the **detail panel** has loaded, not the results. Add a private helper `_wait_for_detail(timeout)`. Do not overload `_wait_for_results` for this.
+
+  > **Measured, and it is not what this section originally assumed.** The click does **not** open a new tab
+  > (window handles stay at 1). `ver_detalle_sentencia()` AJAX-loads the document and then `$().show()`s
+  > `#capa_contenedor_detalle_sentencia`, an element that already exists with `display:none`. So:
+  > **visibility is not readiness** — the container flips visible at **t≈0.007 s** while the text inside it
+  > grows from `94` to `~78,900` characters afterwards. A display-only wait returns on an empty shell.
+  > Gate on content: container visible **and** `#panel_contenedor_central_detalle_sentencia` text length
+  > `>= 1000`.
+  >
+  > This also means the results predicate is still `True` after the click — the 70 result nodes are
+  > **hidden, not removed** — which is exactly why the detail wait cannot reuse it.
+
+  The predicate, in the shape the measurement supports (content, not visibility):
+
+  ```python
+  def _ready(d):
+      if self._is_f5_block(d.page_source):
+          return True
+      return bool(d.execute_script(
+          "var c=document.getElementById(arguments[0]);"
+          "if(!c || c.offsetParent===null) return false;"
+          "var p=document.getElementById(arguments[1]);"
+          "if(!p) return false;"
+          "return (p.textContent||'').length >= arguments[2];",
+          _DETAIL_CONTAINER_ID, _DETAIL_PANEL_ID, _DETAIL_MIN_CHARS))
+  ```
+
+### B-2b — `new_on_page == 0` is terminal, **except** after a timed-out wait
+
+The zero-yield exit currently conflates two different situations: "the pager is exhausted" and "the parse landed in the ~2.0 s empty window". **B-2 removes the second case for the normal path** — the loop no longer parses until the row set has actually changed — so making the break unconditionally non-terminal (as the earlier draft proposed) would trade a silent truncation for a possible infinite loop.
+
+What B-2 does **not** remove is the timeout path: if `_wait_for_results` gives up, the DOM may still be showing the page already consumed, and the parse that follows legitimately yields nothing. So the break is terminal **unless the preceding wait timed out**, in which case the click is retried **once**:
+
+```python
+if new_on_page == 0:
+    self._assert_not_blocked(context=f"page {page} parse")
+    if not wait_ok and not retried_empty and page < max_pages:
+        retried_empty = True
+        if self._click_next_page():
+            page += 1
+            wait_ok = self._wait_for_results(previous_ids=current_ids)
+            continue
+    logger.warning(
+        f"Chile: no new results on page {page} — stopping. "
+        f"readiness_reached={wait_ok}, ids_on_page={len(current_ids)}"
+    )
+    break
+```
+
+The warning is part of the fix: a truncated result set must say so in the log, with enough detail to tell the two cases apart.
 
 ### B-3 — Offline verification
 
-Add to `test_integration.py` (or a new `test_chile_pagination.py`) three assertions that don't require the network:
+`test_chile_readiness.py` (standalone, no network, no Chrome — a scripted stub driver whose
+`execute_script` returns a predetermined value per poll, so the *timeline* is controlled exactly).
+18 assertions covering:
 
 ```python
-# _current_result_ids returns frozenset and tolerates an absent container
-# _wait_for_results accepts previous_ids=None and previous_ids=frozenset()
-# _wait_for_results raises on a fake driver whose page_source is an F5 body
+# _current_result_ids: frozenset, tolerates a raising driver and a null return
+# _wait_for_results: empty window -> False; changed set -> True;
+#                    UNCHANGED set -> timeout -> False (this is the regression);
+#                    previous_ids=None keeps legacy behaviour
+# _wait_for_detail: displayed-but-empty -> False; populated -> True; F5 -> raises
+# _open_detail/_get_inteiro_links: no time.sleep left; detail wait is wired
 ```
 
-Use a minimal stub driver — do not launch Chrome for these.
+One of them exists to prove the others can fail: the *old* existence predicate is re-implemented
+against the same scripted timeline and asserted to **pass** on an unchanged 10-node page. Without that,
+a suite that only exercises the new predicate proves nothing about the defect it claims to catch.
 
-**Commit Phase B** as a single commit: `chile: scope result selector and gate readiness on row-set change`. Update the pinned blob in the playbook header and recompute the hash. Phase C's verification is what establishes the pin.
+```bash
+.venv/bin/python test_chile_readiness.py
+```
+
+**Commit Phase B** as a single commit: `chile: gate result readiness on row-set change; separate detail wait`. Update the pinned blob in the playbook header and recompute the hash. Phase C's verification is what establishes the pin.
 
 ---
 
@@ -507,7 +598,7 @@ Append a **Phase 9** section to `verification_report.md`:
 - **Phase B** — the diff of `chile_scraper.py` (should be ≤ 60 lines), the offline assertions added, the new pinned blob and playbook hash.
 - **Phase C** — the four-line output of the verification run.
 - **Phase D** — the playbook's standard summary table for steps 5–8.
-- **Reopened/closed issues:** issue 9 (closed if Phase C passed), issue 11 (closed if B-1 was applied and A.2 confirmed the mechanism; otherwise narrowed to the specific residual), issue 2 (filter surface — unchanged), issue 8 (Case A3 — unchanged).
+- **Reopened/closed issues:** issue 9 (closed if Phase C passed), issue 11 (narrowed to the residual `_parse_search_results` 7×-per-result inefficiency — B-1 is not applied, so the selector stays unscoped), issue 2 (filter surface — unchanged), issue 8 (Case A3 — unchanged).
 
 Update the verdict line at the top.
 
