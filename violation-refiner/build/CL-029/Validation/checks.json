@@ -1,6 +1,6 @@
 {
   "pipeline_version": "1.0",
-  "ran_at": "2026-09-13T15:40:47.706303Z",
+  "ran_at": "2026-09-17T10:34:06.085768Z",
   "violation_id": "CL-029",
   "checks": [
     {
@@ -18,8 +18,8 @@
     {
       "check_id": "V03",
       "name": "article_text_hash",
-      "status": "warn",
-      "details": "WARN: framework L16752 self-reported SHA in metadata header (5ccad211…) does not match actual content SHA (4a87dd4a…). | WARN: framework L20285 self-reported SHA in metadata header (b96e4db1…) does not match actual content SHA (4e6f01df…)."
+      "status": "pass",
+      "details": "All article-text hashes and excerpts match the framework cache. INFO: framework L16752 declares source SHA 5ccad211… (cache bytes: 4a87dd4a…). INFO: framework L20285 declares source SHA b96e4db1… (cache bytes: 4e6f01df…)."
     },
     {
       "check_id": "V04",
@@ -31,19 +31,19 @@
       "check_id": "V05",
       "name": "cross_references_resolve",
       "status": "pass",
-      "details": "No cross-references declared."
+      "details": "All 30 cross-references resolve."
     },
     {
       "check_id": "V06",
       "name": "element_coverage",
       "status": "warn",
-      "details": "17 uncovered: ['CL.LEY16752.Art.3.elem.deber_fiscalizacion: status=strong but no nexus_matrix entry', 'CL.LEY16752.Art.3.elem.incumplimiento_por_omision: status=contested but no nexus_matrix entry', 'CL.LEY16752.Art.3.elem.perjuicio_al_pasajero: status=established but no nexus_matrix entry', 'CL.LEY20285.Art.3.elem.sujeto_activo: status=established but no nexus_matrix entry', 'CL.LEY20285.Art.3.elem.ejercicio_funcion_publica: status=established but no nexus_matrix entry', 'CL.LEY20285.Art.3.elem.incumplimiento: status=contested but no nexus_matrix entry', 'CL.LEY20285.Art.3.elem.perjuicio: status=weak but no nexus_matrix entry', 'CL.LEY20285.Art.14.elem.sujeto_activo: status=contested but no nexus_matrix entry', 'CL.LPDC.Art.3.b.elem.sujeto_activo_proveedor: status=strong but no nexus_matrix entry', 'CL.LPDC.Art.3.b.elem.sujeto_pasivo_consumidor: status=established but no nexus_matrix entry', 'CL.LPDC.Art.3.b.elem.perjuicio: status=established but no nexus_matrix entry', 'CL.LPDC.Art.23.elem.calidad_proveedor: status=strong but no nexus_matrix entry', 'CL.LPDC.Art.23.elem.relacion_consumo: status=strong but no nexus_matrix entry', 'CL.LPDC.Art.23.elem.actuacion_negligente: status=contested but no nexus_matrix entry', 'CL.LPDC.Art.23.elem.menoscabo_consumidor: status=strong but no nexus_matrix entry', 'CL.LPDC.Art.23.elem.nexo_causal: status=weak but no nexus_matrix entry', 'CL.LPDC.Art.23.elem.anormalidad_servicio: status=contested but no nexus_matrix entry']"
+      "details": "11 uncovered: ['CL.LEY16752.Art.3.j.elem.actividad_aviacion_civil: status=strong but no nexus_matrix entry', 'CL.LEY16752.Art.3.j.elem.resguardo_seguridad_vuelo: status=weak but no nexus_matrix entry', 'CL.LEY16752.Art.3.r.elem.sujeto_activo_dgac: status=strong but no nexus_matrix entry', 'CL.LEY16752.Art.3.z.elem.sujeto_activo_dgac: status=strong but no nexus_matrix entry', 'CL.LEY20285.Art.3.elem.conocimiento_contenidos: status=weak but no nexus_matrix entry', 'CL.LPDC.Art.3.b.elem.sujeto_activo_proveedor: status=weak but no nexus_matrix entry', 'CL.LPDC.Art.3.b.elem.informacion_oportuna: status=weak but no nexus_matrix entry', 'CL.LPDC.Art.3.b.elem.deber_de_informarse: status=contested but no nexus_matrix entry', 'CL.LPDC.Art.23.elem.proveedor: status=strong but no nexus_matrix entry', 'CL.LPDC.Art.23.elem.venta_o_prestacion: status=strong but no nexus_matrix entry', 'CL.LPDC.Art.23.elem.falla_calidad: status=contested but no nexus_matrix entry']"
     },
     {
       "check_id": "V07",
       "name": "authorities_verification",
       "status": "warn",
-      "details": "No authorities listed. Jurisprudence/doctrine layer not populated."
+      "details": "10/10 authorities pending verification. None auto-populated with rol numbers (correct: prevents fabrication). External verification pass required before legal-filing use."
     },
     {
       "check_id": "V08",
@@ -61,13 +61,55 @@
       "check_id": "V10",
       "name": "confidence_derivation",
       "status": "pass",
-      "details": "Confidence 0.39 matches recomputed formula."
+      "details": "Confidence 0.28 matches recomputed formula."
     },
     {
       "check_id": "V11",
       "name": "enrichment_integrity",
       "status": "pass",
       "details": "Enrichment integrity verified (segments, excerpts, nexus, authorities)."
+    },
+    {
+      "check_id": "V12",
+      "name": "speaker_attribution",
+      "status": "pass",
+      "details": "4 cited segment(s) had a declarable source; 0 with an undeclared speaker."
+    },
+    {
+      "check_id": "V13",
+      "name": "evidence_nexus_coherence",
+      "status": "warn",
+      "details": "20 nexus row(s) checked; 8 cite a segment their element does not list as evidence. ['CL.LEY16752.Art.3.elem.dolo_o_negligencia_funcionaria <- I-002_05_NAR-07_STG_7_post_removal_investigation.seg-11', 'CL.LEY16752.Art.3.j.elem.instrucciones_general_aplicacion <- I-002_17_NAR-21_STG_29.seg-24', 'CL.LEY16752.Art.3.r.elem.actuacion_reglada <- I-002_17_NAR-21_STG_29.seg-24', 'CL.LEY16752.Art.3.elem.dolo_o_negligencia_funcionaria <- I-002_17_NAR-21_STG_29.seg-59', 'CL.LEY20285.Art.3.elem.conocimiento_decisiones <- I-002_17_NAR-21_STG_29.seg-24', 'CL.LPDC.Art.3.b.elem.informacion_veraz <- I-002_05_NAR-07_STG_7_post_removal_investigation.seg-11', 'CL.LPDC.Art.23.elem.negligencia <- I-002_05_NAR-07_STG_7_post_removal_investigation.seg-11', 'CL.LPDC.Art.23.elem.negligencia <- I-002_17_NAR-21_STG_29.seg-59']"
+    },
+    {
+      "check_id": "V14",
+      "name": "dead_weight_articles",
+      "status": "warn",
+      "details": "2 established article(s) score 0 and only dilute the weighted mean: ['CL.LEY16752.Art.1 (score 0.0 over 4 element(s))', 'CL.LEY20285.Art.14 (score 0.0 over 3 element(s))']. Demote to a candidate or record as an open question."
+    },
+    {
+      "check_id": "V15",
+      "name": "verbatim_hash_integrity",
+      "status": "pass",
+      "details": "4 verbatim hash(es) recomputed; 0 mismatch."
+    },
+    {
+      "check_id": "V16",
+      "name": "authority_verification_coherence",
+      "status": "pass",
+      "details": "10 authorit(ies) coherent with the stored verification factor; every unverified stub states what would settle it and every verified authority names its protocol."
+    },
+    {
+      "check_id": "V17",
+      "name": "cross_view_consistency",
+      "status": "pass",
+      "details": "Bundle and contract agree on 22 open question(s) and 30 cross-reference(s) (52 item(s) compared). Contract-only related_violations: 0 (not asserted against cross_references; reciprocity is a graph-level audit)."
+    },
+    {
+      "check_id": "V21",
+      "name": "element_id_closure",
+      "status": "warn",
+      "details": "34 grid pair(s) and 20 nexus row(s) checked; 6 warning(s): CL.LPDC.Art.3.b.elem.sujeto_activo_proveedor: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.sujeto_pasivo_consumidor: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.informacion_veraz: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.informacion_oportuna: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.condiciones_de_contratacion: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.deber_de_informarse: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient"
     }
   ]
 }
