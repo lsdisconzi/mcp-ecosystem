@@ -410,6 +410,47 @@ from the rendered DOM:
 - **Detail trigger:** the `Ver sentencia` button inside the row.
 - Text is parsed with regex in `chile_scraper.py::_parse_chile_text_result`.
 
+**Verified DOM facts (added after the 2026-09-17 verification pass).** Measured
+live on the production portal; these are properties of the portal, not of the
+scraper.
+
+- **~7 nodes per result; the per-result root is `div.card`.** `[data-idsentencia]`
+  matched **70 nodes for 10 unique ids** on every observed page — exactly 7 per
+  result. The root is `div.card.capa_elemento_lista_resultado_busqueda`, which
+  *contains* the other six: 4× `span.estilo_resultado_titulo`, the
+  `button.btn-primary` (`Ver sentencia`) and a `form`. All 70 were
+  `is_displayed()` — there is **no hidden-node population** — and scoping the
+  selector to `#capa_resultados_busqueda_sentencias` removes exactly **zero**
+  nodes (70 scoped vs 70 unscoped). Consumers must dedupe on `data-idsentencia`
+  (as `get_inteiro_links` does via `seen_ids`); the tidier fix is one node per
+  `id_sentencia`, e.g. `div.card:not(:has([data-idsentencia]))`.
+- **`#span_cantidad_resultados` lags the row set.** The count is written after —
+  or independently of — the rows, so a stale count beside a fresh row set is an
+  **expected** state. Never read the count as a freshness signal, and never
+  conclude from a count mismatch that the rows are stale. Four independent
+  readings, three captures:
+
+  | Moment | Count text | Row nodes |
+  |---|---|---|
+  | after `_navigate_to_category`, before the landing listing renders | `''` | `0` |
+  | after the search has taken effect | `Se ha(n) encontrado 14.733 resultados.` | `70` (10 unique) |
+  | ids already fresh, count still on the landing default | `Se ha(n) encontrado 855.792 resultados.` | fresh search ids |
+  | ~1.8 s after a pager click | `Se ha(n) encontrado 15.803 resultados.` | `70`, repopulated |
+
+- **Ordering is descending `id_sentencia`, so "the first row" is the page's
+  maximum id.** Page 1 `200705571…200917190` against page 2
+  `199729629…200134126` (page 2 lies entirely below page 1), corroborated by
+  `first=200791923 → 199931811` across a pager click in an independent capture.
+  A probe recording `first` is recording the **highest** id on the page; a probe
+  recording `sorted(ids)[0]` is recording the **lowest** — the *last* row. Say
+  which.
+- **The landing listing renders ~1.1 s late, and its identity is not reliably
+  captured by a first-id read.** Two records of "the landing listing's first id"
+  disagree — `200917190` at ~1.1 s and `200705571` at ~2.2 s — and those two
+  values are the extremes of the *same* search page-1 id set, so neither can be
+  attributed to the landing listing with confidence. Capture the landing state
+  as a **settled (≥2.5 s) full id set**, never a first id.
+
 ### 7.2 Download flow (as implemented)
 
 `chile_scraper.py::download_inteiro_teor_url` does **not** fetch a document URL.

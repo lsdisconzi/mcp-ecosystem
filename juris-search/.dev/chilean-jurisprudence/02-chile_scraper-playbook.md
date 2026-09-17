@@ -1,7 +1,7 @@
 # Verification Playbook — `chile_scraper.py`
 
 <!-- pinned: chile_scraper.py @ sha1:a595bf7c4c46fd61de1bd0fe87e35a66fe4173c9 -->
-<!-- playbook-hash: sha256:63a4f0e7758f3b11d1f9770aeff594d6c22a85a8965514852f216e5021c4b477 (of this file with this line removed) -->
+<!-- playbook-hash: sha256:6bd071acf1a710248f30542a839750557031d548b5258072e5fe0a458c58d092 (of this file with this line removed) -->
 
 Give this to the agent verbatim. It's ordered so each step either confirms a prior fix or fails loudly before the next step can mask it. The agent should **stop at the first failure** and report, rather than pressing on with downstream steps.
 
@@ -266,6 +266,8 @@ Run a **single-page** search in a fresh session.
 > - **`[data-idsentencia]` is not one-per-result.** The selector matched **~70 nodes for 10 unique ids** on every observed result page, i.e. exactly **7 per result**. This is why `n` in the snapshot is ~70 while `len(results)` is 10, and why `get_inteiro_links`' `seen_ids` dedupe is load-bearing. Do **not** conclude from `n == 70` that the portal returned 70 rows.
 >
 >   **Corrected (D4c).** This bullet originally added "the first three matches carried the *same* id" and implied hidden stubs and cached rows. That reconstruction is wrong. The measured anatomy is one **visible** `div.card` that **contains** the other six, all visible, all carrying the same value: 4× `span.estilo_resultado_titulo`, the `button.btn-primary` (`Ver sentencia`), and a `form`. Histogram over all 70 nodes: `40 span / 10 div.card / 10 button / 10 form`; `is_displayed()` was `True` for all 70. So there are no hidden nodes under this selector, and **scoping it to the results container removes exactly zero** (70 scoped vs 70 unscoped, measured). See `verification_report.md` open issue 11 for the real outerHTML and the correction to 03 §4a.
+>
+>   **Correction to D4b's landing figure (D4d — added after the post-report capture re-audit).** D4b records the default listing's first id as **`200917190`**. That value is **not distinguishable from the post-search page-1 first id**: Phase A's `daño moral` page 1 has `200917190` as its first visible card (the `div.card`), and that page's id set runs `200705571 … 200917190` (ascending as recorded, so the first card is the set's **maximum**). So D4b cannot be cited as evidence that a landing listing was read. Worse, the workspace holds **two conflicting records of "the landing listing's first id"** — `200917190` (D4b, ~1.1 s) and `200705571` (probe 2, ~2.20 s, quoted in `verification_report.md`) — and the two sit at **opposite ends of the same page-1 id set**. Either the landing read is timing-dependent (the ~1.1 s figure is a partial render) or one of the two readings was not of the landing listing; **nothing in the captures decides which**. Consequence: the landing baseline that step 5's P1/P2 check and issue 12's fix (1) depend on **has never been reliably captured**. Record a landing baseline as a **settled, non-empty *id set*** (`ids`, not `first`; sleep ≥2.5 s), and make the P1/P2 comparison **set-to-set**. See §13.
 
 ```python
 import time
@@ -629,6 +631,10 @@ Playbook: <path> @ sha256:<grep -v '^<!-- playbook-hash:' file | shasum -a 256>
 | **D7b** | §6 (6a) | corrected D7's timeline with the 0.1 s-sampled figures (**clear at ~22 ms**, empty for **≈2.0 s**, repopulated at **2.425 s**) and removed the refuted "satisfied by pre-click rows" mechanism. The fix is unchanged; the stated reason is not. Also corrected the failure table's "Known gap" row |
 | **D8** | Phase B, `chile_scraper.py` | **Phase B applied**: `_wait_for_results` is now a *change* predicate returning a bool, plus a separate content-gated `_wait_for_detail` for `_open_detail`; the unpaced `time.sleep(0.5)` / `0.3` calls are gone. B-1 was **not** applied (measured no-op). Evidence: `verification_report.md` new *Detail-swap* evidence block; offline coverage in `test_chile_readiness.py` (18 assertions) |
 | minor | §0.5, §4, §10, §11 | `mkdir -p workspace/CL_jurisprudencia`; in-loop assertion; §11.N → §11 item N |
+| **D9** | **§13 (new)**, §5 | added a top-level **§13 Instrumentation rules** (5 mandatory rules): validate that a baseline is **non-degenerate** before evaluating a discriminator; a **subset read can never exceed its superset**; **name the statistic** and compare set-to-set (`first` here is the page's *maximum* id); read **after the render** (~1.1 s landing / ~2.0 s post-click windows); and **re-derive recorded values from the raw capture**. Moved out of `verification_report.md`, where it was a report-local lesson |
+| **D4d** | §5 | **correction to D4b's landing figure.** D4b's landing first id `200917190` is not distinguishable from the post-search page-1 first id, and probe 2 recorded `200705571` for the same state — two records sitting at **opposite ends of the same page-1 id set**. A landing baseline must be a **settled (≥2.5 s) id set**, and P1/P2 must compare **set-to-set**, not first-id-to-first-id |
+| **D10** | `docs/pjud-source.md` §7.1 | moved three measured **portal** facts into the source notes: `#span_cantidad_resultados` **lags the row set** (4 readings, 3 captures); ordering is **descending `id_sentencia`** (so "first row" = the page's maximum id); `[data-idsentencia]` is **~7 nodes per result** with `div.card` as the per-result root |
+| **R1** | report: verdict fence, summary, §5/issue 12, issue 13 | post-review corrections to the report: verdict secondary count **10 → 11**; Path 1 qualified as an observed **code path** (its production triggers are **not** observed); the **Path-2 negative leaning withdrawn** and replaced by a capture re-audit; issue 13 step (ii) given a concrete spec (status vocabulary, bounded challenge-wait, named detection signal); Path 1's code-path reproduction recorded |
 
 ## Summary
 | Step | Result | Notes |
@@ -698,5 +704,21 @@ Priority order to investigate:
 6. **`path is None` on download** → `_open_detail` failure (row not found / page targeting), *not* an F5 body on disk — that state is unreachable (see §7). Under Case A3, expect `path is None` for an unrelated reason: **blocked**, not failed.
 7. **`id_buscador`/`instancia` `None` in results** → threading broken from `cat_info` into `_parse_chile_text_result`. Trace the call chain in `_parse_search_results`.
 8. **`len(results) != 10` with no F5** → check the corpus before blaming the pager (§5 criterion 8).
+
+---
+
+## 13. Instrumentation rules
+
+Probes against this portal have now produced a **confident negative that carried no information** four separate times (all four are enumerated in `verification_report.md`; the fourth is the post-report capture re-audit). All four share one shape, so the rules below are **mandatory for any future probe**, not advisory. They apply to every probe in this playbook, not only step 5.
+
+> **Rule 1 — validate the baseline before evaluating a discriminator.** Any comparison against a pre-search or pre-click snapshot must first confirm that the snapshot is **non-degenerate**. An empty-string count, an empty id list, or `frozenset()` is **not a baseline — it is an absence**, and any discriminator compared against it returns the guaranteed answer whatever the truth is. The instrument must **refuse to evaluate** and say so, instead of reporting a negative.
+
+> **Rule 2 — a subset read can never exceed its superset.** If a scoped read reports more distinct values than the unscoped read of the same nodes (measured: `n_scoped = 70, u_scoped = 11` against `n_all = 70, u_all = 10`, at the same instant), the two reads are **not measuring the same population**. Treat it as an **instrument defect**, discard both readings, and do not explain it as portal behaviour.
+
+> **Rule 3 — name the statistic, and compare like with like.** `first` means "the id of the first node the selector matched", which here is the page's **maximum** `id_sentencia`, because results are ordered descending. A comparison between a `first` and a `sorted(ids)[0]` sets a **maximum against a minimum** — guaranteed to differ, therefore vacuous. Every state comparison must be **set-to-set**, and the probe must state which statistic it records.
+
+> **Rule 4 — read after the render.** The default listing renders ~1.1 s late (D4b) and rows are cleared for ~2.0 s after a pager click (D7b). A baseline taken inside those windows is empty — Rule 1's failure mode arriving from timing rather than from logic. Sleep ≥2.5 s after navigation and ≥3 s after a pager click before snapshotting.
+
+> **Rule 5 — a previous record is not a measurement.** When a report or this playbook states a value, **re-derive it from the raw capture before building an inference on it**. The post-report re-audit exists because a first id was restated rather than re-derived, and the restatement carried a leaning that did not survive contact with the capture.
 
 Anything else is a new bug — report it with the failing step number, the exception, and the first 500 chars of `driver.page_source`.
