@@ -543,25 +543,49 @@ a suite that only exercises the new predicate proves nothing about the defect it
 
 Fresh profile. One navigation, one search, three pager clicks.
 
-> **Extended after the review of `2f4a2cd`.** The original sample below could not distinguish three outcomes that matter, so it has been widened. Two things it now must capture:
-> - **Page 1's own `wait_ok`.** The loop logs `readiness_reached=` only inside the `new_on_page == 0` branch, which on page 1 **cannot fire** (with `seen_ids` empty, every parsed row is new). If the *search's* wait times out, the loop parses whatever the DOM holds — the landing page's default listing — and yields it as results for the query. That is open issue 12, it is a code-reading finding only, and **this run is the measurement that decides whether it is live.**
+> **Extended after the review of `2f4a2cd`.** The original sample below could not distinguish the outcomes that matter, so it has been widened. Three things it now must capture:
+> - **Page 1's own `wait_ok`.** The loop logs `readiness_reached=` only inside the `new_on_page == 0` branch, which on page 1 **cannot fire** (with `seen_ids` empty, every parsed row is new). So the search's `wait_ok` is currently logged nowhere, and when the wait does not reach readiness the loop parses whatever the DOM holds — the landing page's default listing — and yields it as results for the query. That is open issue 12, it is a code-reading finding only, and **this run is the measurement that decides whether it is live.**
+> - **The count text before vs after the search wait.** Issue 12 has a second path on which `wait_ok` is `True` — the wait can be satisfied by the landing listing itself, because an empty `pre_search_ids` degenerates the change predicate to existence mode. `wait_ok` therefore cannot decide the issue alone; `#span_cantidad_resultados` is what separates a real search from landing data.
 > - **Whether B-2b's retry fires at all.** It only fires on a timed-out wait followed by a zero-yield page, so a run where pagination simply works leaves it **unexercised**. Say so in the report rather than counting the run as coverage.
 >
-> The cleanest way to get page 1's `wait_ok` without editing the scraper is to instrument the wait from outside, before the call:
+> The cleanest way to get page 1's `wait_ok` without editing the scraper is to instrument the wait from outside, before the call. `#span_cantidad_resultados` is captured at the same time, because **`wait_ok` alone cannot separate issue 12's two paths** — see below.
 >
 > ```python
 > import chile_scraper, logging
 > logging.basicConfig(level=logging.INFO)   # surfaces the loop's own page/N-new lines
 >
+> def count_text(self):
+>     return self.driver.execute_script(
+>         "var e=document.getElementById('span_cantidad_resultados');"
+>         "return e ? e.innerText.trim() : 'MISSING';")
+>
+> orig_search = chile_scraper.ChileJurisprudenciaScraper._run_search_ui
+> landing = []
+> def traced_search(self, query):
+>     landing.append(count_text(self))      # landing default, before the query is sent
+>     return orig_search(self, query)
+> chile_scraper.ChileJurisprudenciaScraper._run_search_ui = traced_search
+>
 > orig = chile_scraper.ChileJurisprudenciaScraper._wait_for_results
 > seen = []
 > def traced(self, timeout=None, previous_ids=None):
 >     ok = orig(self, timeout, previous_ids)
->     seen.append((ok, previous_ids is not None, len(previous_ids or ())))
+>     seen.append((ok, previous_ids is not None,
+>                  len(previous_ids or ()), count_text(self)))
 >     return ok
 > chile_scraper.ChileJurisprudenciaScraper._wait_for_results = traced
 > ```
-> `seen[0]` is the **search** wait (the only call with a baseline taken *before* it, and `reused` shows the baseline was supplied). If `seen[0][0] is False`, issue 12 is live and the run must be reported as **blocked on issue 12**, not merely red on issue 9 — a green `pages` count would be a false pass in that case, because the page-1 rows may be the default listing.
+>
+> `seen[0]` is the **search** wait (the only call with a baseline taken *before* it; `reused` shows the baseline was supplied). Read four things off it:
+>
+> - `seen[0][0]` — did the wait reach readiness? **False** is the *timeout* path of issue 12.
+> - `seen[0][2]` — how many ids were in the baseline. **`0` is itself a finding**: `_wait_for_results(previous_ids=frozenset())` returns `current != previous_ids`, which is `True` for *any* non-empty set, so the predicate has degenerated to **existence mode** and can no longer tell the landing listing from the search result.
+> - `seen[0][3]` vs `landing[0]` — the count text after the wait, against the landing default. If it is **still the landing value** (`Se ha(n) encontrado 855.792 resultados.` on unfiltered Civiles) or still `""`, the search did not take effect and the page-1 rows are the default listing.
+> - `landing[0]` — record it even when empty. D4b measured `""` immediately after `_navigate_to_category`; the default listing renders ~1.1 s later, so an empty landing snapshot is expected, not an error.
+>
+> **`seen[0][0] is True` does not clear issue 12.** There is a path with no timeout at all. `_navigate_to_category` returns once `window.id_buscador_activo` is defined (an inline `<script>`), which is *before* the landing listing renders — so `pre_search_ids` is frequently `frozenset()`, and the predicate degenerates to existence mode exactly as above. **The landing listing is a non-empty set, so it satisfies the wait.** The predicate returns `True` on landing data, `wait_ok` is `True`, and there is no timeout to consult. The loop then parses the landing rows as the answer to the query. This is the path that fires when the search XHR is F5-rejected (Case A3): landing renders, predicate satisfied, landing rows returned for `"daño moral"`. The baseline models **one** change and landing-then-search is **two**, which is why `wait_ok` cannot decide this and the count-text comparison must.
+>
+> Either path means the run must be reported as **blocked on issue 12**, not merely red on issue 9 — a green `pages` count would be a false pass in either case, because the page-1 rows may be the default listing.
 
 ```python
 with ChileJurisprudenciaScraper(headless=False) as s:
@@ -580,7 +604,8 @@ with ChileJurisprudenciaScraper(headless=False) as s:
 3. `len({r["id_sentencia"] for r in results}) == len(results)` — no cross-page duplicates.
 4. No F5 raised during the run.
 5. Wall-clock per page ≤ 5 s (the old `time.sleep(15)` is gone; this catches a fix that works by accident of timing).
-6. **New — `seen[0][0] is True`**: the *search's* readiness wait reached readiness. False **invalidates** criteria 1–3 for this run (the page-1 rows may be the landing default listing) — see open issue 12.
+6. **New — `seen[0][0] is True`**: the *search's* readiness wait reached readiness. False **invalidates** criteria 1–3 for this run (the page-1 rows may be the landing default listing) — see open issue 12. **Necessary but not sufficient: this is `True` on issue 12's false-success path too.**
+7. **New — the search actually took effect**: `seen[0][3] != landing[0]`, **and** `seen[0][3]` is neither empty nor the landing default. This is the criterion 6 cannot substitute for — criteria 1–3 are only trustworthy when **both** 6 and 7 hold. If `seen[0][2] == 0`, note it in the report: it is the precondition of the false-success path.
 
 **Also record, without treating a negative as failure:** whether the B-2b retry fired (`retried_empty` is not exposed, but a `no new results on page N` warning combined with a subsequent successful page means it ran). If it never fires, write that down — the retry path remains untested code shipped with the fix, and a deliberate slow-path test (throttled connection, or a monkeypatched `wait_time` low enough to force a timeout) is the follow-up that would cover it.
 

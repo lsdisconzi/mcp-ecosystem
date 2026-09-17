@@ -13,10 +13,12 @@ verdict: red — 1 blocking defect (pagination) fixed, awaiting live verificatio
 ```
 
 > **Blocking:** open issue 9 (pagination). **Phase A resolved the disambiguation: issue 11 is not the mechanism for this symptom, the selector-scoping fix B-1 is a measured no-op, and the defect is a race between the click's DOM clear (~22 ms) and the readiness predicate's first evaluation (immediate).** Phase B has since been **applied** (change-predicate + a separate content-gated detail wait, see *Changes made*), so the outstanding work is **Phase C: re-run step 6 against the new code path**. The verdict stays red until that run passes — a fix that has never executed live is not a green.
-> **Secondary:** page-size control, filter surface, Spanish-only support-ID, body-only F5 detector, `imprimir` unprobed, `Compendio` id, LJ mode, Case A3, pager markup docs, node-per-result efficiency, **page-1 stale-listing path (issue 12, new — code-reading only)**.
+> **Secondary:** page-size control, filter surface, Spanish-only support-ID, body-only F5 detector, `imprimir` unprobed, `Compendio` id, LJ mode, Case A3, pager markup docs, node-per-result efficiency, **page-1 stale-listing path (issue 12, new — code-reading only, two paths: timeout and false-success)**.
 > **Blocked by the blocking defect:** step 7 (`_open_detail` untested), step 8 search half (`penales` search untested).
 >
 > **Issue 12 was found after Phase B was committed** (by tracing the retry logic in review) and is deliberately **not** fixed in `2f4a2cd`: it changes page-1 control flow, which is outside the approved hunks, and its correct remedy depends on a measurement Phase C has not taken yet. See *Open issue 12*.
+>
+> **Issue 12 has two paths, and the second needs no timeout.** The predicate can be satisfied by the *landing listing itself*, because `pre_search_ids` is frequently empty and an empty baseline degenerates the change predicate to existence mode. That path returns `wait_ok is True`, so a check on `wait_ok` alone cannot see it. Phase C therefore also compares `#span_cantidad_resultados` before and after the search wait. See *Open issue 12*.
 
 ## Amendments applied (this playbook revision)
 
@@ -152,7 +154,11 @@ verdict: red — 1 blocking defect (pagination) fixed, awaiting live verificatio
 
     On page 1 the sequence is: `pre_search_ids = _current_result_ids()` → `_run_search_ui(query)` → `wait_ok = _wait_for_results(previous_ids=pre_search_ids)` → **parse unconditionally.** `wait_ok` is consulted in exactly one place, the `new_on_page == 0` branch. So when the search's readiness wait **times out** (`wait_ok is False`), the loop parses whatever the DOM holds at that moment.
 
-    On **page 1 that is not the search result**, and it is not empty either. The two candidate DOM states are (a) the landing page's **default listing**, which renders ~1.1 s late (D4b) and holds ~15.8k unrelated rows, or (b) the **previous query's** rows if the driver is reused. Either way `_parse_search_results` returns a full page of real-looking rows.
+    On **page 1 that is not the search result**, and it is not empty either. The two candidate DOM states are (a) the landing page's **default listing** — the whole-section set, whose count text reads `Se ha(n) encontrado 855.792 resultados.` on unfiltered Civiles (D4b) and which renders ~1.1 s after `_navigate_to_category` returns — or (b) the **previous query's** rows if the driver is reused. Either way `_parse_search_results` returns a full page of real-looking rows.
+
+    *(Correction to an earlier draft of this entry: it said the landing listing "holds ~15.8k unrelated rows". That conflated the **post-search pagination** count `15.803` with the landing default `855.792`, and neither is a row count — the listing renders **10 unique ids** across 70 nodes.)*
+
+    **Path 2 — no timeout required, and `wait_ok` is `True`.** `_navigate_to_category` returns as soon as `window.id_buscador_activo` is defined (it is set inline, before the landing listing renders), so the `pre_search_ids` snapshot at L325 frequently captures `frozenset()`. `_wait_for_results(previous_ids=frozenset())` then **degenerates to existence mode**: `previous_ids is not None`, so the predicate evaluates `current != previous_ids`, which is `True` for *any* non-empty set — and the landing listing is a non-empty set. If landing renders during the polling window, the wait returns `True` **on landing data**, `wait_ok` is `True`, and there is no timeout to consult. This is a **false success, not a timeout**, and it is the shape that fires when the search XHR is F5-rejected (Case A3): the landing listing renders, the predicate is satisfied, and the scraper returns landing rows as the answer to the query. The baseline models **one** change; landing-then-search is **two**. `wait_ok is True` is therefore **not** sufficient evidence that the search took effect, and a check that only reads `wait_ok` cannot detect this path.
 
     The guard does not fire, because on page 1 **`seen_ids` is empty**: every freshly parsed row is a *first* sighting, so `new_on_page == 10`, not `0`. The loop therefore appends the wrong rows, `len(entries)` reaches `max_results`, and it returns **explicitly wrong results under the queried term** — with `page: 1` and no warning. This is strictly worse than the truncation the retry was written to prevent: a truncated set is visibly short, whereas this is silently incorrect and indistinguishable downstream from a genuine match.
 
@@ -160,7 +166,7 @@ verdict: red — 1 blocking defect (pagination) fixed, awaiting live verificatio
 
     **Not fixed here on purpose.** The change is outside the approved Phase B hunks (it touches the page-1 control flow, and `_run_search_ui` sits adjacent to the do-not-refactor list), and more importantly it must not be fixed *before* Phase C measures whether page 1's wait ever times out in practice. The two candidate fixes, to be decided with that measurement in hand: on `wait_ok is False` for page 1, either (i) `raise` — an unreached search is not a result set — or (ii) retry `_run_search_ui` once and re-wait, mirroring B-2b's pagination retry. Option (i) is safe and cheap; option (ii) is symmetric with the pager and is preferable only if the timeout is observed to be transient rather than terminal.
 
-    **Phase C must therefore log `wait_ok` for the search itself**, not only for the paginations. The current code does **not** log page 1's `wait_ok`, so the pass criteria in playbook 03 §Phase C are insufficient for this issue as written; step 6's log should be extended to record it.
+    **Phase C must therefore record two things for the search itself**, not only for the paginations: page 1's `wait_ok` **and** `#span_cantidad_resultados` before vs after that wait. The current code logs **neither**, so the pass criteria in playbook 03 §Phase C are insufficient for this issue as written. The count comparison is not optional — it is the only signal that separates Path 2 above from a genuine search, because `wait_ok` is `True` on both. Both are now wired into §Phase C's instrumentation (criteria 6 and 7).
 
 ## Evidence
 
