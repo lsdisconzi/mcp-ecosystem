@@ -3300,6 +3300,19 @@ async function invokeTool(name, args, opts = {}) {
     }
     pushLog(`← ${name} ok · ${fmtElapsed(body.seconds)}`, step, 'ok');
     applyResult(name, body.result);
+    // Persist the updated violation back to the bundle so the backend reflects
+    // the same state the UI just applied (design intent: all steps persist).
+    if (state.violation && state.bundleId) {
+      try {
+        await callTool('write_violation_json_tool', {
+          violation: state.violation,
+          bundle_root: state.settings.bundleRoot || `build/${state.bundleId}`,
+        }, { confirm: false });
+        pushLog('Persisted updated violation to bundle', step, 'ok');
+      } catch (e) {
+        pushLog(`Persist failed (non-blocking) — ${e.message}`, step, 'warn');
+      }
+    }
     return;
   } catch (e) {
     if (e.status === 409 && e.body && e.body.busy) {
