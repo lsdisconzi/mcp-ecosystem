@@ -360,18 +360,49 @@ Return JSON of shape:
 """
 
 
+_TEMPLATE_RULE = """
+- If `template` is present in the payload, it is AUTHORITATIVE. Produce
+  EXACTLY the elements it lists, with the `element_id` strings it gives you,
+  copied character-for-character. Do not rename, abbreviate, translate,
+  reorder, drop, or add elements. Your job on this article is to score the
+  template's elements against the segments, not to decide which elements
+  exist.
+- When `template` is absent, decompose the article freely as above.
+"""
+
+_ELEMENT_GRID_PROMPT = _ELEMENT_GRID_PROMPT + _TEMPLATE_RULE
+
+
 def propose_element_grid(
     violation: Violation,
     article_id: str,
     client: LLMClient,
+    *,
+    numeral: str | None = None,
 ) -> ArticleElementGrid | None:
-    """Generate one element grid for the named article."""
+    """Generate one element grid for the named article.
+
+    ``numeral`` selects a numeral-specific template when the article is
+    subdivided (``"8"`` for Art. 193 N°8). When the caller does not know the
+    numeral, the numeral-less fallback in ``find_template`` is tried instead.
+    """
     art = next(
         (a for a in violation.established_articles if a.article_id == article_id),
         None,
     )
     if art is None:
         return None
+
+    # Borrow the numeral from the article's own subsections_invoked when it is
+    # unambiguous; two numerals means the elements will not be numeral-scoped.
+    if numeral is None and len(art.subsections_invoked) == 1:
+        numeral = art.subsections_invoked[0]
+
+    from .element_templates import find_template
+
+    template = find_template(article_id, numeral=numeral)
+    template_block = template.as_prompt_block(article_id) if template else None
+
     payload = {
         "violation_id": violation.violation_id,
         "title": violation.title,
@@ -382,6 +413,7 @@ def propose_element_grid(
             "verbatim_excerpt": art.verbatim_excerpt,
             "applicability_rationale": art.applicability_rationale,
         },
+        "template": template_block,
         "segments": [
             {
                 "segment_id": s.segment_id,
@@ -419,7 +451,31 @@ def propose_element_grid(
                 continue
         return elements, str(resp.get("article_short") or article_id)
 
+    def _filter_to_template(elements: list[Element]) -> list[Element]:
+        """Drop any element whose id is not one the template composes.
+
+        Also remaps near-miss ids by *key* — an LLM that composed the right key
+        with the wrong prefix still gets its argument preserved. The template's
+        own id always wins.
+        """
+        if template is None:
+            return elements
+        allowed = template.element_ids(article_id)
+        from .element_templates import parse_element_id
+        kept: list[Element] = []
+        for el in elements:
+            if el.element_id in allowed.values():
+                kept.append(el)
+                continue
+            parsed = parse_element_id(el.element_id)
+            if parsed is not None and parsed[2] in allowed:
+                kept.append(el.model_copy(update={
+                    "element_id": allowed[parsed[2]],
+                }))
+        return kept
+
     elements, article_short = _parse(resp)
+    elements = _filter_to_template(elements)
 
     def _grid_score(elems: list[Element]) -> float:
         scored = [e for e in elems if e.proof_status != "not_developed"]
@@ -427,12 +483,11 @@ def propose_element_grid(
             return 0.0
         return sum(PROOF_WEIGHTS[e.proof_status] for e in scored) / len(scored)
 
-    # Retry once if the grid is too sparse or too weak; sparse 3-4-element
-    # grids commonly hurt the confidence score and miss the standard
-    # doctrinal decomposition.
-    if elements and (len(elements) < 6 or _grid_score(elements) < 0.65):
+    expected_min = len(template.elements) if template else 6
+    if elements and (len(elements) < expected_min or _grid_score(elements) < 0.65):
         resp2 = _call(client, _ELEMENT_GRID_PROMPT, payload, stage="element_grids")
         elements2, article_short2 = _parse(resp2)
+        elements2 = _filter_to_template(elements2)
         if elements2 and (
             len(elements2) > len(elements)
             or _grid_score(elements2) > _grid_score(elements)
@@ -459,7 +514,10 @@ _NEXUS_PROMPT = """Build the nexus matrix: typed edges from facts
 Rules:
 - Every fact_id MUST appear in violation.segments.
 - Every norm_id + element_id pair MUST appear in violation.element_grids.
-  Use the element_ids EXACTLY as given (do not invent shorter forms).
+  Copy the element_id strings character-for-character. Do NOT abbreviate,
+  translate, reorder or shorten any part of an element_id: if the grid says
+  `...elem.sujeto_activo_empleado_publico`, the nexus entry must say exactly
+  that string, not `...elem.sujeto_activo`.
 - For each element, propose AT LEAST ONE nexus entry from the most
   relevant segment. A grid with N elements should produce at least N
   entries; comprehensive matrices commonly produce 1.5x to 2x N entries.

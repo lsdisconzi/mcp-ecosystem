@@ -504,6 +504,71 @@ def _write_validation_markdown(bundle_dir: Path, violation_id: str, checks: list
 # ---------------------------------------------------------------------------
 # Per-bundle processing
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Per-bundle processing
+# ---------------------------------------------------------------------------
+
+def _reconcile_contract_after_enrichment(bundle_dir: Path, violation: Violation) -> None:
+    """Rewrite the contract fields enrichment is allowed to change.
+
+    ``vault_to_bundle`` writes the contract at bundle-creation time, from the
+    vault's snapshot of the violation. Enrichment then re-derives confidence
+    from the enriched element grid, and expands ``cross_references`` and
+    ``open_questions``. V08 and V17 compare those fields between the bundle
+    and the contract, so a stale contract is a guaranteed V08/V17 failure that
+    no amount of enrichment quality can fix.
+
+    Only the fields V08 and V17 actually compare are rewritten:
+
+    - ``confidence`` — V08 compares ``.value``
+    - ``established_article_ids`` — V08 compares the set
+    - ``cross_references`` — V17 compares ref + relation
+    - ``open_questions`` — V17 compares id, question, blocks_element, priority
+
+    Everything else — ``legal_basis``, ``candidate_articles``, the incident
+    metadata, the provenance block — is left as the vault converter wrote it,
+    on purpose: those fields are the *record of what the vault said* and are
+    not supposed to reflect enrichment. A future migration can widen this
+    reconciler; today it stays minimal so the diff is auditable.
+
+    A missing or unreadable ``contract.json`` is not an error: ``--inputs-only``
+    runs skip the contract entirely, and a bundle whose contract was removed by
+    hand should not fail the pipeline here. The reconciler is a fixup, not a
+    gate.
+    """
+    contract_path = bundle_dir / "contract.json"
+    if not contract_path.exists():
+        return
+    try:
+        contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return
+
+    if violation.confidence is not None:
+        contract["confidence"] = json.loads(violation.confidence.model_dump_json())
+    else:
+        contract.pop("confidence", None)
+
+    contract["established_article_ids"] = sorted(
+        a.article_id for a in violation.established_articles
+    )
+    contract["cross_references"] = [
+        {"ref": x.ref, "relation": x.relation} for x in violation.cross_references
+    ]
+    contract["open_questions"] = [
+        {
+            "id": q.id,
+            "question": q.question,
+            "blocks_element": q.blocks_element or "",
+            "priority": q.priority,
+        }
+        for q in violation.open_questions
+    ]
+
+    contract_path.write_text(
+        json.dumps(contract, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    
 
 def _process_one(
     bundle_dir: Path,
@@ -568,6 +633,10 @@ def _process_one(
         except Exception as exc:
             notes.append(f"enrichment_failed: {exc}")
             enrich_info = {"ok": False, "error": str(exc)}
+
+    # NEW: reconcile the contract with the enriched violation, so V08 and V17
+    # see consistent views. See _reconcile_contract_after_enrichment.
+    _reconcile_contract_after_enrichment(bundle_dir, v)
 
     report = run_pipeline(
         v,

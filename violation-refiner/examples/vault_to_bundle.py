@@ -23,27 +23,28 @@ soon as it validates, so anything this module drops (element grids, nexus
 rows, authorities) is dropped for the refiner too. ``conversion_warnings.json``
 is the audit trail for exactly that.
 
-Both data trees are the repo's own, so a run needs no server paths:
-``data/transcripts/json`` for re-anchoring and ``data/law`` (plus its
-``_mapping/law_registry.json``) for framework resolution. Framework codes come
-from that registry and are never mirrored here.
-
 Segment re-anchoring
 --------------------
 ``full_segments[].segment_id`` uses the *legacy render* numbering, which is
 stale: ``transcription`` re-rendered every transcript (header repair + speaker
 consolidation), so the indices moved and the old ids now point at the wrong
-utterance. Verified example — vault ``STG-7.seg-44`` (403.07-406.41 s,
-"quando tu le diga que no hay ninguna agression…") is ``seg-40`` in the
-current render, with byte-identical text *and* offsets.
-
-Every segment is therefore re-anchored against the canonical transcript in
+utterance. Every segment is re-anchored against the canonical transcript in
 ``data/transcripts/json/`` using two independent signals (normalized text
 similarity and audio offset), and the *current* index is emitted as
-``<transcript_id>.seg-<index>`` — the shape ``JsonTranscriptSource`` composes,
-which also joins to the ``reviewed_transcripts`` collection. The original vault
-id and the anchor method are preserved in ``transcription_notes`` rather than
-discarded, and every weak anchor is reported.
+``<transcript_id>.seg-<index>`` — the shape ``JsonTranscriptSource`` composes.
+
+Element-id canonicalization
+---------------------------
+The vault's ``element_grids`` use the article's full prefix — e.g.
+``CL.CHIPENCOD.T4.C3.Art.193.8.elem.modalidad_ocultacion`` — while the
+established article it belongs to may be spelled ``CL.CHIPENCOD.Art.193``.
+Both spellings are semantically identical and the template registry accepts
+either, but a bundle that mixes them forces V21 to tolerate drift it should
+not have to. :func:`build_violation_document` rewrites element-id prefixes at
+write-time so the shipped bundle carries one spelling and one only. The
+rewrite applies to ``element_grids[]`` and to the ``element_id``/``norm_id``
+fields of ``nexus_matrix[]``, because a nexus row that pointed at the old
+prefix would otherwise dangle after the grid was rewritten.
 
 Usage:
     python3 examples/vault_to_bundle.py CL-009
@@ -66,6 +67,7 @@ import re
 import statistics
 import sys
 import unicodedata
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -77,6 +79,9 @@ if str(_REPO_ROOT) not in sys.path:
 
 from violation_pack._utils import sha256_text  # noqa: E402
 from violation_pack.confidence import derive_confidence  # noqa: E402
+from violation_pack.element_templates import (  # noqa: E402
+    split_article_id,
+)
 from violation_pack.models import Violation  # noqa: E402
 from violation_pack.sources import MarkdownFrameworkSource  # noqa: E402
 from violation_pack.sources_json import JsonTranscriptSchemaError, JsonTranscriptSource  # noqa: E402
@@ -105,19 +110,10 @@ _AUDIO_ID_RULES: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"^latam_STG_(\d+)$"), "LATAM-{0}"),
     (re.compile(r"^carabineros_ppdartnel_(\d+)$"), "CARABINEROS-{0}"),
     # Guarulhos (BR) incident audio; 1105 vault segments cite ``BDM.seg-N``.
-    # Pinned by evidence, not by name: 19 of the 44 BDM verbatims longer than 12
-    # chars appear verbatim in this document and none appear in
-    # ``Terminal_2_full`` (the lost-phone report, a different recording). Note
-    # the vault's declared offsets (0.37-193.25 s) are relative to the original
-    # clip, not to this "Full Consolidated" recording where the same speech sits
-    # at 878-1071 s, so the offset fallback cannot anchor these segments and
-    # they are recovered by text alone.
     (re.compile(r"^(GRU_Airport_Full)$"), "BDM"),
 )
 
 #: Enum domains enforced by ``violation_pack.refine_batch_core._normalize``.
-#: Values outside these sets are downgraded there anyway; normalising up-front
-#: makes the staged contract self-consistent and the downgrade visible.
 _VALID_SEVERITIES = {"LOW", "MEDIUM", "HIGH", "CRITICAL"}
 _VALID_APPLICABILITY = {"direct", "indirect_predicate", "supporting"}
 _VALID_NORM_TYPES = {
@@ -146,8 +142,6 @@ _VALID_CANDIDATE_CACHE_STATUS = {"not_in_bundle", "pending_fetch"}
 _VALID_CLOCK_CONFIDENCE = {"verified", "estimated_from_audio_offset", "unknown"}
 
 #: ``applicability`` values the vault emits that the contract does not define.
-#: Mapped to the contract's own fallback (``supporting``) so the downgrade is
-#: explicit and reportable instead of incidental.
 _APPLICABILITY_ALIASES = {
     "primary": "direct",
     "primary_criminal": "supporting",
@@ -229,10 +223,7 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
         "--inputs-only",
         action="store_true",
         help="Write only contract.json + segments_manifest.json; skip assembling "
-             "the final bundle (Transcripts/, Legal framework/, <VID>.json). Note "
-             "that confidence reconciliation needs the staged document, so an "
-             "inputs-only contract keeps the raw vault snapshot and may still "
-             "trip V08 when fed straight to refine_batch.",
+             "the final bundle (Transcripts/, Legal framework/, <VID>.json).",
     )
     return p.parse_args(argv)
 
@@ -243,9 +234,9 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
 #: ``data/law/_mapping/law_registry.json``. Each alias is pinned to the evidence
 #: that justifies it; ``None`` means the corpus has no file at all.
 _LEGACY_CODE_ALIASES: dict[tuple[str, str], str | None] = {
-    # CL.CP.Art.412 ("Es calumnia la imputacion…") / Art.211 -> Código Penal.
+    # CL.CP.Art.412 / Art.211 -> Código Penal (registry code ``CPCL``).
     ("CL", "CP"): "CPCL",
-    # BR.CP.Art.140 ("Injuriar alguém") / Art.147 ("Ameaçar alguém") -> DL 2848.
+    # BR.CP.Art.140 / Art.147 -> DL 2848 (registry code ``CPB``).
     ("BR", "CP"): "CPB",
     # CL.CPR.Art.19 -> "Constitucion Politica de la Republica".
     ("CL", "CPR"): "CONST",
@@ -254,31 +245,19 @@ _LEGACY_CODE_ALIASES: dict[tuple[str, str], str | None] = {
     # ``LEY<n>`` spellings of codes the registry knows as ``L<n>``.
     ("CL", "LEY16752"): "L16752",
     ("CL", "LEY20285"): "L20285",
-    # Ley 19.880 (bases del procedimiento administrativo) is NOT in the corpus.
+    # Ley 19.880 is NOT in the corpus.
     ("CL", "LEY19880"): None,
-    # BR.CF.Art.N -> Constituição Federal de 1988 (registry ``CONST`` -> BR/CF88.md).
-    # Pinned by evidence, not name similarity: BR-014's own contract resolves
-    # ``CONST`` while its ``CF`` entry fails, i.e. the vault spells one document
-    # two ways.
+    # BR.CF.Art.N -> Constituição Federal de 1988 (registry ``CONST``).
     ("BR", "CF"): "CONST",
-    # BR.LEI9784.Art.N -> Lei 9.784 (administrative procedure), registry ``L9784``
-    # -> BR/L9784.md. Same ``LEI<n>`` vs ``L<n>`` spelling gap as the CL entries
-    # above; BR-014 again carries both spellings at once.
+    # BR.LEI9784.Art.N -> Lei 9.784 (registry ``L9784``).
     ("BR", "LEI9784"): "L9784",
-    # INT.BR-CL.Art.N -> the Brazil-Chile Joint Declaration 2024, whose registry
-    # code is ``BRCL`` (the dash is dropped in the ELI). INT-018 is the only citer.
+    # INT.BR-CL.Art.N -> Brazil-Chile Joint Declaration 2024 (registry ``BRCL``).
     ("INT", "BR-CL"): "BRCL",
 }
 
 
 class FrameworkResolver:
-    """Maps an ``article_id`` code to a law markdown file in the corpus.
-
-    The allow-list is *derived* from the registry's ELIs rather than mirrored in
-    a hand-maintained table: hardcoded copies drift silently and drop newly
-    bundled frameworks (the legacy ``FRAMEWORK_MD_MAP`` mapped ``CL.CP`` to the
-    Penal Code's *chip-encoding* section, which is a different law).
-    """
+    """Maps an ``article_id`` code to a law markdown file in the corpus."""
 
     def __init__(self, law_root: Path, preferred_language: str = "EN") -> None:
         self._law_root = law_root
@@ -307,15 +286,9 @@ class FrameworkResolver:
 
     @property
     def codes(self) -> set[str]:
-        """Every framework code the registry knows about."""
         return set(self._by_code)
 
     def resolve(self, code: str, jurisdiction: str) -> tuple[str | None, str | None]:
-        """Return ``(registry_code, relative_path)`` for an article code.
-
-        ``(None, None)`` means the code has no file in the corpus, which is a
-        reportable gap rather than something to paper over.
-        """
         if not code:
             return None, None
         if code not in self._by_code:
@@ -331,13 +304,6 @@ class FrameworkResolver:
         return code, self._pick(files, jurisdiction)
 
     def _pick(self, files: list[str], jurisdiction: str) -> str:
-        """Disambiguate codes that exist in several jurisdictions/languages.
-
-        ``CC`` is both the Brazilian Civil Code and the Chilean one; ``CONST``
-        is both CF/88 and the Chilean Constitution. Prefer the file whose
-        leading path segment matches the article's jurisdiction, then the
-        vault's language.
-        """
         if len(files) == 1:
             return files[0]
 
@@ -353,14 +319,7 @@ class FrameworkResolver:
 # ── Transcript index ────────────────────────────────────────────────────────
 
 def build_transcript_index(transcript_dir: Path) -> dict[str, dict]:
-    """Map a bundle source token (``STG-7``) to its canonical transcript.
-
-    ``full_segments[]`` references sources by token, but the transcript files
-    are named by ``transcript_id``. ``audio_id`` is the only reliable bridge,
-    so index every canonical document by it — including the ones a violation
-    never lists in ``transcripts[]`` (33 violations reference ``STG-29`` with an
-    empty list).
-    """
+    """Map a bundle source token (``STG-7``) to its canonical transcript."""
     index: dict[str, dict] = {}
     for path in sorted(transcript_dir.glob("*.json")):
         try:
@@ -402,6 +361,12 @@ def _best_by_text(segments: list[dict], needle: str) -> tuple[int | None, float,
     scan matches the first short interjection that happens to be a substring of
     a long quote, which silently anchors a 3-minute utterance to a one-word
     segment.
+
+    Ties resolve to the **earlier** index. The previous form
+    (``scored.sort(reverse=True)``) broke equal-ratio ties on ``i`` descending,
+    so a phrase the passenger repeated twice would anchor to the later
+    utterance — the one the vault author heard second and, when the offsets are
+    close, is not the one they meant.
     """
     if not needle or len(needle) < _MIN_TEXT_MATCH_LEN:
         return None, 0.0, 0.0
@@ -409,7 +374,7 @@ def _best_by_text(segments: list[dict], needle: str) -> tuple[int | None, float,
         (difflib.SequenceMatcher(None, needle, _norm_text(seg.get("text"))).ratio(), i)
         for i, seg in enumerate(segments)
     ]
-    scored.sort(reverse=True)
+    scored.sort(key=lambda pair: (-pair[0], pair[1]))
     if not scored:
         return None, 0.0, 0.0
     runner_up = scored[1][0] if len(scored) > 1 else 0.0
@@ -419,14 +384,7 @@ def _best_by_text(segments: list[dict], needle: str) -> tuple[int | None, float,
 def _best_in_window(
     segments: list[dict], needle: str, center: int, window: int = 2
 ) -> tuple[int, float]:
-    """Return ``(index, ratio)`` for the best match within ``window`` of ``center``.
-
-    Used to correct a calibrated clip offset, which is only good to about a
-    second and so can swap neighbouring segments. Ties resolve toward
-    ``center``: when the transcript repeats a phrase, proximity to the timing
-    prediction keeps the two occurrences apart instead of collapsing both onto
-    whichever copy scores a hair higher.
-    """
+    """Return ``(index, ratio)`` for the best match within ``window`` of ``center``."""
     low = max(0, center - window)
     high = min(len(segments), center + window + 1)
     best_index, best_ratio = center, -1.0
@@ -442,16 +400,10 @@ def _best_in_window(
     return best_index, best_ratio
 
 
-#: Text similarity at or above which a match is treated as decisive evidence
-#: rather than a hint. Duplicated from the branch below so the calibration pass
-#: and the anchoring pass agree on what counts as proof.
+#: Text similarity at or above which a match is treated as decisive evidence.
 _TEXT_DECISIVE = 0.90
 
-#: Clip-offset calibration bounds. A clip cut from a longer recording produces a
-#: constant offset between its own timings and the consolidated transcript, and
-#: these keep the inference from engaging on noise: enough samples to be robust,
-#: a magnitude that is unmistakably not "already aligned", and a cluster tight
-#: enough that a bimodal spread (the signature of a wrong transcript) fails.
+#: Clip-offset calibration bounds.
 _DELTA_MIN_SAMPLES = 3
 _DELTA_MIN_MAGNITUDE = 30.0
 _DELTA_TOLERANCE = 3.0
@@ -461,20 +413,7 @@ _DELTA_MIN_AGREEMENT = 0.6
 def estimate_clip_offset_delta(
     violation: dict, transcripts: dict[str, dict]
 ) -> dict[str, float]:
-    """Infer a per-source constant offset between a vault clip and its audio.
-
-    Some vault clips are excerpts of a longer session, so ``audio_offset_start``
-    is relative to the clip while the canonical transcript runs over the whole
-    recording. ``BDM`` is the worked example: its 65 segments declare 0.37-193
-    s, but the speech they quote sits 878 s into ``GRU_Airport_Full``. Raw
-    offset lookup therefore resolves to unrelated audio, and every segment too
-    short to clear the text gate gets dropped.
-
-    Decisive text matches recover the delta without needing the offset at all,
-    because ``transcript_start - vault_offset`` is constant across the clip.
-    Returns ``{source_token: delta}`` for tokens that calibrate cleanly, so
-    :func:`reanchor_segment` can shift the offset instead of trusting it.
-    """
+    """Infer a per-source constant offset between a vault clip and its audio."""
     samples: dict[str, list[float]] = {}
     for seg in violation.get("full_segments") or []:
         if not isinstance(seg, dict):
@@ -498,8 +437,6 @@ def estimate_clip_offset_delta(
     for token, observed in samples.items():
         if len(observed) < _DELTA_MIN_SAMPLES:
             continue
-        # Median, not mean: a handful of matches land on a neighbouring segment
-        # and inflate the mean by seconds.
         median = statistics.median(observed)
         if abs(median) < _DELTA_MIN_MAGNITUDE:
             continue
@@ -515,19 +452,7 @@ def reanchor_segment(
     transcripts: dict[str, dict],
     deltas: dict[str, float] | None = None,
 ) -> dict | None:
-    """Resolve a vault segment to the current canonical transcript index.
-
-    Neither signal is sufficient alone: the vault index is stale, the timings
-    shifted between renders, and ``verbatim_es`` is missing on ~19% of segments.
-    Text identity wins when it is decisive; otherwise the audio offset decides,
-    and the confidence is reported so a weak anchor is reviewable instead of
-    being indistinguishable from a byte-exact one.
-
-    ``deltas`` (see :func:`estimate_clip_offset_delta`) rescues clips whose
-    offsets are relative to the original recording: for those, the raw offset
-    cannot be trusted at all, so the calibrated one replaces it rather than
-    merely corroborating it.
-    """
+    """Resolve a vault segment to the current canonical transcript index."""
     raw = str(seg.get("segment_id") or "")
     if "." not in raw:
         return None
@@ -557,9 +482,6 @@ def reanchor_segment(
         index, method, confidence = by_text, "text-weak", "medium"
     elif by_delta is not None:
         index, method, confidence = by_delta, f"clip-delta{delta:+.1f}s", "medium"
-        # A calibrated offset lands within a second or so, which is enough to
-        # pick the wrong neighbour; where the quote is long enough to be
-        # informative, let it pick among the nearby candidates.
         if len(needle) >= _MIN_TEXT_MATCH_LEN:
             snapped, snapped_ratio = _best_in_window(segments, needle, by_delta)
             if snapped != by_delta and snapped_ratio >= 0.40:
@@ -572,7 +494,6 @@ def reanchor_segment(
     else:
         return None
 
-    # Two independent signals agreeing is the strongest evidence available.
     notes: list[str] = []
     if by_delta is not None:
         notes.append(f"vault offset read as clip-relative ({delta:+.1f}s)")
@@ -604,13 +525,7 @@ def reanchor_segment(
 # ── Wikilink / shape normalisation ──────────────────────────────────────────
 
 def flatten_wikilinks(value: Any) -> list[str]:
-    """Recursively flatten wikilink references into plain strings.
-
-    ``transcripts[]`` is not uniform across the vault: it appears as flat
-    strings (``"[[I-002_05_…]]"``), as nested lists-of-lists
-    (``[[["I-002_17_…"]]]``) and occasionally as dicts. A single recursive pass
-    handles every observed shape without special-casing a violation.
-    """
+    """Recursively flatten wikilink references into plain strings."""
     if value is None:
         return []
     if isinstance(value, dict):
@@ -641,9 +556,6 @@ def _as_float(value: Any) -> float | None:
 
 
 def _coerce_enum(value: Any, allowed: set[str], fallback: str, aliases: dict | None = None) -> str:
-    """Match ``value`` against ``allowed`` case-insensitively, returning the
-    canonical spelling from ``allowed`` (the sets differ in case: severities are
-    upper-case, everything else lower-case)."""
     text = str(value or "").strip()
     if aliases:
         text = aliases.get(text.lower(), text)
@@ -654,12 +566,7 @@ def _coerce_enum(value: Any, allowed: set[str], fallback: str, aliases: dict | N
 # ── Build contract.json ─────────────────────────────────────────────────────
 
 def build_contract(violation: dict, resolver: FrameworkResolver) -> tuple[dict, list[str]]:
-    """Build contract.json from a schema-4.0 violation document.
-
-    Returns ``(contract, warnings)``. Warnings are surfaced (never swallowed)
-    because the vault carries real gaps — most notably ``CL.LEY19880.Art.4``,
-    which has no counterpart file anywhere in the law corpus.
-    """
+    """Build contract.json from a schema-4.0 violation document."""
     warnings: list[str] = []
     vid = str(violation.get("violation_id") or "UNKNOWN")
     title = str(violation.get("title") or vid).strip()
@@ -673,16 +580,9 @@ def build_contract(violation: dict, resolver: FrameworkResolver) -> tuple[dict, 
     )
     case = {"id": violation.get("incident_id") or "", "name": incident_name}
 
-    # ── Incident ────────────────────────────────────────────────────────────
-    # ``incident_meta`` already carries the structured record; the display
-    # string is only a fallback so nothing is hardcoded here.
     meta = violation.get("incident_meta") if isinstance(violation.get("incident_meta"), dict) else {}
     display = str(violation.get("incident_timestamp_display") or "")
     date = meta.get("date") or (display.split("—")[0].strip() if "—" in display else display)
-    # ``Incident.date``/``location`` are non-nullable strings, but a handful of
-    # vault records leave them out (CL-f7dd941e has ``location: null``). Writing
-    # the null through would make the whole document fail validation and drop
-    # every layer on the legacy fallback, so substitute and say so.
     if not str(date or "").strip():
         date = "unknown"
         warnings.append(f"{violation.get('violation_id')}: incident has no date; recorded as 'unknown'")
@@ -711,7 +611,6 @@ def build_contract(violation: dict, resolver: FrameworkResolver) -> tuple[dict, 
             clock_confidence = "unknown"
         incident["clock_time_confidence"] = clock_confidence
 
-    # ── Legal basis ─────────────────────────────────────────────────────────
     frameworks: dict[str, dict] = {}
     candidates: list[dict] = []
     for raw_article in violation.get("legal_basis") or []:
@@ -722,11 +621,6 @@ def build_contract(violation: dict, resolver: FrameworkResolver) -> tuple[dict, 
             continue
         status = str(raw_article.get("status") or "established").strip().lower()
         if status == "candidate":
-            # Candidates still belong in ``legal_basis`` so the refiner can see
-            # them (``_normalize`` demotes any article whose excerpt is not in
-            # the cache, and it drops top-level ``candidate_articles`` entirely),
-            # but they carry no verified body. Keep the vault's full record in
-            # the mirror below instead of collapsing it to a bare id.
             candidates.append(
                 {
                     "candidate_article_id": article_id,
@@ -775,8 +669,6 @@ def build_contract(violation: dict, resolver: FrameworkResolver) -> tuple[dict, 
         article = {
             "article_id": article_id,
             "article_name": str(raw_article.get("article_name") or article_id),
-            # The vault's verbatim_text is the authoritative body; the local
-            # markdown copy is only consulted when the vault supplies none.
             "article_text": str(raw_article.get("verbatim_text") or "").strip(),
             "applicability_rationale": str(
                 raw_article.get("applicability_rationale") or raw_article.get("nexus") or ""
@@ -803,7 +695,6 @@ def build_contract(violation: dict, resolver: FrameworkResolver) -> tuple[dict, 
             fw["framework_file"] = rel_file
         fw["articles"].append(article)
 
-    # ── Cross references / open questions ───────────────────────────────────
     cross_refs: list[dict] = []
     for ref in violation.get("cross_references") or []:
         if isinstance(ref, dict):
@@ -871,18 +762,7 @@ def build_segments_manifest(
     allow_weak: bool = False,
     deltas: dict[str, float] | None = None,
 ) -> tuple[dict, list[str]]:
-    """Build segments_manifest.json, re-anchoring every segment id.
-
-    Returns ``(manifest, warnings)``. A low-confidence anchor (one resting on
-    the audio offset alone) is a warning, not a silent success: the old ids are
-    known to be wrong, so an unverifiable anchor can point at the wrong
-    utterance and nothing downstream would notice.
-
-    ``deltas`` are the calibrated clip offsets for this violation; pass ``None``
-    (the default) to calibrate them here, or ``{}`` to switch the correction
-    off. Calibrating by default keeps the fix from depending on every caller
-    remembering to ask for it.
-    """
+    """Build segments_manifest.json, re-anchoring every segment id."""
     if deltas is None:
         deltas = estimate_clip_offset_delta(violation, transcripts)
     warnings: list[str] = []
@@ -890,7 +770,6 @@ def build_segments_manifest(
     seen: set[str] = set()
     transcript_files: dict[str, str] = {}
     placeholders = 0
-    # canonical transcript id -> file name, so staging never re-derives it.
     available_files = {
         str(entry["doc"].get("transcript_id") or entry["path"].stem): entry["path"].name
         for entry in transcripts.values()
@@ -900,9 +779,6 @@ def build_segments_manifest(
         if not isinstance(raw_segment, dict):
             continue
         raw_id = str(raw_segment.get("segment_id") or "").strip()
-        # 65 vault segments corpus-wide are empty placeholders (``seg-40`` with
-        # offsets 0-0). They carry no evidence, so anchoring them would only
-        # produce a rejected offset guess and bury the real warnings.
         if not str(raw_segment.get("verbatim_es") or "").strip() and not str(
             raw_segment.get("translation_en") or ""
         ).strip():
@@ -946,9 +822,6 @@ def build_segments_manifest(
                 "role_in_argument": str(raw_segment.get("role_in_argument") or "fact"),
                 "audio_offset_start": anchor["offset_start"],
                 "audio_offset_end": anchor["offset_end"],
-                # Kept so the anchor itself is reviewable: a re-anchored id is
-                # only trustworthy if the text it matched is the text the vault
-                # meant.
                 "verbatim_es": str(raw_segment.get("verbatim_es") or ""),
                 "translation_en": str(raw_segment.get("translation_en") or ""),
                 "transcription_notes": "; ".join(filter(None, [existing_notes, provenance])),
@@ -961,13 +834,7 @@ def build_segments_manifest(
         "matched_audio_sources": sorted({s["segment_id"].split(".", 1)[0] for s in segments}),
         "total_segments_matched": len(segments),
         "segments": segments,
-        # Non-empty only for clips whose vault timings are relative to a
-        # different cut of the audio. Recorded so a reviewer can see that an
-        # anchor was shifted rather than taken at face value.
         "clip_offset_deltas": deltas or {},
-        # Recorded so a consumer can symlink the right transcript files (and
-        # cross-check them) instead of re-deriving the audio_id -> transcript_id
-        # bridge that ``build_segments_manifest`` resolves above.
         "transcript_files": transcript_files,
     }
     if placeholders:
@@ -978,15 +845,7 @@ def build_segments_manifest(
 
 
 def _summarise_warnings(warnings: list[str], vid: str) -> list[str]:
-    """Collapse repetitive per-reference warnings into counted summary lines.
-
-    Re-anchoring one violation can produce hundreds of "no re-anchored
-    equivalent" lines (one per element evidence link and nexus row that pointed
-    at a rejected segment), which drowns out the warnings that need action. The
-    counts carry the same information in a readable form. Lines matching
-    ``_INFORMATIONAL_MARKERS`` are dropped from the summary entirely — they are
-    kept in the bundle's ``conversion_warnings.json``.
-    """
+    """Collapse repetitive per-reference warnings into counted summary lines."""
     counts: dict[str, int] = {}
     keep: list[str] = []
     for warning in warnings:
@@ -1004,15 +863,10 @@ def _summarise_warnings(warnings: list[str], vid: str) -> list[str]:
     return keep
 
 
-#: Expected, self-explanatory outcomes — kept in ``conversion_warnings.json``
-#: but excluded from the console summary.
 _INFORMATIONAL_MARKERS: tuple[str, ...] = (
     "empty placeholder segment(s) in full_segments skipped",
 )
 
-#: Per-reference warnings that repeat once per element evidence link, per nexus
-#: row and per rejected segment. Collapsed to counts so the actionable warnings
-#: stay visible.
 _REPEATED_WARNING_MARKERS: tuple[tuple[str, str], ...] = (
     ("has no re-anchored equivalent", "segment refs to unanchored vault segments"),
     ("link dropped", "nexus rows to unanchored vault segments"),
@@ -1020,8 +874,6 @@ _REPEATED_WARNING_MARKERS: tuple[tuple[str, str], ...] = (
     ("no canonical transcript matched", "segments with no matching transcript"),
 )
 
-
-# ── Conversion ──────────────────────────────────────────────────────────────
 
 # ── Translate the vault's layer objects into the model shapes ───────────────
 
@@ -1044,6 +896,19 @@ def _candidate_record(raw: dict) -> dict | None:
     }
 
 
+def _rewrite_prefix(value: str, old_prefix: str, new_prefix: str) -> str:
+    """Replace ``old_prefix`` at the head of ``value`` with ``new_prefix``.
+
+    Only fires when ``old_prefix`` is followed by a ``.``, so ``Art.193`` does
+    not rewrite the head of an unrelated ``Art.1930`` id. Returns ``value``
+    unchanged otherwise — the caller is rewriting an element-id *prefix*, not
+    performing a substring replacement.
+    """
+    if value.startswith(old_prefix + "."):
+        return new_prefix + value[len(old_prefix):]
+    return value
+
+
 def build_violation_document(
     violation: dict,
     contract: dict,
@@ -1060,10 +925,6 @@ def build_violation_document(
     ``nexus_matrix``, ``authorities`` and ``confidence``. Because the document
     validates as a ``Violation``, the refiner loads it verbatim instead of
     falling back to that lossy path.
-
-    Evidence segment ids inside ``element_grids``/``nexus_matrix`` are re-mapped
-    from the stale vault numbering to the re-anchored ids, otherwise every
-    element would point at an utterance that no longer exists.
     """
     warnings: list[str] = []
     vid = str(contract.get("violation_id") or violation.get("violation_id") or "UNKNOWN")
@@ -1093,7 +954,11 @@ def build_violation_document(
     segments: list[dict] = []
     for seg in manifest.get("segments") or []:
         seg_id = str(seg.get("segment_id") or "")
-        transcript_id, _, local_id = seg_id.partition(".")
+        # Split at the *last* dot: the local id is always ``seg-<index>`` and
+        # the transcript id may in principle contain a dot. ``partition``
+        # would split at the first, which silently mis-resolves any future
+        # transcript whose id is dotted.
+        transcript_id, _, local_id = seg_id.rpartition(".")
         reader = readers.get(transcript_id)
         parsed = reader.get_segment(local_id) if reader else None
         if reader is None or parsed is None:
@@ -1101,6 +966,7 @@ def build_violation_document(
             continue
         verbatim = parsed["verbatim"] or str(seg.get("verbatim_es") or "")
         legacy_text = str(seg.get("verbatim_es") or "")
+        source_filename = reader.source_uri().split("/")[-1]
         segments.append(
             {
                 "segment_id": seg_id,
@@ -1112,13 +978,13 @@ def build_violation_document(
                 "verbatim_sha256": sha256_text(verbatim),
                 "translation_en": str(seg.get("translation_en") or "") or legacy_text or verbatim,
                 "transcription_notes": seg.get("transcription_notes"),
-                "source_uri": f"Transcripts/{readers[transcript_id].source_uri().split('/')[-1]}#{local_id}",
+                "source_uri": f"Transcripts/{source_filename}#{local_id}",
                 "source_sha256": reader.source_sha256(),
                 "audio_uri": None,
             }
         )
 
-    # ── Layers 2-5 ----------------------------------------------------------
+    # ── Layers 2-5 ──────────────────────────────────────────────────────────
     framework_caches: list[dict] = []
     established_articles: list[dict] = []
     candidates: list[dict] = []
@@ -1208,82 +1074,145 @@ def build_violation_document(
                     }
                 )
 
-    # Layer 3 — element grids (shape changes: name/status/evidence/argument).
-    # ``verifier.E_GRID_UNKNOWN_ARTICLE`` makes a grid on an article that is not
-    # in ``established_articles`` an error, and ``confidence.derive_confidence``
-    # weights grids through ``established_articles[].applicability`` — so a grid
-    # for a demoted article is both a hard failure and an unweighted input. The
-    # element analysis is not lost: the article is already carried as a
-    # candidate (with the reason it was demoted), and the grid's size is
-    # reported so the omission is visible.
+    # ── Layer 3: element grids ──────────────────────────────────────────────
+    # ``verifier.E_GRID_UNKNOWN_ARTICLE`` makes a grid on an article that is
+    # not in ``established_articles`` an error, and ``confidence
+    # .derive_confidence`` weights grids through the article's
+    # ``applicability`` — so a grid for a demoted article is both a hard
+    # failure and an unweighted input. Drop it, with a warning that names the
+    # article, so the loss is visible.
     established_article_ids = {a["article_id"] for a in established_articles}
-    element_grids: list[dict] = []
+
+    # Canonical prefix map: the article_id spelling the established articles
+    # carry, keyed by the hierarchy-insensitive ``(framework, number)`` pair.
+    # Populated *before* grids are processed so the rewrite happens as each
+    # grid is translated.
+    canonical_prefix: dict[tuple[str, str], str] = {}
+    for a in established_articles:
+        split = split_article_id(a["article_id"])
+        if split is not None:
+            canonical_prefix.setdefault(split, a["article_id"])
+
     raw_grids = violation.get("element_grids")
+
+    # Dispatch on the vault's element_grids shape. Schema 4.0 emits a dict
+    # keyed by article_id; schema 3.0 emits a list of {article_id, elements}.
+    # The previous single-shape handling silently dropped the list form.
+    grids_iter: list[tuple[str, list, str]] = []
     if isinstance(raw_grids, dict):
-        for article_id, elements in raw_grids.items():
-            if not isinstance(elements, list):
+        for aid, elements in raw_grids.items():
+            if isinstance(elements, list):
+                grids_iter.append((str(aid), elements, ""))
+    elif isinstance(raw_grids, list):
+        for g in raw_grids:
+            if not isinstance(g, dict):
                 continue
-            translated: list[dict] = []
-            article_short = ""
-            for element in elements:
-                if not isinstance(element, dict):
-                    continue
-                article_short = article_short or str(element.get("article_short") or "")
-                evidence = []
-                for raw_fact in element.get("evidence") or []:
-                    mapped = legacy_to_canonical.get(str(raw_fact).strip())
-                    if mapped:
-                        evidence.append(mapped)
-                    else:
-                        warnings.append(
-                            f"element {element.get('element_id')}: evidence {raw_fact!r} "
-                            "has no re-anchored equivalent"
-                        )
-                status = str(element.get("status") or "").strip()
-                if not status:
-                    status = "not_developed"
-                elif status not in _VALID_PROOF_STATUS:
-                    warnings.append(
-                        f"element {element.get('element_id')}: proof_status {status!r} "
-                        "is not a model value; recorded as not_developed"
-                    )
-                    status = "not_developed"
-                translated.append(
-                    {
-                        "element_id": str(element.get("element_id") or ""),
-                        "label": str(element.get("element_name") or element.get("label") or ""),
-                        "doctrinal_basis": element.get("doctrinal_basis") or None,
-                        "proof_status": status,
-                        "proof_evidence_segments": evidence,
-                        "argument_es": str(element.get("argument") or element.get("argument_es") or ""),
-                        "weaknesses": [str(w) for w in (element.get("weaknesses") or [])],
-                        "open_questions": [
-                            str(o).strip("`") for o in (element.get("open_questions") or [])
-                        ],
-                    }
-                )
-            if not translated:
-                continue
-            if str(article_id) not in established_article_ids:
+            aid = str(g.get("article_id") or "")
+            elems = g.get("elements")
+            short = str(g.get("article_short") or "")
+            if aid and isinstance(elems, list):
+                grids_iter.append((aid, elems, short))
+        if raw_grids:
+            warnings.append(
+                f"element_grids is a list ({len(raw_grids)} item(s), schema 3.0 "
+                "shape); translated per-item"
+            )
+    elif raw_grids is None:
+        grids_iter = []
+    else:
+        warnings.append(
+            f"element_grids has unrecognised type {type(raw_grids).__name__}; dropped"
+        )
+
+    element_grids: list[dict] = []
+    prefix_rewrites: dict[str, str] = {}  # old article_id -> new article_id
+
+    for article_id_in, elements, grid_short in grids_iter:
+        # Canonicalize the grid's article_id to match the established article
+        # it belongs to, and remember the mapping so the nexus pass can apply
+        # the same rewrite to norm_id / element_id.
+        article_id = article_id_in
+        split = split_article_id(article_id_in)
+        if split is not None:
+            canonical = canonical_prefix.get(split)
+            if canonical and canonical != article_id_in:
+                prefix_rewrites[article_id_in] = canonical
+                article_id = canonical
                 warnings.append(
-                    f"element grid for {article_id} ({len(translated)} element(s)) "
-                    "dropped: the article is not in established_articles, so the "
-                    "grid would be an orphan (V11 E_GRID_UNKNOWN_ARTICLE) and "
-                    "would carry no confidence weight"
+                    f"element grid {article_id_in}: article prefix canonicalized "
+                    f"to {canonical} (matches the established article)"
                 )
+
+        translated: list[dict] = []
+        article_short = grid_short
+        for element in elements:
+            if not isinstance(element, dict):
                 continue
-            element_grids.append(
+            # The vault puts ``article_short`` on the grid in schema 3.0 and
+            # on each element in schema 4.0; both spellings are accepted.
+            article_short = article_short or str(element.get("article_short") or "")
+
+            evidence = []
+            for raw_fact in element.get("evidence") or []:
+                mapped = legacy_to_canonical.get(str(raw_fact).strip())
+                if mapped:
+                    evidence.append(mapped)
+                else:
+                    warnings.append(
+                        f"element {element.get('element_id')}: evidence {raw_fact!r} "
+                        "has no re-anchored equivalent"
+                    )
+
+            status = str(element.get("status") or "").strip()
+            if not status:
+                status = "not_developed"
+            elif status not in _VALID_PROOF_STATUS:
+                warnings.append(
+                    f"element {element.get('element_id')}: proof_status {status!r} "
+                    "is not a model value; recorded as not_developed"
+                )
+                status = "not_developed"
+
+            # Rewrite the element_id prefix if the grid's article_id changed.
+            raw_element_id = str(element.get("element_id") or "")
+            if article_id_in != article_id:
+                raw_element_id = _rewrite_prefix(raw_element_id, article_id_in, article_id)
+
+            translated.append(
                 {
-                    "article_id": str(article_id),
-                    "article_short": article_short or str(article_id),
-                    "elements": translated,
+                    "element_id": raw_element_id,
+                    "label": str(element.get("element_name") or element.get("label") or ""),
+                    "doctrinal_basis": element.get("doctrinal_basis") or None,
+                    "proof_status": status,
+                    "proof_evidence_segments": evidence,
+                    "argument_es": str(
+                        element.get("argument") or element.get("argument_es") or ""
+                    ),
+                    "weaknesses": [str(w) for w in (element.get("weaknesses") or [])],
+                    "open_questions": [
+                        str(o).strip("`") for o in (element.get("open_questions") or [])
+                    ],
                 }
             )
+        if not translated:
+            continue
+        if article_id not in established_article_ids:
+            warnings.append(
+                f"element grid for {article_id} ({len(translated)} element(s)) "
+                "dropped: the article is not in established_articles, so the "
+                "grid would be an orphan (V11 E_GRID_UNKNOWN_ARTICLE) and "
+                "would carry no confidence weight"
+            )
+            continue
+        element_grids.append(
+            {
+                "article_id": article_id,
+                "article_short": article_short or article_id,
+                "elements": translated,
+            }
+        )
 
-    # Layer 4 — nexus matrix (``fact_id`` carries stale segment ids).
-    # A nexus row is only meaningful against an emitted grid:
-    # ``verifier`` resolves ``norm_id`` through ``element_ids_by_article``, so a
-    # row for a dropped grid is ``E_NEXUS_UNKNOWN_NORM``.
+    # ── Layer 4: nexus matrix ───────────────────────────────────────────────
     grid_article_ids = {g["article_id"] for g in element_grids}
     nexus_matrix: list[dict] = []
     orphaned_norm_rows: dict[str, int] = {}
@@ -1294,23 +1223,37 @@ def build_violation_document(
         fact_id = legacy_to_canonical.get(raw_fact)
         if not fact_id:
             warnings.append(
-                f"nexus {entry.get('element_id')}: fact {raw_fact!r} has no re-anchored "
-                "equivalent; link dropped"
+                f"nexus {entry.get('element_id')}: fact {raw_fact!r} has no "
+                "re-anchored equivalent; link dropped"
             )
             continue
+
         norm_id = str(entry.get("norm_id") or "")
+        # Apply the prefix rewrite the grid pass recorded. A nexus row whose
+        # norm_id pointed at the pre-canonicalization article_id would
+        # otherwise be reported as an orphan even though its grid now exists.
+        if norm_id in prefix_rewrites:
+            norm_id = prefix_rewrites[norm_id]
         if norm_id not in grid_article_ids:
             orphaned_norm_rows[norm_id] = orphaned_norm_rows.get(norm_id, 0) + 1
             continue
+
         strength = str(entry.get("strength") or "").strip().lower()
         if strength not in {"high", "medium", "low"}:
             warnings.append(f"nexus {fact_id}: strength {strength!r} is not a model value")
             strength = "low"
+
+        element_id = str(entry.get("element_id") or "")
+        for old, new in prefix_rewrites.items():
+            if element_id.startswith(old + "."):
+                element_id = new + element_id[len(old):]
+                break
+
         nexus_matrix.append(
             {
                 "fact_id": fact_id,
                 "norm_id": norm_id,
-                "element_id": str(entry.get("element_id") or ""),
+                "element_id": element_id,
                 "nexus_type": str(entry.get("nexus_type") or ""),
                 "strength": strength,
                 "rationale_oneline": str(entry.get("rationale_oneline") or ""),
@@ -1323,8 +1266,7 @@ def build_violation_document(
             "(V11 E_NEXUS_UNKNOWN_NORM)"
         )
 
-    # Layer 5 — authorities. Vault records carry no proposition to verify, so
-    # the research query doubles as one (authorities stay unverified).
+    # ── Layer 5: authorities ────────────────────────────────────────────────
     authorities: list[dict] = []
     for entry in violation.get("authorities") or []:
         if not isinstance(entry, dict):
@@ -1334,7 +1276,9 @@ def build_violation_document(
             continue
         authority_type = str(entry.get("type") or "").strip()
         if authority_type not in _VALID_AUTHORITY_TYPES:
-            warnings.append(f"authority {authority_id}: type {authority_type!r} is not a model value")
+            warnings.append(
+                f"authority {authority_id}: type {authority_type!r} is not a model value"
+            )
             authority_type = "doctrine"
         query = str(entry.get("research_query") or "").strip()
         authorities.append(
@@ -1342,7 +1286,8 @@ def build_violation_document(
                 "authority_id": authority_id,
                 "type": authority_type,
                 "supports": [
-                    str(s) for s in (entry.get("supports") or entry.get("supports_elements") or [])
+                    str(s)
+                    for s in (entry.get("supports") or entry.get("supports_elements") or [])
                 ],
                 "research_query": query,
                 "proposition_to_verify": str(entry.get("proposition_to_verify") or query),
@@ -1350,7 +1295,7 @@ def build_violation_document(
             }
         )
 
-    # ── Auxiliary (already normalised by build_contract) ────────────────────
+    # ── Auxiliary ───────────────────────────────────────────────────────────
     open_questions = [
         {
             "id": str(oq.get("id") or ""),
@@ -1398,6 +1343,17 @@ def _provenance_entries(raw: Any, vid: str, warnings: list[str]) -> list[dict]:
     corpus-wide use ``layer: 0`` to mean "whole-document rebuild, not tied to a
     layer". Those become ``layer=None`` with the original value kept in the note
     so the audit trail stays legible.
+
+    The timestamp is *validated* here but stored as the original string.
+    ``ProvenanceEntry.timestamp`` is a ``datetime`` and Pydantic parses an
+    ISO-8601 string into one at ``model_validate`` time, so the string form
+    round-trips. What this function needs to prevent is different: a
+    non-ISO timestamp would make ``Violation.model_validate`` fail, which
+    causes ``refine_batch_core._load_violation`` to silently fall back to the
+    legacy normalizer and drop every layer 3-5 record — the failure mode this
+    module exists to prevent. Parsing here, but keeping the string, means a
+    single bad entry is skipped with a warning instead of poisoning the whole
+    document.
     """
     entries: list[dict] = []
     for index, item in enumerate(raw or []):
@@ -1413,6 +1369,15 @@ def _provenance_entries(raw: Any, vid: str, warnings: list[str]) -> list[dict]:
         timestamp = item.get("timestamp")
         if not timestamp:
             warnings.append(f"{vid}: provenance[{index}] has no timestamp; skipped")
+            continue
+        # Validate that Pydantic will be able to parse it, but keep the string.
+        try:
+            datetime.fromisoformat(str(timestamp).replace("Z", "+00:00"))
+        except (TypeError, ValueError):
+            warnings.append(
+                f"{vid}: provenance[{index}] timestamp {timestamp!r} is not "
+                "ISO-8601; skipped"
+            )
             continue
         entries.append(
             {
@@ -1434,8 +1399,6 @@ def _validate_document(document: dict, vid: str) -> list[str]:
     go unnoticed until the layer 3-5 data disappeared downstream.
     """
     try:
-        from violation_pack.models import Violation
-
         Violation.model_validate(document)
     except Exception as exc:  # noqa: BLE001 - surfaced, never hidden
         return [f"{vid}: staged document does not validate as Violation: {exc}"]
@@ -1449,24 +1412,20 @@ def _framework_bundle_name(code: str) -> str:
 
     ``refine_batch_core._discover_frameworks`` keys readers by
     ``md.stem.split("_")[0].upper()``, and ``validation.v03``/``v04`` look the
-    reader up by the article's ``framework_code``. Preserving the corpus filename
-    (``CodigoPenal.md`` → ``CODIGOPENAL``, ``L19496_LPDC.md`` → ``L19496``) makes
-    both miss the reader and report the law as unregistered even though the file
-    is present and correct. Naming the symlink after the code makes the derived
-    key equal the key that is looked up.
+    reader up by the article's ``framework_code``. Preserving the corpus
+    filename (``CodigoPenal.md`` → ``CODIGOPENAL``, ``L19496_LPDC.md`` →
+    ``L19496``) makes both miss the reader and report the law as unregistered
+    even though the file is present and correct. Naming the symlink after the
+    code makes the derived key equal the key that is looked up.
 
-    Codes containing ``_`` cannot round-trip through that rule at all (the first
-    token wins), which ``stage_bundle`` warns about.
+    Codes containing ``_`` cannot round-trip through that rule at all (the
+    first token wins), which ``stage_bundle`` warns about.
     """
     return f"{code}.md"
 
 
 def _ensure_symlink(link: Path, target: Path) -> None:
-    """Point ``link`` at ``target`` (relative), replacing a stale link.
-
-    Symlinks rather than copies so a bundle can never diverge from the single
-    source of truth, and relative so ``build/`` stays movable.
-    """
+    """Point ``link`` at ``target`` (relative), replacing a stale link."""
     if not target.exists():
         raise FileNotFoundError(str(target))
     if link.is_symlink():
@@ -1490,15 +1449,17 @@ def stage_bundle(
 ) -> list[str]:
     """Assemble the final ``build/<VID>/`` layout that ``refine_batch`` reads.
 
-    Returns non-fatal warnings (a framework with no corpus file, an unresolved
-    transcript, a document that would fall back to the legacy normalizer, ...).
+    Returns non-fatal warnings. A document that would fail
+    ``Violation.model_validate`` is a **fatal** error: writing it to disk
+    would let the refiner silently fall back to the lossy legacy normalizer
+    and drop every layer 3-5 record. In that case the invalid document is
+    saved as ``<VID>.json.invalid`` for inspection and any stale
+    ``<VID>.json`` from a previous successful run is removed before the
+    exception propagates.
     """
     warnings: list[str] = []
     vid = bundle_dir.name
 
-    # Symlinks first: the document's framework caches and ``source_uri`` fields
-    # reference the bundle-relative paths, so the target must exist before the
-    # framework markdown is hashed.
     for transcript_id, filename in (manifest.get("transcript_files") or {}).items():
         target = transcript_dir / filename
         if not target.exists():
@@ -1522,9 +1483,6 @@ def stage_bundle(
         if not target.exists():
             warnings.append(f"{code}: law file not found ({target})")
             continue
-        # ``_discover_frameworks`` derives the code from the filename; a code
-        # containing "_" cannot survive a rule that only reads the first token,
-        # and V03/V04 would then call the law unregistered.
         if "_" in code:
             warnings.append(
                 f"{code}: framework code contains '_', which "
@@ -1533,18 +1491,33 @@ def stage_bundle(
             )
         _ensure_symlink(bundle_dir / "Legal framework" / _framework_bundle_name(code), target)
 
-    # Canonical violation document.
     document, doc_warnings = build_violation_document(
         violation, contract, manifest, law_root, transcript_dir, bundle_dir
     )
     warnings += doc_warnings
-    warnings += _validate_document(document, vid)
+
+    validation_errors = _validate_document(document, vid)
+    if validation_errors:
+        # Refuse to write an invalid document. Downstream, ``_load_violation``
+        # would swallow the model error and re-normalize through the lossy
+        # legacy path, so a written-and-invalid file is worse than no file:
+        # it looks final and behaves like a staging artifact.
+        invalid_path = bundle_dir / f"{vid}.json.invalid"
+        invalid_path.write_text(
+            json.dumps(document, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+        stale = bundle_dir / f"{vid}.json"
+        if stale.exists():
+            stale.unlink()
+        raise ValueError(
+            "; ".join(validation_errors)
+            + f" — invalid document saved as {invalid_path.name}"
+        )
+
     (bundle_dir / f"{vid}.json").write_text(
         json.dumps(document, indent=2, ensure_ascii=False), encoding="utf-8"
     )
 
-    # The contract can only be reconciled once the document it describes
-    # exists, so rewrite it after staging.
     if _reconcile_contract_confidence(contract, document, vid, warnings):
         (bundle_dir / "contract.json").write_text(
             json.dumps(contract, indent=2, ensure_ascii=False), encoding="utf-8"
@@ -1558,21 +1531,15 @@ def _reconcile_contract_confidence(
 ) -> bool:
     """Stop ``contract.json`` from asserting a confidence the bundle contradicts.
 
-    The vault keeps a confidence *snapshot* (``value``/``components``/
-    ``derived_at``/``history``/``validated``). ``refine_batch_core
-    .attach_confidence`` unconditionally recomputes from ``element_grids``, and
-    ``validation.v08_contract_consistency`` treats a dict-shaped confidence as a
-    *live* assertion (only a bare scalar is downgraded to "legacy snapshot" and
-    merely warned about) — so a snapshot the bundle's own data does not
-    reproduce becomes a V08 FAIL that no amount of faithful translation can
-    clear. Observed causes in the LA8159 corpus: the snapshot was never derived
-    (``value: 0``, empty ``components``), its components were rounded before the
-    value was computed, or the weights implied by ``value`` are not the weights
-    its ``applicability`` fields declare.
-
-    The snapshot is preserved as ``contract["_vault_confidence"]`` and the
-    divergence is reported with both numbers, so the check is skipped rather
-    than silently satisfied. Returns True when ``contract`` was modified.
+    The vault keeps a confidence *snapshot* that ``refine_batch_core
+    .attach_confidence`` unconditionally recomputes from ``element_grids``,
+    and ``validation.v08_contract_consistency`` treats a dict-shaped
+    confidence as a *live* assertion (only a bare scalar is downgraded to
+    "legacy snapshot" and merely warned about) — so a snapshot the bundle's
+    own data does not reproduce becomes a V08 FAIL that no amount of faithful
+    translation can clear. The snapshot is preserved as
+    ``contract["_vault_confidence"]`` and the divergence is reported with both
+    numbers. Returns True when ``contract`` was modified.
     """
     snapshot = contract.get("confidence")
     if not isinstance(snapshot, dict) or not isinstance(snapshot.get("value"), (int, float)):
@@ -1580,7 +1547,7 @@ def _reconcile_contract_confidence(
     try:
         violation = Violation.model_validate(document)
     except Exception:  # pylint: disable=broad-except
-        return False  # _validate_document already reported this
+        return False
     derived = derive_confidence(violation)
     if abs(float(snapshot["value"]) - derived.value) < 1e-9:
         return False
@@ -1617,13 +1584,7 @@ def convert_one(
     transcript_dir: Path | None = None,
     speaker_index: Path | None = None,
 ) -> tuple[Path, list[str]]:
-    """Convert one vault JSON document into a bundle directory.
-
-    Writes ``contract.json`` + ``segments_manifest.json``, then (unless
-    ``stage`` is false) assembles the final bundle layout around them.
-
-    Returns ``(bundle_dir, warnings)``.
-    """
+    """Convert one vault JSON document into a bundle directory."""
     violation = load_violation(json_path)
     vid = str(violation.get("violation_id") or json_path.stem)
     bundle_dir = output_root / vid
@@ -1652,8 +1613,6 @@ def convert_one(
             transcript_dir if transcript_dir is not None else DEFAULT_TRANSCRIPT_DIR,
             speaker_index if speaker_index is not None else DEFAULT_SPEAKER_INDEX,
         )
-        # Keep the full list on disk so summarising the console output never
-        # destroys the per-reference detail a reviewer may need.
         (bundle_dir / "conversion_warnings.json").write_text(
             json.dumps(warnings, indent=2, ensure_ascii=False), encoding="utf-8"
         )
@@ -1679,13 +1638,7 @@ def _vault_confidence_value(path: Path) -> float:
 
 
 def _revision_sort_key(path: Path) -> tuple[float, int, str]:
-    """Rank competing revisions of one violation.
-
-    Highest declared vault confidence first, then the plainest filename (so
-    ``BR-030.json`` beats a decorated ``BR-030-updated.json``), then alphabetical
-    so the result never depends on glob order. Equal confidence is the normal
-    case for the byte-identical copies in this vault.
-    """
+    """Rank competing revisions of one violation."""
     return (-_vault_confidence_value(path), len(path.name), path.name)
 
 
@@ -1695,11 +1648,9 @@ def _prefer_authoritative_revisions(paths: list[Path]) -> list[Path]:
     ``convert_one`` keys the bundle directory off the *declared* violation id,
     so two files declaring the same id write the same ``build/<VID>`` and the
     survivor depends on glob order. The LA8159 vault really does this: ``BR-001``
-    is declared by ``BR-001.json`` (confidence 0.68), ``BR-030.json`` (0.98) and
-    a byte-identical ``BR-030-updated.json``. Byte-identical copies are dropped
-    by content hash (pure redundancy), then the highest confidence wins, and
-    every discarded file is named so the choice is auditable rather than
-    incidental.
+    is declared by three files. Byte-identical copies are dropped by content
+    hash, then the highest vault confidence wins, and every discarded file is
+    named so the choice is auditable.
     """
     groups: dict[str, list[Path]] = {}
     order: list[str] = []
@@ -1717,8 +1668,6 @@ def _prefer_authoritative_revisions(paths: list[Path]) -> list[Path]:
     kept: list[Path] = []
     for vid in order:
         candidates = groups[vid]
-        # Byte-identical copies are pure redundancy; collapse them by content,
-        # keeping the representative the ranking rule would have picked anyway.
         by_hash: dict[str, list[Path]] = {}
         hash_order: list[str] = []
         for path in candidates:
@@ -1780,7 +1729,6 @@ def _resolve_inputs(args: argparse.Namespace) -> list[Path]:
         pattern = f"{args.jurisdiction}-*.json" if args.jurisdiction else "*.json"
         paths.extend(sorted(p for p in args.source.glob(pattern) if p.is_file()))
 
-    # De-duplicate while preserving order.
     seen: set[Path] = set()
     unique: list[Path] = []
     for path in paths:
@@ -1842,7 +1790,9 @@ def main(argv: Iterable[str] | None = None) -> int:
             warning_count += 1
             continue
 
-        manifest = json.loads((bundle_dir / "segments_manifest.json").read_text(encoding="utf-8"))
+        manifest = json.loads(
+            (bundle_dir / "segments_manifest.json").read_text(encoding="utf-8")
+        )
         warning_count += len(warnings)
         results.append(
             {

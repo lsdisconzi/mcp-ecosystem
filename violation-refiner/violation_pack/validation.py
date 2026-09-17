@@ -24,6 +24,13 @@ from .models import CheckResult, CheckStatus, OpenQuestion, ValidationReport, Vi
 from .sources import FrameworkSource, TranscriptSource
 from .verifier import v11_enrichment_integrity
 
+from .element_templates import (
+    find_template,
+    parse_element_id,
+    split_article_id,
+    template_drift,
+)
+
 PIPELINE_VERSION = "1.0"
 
 CheckFn = Callable[[Violation, dict], CheckResult]
@@ -752,6 +759,145 @@ def v17_cross_view_consistency(v: Violation, sources: dict) -> CheckResult:
 # Pipeline orchestrator
 # ---------------------------------------------------------------------------
 
+def v21_element_id_closure(v: Violation, sources: dict) -> CheckResult:
+    """Element ids must be well-formed, closed over the grid, and — where a
+    template exists — the vocabulary the template fixes.
+
+    Three separate invariants, each catching a different way the enrichment
+    pipeline can produce a bundle whose parts do not agree with each other:
+
+    1. **Shape.** Every element id must parse as
+       ``<article_id>[.<numeral>].elem.<key>`` and its article prefix must
+       canonicalize to the grid's own ``article_id``. Without this check a grid
+       can carry ``CL.CHIPENCOD.Art.193.8.elem.foo`` under
+       ``CL.CHIPENCOD.T4.C3.Art.193`` and every lookup by full id silently
+       misses.
+
+    2. **Closure.** Every ``(norm_id, element_id)`` pair referenced by the
+       nexus matrix must exist in the grid. V11 already rejects a nexus row
+       whose ``element_id`` is not in the grid, but V11 is the *enrichment*
+       verifier — it runs at the LLM seam, not on every pipeline pass — and a
+       bundle written by any other route never sees it. Making closure a
+       first-class pipeline check means the invariant is tested on read, not
+       only on write.
+
+    3. **Template conformance.** When the article has a template, a required
+       template key missing from the grid is a defect: the template is the
+       article's doctrinal decomposition, and dropping one of its elements
+       means the bundle asserts the article without one of its conditions.
+       Extra keys are a warning, not a failure — a bundle may legitimately
+       extend a template for an article-specific reason — but they are
+       reported so drift is visible.
+
+    Severity: ``fail`` for shape violations, closure violations, and missing
+    required template keys. ``warn`` for extra template keys and for a
+    well-formed id whose article prefix differs from the grid's only by
+    hierarchy segments (``CL.CHIPENCOD.Art.193`` vs.
+    ``CL.CHIPENCOD.T4.C3.Art.193``): the ids still resolve within the grid,
+    the drift is a naming convention, and failing on it would fail the whole
+    existing corpus without changing a single legal proposition.
+
+    What this check does NOT do: it does not require that every element has a
+    template, and it does not require that a template exists for every
+    article. The registry is a vocabulary, and V14 already covers the
+    "established article that contributes nothing" case that a missing
+    template would otherwise hide.
+    """
+    issues: list[str] = []
+    warnings: list[str] = []
+
+    # -- 1. Shape and per-grid consistency ---------------------------------
+    grid_pairs: set[tuple[str, str]] = set()
+
+    for grid in v.element_grids:
+        seen_prefixes: set[str] = set()
+        keys_for_grid: set[str] = set()
+        grid_split = split_article_id(grid.article_id)
+
+        for el in grid.elements:
+            parsed = parse_element_id(el.element_id)
+            if parsed is None:
+                issues.append(
+                    f"{grid.article_id}/{el.element_id}: does not match "
+                    "'<article>[.<numeral>].elem.<key>'"
+                )
+                continue
+            article, _numeral, key = parsed
+            seen_prefixes.add(article)
+            keys_for_grid.add(key)
+            grid_pairs.add((grid.article_id, el.element_id))
+
+            if article == grid.article_id:
+                continue
+            # Exact-prefix match failed. If the article prefix canonicalizes
+            # to the grid's article_id — same framework and number, hierarchy
+            # segments dropped — record it as a warning, not a failure.
+            article_split = split_article_id(article)
+            if grid_split is not None and article_split == grid_split:
+                warnings.append(
+                    f"{el.element_id}: article prefix drops hierarchy segments "
+                    f"of {grid.article_id}; migrate when convenient"
+                )
+            else:
+                issues.append(
+                    f"{el.element_id}: article prefix {article!r} does not "
+                    f"match grid article_id {grid.article_id!r}"
+                )
+
+        if len(seen_prefixes) > 1:
+            issues.append(
+                f"{grid.article_id}: element ids use "
+                f"{len(seen_prefixes)} different article prefixes "
+                f"({sorted(seen_prefixes)}); a grid must use one"
+            )
+
+        # -- 3. Template conformance --------------------------------------
+        drift = template_drift(grid.article_id, keys_for_grid)
+        if drift is not None and not drift.clean:
+            if drift.missing_required:
+                issues.append(
+                    f"{grid.article_id}: template requires element(s) "
+                    f"{list(drift.missing_required)} not present in the grid"
+                )
+            if drift.extra_keys:
+                warnings.append(
+                    f"{grid.article_id}: grid has element(s) "
+                    f"{list(drift.extra_keys)} outside its template"
+                )
+
+    # -- 2. Closure over the nexus matrix ----------------------------------
+    for row in v.nexus_matrix:
+        if (row.norm_id, row.element_id) not in grid_pairs:
+            issues.append(
+                f"nexus[{row.fact_id} -> {row.norm_id}/{row.element_id}]: "
+                "pair not declared in any element grid"
+            )
+
+    if issues:
+        return _result(
+            "V21", "element_id_closure", "fail",
+            f"{len(issues)} issue(s): " + "; ".join(issues)
+            + (f" | warnings: {'; '.join(warnings)}" if warnings else ""),
+        )
+    if warnings:
+        return _result(
+            "V21", "element_id_closure", "warn",
+            f"{len(grid_pairs)} grid pair(s) and "
+            f"{len(v.nexus_matrix)} nexus row(s) checked; "
+            f"{len(warnings)} warning(s): " + "; ".join(warnings),
+        )
+    return _result(
+        "V21", "element_id_closure", "pass",
+        f"{len(grid_pairs)} element(s) shaped and closed; "
+        f"{len(v.nexus_matrix)} nexus row(s) reference a declared pair; "
+        f"templates conform where present.",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Pipeline orchestrator
+# ---------------------------------------------------------------------------
+
 DEFAULT_PIPELINE: list[tuple[str, str, CheckFn]] = [
     ("V01", "segment_resolution",            v01_segment_resolution),
     ("V02", "verbatim_quote_match",          v02_verbatim_quote_match),
@@ -770,6 +916,7 @@ DEFAULT_PIPELINE: list[tuple[str, str, CheckFn]] = [
     ("V15", "verbatim_hash_integrity",       v15_verbatim_hash_integrity),
     ("V16", "authority_verification_coherence", v16_authority_verification_coherence),
     ("V17", "cross_view_consistency",        v17_cross_view_consistency),
+    ("V21", "element_id_closure",            v21_element_id_closure),
 ]
 
 
