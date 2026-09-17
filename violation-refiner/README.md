@@ -174,7 +174,19 @@ open http://127.0.0.1:8124/
 The UI discovers rendered transcripts and law caches through `GET /api/sources`
 and uses `GET /api/browse?path=...&kind=directory|file` for the Settings and
 S0 Browse controls. Browser paths are constrained to this workspace and are
-never treated as arbitrary server filesystem paths.
+never treated as arbitrary server filesystem paths: containment is checked
+lexically before the path is resolved, which is what keeps repo-owned symlinks
+like `data/law` reachable while still refusing `../../`. `kind` is what the
+caller may pick, so a directory is listed for either kind — a picker opens on a
+directory, and the old reading made it impossible to open one at all.
+
+S0 stages a file with `POST /api/bundle-source`, either by
+`source_path` (a file already in the workspace) or by
+`content_base64` + `filename` (an upload, 16 MiB limit). Both resolve their
+destination through `pack.staged_source_path`, and the response reports the
+computed `destination`, the byte count, the `sha256` of what was written and
+whether an existing file was `overwritten` — so the page can show where a source
+landed instead of asserting that it did.
 
 `GET /api/sources` returns, in addition to the pre-existing keys:
 

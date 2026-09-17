@@ -35,9 +35,63 @@ BUNDLE_LAYOUT = {
 }
 
 
+#: The layout keys that name a **folder a source is copied into**. Every other
+#: key names one file, so a source staged there replaces that file rather than
+#: being dropped beside it: ``contract`` means ``contract.json``, and the older
+#: behaviour created a *directory* of that name and copied into it.
+#:
+#: Declared rather than inferred from the template's shape. "Has no suffix" fits
+#: today's layout, but it would silently misplace a future folder whose name
+#: carries a dot — so `tests/test_pack_layout.py` pins this set against the
+#: suffix-free keys and a new bare folder key either lands here or fails loudly.
+SOURCE_DIRECTORY_KINDS = frozenset({
+    "transcripts_dir",
+    "framework_dir",
+    "authority_sources_dir",
+})
+
+
+def is_layout_kind(kind: object) -> bool:
+    """True when ``kind`` names a destination in `BUNDLE_LAYOUT`."""
+    return isinstance(kind, str) and kind in BUNDLE_LAYOUT
+
+
 def bundle_path(root: Path, kind: str, violation_id: str) -> Path:
     rel = BUNDLE_LAYOUT[kind].format(violation_id=violation_id)
     return root / rel
+
+
+def staged_source_path(root: Path, kind: str, source_name: str) -> Path:
+    """Where a staged source of truth lands inside the bundle.
+
+    Two shapes, because `BUNDLE_LAYOUT` holds two:
+
+    * a folder key (``transcripts_dir`` → ``Transcripts``) — the source keeps its
+      own name inside it;
+    * a file key (``contract`` → ``contract.json``) — the destination *is* the
+      file, so the source replaces it.
+
+    The bundle id is read off ``root``'s name (``build/CL-030`` → ``CL-030``),
+    the same convention ``resolve_bundle_dir`` and the UI's bundle root use — the
+    directory name *is* the violation id, so the ``{violation_id}`` templates
+    resolve without a second argument.
+
+    ``source_name`` is reduced to its basename, stripped, and an empty or dot
+    name is refused: a staged source must not be able to write outside the bundle,
+    whatever a request body or a drag-and-drop says. The strip is not cosmetic —
+    ``"   "`` is a legal POSIX file name, so without it a request could stage a
+    file that no listing, manifest or bug report can distinguish from the
+    directory around it.
+    """
+    if not is_layout_kind(kind):
+        raise KeyError(kind)
+    name = Path(source_name or "").name.strip()
+    if not name or name in {".", ".."}:
+        raise ValueError("a staged source needs a file name")
+    template = BUNDLE_LAYOUT[kind]
+    if kind in SOURCE_DIRECTORY_KINDS:
+        return root / template / name
+    return root / Path(template.format(violation_id=root.name))
 
 
 def write_violation_json(violation: Violation, root: Path) -> Path:
@@ -102,11 +156,44 @@ def zip_bundle(root: Path, out_zip: Path) -> Path:
     return out_zip
 
 
+def clear_linked_destination(dest: Path) -> None:
+    """Remove a **symlink** at ``dest`` so the write creates a real file there.
+
+    Both writers open ``dest`` for writing, and both therefore *follow* a link:
+    ``shutil.copy2`` and ``Path.write_bytes`` resolve the destination before
+    truncating it. A bundle whose layout is a set of links to the canonical
+    corpus — ``build/CL-030/Legal framework/CPCL.md -> ../../../data/law/CL/
+    CodigoPenal.md``, which is the real convention — makes that a write **outside
+    the workspace**: staging a source named ``CPCL.md`` rewrites
+    ``data/law/CL/CodigoPenal.md``, and the caller is told it wrote
+    ``Legal framework/CPCL.md`` with a sha256 of the corpus file.
+
+    Only a link is cleared. A real file at the destination is the ordinary
+    replace case (reported as ``overwritten``), and a directory is left alone so
+    the writer raises rather than silently discarding a tree.
+    """
+    if dest.is_symlink():
+        dest.unlink()
+
+
 def copy_source_into_bundle(source_path: Path, root: Path, kind: str) -> Path:
     """Copy a source-of-truth file into the bundle's canonical location."""
-    dest_dir_rel = BUNDLE_LAYOUT[kind]
-    dest_dir = root / dest_dir_rel
-    dest_dir.mkdir(parents=True, exist_ok=True)
-    dest = dest_dir / source_path.name
+    dest = staged_source_path(root, kind, source_path.name)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    clear_linked_destination(dest)
     shutil.copy2(source_path, dest)
+    return dest
+
+
+def write_source_into_bundle(root: Path, kind: str, source_name: str, data: bytes) -> Path:
+    """Write an uploaded source into the bundle's canonical location.
+
+    The upload counterpart of `copy_source_into_bundle`, and deliberately the
+    same destination rule: a reviewer who drags a PDF in and one who picks the
+    same file out of ``data/law`` must not end up with two different layouts.
+    """
+    dest = staged_source_path(root, kind, source_name)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    clear_linked_destination(dest)
+    dest.write_bytes(data)
     return dest

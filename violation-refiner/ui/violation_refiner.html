@@ -221,6 +221,7 @@ code {
 /* drop zone */
 .drop-zone { border: 1.5px dashed var(--border-strong); border-radius: 4px; padding: 26px; text-align: center; color: var(--text-muted); font-size: 0.84rem; background: var(--bg-card); }
 .drop-zone strong { color: var(--accent); }
+.drop-zone.dragging { border-color: var(--accent); border-style: solid; background: var(--accent-dim); color: var(--accent); }
 
 /* record rows (repeatable items) */
 .record-list { display: flex; flex-direction: column; gap: 8px; }
@@ -480,6 +481,20 @@ code {
 .browse-list { display: flex; flex-direction: column; gap: 5px; max-height: 45vh; overflow-y: auto; }
 .browse-entry { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; }
 .browse-entry .browse-icon { color: var(--accent); width: 18px; }
+/* A row that is not a choice in this picker must look inert. A folder picker
+   lists files so the reviewer can see them, and a row that looks clickable and
+   does nothing reads as "this folder is empty". */
+.browse-entry[disabled] { opacity: 0.55; cursor: default; }
+.browse-entry[disabled]:hover { border-color: var(--border-strong); color: var(--text-secondary); }
+.browse-entry.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.picker-shortcuts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.picker-shortcuts .btn { padding: 6px 11px; font-size: 0.66rem; }
+.picker-upload { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 14px; }
+.picker-upload input[type="file"] { font-family: var(--mono); font-size: 0.68rem; color: var(--text-secondary); }
+.picker-notes { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+.picker-note { font-family: var(--mono); font-size: 0.66rem; word-break: break-all; color: var(--text-secondary); }
+.picker-note.bad { color: var(--status-flag); }
+.picker-note .sha { color: var(--text-muted); }
 </style>
 </head>
 <body>
@@ -613,7 +628,7 @@ code {
     </div>
     <div class="modal-body" id="modalBody"></div>
     <div class="modal-footer">
-      <span class="modal-footer-note">Read-only — provenance is computed, not entered.</span>
+      <span class="modal-footer-note" id="modalFooterNote">Read-only — provenance is computed, not entered.</span>
       <button class="btn" data-action="close-modal">Close</button>
     </div>
   </div>
@@ -632,12 +647,12 @@ code {
   </div>
 
   <div class="block">
-    <div class="drop-zone" id="s0DropZone" data-action="browse" data-setting="sourceFile" data-browse-kind="file">Drag files here, or <strong>browse</strong> to choose a source file<div class="field-hint" id="s0SourceFile"></div></div>
+    <div class="drop-zone" id="s0DropZone" role="button" tabindex="0" data-action="browse" data-setting="sourceFile" data-browse-stage="bundle" data-browse-kind="file">Drag files here, or <strong>browse</strong> to choose a source file<div class="field-hint" id="s0SourceFile"></div></div>
     <div class="field-row" style="margin-top:16px;">
       <div class="field">
         <label>Destination <span class="req">*</span></label>
         <select id="s0Destination"></select>
-        <div class="field-hint">Every option is a key <code>pack.copy_source_into_bundle</code> resolves.</div>
+        <div class="field-hint">Offered destinations are the keys <code>pack.BUNDLE_LAYOUT</code> resolves. A folder key keeps the file's own name inside it; a file key replaces that file.</div>
       </div>
       <div class="field readonly">
         <label>Bundle root</label>
@@ -1289,6 +1304,16 @@ const API = {
   frameworkArticle: (uri, article) => fetchJson('/api/framework-article?uri=' + encodeURIComponent(uri)
     + '&article=' + encodeURIComponent(article)),
   browse: (path, kind) => fetchJson('/api/browse?path=' + encodeURIComponent(path) + '&kind=' + kind),
+  // Stage one source-of-truth file into the bundle: either a workspace path the
+  // picker just walked to, or bytes the browser holds and the server has never
+  // seen. One route for both, because both must land through the same layout
+  // rule — a reviewer who drags a PDF in and one who picks the same file out of
+  // data/law cannot be allowed two different destinations.
+  bundleSource: payload => fetchJson('/api/bundle-source', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }),
   catalog: () => fetchJson('/api/catalog'),
   // Tool calls run in the background. `ToolManager` calls a *synchronous* tool
   // inline on the event loop, so while one ran the server answered nothing at
@@ -1872,6 +1897,60 @@ document.addEventListener('DOMContentLoaded', () => {
   const bundleSelect = document.getElementById('bundleSelect');
   bundleSelect.addEventListener('change', () => switchBundle(bundleSelect.value));
 
+  // Uploads from the staging picker. `files` is copied out of the input before
+  // anything awaits: re-rendering the dialog replaces that input, and a FileList
+  // read from a detached node is empty.
+  document.addEventListener('change', (e) => {
+    if (e.target && e.target.id === 'pickerUpload') {
+      uploadFilesToBundle(Array.from(e.target.files || []));
+    }
+    // The drop zone's hint names the root the picker will open at, which is a
+    // function of the destination — so it has to follow the select rather than
+    // whatever was true at the last hydration.
+    if (e.target && e.target.id === 's0Destination') {
+      const hint = document.getElementById('s0SourceFile');
+      if (hint) hint.textContent = `Browsing opens at ${stageRoot(stageDestination())} — the root /api/sources reports for this destination.`;
+    }
+  });
+
+  /* Drag-and-drop staging for S0.
+   *
+   * Delegated from `document`, not bound to the zone: the zone lives in a
+   * <template> and is re-created every time the step re-renders, so a direct
+   * listener ends up on a node the reviewer is no longer looking at.
+   *
+   * `preventDefault` on dragover is what makes a drop target at all. The page
+   * has always *said* "drag files here", and nothing implemented it — so the
+   * browser's default applied instead, which is to navigate to the dropped file
+   * and replace this session with a PDF. The guard is document-wide for exactly
+   * that reason: a drop that misses the zone must do nothing, not navigate. */
+  document.addEventListener('dragover', (e) => {
+    if (!droppedFiles(e)) return;
+    e.preventDefault();
+    const zone = e.target.closest && e.target.closest('#s0DropZone');
+    if (zone) zone.classList.add('dragging');
+  });
+  document.addEventListener('dragleave', (e) => {
+    const zone = e.target.closest && e.target.closest('#s0DropZone');
+    if (zone) zone.classList.remove('dragging');
+  });
+  document.addEventListener('drop', (e) => {
+    const files = droppedFiles(e);
+    if (!files) return;
+    e.preventDefault();
+    const zone = e.target.closest && e.target.closest('#s0DropZone');
+    if (zone) zone.classList.remove('dragging');
+    if (!zone) {
+      pushLog('Drop a source file onto the S0 drop zone to stage it', 'S0', 'warn');
+      return;
+    }
+    if (!state.bundleId) {
+      pushLog('Choose a bundle before staging source files', 'S0', 'warn');
+      return;
+    }
+    uploadFilesToBundle(files);
+  });
+
   // capture S1 identity fields so init_violation can pre-fill from the form
   document.addEventListener('change', (e) => {
     const field = e.target.closest('#adv-s1, .field, .form-row');
@@ -1898,11 +1977,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (action === 'browse-entry') {
       e.preventDefault();
-      renderBrowsePicker(t.dataset.browsePath, t.dataset.browseKind, t.dataset.setting);
+      // Path and entry kind come off the row; the picker's *purpose* (setting,
+      // staging, the declared kind) is state, because every row in a listing
+      // would otherwise have to carry it and one of them would eventually not.
+      renderBrowsePicker(t.dataset.browsePath, t.dataset.entryKind || 'directory');
+    }
+    if (action === 'picker-shortcut') {
+      e.preventDefault();
+      // A shortcut names a corpus, so it also moves the destination to match.
+      // Browsing `data/law` to stage into `Transcripts` is a copy that lands in
+      // the wrong folder and still reports success.
+      const kind = t.dataset.shortcutKind;
+      const select = document.getElementById('s0Destination');
+      if (kind && select && [...select.options].some(o => o.value === kind)) select.value = kind;
+      picker().selected = null;
+      renderBrowsePicker(t.dataset.browsePath);
+    }
+    if (action === 'picker-file') {
+      e.preventDefault();
+      picker().selected = t.dataset.browsePath;
+      renderBrowsePicker();
+    }
+    if (action === 'picker-stage') {
+      e.preventDefault();
+      pickerStage(t.dataset.browsePath);
     }
     if (action === 'browse-choose') {
       e.preventDefault();
-      chooseSetting(t.dataset.setting, t.dataset.browsePath);
+      chooseSetting(picker().setting, t.dataset.browsePath);
     }
 
     if (action === 'toggle-drawer') {
@@ -1972,7 +2074,14 @@ document.addEventListener('DOMContentLoaded', () => {
         () => pushLog('Clipboard blocked by the browser', 'S10', 'warn'));
     }
 
-    if (action === 'close-modal') document.getElementById('modalOverlay').classList.remove('active');
+    if (action === 'close-modal') {
+      document.getElementById('modalOverlay').classList.remove('active');
+      // The footer note describes what the *current* dialog does, and the
+      // staging picker changes it. Restoring the default on close is what keeps
+      // that claim from outliving the dialog it was written for — every other
+      // modal reuses this footer untouched.
+      document.getElementById('modalFooterNote').textContent = MODAL_FOOTER_NOTE;
+    }
 
     if (action === 'pick-article') {
       e.preventDefault();
@@ -2939,43 +3048,261 @@ function selectedTranscript() {
     || preferredTranscript();
 }
 
+/* ------------------------------------------------------------- picker ----
+   One dialog, two jobs: pick a path for a *setting* (bundle root, transcript
+   root, …), or pick/upload a source file to *stage into the bundle*. They share
+   the walker because the walking is identical; they differ in what a file row
+   does, in whether the destination is a settings key or a bundle layout key, and
+   in whether uploads are on offer. */
+
+/** The picker's state. Held on `state`, not in `#modalBody`.
+ *
+ *  Every navigation replaces that body wholesale, so anything living in the DOM
+ *  — the highlighted row, the staging report, the destination's resolved path —
+ *  is destroyed the moment the reviewer opens another folder and the dialog
+ *  appears to have forgotten what they were doing. */
+function picker() {
+  if (!state.picker) {
+    state.picker = { path: '.', kind: 'directory', setting: null, stage: false, selected: null, notes: [] };
+  }
+  return state.picker;
+}
+
+/** What the generic modal's footer says. Restored on close, because the staging
+ *  picker overrides it and the note is a claim about the open dialog. */
+const MODAL_FOOTER_NOTE = 'Read-only — provenance is computed, not entered.';
+
+/** The corpus folder the staging picker opens at, for the destination chosen.
+ *
+ *  Read from `/api/sources` rather than written here: `data/transcripts/html`
+ *  and `data/law` are whatever discovery actually reads, and a copy hardcoded in
+ *  this file is how a picker keeps opening a folder the server stopped looking
+ *  at. A destination with no corpus of its own (a contract, a manifest) opens at
+ *  the workspace root instead of guessing.
+ */
+function stageRoot(kind) {
+  const src = state.sources || {};
+  if (kind === 'transcripts_dir') return src.transcripts_root || '.';
+  if (kind === 'framework_dir' || kind === 'authority_sources_dir') return src.frameworks_root || '.';
+  return '.';
+}
+
+function stageDestination() {
+  const el = document.getElementById('s0Destination');
+  return (el && el.value) || 'transcripts_dir';
+}
+
+/** The bundle root S0 is staging into, as displayed. */
+function stageBundleRoot() {
+  return state.settings.bundleRoot || (state.bundleId ? `build/${state.bundleId}` : 'build/<id>');
+}
+
+/** Where a named file lands for the destination currently selected.
+ *
+ *  Computed from the same layout the server resolves, and from the same folder
+ *  list the server publishes in `/api/schema` — a destination the reviewer
+ *  cannot predict is how a file lands in the wrong folder and nothing says so. */
+function stageTargetLabel(kind, name) {
+  const layout = (state.schema && state.schema.bundle_layout) || {};
+  const folderKinds = (state.schema && state.schema.source_directory_kinds) || [];
+  const template = String(layout[kind] || kind).replace('{violation_id}', state.bundleId || '<id>');
+  const where = `${stageBundleRoot()}/${template}`;
+  return folderKinds.includes(kind) ? `${where}/${name}` : where;
+}
+
+function stageShortcuts() {
+  const src = state.sources || {};
+  const rows = [];
+  if (src.transcripts_root) rows.push({ label: 'Transcripts', path: src.transcripts_root, kind: 'transcripts_dir' });
+  if (src.frameworks_root) rows.push({ label: 'Legal framework', path: src.frameworks_root, kind: 'framework_dir' });
+  rows.push({ label: 'Workspace root', path: '.', kind: '' });
+  return rows;
+}
+
 async function openBrowsePicker(button) {
+  const p = picker();
+  const stage = button.dataset.browseStage === 'bundle';
   const kind = button.dataset.browseKind || 'directory';
-  const setting = button.dataset.setting;
-  const path = button.dataset.browsePath || '.';
-  document.getElementById('modalBadge').textContent = kind === 'file' ? 'File picker' : 'Folder picker';
-  document.getElementById('modalTitle').textContent = `Choose ${setting}`;
-  document.getElementById('modalSub').textContent = 'Workspace files only';
+  const setting = button.dataset.setting || null;
+  const remembered = (setting && state.settings[setting]) || button.dataset.browsePath || '';
+  p.stage = stage;
+  p.selected = null;
+  p.notes = [];
+  document.getElementById('modalBadge').textContent = stage
+    ? 'Bundle staging'
+    : (kind === 'file' ? 'File picker' : 'Folder picker');
+  document.getElementById('modalTitle').textContent = stage ? 'Add a source file' : `Choose ${setting || 'folder'}`;
+  document.getElementById('modalSub').textContent = stage
+    ? `${stageBundleRoot() || 'bundle'} · workspace files and uploads`
+    : 'Workspace files only';
+  // The footer note is a claim about what this dialog can do, and the two
+  // jobs differ: browsing a folder changes a setting, staging writes a file
+  // into the bundle. A staging dialog captioned "read-only" is the kind of
+  // reassurance that stops a reviewer checking.
+  document.getElementById('modalFooterNote').textContent = stage
+    ? 'Adds bytes only — sha256 is computed from the file, never typed.'
+    : MODAL_FOOTER_NOTE;
   document.getElementById('modalOverlay').classList.add('active');
-  await renderBrowsePicker(path, kind, setting);
+  // A staging picker opens where the destination's files actually are, so the
+  // common case — stage a transcript, then a law file — is a shortcut and a
+  // click, not a walk from the repository root every time.
+  const start = stage ? stageRoot(stageDestination()) : (remembered || '.');
+  await renderBrowsePicker(start, kind, setting);
 }
 
 async function renderBrowsePicker(path, kind, setting) {
+  const p = picker();
+  if (path !== undefined && path !== null) p.path = path;
+  if (kind !== undefined && kind !== null) p.kind = kind;
+  if (setting !== undefined) p.setting = setting;
   const body = document.getElementById('modalBody');
   body.innerHTML = '<p class="field-hint">Loading workspace…</p>';
+
+  let data;
   try {
-    const data = await API.browse(path, kind);
-    if (kind === 'file') {
-      chooseSetting(setting, data.path);
-      return;
-    }
-    const entries = data.entries.map(entry =>
-      `<button class="btn browse-entry" data-action="browse-entry" data-browse-path="${escapeHtml(entry.path)}" data-browse-kind="${entry.kind}" data-setting="${escapeHtml(setting)}"><span class="browse-icon">${entry.kind === 'directory' ? '▣' : '□'}</span>${escapeHtml(entry.name)}</button>`
-    ).join('');
-    body.innerHTML = `<div class="browse-path">${escapeHtml(data.path)}</div><div class="btn-row" style="margin-top:0;"><button class="btn btn-primary" data-action="browse-choose" data-setting="${escapeHtml(setting)}" data-browse-path="${escapeHtml(data.path)}">Choose this folder</button>${data.parent !== null ? `<button class="btn" data-action="browse-entry" data-browse-path="${escapeHtml(data.parent)}" data-browse-kind="directory" data-setting="${escapeHtml(setting)}">Up</button>` : ''}</div><div class="browse-list" style="margin-top:14px;">${entries || '<div class="field-hint">No visible entries.</div>'}</div>`;
+    // The declared kind is what the caller may **pick**, not what the path must
+    // already be. Asking for `kind=file` at a directory used to be answered
+    // 400 "does not exist, or is outside the workspace" — for the workspace
+    // root — which is why this dialog could never open at all.
+    data = await API.browse(p.path, p.kind);
   } catch (e) {
     body.innerHTML = `<p class="field-hint">Could not browse workspace — ${escapeHtml(e.message)}</p><div class="btn-row"><button class="btn" data-action="close-modal">Close</button></div>`;
+    return;
   }
+
+  if (data.kind === 'file') {
+    // The remembered value or a shortcut pointed straight at one file.
+    if (!p.stage) { chooseSetting(p.setting, data.path); return; }
+    p.selected = data.path;
+    renderBrowseBody({ path: data.path, parent: null, entries: [] });
+    return;
+  }
+  renderBrowseBody(data);
+}
+
+function renderBrowseBody(data) {
+  const p = picker();
+  const parts = [];
+
+  const nav = [];
+  if (data.parent !== null && data.parent !== undefined) {
+    nav.push(`<button class="btn" data-action="browse-entry" data-browse-path="${escapeHtml(data.parent)}" data-entry-kind="directory">↑ Up</button>`);
+  }
+  if (!p.stage) {
+    // A folder picker's whole purpose; a staging picker has no folder to choose.
+    nav.push(`<button class="btn btn-primary" data-action="browse-choose" data-browse-path="${escapeHtml(data.path)}">Choose this folder</button>`);
+  }
+  parts.push(`<div class="browse-path">${escapeHtml(data.path === '.' ? 'workspace root' : data.path)}</div>`
+    + `<div class="btn-row" style="margin-top:0;">${nav.join('')}</div>`);
+
+  if (p.stage) {
+    parts.push('<div class="picker-shortcuts">' + stageShortcuts().map(s =>
+      `<button class="btn" data-action="picker-shortcut" data-browse-path="${escapeHtml(s.path)}" data-shortcut-kind="${escapeHtml(s.kind || '')}">${escapeHtml(s.label)}</button>`
+    ).join('') + '</div>');
+  }
+
+  const rows = (data.entries || []).map(entry => {
+    const isDir = entry.kind === 'directory';
+    // Files are listed either way — seeing what a corpus holds is the point —
+    // but only a picker that accepts files offers them as a choice.
+    const choosable = isDir || p.kind === 'file';
+    const action = isDir ? 'browse-entry' : (choosable ? 'picker-file' : '');
+    const active = p.selected === entry.path ? ' active' : '';
+    const icon = isDir ? '▣' : '□';
+    return `<button class="btn browse-entry${active}"${action ? ` data-action="${action}"` : ' disabled'}`
+      + ` data-browse-path="${escapeHtml(entry.path)}" data-entry-kind="${entry.kind}">`
+      + `<span class="browse-icon">${icon}</span>${escapeHtml(entry.name)}</button>`;
+  }).join('');
+  parts.push(`<div class="browse-list" style="margin-top:14px;">${rows || '<div class="field-hint">No visible entries.</div>'}</div>`);
+
+  if (p.stage) parts.push(stagePickerHtml());
+  if (p.notes.length) {
+    parts.push('<div class="picker-notes">' + p.notes.map(n =>
+      `<div class="picker-note${n.ok ? '' : ' bad'}">${escapeHtml(n.text)}${n.sha ? ` <span class="sha">sha256 ${escapeHtml(n.sha.slice(0, 16))}…</span>` : ''}</div>`
+    ).join('') + '</div>');
+  }
+  setHtml('modalBody', parts.join(''));
+}
+
+/** The staging half of the dialog: what is selected, where it will land, and
+ *  the two ways to add something that is not here yet. */
+function stagePickerHtml() {
+  const p = picker();
+  const kind = stageDestination();
+  const dest = p.selected ? stageTargetLabel(kind, p.selected.split('/').pop()) : '';
+  const chosen = p.selected
+    ? `<div class="record-row"><div class="rr-main">`
+      + `<div class="rr-id">${escapeHtml(p.selected.split('/').pop())}</div>`
+      + `<div class="rr-detail">→ ${escapeHtml(dest)}</div></div>`
+      + `<div class="rr-meta"><button class="btn btn-primary" data-action="picker-stage" data-browse-path="${escapeHtml(p.selected)}">Add to bundle</button></div></div>`
+    : hintRow('Choose a file above, or upload one. It lands in the destination shown on S0.');
+  return `<div class="picker-upload">`
+    + `<label class="field-label" for="pickerUpload">Upload a file</label>`
+    + `<input type="file" id="pickerUpload" multiple>`
+    + `<div class="field-hint">Read in the browser and posted as base64 — the server writes the bytes and reports the sha256 it wrote. Limit 16 MiB per file.</div>`
+    + `</div>`
+    + `<div class="block-sub" style="margin-top:16px;">Staging into <code>${escapeHtml(kind)}</code></div>${chosen}`;
+}
+
+/** Stage one file into the bundle, then re-read what the bundle now holds.
+ *
+ *  `refreshBundleFiles()` rather than appending locally: S0's staged list and
+ *  the report in this dialog are both derived from the bundle listing the server
+ *  returns, so neither can claim a file the disk does not have — and the modal
+ *  quotes the size and sha256 the *server* wrote, not the ones the browser
+ *  hoped for. */
+async function stageSourceFile(payload, label) {
+  if (!state.bundleId) {
+    picker().notes.push({ ok: false, text: 'Choose a bundle before staging source files.' });
+    pushLog('No bundle selected — staging skipped', 'S0', 'warn');
+    return null;
+  }
+  const kind = stageDestination();
+  pushLog(`→ staging ${label} into ${kind}`, 'S0');
+  try {
+    const res = await API.bundleSource({ violation_id: state.bundleId, kind, ...payload });
+    picker().notes.push({
+      ok: true,
+      text: `${label} → ${res.destination} · ${fmtBytes(res.bytes)} · ${res.overwritten ? 'replaced an existing file' : 'new file'}`,
+      sha: res.sha256,
+    });
+    pushLog(`S0 staged ${res.destination} · ${fmtBytes(res.bytes)} · sha256 ${res.sha256.slice(0, 12)}…`, 'S0', 'ok');
+    await refreshBundleFiles();
+    hydrateS0();
+    return res;
+  } catch (e) {
+    picker().notes.push({ ok: false, text: `${label}: ${e.message}` });
+    pushLog(`← staging ${label} failed — ${e.message}`, 'S0', 'err');
+    return null;
+  }
+}
+
+async function pickerStage(path) {
+  const file = path || picker().selected;
+  if (!file) return;
+  await stageSourceFile({ source_path: file }, file.split('/').pop());
+  await renderBrowsePicker();
+}
+
+async function uploadFilesToBundle(files) {
+  const list = Array.from(files || []);
+  if (!list.length) return;
+  for (const file of list) {
+    try {
+      const content_base64 = await fileToBase64(file);
+      await stageSourceFile({ filename: file.name, content_base64 }, file.name);
+    } catch (e) {
+      picker().notes.push({ ok: false, text: `${file.name}: ${e.message}` });
+      pushLog(`← could not read ${file.name} — ${e.message}`, 'S0', 'err');
+    }
+  }
+  if (document.getElementById('modalOverlay').classList.contains('active')) await renderBrowsePicker();
 }
 
 function chooseSetting(setting, path) {
   state.settings[setting] = path;
   const value = document.querySelector(`[data-setting-value="${setting}"]`);
   if (value) value.textContent = path === '.' ? 'workspace root' : path + (setting.toLowerCase().includes('root') ? '/' : '');
-  if (setting === 'sourceFile') {
-    const source = document.getElementById('s0SourceFile');
-    if (source) source.textContent = `Selected: ${path}`;
-  }
   const trigger = document.querySelector(`[data-setting="${setting}"][data-action="browse"]`);
   if (trigger) trigger.dataset.browsePath = path;
   if (setting === 'bundleRoot') {
@@ -3512,6 +3839,20 @@ function setHtml(id, html) {
 }
 function hintRow(text) { return `<div class="field-hint">${escapeHtml(text)}</div>`; }
 
+/** The files in a drag event, or `null` when the drag is not a file drag.
+ *
+ *  `dataTransfer.files` is empty during `dragover` in every browser (the drag
+ *  data is not readable until the drop), so the *type* is the only thing that
+ *  can decide whether to accept the drag. Testing `files.length` there means the
+ *  drop zone never lights up and `preventDefault` never runs — which is how a
+ *  dropped file ends up navigating the page. */
+function droppedFiles(e) {
+  const dt = e.dataTransfer;
+  if (!dt) return null;
+  const types = Array.from(dt.types || []);
+  return types.includes('Files') ? dt.files : null;
+}
+
 /** Colour-coded chip for one server-side status / enum value. */
 function tag(value, cls) {
   if (value === null || value === undefined || value === '') return '';
@@ -3652,6 +3993,10 @@ function hydrateSettingsEnv(cfg) {
 
 /** Destinations are the keys pack.copy_source_into_bundle can resolve, so the
  *  dropdown can never offer a folder the server does not know how to place. */
+/** Destinations are the keys `pack.BUNDLE_LAYOUT` resolves, so the dropdown can
+ *  never offer a folder the server does not know how to place. Which of them are
+ *  folders-versus-file-targets is published by the server rather than listed
+ *  here, because the picker's destination preview has to agree with the write. */
 function hydrateS0() {
   const layout = (state.schema && state.schema.bundle_layout) || {};
   const dest = document.getElementById('s0Destination');
@@ -3663,6 +4008,9 @@ function hydrateS0() {
     if ([...dest.options].some(o => o.value === keep)) dest.value = keep;
   }
   setInput('s0BundleRoot', state.settings.bundleRoot || '');
+  setHtml('s0SourceFile', state.bundleId
+    ? `Browsing opens at ${escapeHtml(stageRoot(stageDestination()))} — the root /api/sources reports for this destination.`
+    : 'Choose a bundle first.');
 
   const files = bundleFiles();
   setHtml('s0StagedFiles', files.length ? files.map(f => `
@@ -4390,6 +4738,15 @@ function proofArtefactsFor(authorityId) {
     && String(f.name).includes(id));
 }
 
+/** Read a browser File as the base64 payload the routes carry.
+ *
+ *  Through `readAsDataURL` rather than `btoa` over a binary string: `btoa` needs
+ *  a Latin-1 string, and building one character at a time silently corrupts any
+ *  byte above 0x7f — which for a PDF is most of them. The data URL puts the
+ *  bytes in base64 past the first comma, so nothing here interprets them.
+ *
+ *  One definition only: a second `function fileToBase64` elsewhere in this
+ *  script block would be hoisted over this one and win silently. */
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

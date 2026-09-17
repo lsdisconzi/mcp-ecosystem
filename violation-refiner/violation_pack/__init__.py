@@ -31,6 +31,8 @@ Public API (stable):
         build_manifest
         zip_bundle
         copy_source_into_bundle
+        write_source_into_bundle
+        clear_linked_destination
         sync_segment_artifacts
 
     Extensions (Protocols only — implementations live elsewhere)
@@ -78,6 +80,10 @@ from .validation import DEFAULT_PIPELINE, run_pipeline
 from .pack import (
     build_manifest,
     copy_source_into_bundle,
+    clear_linked_destination,
+    is_layout_kind,
+    staged_source_path,
+    write_source_into_bundle,
     write_violation_json,
     zip_bundle,
 )
@@ -155,7 +161,9 @@ __all__ = [
     # validation
     "DEFAULT_PIPELINE", "run_pipeline",
     # packaging
-    "build_manifest", "copy_source_into_bundle", "write_violation_json", "zip_bundle",
+    "build_manifest", "copy_source_into_bundle", "clear_linked_destination",
+    "write_violation_json", "zip_bundle",
+    "is_layout_kind", "staged_source_path", "write_source_into_bundle",
     "sync_segment_artifacts",
     # extensions
     "JurisprudenceProvider", "KnowledgeGraph", "VectorIndex",

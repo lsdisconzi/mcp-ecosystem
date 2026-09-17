@@ -227,40 +227,58 @@ Each step below gives: **purpose**, **user inputs**, **backing call**, **outputs
 **Purpose.** Put the source-of-truth files inside the bundle so later steps can hash and anchor against them. This is the "drop in" step.
 
 **→** `copy_source_into_bundle(source_path: Path, root: Path, kind: str) -> Path`
+**→** `write_source_into_bundle(root: Path, kind: str, source_name: str, data: bytes) -> Path`
 **→** MCP: `copy_source_into_bundle_tool(source_path, bundle_root, kind)`
+**→** Bridge: `POST /api/bundle-source` (what the page actually calls)
 
-`kind` MUST be one of the `BUNDLE_LAYOUT` keys — this is a closed enum, and the UI should render it as a dropdown, not free text:
+Both helpers funnel through **one** destination rule, `staged_source_path(root, kind, name)`, and the bridge calls it before the write as well as during it — so the path the page *shows* is computed from the same list the copy uses. Two rules is how a preview comes to disagree with the write it previews.
 
-| `kind` value | Destination inside the bundle |
-| --- | --- |
-| `violation_main` | `{violation_id}.json` |
-| `contract` | `contract.json` |
-| `manifest` | `MANIFEST.txt` |
-| `readme` | `Violation bundle/README.md` |
-| `validation_report` | `Validation/validation_report.md` |
-| `validation_checks` | `Validation/checks.json` |
-| `element_grid` | `Schema/element_grid_{violation_id}.json` |
-| `transcripts_dir` | `Transcripts/` |
-| `framework_dir` | `Legal framework/` |
+`kind` MUST be one of the `BUNDLE_LAYOUT` keys — a closed enum. The 10 values, and what each one means for a staged source:
+
+| `kind` value | Destination inside the bundle | Shape |
+| --- | --- | --- |
+| `violation_main` | `{violation_id}.json` | file — the source replaces it |
+| `contract` | `contract.json` | file |
+| `manifest` | `MANIFEST.txt` | file |
+| `readme` | `Violation bundle/README.md` | file |
+| `validation_report` | `Validation/validation_report.md` | file |
+| `validation_checks` | `Validation/checks.json` | file |
+| `element_grid` | `Schema/element_grid_{violation_id}.json` | file |
+| `transcripts_dir` | `Transcripts/<source name>` | folder |
+| `framework_dir` | `Legal framework/<source name>` | folder |
+| `authority_sources_dir` | `Authority sources/<source name>` | folder |
+
+Which keys are folders is declared in `pack.SOURCE_DIRECTORY_KINDS` and published to the page as `schema.source_directory_kinds` (pinning test: `tests/test_pack_layout.py`). It is **not** inferred from "the template has no suffix": that would silently misplace a future folder named `Legal framework.v2`. A file key's destination ignores the name it was handed — `contract` has exactly one home.
 
 **User inputs**
 
 | ID | Label | Type | Required | Notes |
 | --- | --- | --- | --- | --- |
-| `F-s0-source` | Source file | **file drop zone + picker** | yes | Any file; name is preserved |
-| `F-s0-kind` | Destination | select (9 values above) | yes | Filters to sensible defaults from file type |
-| `F-s0-bundle-root` | Bundle root | directory (from §2.1) | yes | Created if absent |
+| `F-s0-source` | Source file | **file drop zone + picker + upload** | yes | Any file; name is preserved for folder kinds |
+| `F-s0-kind` | Destination | select (10 values above) | yes | Also moves where the picker opens |
+| `F-s0-bundle-root` | Bundle root | read-only, derived | yes | `build/<violation_id>/` |
 
-**Behaviours**
+**Behaviours — shipped**
 
-- Drag-and-drop multiple files at once; queue them as a list of `(source, kind)` rows.
-- Auto-suggest `kind` from the file: `*.html` containing `transcript-segment` → `transcripts_dir`; `*.md` with `### Art.` headers → `framework_dir`; `*.json` → `contract` or `violation_main`.
-- Show the computed destination path **before** copying, and warn if it would overwrite.
-- After copy, show the file's `sha256` — this is the hash later steps (S2/S3, V02/V03) compare against.
+- **File picker (browse).** Opens at the root `GET /api/sources` reports for the chosen destination (`data/transcripts/html` for `transcripts_dir`, `data/law` for `framework_dir`), and never at the workspace root — that mismatch is what made a file picker impossible to open. Shortcut buttons switch destination *and* root together. The picker is **navigation + selection** only: choosing a file highlights it, `Stage this file` stages it.
+- **Upload.** `content_base64` + `filename` in one JSON body (deliberately not multipart: this bridge has one body parser and one error shape). 16 MiB limit; base64 is decoded through `decode_base64_payload`, and the error is the client's (400), not a traceback.
+- **Drag-and-drop.** One file at a time; dropping on `#s0DropZone` stages it, dropping anywhere else is refused with a log line rather than navigating the page away.
+- **Destination is shown before the copy** — computed from `staged_source_path`, so it is the real path and not the request's claim.
+- **Overwrite is reported, not silently performed.** The response carries `overwritten: true|false` and the page pushes a warning note. A staged source is proof; replacing one unnoticed is the edit a reviewer finds long after the quote it backed.
+- **`sha256` of the staged bytes** is returned by the route and shown in the note, so S2/S3 and V02/V03 can compare against it (and against `MANIFEST.txt`) instead of trusting that a copy happened.
+- **A refusal writes nothing.** Every 400/404 leaves the bundle byte-for-byte as it was (asserted as its own test, because "returned 400" and "wrote nothing" are different claims).
+- Staging a file key does **not** leave a directory of that name behind. It used to: `copy_source_into_bundle` created a folder from the layout template for every key, so staging into `contract` produced a `contract/` directory beside the real `contract.json` — the same fact stored twice, which a manifest hash cannot see.
+- **A staged write never travels through a symlink.** Both writers open the destination for writing, which resolves a link: with the real bundle convention (`build/CL-030/Legal framework/CPCL.md -> ../../../data/law/CL/CodigoPenal.md`, and `Transcripts/*.json` in the INT/BR bundles) staging a source whose basename collides rewrote the *corpus* file and then reported the bundle path with the corpus file's hash. `clear_linked_destination` unlinks a link at the destination first, so the bundle gets a real file and the file the link pointed at is untouched. A real file at the destination is still the ordinary replace case; a directory is left alone so the writer raises rather than discarding a tree.
 
-**Failure modes.** Source missing/unreadable; `kind` not in `BUNDLE_LAYOUT` (raise before copying); destination exists (confirm overwrite).
+**Behaviours — specified but NOT implemented** (kept here so the gap is visible, not so it reads as done)
 
-**Gate.** At least one transcript and one framework staged, or an explicit "continue without" acknowledgement.
+- Multi-file drag-and-drop with a `(source, kind)` row per file. The page stages one file per request and renders the staged set as read-only rows.
+- Auto-suggesting `kind` from file type (`*.html` + `transcript-segment` → `transcripts_dir`, `*.md` + `### Art.` → `framework_dir`, …). The reviewer picks the destination by hand.
+- Pre-copy *confirmation* on overwrite. The page reports the replacement afterwards.
+
+**Failure modes.** Source missing/unreadable; `source_path` outside the workspace or not a file (400 — containment is lexical, checked before resolution, so a repo-owned symlink like `data/law` stays reachable); `kind` not in `BUNDLE_LAYOUT` (400, and the response lists what it accepts); `violation_id` that is a path or a bundle absent from disk (400/404); upload over the limit or with no usable `filename` (400).
+
+**Gate.** At least one transcript and one framework staged, or an explicit "continue without" acknowledgement. *Not yet enforced by the page* — the step is currently advisory.
 
 ---
 
@@ -353,6 +371,16 @@ bundle's own evidence rather than an undifferentiated corpus dump.
 
 Settings and S0 Browse controls use `GET /api/browse?path=<workspace-relative-path>&kind=directory|file`.
 The server rejects absolute paths and traversal outside the repository root.
+Containment is checked **lexically, before** the path is resolved, because
+`data/law` and `data/transcripts/html` are repo-owned symlinks that leave the
+workspace by design — resolving first made `data/law` unreachable. `kind` says
+what the caller may **pick**, not what the path must already be: every picker
+opens on a directory, so a directory is listed for either `kind`, and only a
+resolved *selection* is checked against `kind`.
+
+S0 stages a chosen or dropped file with `POST /api/bundle-source`, whose
+`violation_id` + `kind` resolve the destination through `pack.staged_source_path`
+(the same rule the copy uses). See §S0 for the request shapes and the refusals.
 
 **Filename → `source_id` inference** (HTML render only — the JSON reader reads
 `transcript_id` out of the document itself, which is the authoritative source):

@@ -62,7 +62,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 HTML_PATH = REPO_ROOT / "ui" / UI_FILENAME
 
 #: API routes the bridge promises. `/health` is MCP-owned and asserted too.
-EXPECTED_API_ROUTES = {"/", "/api/health", "/api/tools", "/api/tool", "/api/tool-job", "/api/catalog", "/api/sources", "/api/source-transcript", "/api/framework-article", "/api/browse", "/api/bundles", "/api/bundle", "/api/schema", "/api/settings", "/api/authority-source", "/api/authority-source/delete", "/api/authority-source/reading"}
+EXPECTED_API_ROUTES = {"/", "/api/health", "/api/tools", "/api/tool", "/api/tool-job", "/api/catalog", "/api/sources", "/api/source-transcript", "/api/framework-article", "/api/browse", "/api/bundle-source", "/api/bundles", "/api/bundle", "/api/schema", "/api/settings", "/api/authority-source", "/api/authority-source/delete", "/api/authority-source/reading"}
 
 
 @pytest.fixture(scope="module")
@@ -133,8 +133,14 @@ def _js_function(name: str) -> str:
     every assertion on it would pass for the wrong reason.
     """
     html = HTML_PATH.read_text(encoding="utf-8")
-    match = re.search(rf"^(?:async )?function {re.escape(name)}\(", html, re.M)
+    declaration = rf"^(?:async )?function {re.escape(name)}\("
+    match = re.search(declaration, html, re.M)
     assert match, f"{name}() is not defined at top level in the UI page"
+    assert len(re.findall(declaration, html, re.M)) == 1, (
+        f"{name}() is declared more than once in the UI page. They share one scope, "
+        "so the LAST declaration wins at run time while this helper returns the "
+        "first — every assertion below would test code the browser never runs."
+    )
     # The *body* brace, not the first brace on the line: a default argument like
     # `opts = {}` opens and closes before the body does, and starting the depth
     # count there returns the signature alone — every assertion on it then passes
@@ -203,6 +209,51 @@ def test_find_ui_path_resolves_to_the_workspace_file():
     assert found is not None, "find_ui_path() could not locate the UI"
     assert found.name == UI_FILENAME
     assert found.is_file()
+
+
+def test_no_top_level_function_is_declared_twice_in_the_page():
+    """One `<script>` block, so a repeated name is hoisted over the earlier one.
+
+    Both survive review because both look like the definition; the browser runs
+    the last and a reader (or `_js_function`) trusts the first. This was real:
+    the S0 picker added a second `fileToBase64` whose body differed slightly from
+    the S6.1 one already in the file, so the new upload path silently ran the old
+    implementation. A page-wide scan is the only check that scales — the bug
+    appears at a distance from whoever wrote the second copy.
+    """
+    html = HTML_PATH.read_text(encoding="utf-8")
+    scripts = re.findall(r"<script>(.*?)</script>", html, re.S)
+    assert len(scripts) == 1, (
+        f"the page has {len(scripts)} <script> blocks; this guard assumes one, "
+        "because a duplicate name in a *different* block is legal"
+    )
+    names = re.findall(r"^ {0,2}(?:async )?function ([A-Za-z0-9_$]+)\(", scripts[0], re.M)
+    duplicates = sorted({n for n in names if names.count(n) > 1})
+    assert not duplicates, (
+        f"declared more than once at top level: {duplicates}. The later declaration "
+        "wins at run time, so the earlier one is dead code."
+    )
+
+
+def test_js_function_rejects_a_duplicate_declaration(tmp_path, monkeypatch):
+    """The guard must be able to fail — otherwise it is decoration.
+
+    `_js_function` finds the *first* declaration while the browser runs the
+    *last*, so a duplicate makes every `_js_function`-based assertion test code
+    that never executes. Proven by injecting a second copy into the real page.
+    """
+    html = HTML_PATH.read_text(encoding="utf-8")
+    duplicated = html.replace(
+        "function escapeHtml(s) {",
+        "function escapeHtml(s) { return 'shadowed'; }\nfunction escapeHtml(s) {",
+        1,
+    )
+    assert duplicated != html, "escapeHtml() is no longer declared as expected"
+    mutated = tmp_path / UI_FILENAME
+    mutated.write_text(duplicated, encoding="utf-8")
+    monkeypatch.setattr("test_ui_server.HTML_PATH", mutated)
+    with pytest.raises(AssertionError, match="declared more than once"):
+        _js_function("escapeHtml")
 
 
 # ---------------------------------------------------------------------------
@@ -713,6 +764,270 @@ def test_browse_workspace_rejects_a_missing_target():
     assert browse_workspace("data/transcripts/nope.html", kind="file") is None
 
 
+def test_browse_workspace_lists_a_directory_even_when_the_caller_wants_a_file():
+    """``kind`` is what the caller may *pick*, never what the path must be.
+
+    This was the S0 picker's bug, reported from the page: the drop zone declared
+    ``data-browse-kind="file"`` and the picker opened at ``path=.``, so the
+    server's "kind=file ⇒ the path must already be a file" reading answered
+    ``400 Path is outside the workspace or does not exist`` about the workspace
+    root — a path that plainly exists and plainly is inside. Every picker opens
+    somewhere, and it opens on a *directory*.
+    """
+    listing = browse_workspace(".", kind="file")
+    assert listing is not None
+    assert listing["kind"] == "directory"
+    assert listing["path"] == "."
+    assert listing["parent"] is None
+    assert {e["name"] for e in listing["entries"]} >= {"violation_pack", "tests"}
+
+    nested = browse_workspace("violation_pack", kind="file")
+    assert nested is not None and nested["kind"] == "directory"
+    # A file is still only resolved when the caller said it wanted a file…
+    assert browse_workspace("pyproject.toml", kind="file") == {
+        "ok": True, "kind": "file", "path": "pyproject.toml"
+    }
+    # …and a directory is never handed back *as* a file selection.
+    assert browse_workspace("violation_pack", kind="directory")["kind"] == "directory"
+
+
+def test_get_api_browse_opens_a_file_picker_on_the_workspace_root(client):
+    """The exact request the S0 drop zone makes, end to end."""
+    res = client.get("/api/browse", params={"path": ".", "kind": "file"})
+    assert res.status_code == 200, res.text
+    payload = res.json()
+    assert payload["kind"] == "directory"
+    assert payload["entries"]
+
+
+# ---------------------------------------------------------------------------
+# S0 — staging a source of truth into the bundle
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def staging_workspace(tmp_path, monkeypatch):
+    """A throwaway workspace with one bundle and one browsable source.
+
+    `POST /api/bundle-source` copies real files, so pointing it at the repository
+    would leave a test's junk inside a tracked bundle. `find_workspace_root` is
+    re-read on every call, which is what makes this seam work on a live server.
+    """
+    root = tmp_path / "ws"
+    bundle = root / "build" / "CL-001"
+    bundle.mkdir(parents=True)
+    (bundle / "CL-001.json").write_text("{}", encoding="utf-8")
+    law = root / "data" / "law"
+    law.mkdir(parents=True)
+    (law / "opinion.md").write_text("the authority", encoding="utf-8")
+    monkeypatch.setattr("violation_pack.ui_server.find_workspace_root", lambda: root)
+    return root
+
+
+def test_bundle_source_route_stages_a_workspace_file(client, staging_workspace):
+    res = client.post("/api/bundle-source", json={
+        "violation_id": "CL-001", "kind": "transcripts_dir",
+        "source_path": "data/law/opinion.md",
+    })
+    assert res.status_code == 200, res.text
+    payload = res.json()
+    assert payload["ok"] is True
+    assert payload["source"] == "data/law/opinion.md"
+    assert payload["destination"] == "Transcripts/opinion.md"
+    assert payload["overwritten"] is False
+    staged = staging_workspace / "build" / "CL-001" / "Transcripts" / "opinion.md"
+    assert staged.read_text(encoding="utf-8") == "the authority"
+    # The route reports the hash of what it actually wrote, so a reviewer can
+    # compare it with MANIFEST.txt instead of trusting that the copy happened.
+    assert payload["bytes"] == len(b"the authority")
+    assert payload["sha256"] == hashlib.sha256(b"the authority").hexdigest()
+
+
+def test_bundle_source_route_stages_an_upload(client, staging_workspace):
+    raw = "sentencia: el artículo 193 num. 8".encode("utf-8")
+    res = client.post("/api/bundle-source", json={
+        "violation_id": "CL-001", "kind": "framework_dir",
+        "filename": "ley-21364.md",
+        "content_base64": base64.b64encode(raw).decode("ascii"),
+    })
+    assert res.status_code == 200, res.text
+    payload = res.json()
+    assert payload["source"] == "upload"
+    assert payload["destination"] == "Legal framework/ley-21364.md"
+    assert payload["sha256"] == hashlib.sha256(raw).hexdigest()
+    assert (staging_workspace / payload["path"]).read_bytes() == raw
+
+
+def test_bundle_source_route_puts_a_file_kind_at_the_file_not_beside_it(client, staging_workspace):
+    """`contract` is a destination, not a folder — and not the name it was handed."""
+    res = client.post("/api/bundle-source", json={
+        "violation_id": "CL-001", "kind": "contract",
+        "filename": "something-else.json", "content_base64": base64.b64encode(b"{}").decode("ascii"),
+    })
+    assert res.status_code == 200, res.text
+    payload = res.json()
+    assert payload["destination"] == "contract.json"
+    assert payload["name"] == "contract.json"
+    bundle = staging_workspace / "build" / "CL-001"
+    assert (bundle / "contract.json").is_file()
+    assert not (bundle / "contract").exists()
+    assert not (bundle / "something-else.json").exists()
+
+
+def test_bundle_source_route_reports_a_replacement(client, staging_workspace):
+    """A staged source is proof: silently overwriting one is exactly the edit a
+    reviewer only notices long after the quote it backed."""
+    body = {
+        "violation_id": "CL-001", "kind": "transcripts_dir",
+        "filename": "corte.html", "content_base64": base64.b64encode(b"first").decode("ascii"),
+    }
+    first = client.post("/api/bundle-source", json=body)
+    assert first.status_code == 200, first.text
+    assert first.json()["overwritten"] is False, "an add must not claim a replace"
+
+    body["content_base64"] = base64.b64encode(b"second").decode("ascii")
+    again = client.post("/api/bundle-source", json=body)
+    assert again.status_code == 200, again.text
+    payload = again.json()
+    assert payload["overwritten"] is True
+    assert payload["sha256"] == hashlib.sha256(b"second").hexdigest()
+    staged = staging_workspace / "build" / "CL-001" / "Transcripts" / "corte.html"
+    assert staged.read_bytes() == b"second"
+
+
+def test_bundle_source_route_keeps_a_traversal_filename_inside_the_bundle(client, staging_workspace):
+    """The name arrives in a request body, so it is reduced before it is used."""
+    res = client.post("/api/bundle-source", json={
+        "violation_id": "CL-001", "kind": "transcripts_dir",
+        "filename": "../../../../etc/passwd",
+        "content_base64": base64.b64encode(b"x").decode("ascii"),
+    })
+    assert res.status_code == 200, res.text
+    assert res.json()["destination"] == "Transcripts/passwd"
+    bundle = staging_workspace / "build" / "CL-001"
+    assert (bundle / "Transcripts" / "passwd").is_file()
+    assert not (staging_workspace.parent / "etc").exists()
+
+
+def test_bundle_source_route_refuses_a_bundle_that_is_not_on_disk(client, staging_workspace):
+    res = client.post("/api/bundle-source", json={
+        "violation_id": "CL-777", "kind": "transcripts_dir",
+        "source_path": "data/law/opinion.md",
+    })
+    assert res.status_code == 404
+
+
+@pytest.mark.parametrize("violation_id", ["../../etc", "..", "a/b", "", "with space", None])
+def test_bundle_source_route_refuses_a_bundle_id_that_is_a_path(client, staging_workspace, violation_id):
+    res = client.post("/api/bundle-source", json={
+        "violation_id": violation_id, "kind": "transcripts_dir",
+        "source_path": "data/law/opinion.md",
+    })
+    assert res.status_code in (400, 404), res.text
+    assert not (staging_workspace.parent / "etc").exists()
+
+
+def test_bundle_source_route_refuses_an_unknown_kind_and_says_what_it_accepts(client, staging_workspace):
+    res = client.post("/api/bundle-source", json={
+        "violation_id": "CL-001", "kind": "Transcripts",
+        "source_path": "data/law/opinion.md",
+    })
+    assert res.status_code == 400, res.text
+    from violation_pack.pack import BUNDLE_LAYOUT
+
+    assert res.json()["kinds"] == sorted(BUNDLE_LAYOUT)
+
+
+def test_bundle_source_route_refuses_a_source_outside_the_workspace(client, staging_workspace):
+    for source_path in ("/etc/hosts", "../../etc/hosts", "data/law/..", "data/nope.md"):
+        res = client.post("/api/bundle-source", json={
+            "violation_id": "CL-001", "kind": "transcripts_dir", "source_path": source_path,
+        })
+        assert res.status_code == 400, (source_path, res.text)
+    # …and a directory is not a source, however contained it is.
+    res = client.post("/api/bundle-source", json={
+        "violation_id": "CL-001", "kind": "transcripts_dir", "source_path": "data/law",
+    })
+    assert res.status_code == 400
+    bundle = staging_workspace / "build" / "CL-001"
+    assert not (bundle / "Transcripts").exists(), "a refusal must not have staged anything"
+
+
+def test_bundle_source_route_requires_a_source_and_an_upload_name(client, staging_workspace):
+    neither = client.post("/api/bundle-source", json={
+        "violation_id": "CL-001", "kind": "transcripts_dir",
+    })
+    assert neither.status_code == 400
+    assert "source_path" in neither.json()["error"]
+
+    nameless = client.post("/api/bundle-source", json={
+        "violation_id": "CL-001", "kind": "transcripts_dir",
+        "content_base64": base64.b64encode(b"x").decode("ascii"),
+    })
+    assert nameless.status_code == 400
+    assert "filename" in nameless.json()["error"]
+
+    blank_name = client.post("/api/bundle-source", json={
+        "violation_id": "CL-001", "kind": "transcripts_dir", "filename": "   ",
+        "content_base64": base64.b64encode(b"x").decode("ascii"),
+    })
+    assert blank_name.status_code == 400
+
+
+def test_bundle_source_route_refuses_an_upload_over_the_limit(client, staging_workspace):
+    from violation_pack.authority_source import MAX_UPLOAD_BYTES
+
+    assert MAX_UPLOAD_BYTES == 16 * 1024 * 1024, "the limit the message quotes"
+    raw = b"\0" * (MAX_UPLOAD_BYTES + 1)
+    res = client.post("/api/bundle-source", json={
+        "violation_id": "CL-001", "kind": "transcripts_dir", "filename": "big.bin",
+        "content_base64": base64.b64encode(raw).decode("ascii"),
+    })
+    assert res.status_code == 400, res.text
+    assert "limit" in res.json()["error"]
+    bundle = staging_workspace / "build" / "CL-001"
+    assert not (bundle / "Transcripts").exists()
+
+
+def test_bundle_source_route_rejects_malformed_bodies(client, staging_workspace):
+    bad_json = client.post("/api/bundle-source", content=b"{not json",
+                           headers={"content-type": "application/json"})
+    assert bad_json.status_code == 400
+    not_an_object = client.post("/api/bundle-source", json=["nope"])
+    assert not_an_object.status_code == 400
+    bad_base64 = client.post("/api/bundle-source", json={
+        "violation_id": "CL-001", "kind": "transcripts_dir", "filename": "x.md",
+        "content_base64": "!!!",
+    })
+    assert bad_base64.status_code == 400
+    assert "base64" in bad_base64.json()["error"].lower()
+
+
+def test_bundle_source_route_stages_nothing_on_any_refusal(client, staging_workspace):
+    """Every 400 above must leave the bundle byte-for-byte as it was.
+
+    Asserted separately from the individual refusals because "it returned 400"
+    and "it wrote nothing" are different claims, and the staging route is the one
+    write path in S0.
+    """
+    bundle = staging_workspace / "build" / "CL-001"
+    before = sorted(str(p.relative_to(bundle)) for p in bundle.rglob("*"))
+
+    for body in (
+        {"violation_id": "CL-001", "kind": "nope", "source_path": "data/law/opinion.md"},
+        {"violation_id": "CL-001", "kind": "transcripts_dir", "source_path": "/etc/hosts"},
+        {"violation_id": "CL-001", "kind": "transcripts_dir"},
+        {"violation_id": "CL-001", "kind": "transcripts_dir", "filename": "x", "content_base64": "!!!"},
+        {"violation_id": "../CL-001", "kind": "transcripts_dir", "source_path": "data/law/opinion.md"},
+    ):
+        assert client.post("/api/bundle-source", json=body).status_code == 400
+
+    assert sorted(str(p.relative_to(bundle)) for p in bundle.rglob("*")) == before
+
+
+def test_bundle_source_route_answers_the_preflight(client, staging_workspace):
+    assert client.options("/api/bundle-source").status_code == 204
+
+
 def test_discover_bundles_reads_real_build_directories():
     payload = discover_bundles()
     assert payload["root"] == "build"
@@ -864,6 +1179,13 @@ def test_describe_schema_derives_every_option_list_from_the_models():
     # accepts, not a parallel hand-written list.
     assert schema["bundle_layout"] == dict(BUNDLE_LAYOUT)
     assert "transcripts_dir" in schema["bundle_layout"]
+    # ...and which of those keys name a *folder* is published too, because the S0
+    # picker previews where a file will land before staging it. A page that had
+    # to guess would show `Transcripts/x.md` for `contract` or `contract.json/x.md`
+    # for `transcripts_dir`, and either way disagree with the write.
+    from violation_pack.pack import SOURCE_DIRECTORY_KINDS
+
+    assert schema["source_directory_kinds"] == sorted(SOURCE_DIRECTORY_KINDS)
 
     # S9 and S10 render these registries; mirroring them by hand is how a stage
     # or check silently disappears from the UI when the backend grows one.

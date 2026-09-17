@@ -121,11 +121,11 @@ def find_workspace_root() -> Path:
     return here.parent
 
 
-def browse_workspace(path: str = "", kind: str = "directory") -> dict[str, Any] | None:
-    """List a safe workspace directory or resolve one safe file selection.
+def contained_workspace_path(path: str = "") -> Path | None:
+    """``root/path`` when the **unresolved** path stays inside the workspace.
 
-    Containment is checked **lexically**, on the unresolved path, and only then is
-    the path resolved for existence and type. That order matters twice over:
+    Containment is checked lexically, and only the caller then resolves it for
+    existence and type. That order matters twice over:
 
     * It is the check that actually stops user-supplied traversal — ``../../`` is
       normalised and rejected before any filesystem access.
@@ -137,6 +137,14 @@ def browse_workspace(path: str = "", kind: str = "directory") -> dict[str, Any] 
     A repo-owned symlink is not a traversal vector: passing ``../../etc`` is still
     refused, and anyone able to plant a symlink in the repo can already read those
     files directly.
+
+    Returning the lexical path is the point — the children of a *resolved* path
+    are no longer under ``root``, so the walkable form is the one the caller
+    needs for listing. Callers that want the file use `resolve_workspace_path`.
+
+    One rule with two callers (``browse_workspace`` and the staging route) rather
+    than two containment checks: a second copy of this logic is how a browse that
+    refuses a path comes to sit beside a write that accepts it.
     """
     root = find_workspace_root().resolve()
     requested = Path(path or ".")
@@ -147,27 +155,69 @@ def browse_workspace(path: str = "", kind: str = "directory") -> dict[str, Any] 
         lexical.relative_to(root)
     except ValueError:
         return None
+    return lexical
+
+
+def resolve_workspace_path(path: str = "", kind: str = "file") -> Path | None:
+    """The real path behind a contained workspace reference, or ``None``.
+
+    ``kind`` is what the caller wants to **end up with**, not a claim about the
+    current directory: ``kind="file"`` on a directory is a legitimate starting
+    state (that is where a picker *opens*), so it is not rejected here. The
+    distinction lives in `browse_workspace`, which lists a directory for either
+    kind and only ever *resolves* a selection.
+    """
+    lexical = contained_workspace_path(path)
+    if lexical is None:
+        return None
     candidate = lexical.resolve()
-    if not candidate.exists() or (kind == "file" and not candidate.is_file()):
+    if not candidate.exists():
         return None
-    if kind == "file":
-        return {"ok": True, "kind": "file", "path": str(lexical.relative_to(root))}
-    if not candidate.is_dir():
+    if kind == "file" and not candidate.is_file():
         return None
-    # List through the lexical path so each entry stays workspace-relative; the
-    # children of a resolved path are no longer under ``root``.
-    entries = []
-    for entry in sorted(lexical.iterdir(), key=lambda item: (item.is_file(), item.name.lower())):
-        if entry.name.startswith("."):
-            continue
-        entries.append({
-            "name": entry.name,
-            "kind": "directory" if entry.is_dir() else "file",
-            "path": str(entry.relative_to(root)),
-        })
-    rel = str(lexical.relative_to(root)) if lexical != root else "."
-    parent = str(lexical.parent.relative_to(root)) if lexical != root else None
-    return {"ok": True, "kind": "directory", "path": rel, "parent": parent, "entries": entries}
+    return candidate
+
+
+def browse_workspace(path: str = "", kind: str = "directory") -> dict[str, Any] | None:
+    """List a safe workspace directory or resolve one safe file selection.
+
+    ``kind`` says what the caller is allowed to **pick**, never what the path
+    must already be — so opening a file picker on a directory returns that
+    directory's listing, and the caller lists it until the user names a file.
+    That is not a convenience: every picker opens somewhere, and the previous
+    reading (``kind="file"`` ⇒ the path must be a file) made a file picker
+    impossible to open at all. The UI asked for ``path=.``, the workspace root is
+    a directory, and the server answered 400 *"Path is outside the workspace or
+    does not exist"* — for a path that plainly exists and plainly is inside.
+
+    Containment runs in `contained_workspace_path`; see it for why the check is
+    lexical and why that order is load-bearing.
+    """
+    lexical = contained_workspace_path(path)
+    if lexical is None:
+        return None
+    root = find_workspace_root().resolve()
+    candidate = lexical.resolve()
+    if not candidate.exists():
+        return None
+    if candidate.is_dir():
+        # List through the lexical path so each entry stays workspace-relative;
+        # the children of a resolved path are no longer under ``root``.
+        entries = []
+        for entry in sorted(lexical.iterdir(), key=lambda item: (item.is_file(), item.name.lower())):
+            if entry.name.startswith("."):
+                continue
+            entries.append({
+                "name": entry.name,
+                "kind": "directory" if entry.is_dir() else "file",
+                "path": str(entry.relative_to(root)),
+            })
+        rel = str(lexical.relative_to(root)) if lexical != root else "."
+        parent = str(lexical.parent.relative_to(root)) if lexical != root else None
+        return {"ok": True, "kind": "directory", "path": rel, "parent": parent, "entries": entries}
+    if kind != "file":
+        return None
+    return {"ok": True, "kind": "file", "path": str(lexical.relative_to(root))}
 
 
 #: Bundle directory names are the violation id verbatim: ``<JURISDICTION>-<local>``,
@@ -378,7 +428,7 @@ def describe_schema() -> dict[str, Any]:
     """
     from . import models
     from .enrich import ENRICHMENT_STAGES
-    from .pack import BUNDLE_LAYOUT
+    from .pack import BUNDLE_LAYOUT, SOURCE_DIRECTORY_KINDS
     from .validation import DEFAULT_PIPELINE
 
     def literal(name: str, field: str) -> list[str]:
@@ -413,6 +463,11 @@ def describe_schema() -> dict[str, Any]:
         # Layer-0 staging destinations come from the bundle layout itself, so the
         # ``kind`` a user picks always matches a key pack.py can resolve.
         "bundle_layout": {kind: rel for kind, rel in BUNDLE_LAYOUT.items()},
+        # Which of those keys name a folder a source is *copied into*. Published
+        # rather than mirrored in the page: the S0 picker has to show where a
+        # file will land before it stages it, and a second copy of this list is
+        # how the preview comes to disagree with the write.
+        "source_directory_kinds": sorted(SOURCE_DIRECTORY_KINDS),
         # S9's stage chips and S10's check rows are the registry order, so a new
         # stage or a new V-check appears in the UI without an HTML change.
         "enrichment_stages": list(ENRICHMENT_STAGES),
@@ -1296,6 +1351,144 @@ def build_ui_routes(mcp):
         if payload is None:
             return json_response({"ok": False, "error": "Path is outside the workspace or does not exist."}, status_code=400)
         return json_response(payload)
+
+    @mcp.custom_route("/api/bundle-source", methods=["POST", "OPTIONS"])
+    async def api_bundle_source(request) -> Response:
+        """Stage one source-of-truth file into the bundle.
+
+        Two ways in, one destination rule. ``source_path`` names a file already
+        in the workspace (what the picker hands back after browsing
+        ``data/law`` or ``data/transcripts``), while ``content_base64`` +
+        ``filename`` carries bytes the browser holds and the server has never
+        seen. Both land through ``pack.staged_source_path``, so a reviewer who
+        drags a PDF in and one who picks the same file out of ``data/law`` get
+        the same layout — that split is the whole reason this route exists
+        rather than the UI calling ``copy_source_into_bundle_tool`` directly.
+
+        The upload travels as base64 inside JSON, not multipart: this bridge has
+        exactly one body parser and one error shape, and adding a second one for
+        one field would mean two ways to fail.
+
+        Nothing here decides *what* a source is, and nothing here touches the
+        violation JSON. It writes the bytes a later tool will hash against, and
+        reports the sha256 it wrote so the reviewer can compare it with the
+        manifest rather than trust that the copy happened.
+        """
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+
+        from .authority_source import MAX_UPLOAD_BYTES, SourceError, decode_base64_payload
+        from .pack import (
+            BUNDLE_LAYOUT,
+            copy_source_into_bundle,
+            is_layout_kind,
+            staged_source_path,
+            write_source_into_bundle,
+        )
+
+        body, refusal = await read_json_object(request)
+        if refusal is not None:
+            return refusal
+
+        violation_id = body.get("violation_id")
+        if not isinstance(violation_id, str) or not _BUNDLE_DIR_RE.fullmatch(violation_id):
+            return json_response({"ok": False, "error": "'violation_id' must be a bundle id."}, status_code=400)
+        bundle = resolve_bundle_dir(violation_id)
+        if bundle is None:
+            return json_response(
+                {"ok": False, "error": f"No bundle build/{violation_id}/ on disk."}, status_code=404
+            )
+
+        kind = body.get("kind")
+        if not is_layout_kind(kind):
+            return json_response(
+                {
+                    "ok": False,
+                    "error": "'kind' must be a bundle layout key.",
+                    "kinds": sorted(BUNDLE_LAYOUT),
+                },
+                status_code=400,
+            )
+
+        source_path = body.get("source_path")
+        content = body.get("content_base64")
+        if isinstance(content, str) and content.strip():
+            # Upload: the browser holds the only copy, so the name comes from
+            # the request — reduced to a basename by `staged_source_path`.
+            try:
+                data = decode_base64_payload(content)
+            except SourceError as exc:
+                return json_response({"ok": False, "error": str(exc)}, status_code=400)
+            if len(data) > MAX_UPLOAD_BYTES:
+                return json_response(
+                    {
+                        "ok": False,
+                        "error": f"upload is {len(data)} bytes; the limit is "
+                        f"{MAX_UPLOAD_BYTES // (1024 * 1024)} MiB",
+                    },
+                    status_code=400,
+                )
+            allowed_name = body.get("filename")
+            if not isinstance(allowed_name, str) or not allowed_name.strip():
+                return json_response({"ok": False, "error": "'filename' is required for an upload."}, status_code=400)
+            source = "upload"
+            stage_name = allowed_name.strip()
+            stage = lambda: write_source_into_bundle(bundle, kind, stage_name, data)  # noqa: E731
+        elif isinstance(source_path, str) and source_path.strip():
+            picked = resolve_workspace_path(source_path.strip(), "file")
+            if picked is None:
+                return json_response(
+                    {"ok": False, "error": f"{source_path!r} is not a file inside the workspace."},
+                    status_code=400,
+                )
+            source = str(source_path.strip())
+            stage_name = picked.name
+            stage = lambda: copy_source_into_bundle(picked, bundle, kind)  # noqa: E731
+        else:
+            return json_response(
+                {
+                    "ok": False,
+                    "error": "send either 'source_path' or 'content_base64' + 'filename'.",
+                },
+                status_code=400,
+            )
+
+        # Where it is about to land is computed *before* the write, from the
+        # bundle and the layout — not from what the request claimed, and not
+        # from where the file happens to be. For a folder kind the destination
+        # is `<folder>/<basename>`, so a staging control that reported only the
+        # name it was given would be unable to say which of two files it just
+        # replaced.
+        try:
+            predicted = staged_source_path(bundle, kind, stage_name)
+        except (KeyError, ValueError) as exc:
+            return json_response({"ok": False, "error": f"could not stage the source ({exc})"}, status_code=400)
+        overwritten = predicted.is_file()
+
+        try:
+            dest = stage()
+        except (KeyError, ValueError, OSError) as exc:
+            return json_response(
+                {"ok": False, "error": f"could not stage the source ({type(exc).__name__}: {exc})"},
+                status_code=400,
+            )
+
+        staged = dest.read_bytes()
+        return json_response({
+            "ok": True,
+            "violation_id": violation_id,
+            "kind": kind,
+            "source": source,
+            "name": dest.name,
+            "destination": dest.relative_to(bundle).as_posix(),
+            "path": str(dest),
+            "bytes": len(staged),
+            "sha256": hashlib.sha256(staged).hexdigest(),
+            # Reported so the UI can say a file was replaced rather than added:
+            # a staged source is proof, and silently overwriting one is the kind
+            # of edit that is only noticed long after the quote it backed.
+            "overwritten": overwritten,
+        })
 
     @mcp.custom_route("/api/bundles", methods=["GET", "OPTIONS"])
     async def api_bundles(request) -> Response:
