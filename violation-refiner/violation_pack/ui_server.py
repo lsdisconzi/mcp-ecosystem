@@ -12,7 +12,11 @@ the MCP protocol, so `./start.sh` gives you both on one port:
     GET  /api/sources   rendered transcripts and law caches under data/
     GET  /api/framework-article
                         one cached article's verbatim body + declared ELI id,
-                        read from a bundle's `Legal framework/<name>.md`
+                        read from a bundle's `Legal framework/<name>.md`; with
+                        no `article` it lists the article numbers that cache
+                        holds, which is how a framework staged into the bundle
+                        (and so recorded in no `framework_caches` row yet) can
+                        still be offered by the S3 picker
     GET  /api/bundle    one bundle's real artifacts (violation JSON, contract,
                         Validation/checks.json, segments_manifest.json, files)
     GET  /api/schema    every option list the UI renders, read off the live
@@ -689,6 +693,14 @@ def discover_framework_article(uri: str, article: str) -> dict[str, Any] | None:
     The body is the text as it sits in the cache, metadata block stripped, so it
     is a byte-exact substring of the cached framework text — exactly the
     property ``build_norms_layer_tool`` checks a verbatim excerpt for.
+
+    With **no** ``article`` the cache is listed instead: every key it holds and
+    nothing else, with the body fields left ``None``. A framework staged into
+    the bundle at S0 has no ``framework_caches`` row yet, so its article numbers
+    exist nowhere but in the file — and the picker may only offer what this
+    route can read back. The two modes are one function on purpose: a second
+    reader with its own notion of "the bundle's cache" is how the picker came to
+    disagree with the reader in the first place.
     """
     path = _resolve_framework_uri(uri)
     if path is None:
@@ -699,6 +711,22 @@ def discover_framework_article(uri: str, article: str) -> dict[str, Any] | None:
     # this reader's code can never disagree (CPCL_CP.md -> CPCL).
     code = path.stem.split("_")[0].upper()
     source = MarkdownFrameworkSource(path, code, uri)
+    if not article:
+        # Identical keys to the article shape below (asserted by a test), so a
+        # caller reads one shape with some fields empty rather than two shapes.
+        return {
+            "ok": True,
+            "uri": uri,
+            "name": path.name,
+            "framework_code": code,
+            "article": None,
+            "article_id": None,
+            "article_name": None,
+            "body": None,
+            "body_sha256": None,
+            "cache_sha256": source.cache_sha256(),
+            "articles": source.articles_cached(),
+        }
     body = source.get_article_body(article)
     if body is None:
         return None
@@ -726,13 +754,17 @@ def framework_article_reason(uri: str, article: str) -> str:
 
     Two unrelated causes share that ``None`` — an unresolvable cache, and an
     article the cache does not hold — and collapsing them is how a containment
-    bug hid inside a generic 400 for the transcripts.
+    bug hid inside a generic 400 for the transcripts. The uri is therefore
+    resolved first: a request naming no article only ever fails for that reason.
     """
-    if not article:
-        return "no article number was supplied"
     path = _resolve_framework_uri(uri)
     if path is None:
         return framework_uri_reason(uri)
+    if not article:
+        # Unreachable through the route — a blank article lists the cache rather
+        # than failing — but a direct caller must be told the two are different
+        # things instead of being handed an "article '' is missing" sentence.
+        return "no article number was supplied"
     from .sources import MarkdownFrameworkSource
 
     code = path.stem.split("_")[0].upper()

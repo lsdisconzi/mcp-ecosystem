@@ -629,6 +629,10 @@ code {
     <div class="modal-body" id="modalBody"></div>
     <div class="modal-footer">
       <span class="modal-footer-note" id="modalFooterNote">Read-only — provenance is computed, not entered.</span>
+      <!-- The staging picker's confirm, beside Close rather than in the body:
+           the reviewer's hand is already here when the choice is made. Hidden
+           unless a file is selected, so no other modal ever shows it. -->
+      <button class="btn btn-primary" id="modalStageAction" data-action="picker-stage" data-browse-path="" hidden>Add to bundle</button>
       <button class="btn" data-action="close-modal">Close</button>
     </div>
   </div>
@@ -1280,10 +1284,17 @@ let state = {
   // a proof unlinks the bundle's only copy of an official document, and there is
   // nothing here that can put it back, so the second click is the consent.
   proofDelete: null,
-  // The cached article the S3 picker last loaded, as { code, article }. Only
-  // used to keep the picked chip visibly picked — the excerpt and id live in
-  // their real inputs.
+  // The cached article the S3 picker last loaded, as { framework, article },
+  // where `framework` is the uri of the cache file it came from. Only used to
+  // keep the picked chip visibly picked — the excerpt and id live in their real
+  // inputs — and keyed by the uri rather than by the framework code so a pick
+  // cannot survive a switch to a different bundle that uses the same code.
   pickedArticle: null,
+  // Article numbers read from a framework file the violation JSON does not
+  // record, keyed by the file's uri. `undefined` means "not asked yet", `null`
+  // "asked and in flight", an array "this is what the file holds" — three states
+  // a single missing key cannot express.
+  frameworkArticles: {},
   settings: {},
 };
 
@@ -1301,8 +1312,11 @@ const API = {
   schema:  () => fetchJson('/api/schema'),
   settings: () => fetchJson('/api/settings'),
   transcript: uri => fetchJson('/api/source-transcript?uri=' + encodeURIComponent(uri)),
+  // `article` is optional. With no article the route lists the article numbers
+  // the cache holds instead of reading one article out of it, which is how a
+  // framework file the violation JSON does not record gets its article numbers.
   frameworkArticle: (uri, article) => fetchJson('/api/framework-article?uri=' + encodeURIComponent(uri)
-    + '&article=' + encodeURIComponent(article)),
+    + (article === undefined || article === null || article === '' ? '' : '&article=' + encodeURIComponent(article))),
   browse: (path, kind) => fetchJson('/api/browse?path=' + encodeURIComponent(path) + '&kind=' + kind),
   // Stage one source-of-truth file into the bundle: either a workspace path the
   // picker just walked to, or bytes the browser holds and the server has never
@@ -1617,6 +1631,10 @@ function openModal(key) {
   const v = state.violation;
   const b = state.bundle;
   body.innerHTML = '';
+  // Every non-picker modal reuses this footer, and the staging confirm is not
+  // part of it. Explicit here as well as on close, so no future caller that
+  // opens a record modal without closing the last one can inherit the button.
+  syncStageAction();
 
   const emptyState = (name) => {
     const tpl = document.getElementById('tpl-modal-' + name);
@@ -1977,10 +1995,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (action === 'browse-entry') {
       e.preventDefault();
-      // Path and entry kind come off the row; the picker's *purpose* (setting,
-      // staging, the declared kind) is state, because every row in a listing
-      // would otherwise have to carry it and one of them would eventually not.
-      renderBrowsePicker(t.dataset.browsePath, t.dataset.entryKind || 'directory');
+      // Only the path comes off the row; the picker's *purpose* (setting,
+      // staging, the declared kind) stays in state. Passing the row's own kind
+      // here is what made every file below the first folder unclickable: the
+      // row is a directory by definition, so the declared kind became
+      // "directory" and the picker stopped offering the files it was opened to
+      // pick — one `↑ Up` or one folder down and a file picker silently began
+      // refusing files, with nothing on screen saying why.
+      renderBrowsePicker(t.dataset.browsePath);
     }
     if (action === 'picker-shortcut') {
       e.preventDefault();
@@ -2081,6 +2103,12 @@ document.addEventListener('DOMContentLoaded', () => {
       // that claim from outliving the dialog it was written for — every other
       // modal reuses this footer untouched.
       document.getElementById('modalFooterNote').textContent = MODAL_FOOTER_NOTE;
+      // The footer also carries the staging confirm, which belongs to the
+      // picker alone. Dropping the picker state here is what keeps a selected
+      // file from outliving the dialog and re-arming the button in the next
+      // modal that happens to reuse this footer.
+      state.picker = null;
+      syncStageAction();
     }
 
     if (action === 'pick-article') {
@@ -2427,6 +2455,11 @@ function switchBundle(bundleId) {
   state.bundle = null;
   state.activeTranscript = null;
   state.segmentSpecs = {};
+  // Framework files were read out of the *old* bundle's directory. Clearing the
+  // reads (and the pick, which is keyed by a uri in that directory) is what
+  // keeps S3 from quoting one bundle's text under another bundle's name.
+  state.frameworkArticles = {};
+  state.pickedArticle = null;
   localStorage.removeItem('vp.violation');
   resetStats();
   syncStepCompletion(null);
@@ -3143,6 +3176,10 @@ async function openBrowsePicker(button) {
     ? 'Adds bytes only — sha256 is computed from the file, never typed.'
     : MODAL_FOOTER_NOTE;
   document.getElementById('modalOverlay').classList.add('active');
+  // The staging confirm starts hidden and appears only once a file row is
+  // selected (`syncStageAction`) — `p.selected` was just cleared, so opening a
+  // dialog can never leave a stale button behind from the previous one.
+  syncStageAction();
   // A staging picker opens where the destination's files actually are, so the
   // common case — stage a transcript, then a law file — is a shortcut and a
   // click, not a walk from the repository root every time.
@@ -3167,6 +3204,10 @@ async function renderBrowsePicker(path, kind, setting) {
     data = await API.browse(p.path, p.kind);
   } catch (e) {
     body.innerHTML = `<p class="field-hint">Could not browse workspace — ${escapeHtml(e.message)}</p><div class="btn-row"><button class="btn" data-action="close-modal">Close</button></div>`;
+    // Nothing to add from a listing that failed, and the remembered selection
+    // (if any) is no longer the file this dialog is showing.
+    p.selected = null;
+    syncStageAction();
     return;
   }
 
@@ -3186,7 +3227,7 @@ function renderBrowseBody(data) {
 
   const nav = [];
   if (data.parent !== null && data.parent !== undefined) {
-    nav.push(`<button class="btn" data-action="browse-entry" data-browse-path="${escapeHtml(data.parent)}" data-entry-kind="directory">↑ Up</button>`);
+    nav.push(`<button class="btn" data-action="browse-entry" data-browse-path="${escapeHtml(data.parent)}">↑ Up</button>`);
   }
   if (!p.stage) {
     // A folder picker's whole purpose; a staging picker has no folder to choose.
@@ -3204,13 +3245,15 @@ function renderBrowseBody(data) {
   const rows = (data.entries || []).map(entry => {
     const isDir = entry.kind === 'directory';
     // Files are listed either way — seeing what a corpus holds is the point —
-    // but only a picker that accepts files offers them as a choice.
-    const choosable = isDir || p.kind === 'file';
+    // but only a picker that accepts files offers them as a choice. Staging
+    // always accepts them: the job is copying one file's bytes, so a listing
+    // that was opened to stage must never render its files unclickable.
+    const choosable = isDir || p.stage || p.kind === 'file';
     const action = isDir ? 'browse-entry' : (choosable ? 'picker-file' : '');
     const active = p.selected === entry.path ? ' active' : '';
     const icon = isDir ? '▣' : '□';
     return `<button class="btn browse-entry${active}"${action ? ` data-action="${action}"` : ' disabled'}`
-      + ` data-browse-path="${escapeHtml(entry.path)}" data-entry-kind="${entry.kind}">`
+      + ` data-browse-path="${escapeHtml(entry.path)}">`
       + `<span class="browse-icon">${icon}</span>${escapeHtml(entry.name)}</button>`;
   }).join('');
   parts.push(`<div class="browse-list" style="margin-top:14px;">${rows || '<div class="field-hint">No visible entries.</div>'}</div>`);
@@ -3222,6 +3265,29 @@ function renderBrowseBody(data) {
     ).join('') + '</div>');
   }
   setHtml('modalBody', parts.join(''));
+  syncStageAction();
+}
+
+/** Show the footer's staging confirm iff this picker has a file selected.
+ *
+ *  A file row *selects*; the footer *runs*. Keeping those apart is what lets the
+ *  reviewer walk three folders deep, pick a law file, and still find the button
+ *  where a dialog's confirm belongs — instead of a primary button that travels
+ *  with the listing and vanishes every time they navigate.
+ *
+ *  Hidden rather than disabled when nothing is selected: a permanently greyed
+ *  primary button in a footer reads as "this dialog is broken", not as "pick a
+ *  file first". */
+function syncStageAction() {
+  const btn = document.getElementById('modalStageAction');
+  if (!btn) return;
+  // Read state directly rather than through `picker()`: this runs on the way
+  // *out* of a dialog too, and building picker state in order to hide a button
+  // is how the next dialog inherits a selection nobody made.
+  const p = state.picker;
+  const selected = (p && p.stage && p.selected) || '';
+  btn.dataset.browsePath = selected;
+  btn.hidden = !selected;
 }
 
 /** The staging half of the dialog: what is selected, where it will land, and
@@ -3230,11 +3296,13 @@ function stagePickerHtml() {
   const p = picker();
   const kind = stageDestination();
   const dest = p.selected ? stageTargetLabel(kind, p.selected.split('/').pop()) : '';
+  // The selection row says *what* and *where*; the button that commits it is in
+  // the footer (`syncStageAction`), because a confirm that lives inside the
+  // listing is destroyed by the next navigation and has to be found again.
   const chosen = p.selected
     ? `<div class="record-row"><div class="rr-main">`
       + `<div class="rr-id">${escapeHtml(p.selected.split('/').pop())}</div>`
-      + `<div class="rr-detail">→ ${escapeHtml(dest)}</div></div>`
-      + `<div class="rr-meta"><button class="btn btn-primary" data-action="picker-stage" data-browse-path="${escapeHtml(p.selected)}">Add to bundle</button></div></div>`
+      + `<div class="rr-detail">→ ${escapeHtml(dest)}</div></div></div>`
     : hintRow('Choose a file above, or upload one. It lands in the destination shown on S0.');
   return `<div class="picker-upload">`
     + `<label class="field-label" for="pickerUpload">Upload a file</label>`
@@ -3280,7 +3348,11 @@ async function stageSourceFile(payload, label) {
 async function pickerStage(path) {
   const file = path || picker().selected;
   if (!file) return;
-  await stageSourceFile({ source_path: file }, file.split('/').pop());
+  const res = await stageSourceFile({ source_path: file }, file.split('/').pop());
+  // A successful add disarms the footer button. Leaving it armed for a file the
+  // bundle already holds makes the next click a no-op overwrite whose note
+  // ("replaced an existing file") reads like a second, different arrival.
+  if (res) picker().selected = null;
   await renderBrowsePicker();
 }
 
@@ -3365,6 +3437,23 @@ function defaultArgsFor(tool) {
     args.segment_specs = Object.entries(state.segmentSpecs)
       .filter(([scoped]) => !prefix || scoped.startsWith(prefix + '.'))
       .map(([, spec]) => spec);
+  }
+
+  if (tool.name === 'build_norms_layer_tool') {
+    // The framework the S3 picker has selected — the same file its chips quote,
+    // so this panel cannot be run against a framework other than the one the
+    // article ids on screen came from. All three are derived: the tool opens
+    // `framework_path` itself, `framework_code` decides which cache the built
+    // norms register under, and `framework_bundle_uri` is how the built cache
+    // records its own file — which is why that one *is* bundle-relative.
+    const choice = frameworkChoices().find(c => c.uri === selectedFrameworkUri());
+    if (choice) {
+      args.framework_path = absoluteBundlePath(choice.rel);
+      args.framework_code = choice.code;
+      args.framework_bundle_uri = choice.rel;
+    } else {
+      pushLog('No framework file selected in S3 — framework_path cannot be filled', null, 'warn');
+    }
   }
 
   // ``Tool`` (the pydantic model) has no ``required`` attribute of its own —
@@ -3910,6 +3999,25 @@ function bundleFiles() {
     .sort((a, b) => String(a.path).localeCompare(String(b.path)));
 }
 
+/** The absolute filesystem path of a bundle-relative artifact.
+ *
+ *  A tool argument is opened off the filesystem by the server process, not by
+ *  the browser, so it cannot be left relative: `start.sh` pins the working
+ *  directory to the project root, but an argument that only resolves from the
+ *  root would break the moment the server is started from anywhere else, and
+ *  joining the resolved root costs nothing. Build the value from the server's
+ *  own `workspaceRoot` rather than from a path the UI assembled, so a wrong
+ *  root shows up as a missing file (an error the run reports) instead of as a
+ *  call that quietly reads the wrong corpus.
+ */
+function absoluteBundlePath(rel) {
+  const bundle = (state.bundle && state.bundle.path) || '';
+  const root = ((state.config || {}).paths || {}).workspaceRoot;
+  if (!rel) return '';
+  const joined = bundle ? `${bundle}/${rel}` : rel;
+  return root ? `${String(root).replace(/\/+$/, '')}/${joined}` : joined;
+}
+
 /* ---------------------------------------------------------------- settings */
 
 /** Project paths. Rendered rather than typed: every row is a value the server
@@ -4279,6 +4387,132 @@ function seedManifestSpecs(prefix) {
 
 /* --------------------------------------------------------------------- S3 */
 
+/** Where a bundle keeps its framework caches inside itself. The name has a space
+ *  in it and is compared as a whole path component, never split: it is the same
+ *  constant `_FRAMEWORK_CACHE_DIR` the route resolves against, and the same
+ *  directory `staged_source_path('framework_dir', …)` stages into. */
+const FRAMEWORK_CACHE_DIR = 'Legal framework';
+
+/** The framework Markdown this bundle carries, read off the bundle's own listing.
+ *
+ *  The picker used to be built from `violation.framework_caches` alone — the
+ *  caches the violation JSON *declares* — so a framework staged into
+ *  `Legal framework/` at S0 stayed invisible here until some tool happened to
+ *  write a cache row for it. The file was in the bundle, and the step that must
+ *  quote it could not see it. The listing is the only thing that says what the
+ *  bundle actually carries, and `/api/framework-article` reads exactly these
+ *  files and refuses everything else, so the picker and the reader agree by
+ *  construction instead of by coincidence.
+ *
+ *  Returns `{rel, uri, name}` per file. `uri` is the picker's value: it is what
+ *  the route takes and what `framework_caches[].cache_file` is relative to, and
+ *  a bare framework code would collapse two files that share one.
+ */
+function bundleFrameworkFiles() {
+  const base = String((state.bundle && state.bundle.path) || '').replace(/\/+$/, '');
+  if (!base) return [];
+  return bundleFiles()
+    .filter(f => f.kind !== 'directory')
+    .map(f => String(f.path || ''))
+    .filter(p => p.startsWith(`${base}/`))
+    .map(p => p.slice(base.length + 1).split('/'))
+    .filter(parts => parts.length === 2 && parts[0] === FRAMEWORK_CACHE_DIR && /\.md$/i.test(parts[1]))
+    .map(parts => ({
+      rel: `${FRAMEWORK_CACHE_DIR}/${parts[1]}`,
+      uri: `${base}/${FRAMEWORK_CACHE_DIR}/${parts[1]}`,
+      name: parts[1],
+    }));
+}
+
+/** The framework code of a cache file, derived the way the server derives it.
+ *
+ *  `/api/sources` and `discover_framework_article` both use
+ *  `stem.split('_')[0].upper()`, so `CPCL_CP.md` and `CPCL.md` are one code. The
+ *  value is sent as `framework_code`, which `build_norms_layer` registers the
+ *  cache under and later steps look it up by — a code invented here would
+ *  register the norms against a name nothing else knows.
+ */
+function frameworkCodeOf(name) {
+  return String(name || '').split('/').pop().replace(/\.[^.]+$/, '').split('_')[0].toUpperCase();
+}
+
+/** The framework files the S3 picker can offer, as `{uri, rel, name, code, articles}`.
+ *
+ *  Two sources, and both are needed: the violation JSON's `framework_caches`
+ *  (what norms/validation actually recorded, carrying the article list the tool
+ *  validated the excerpt against) and the bundle's `Legal framework/` listing
+ *  (which also holds a file staged a moment ago that nothing has recorded yet).
+ *
+ *  A recorded cache whose file is absent from disk is still offered: it is what
+ *  the bundle claims, and dropping it would make the recorded state
+ *  unrepresentable. `articles` is `null` — not `[]` — for a file whose numbers
+ *  have not been read yet, so "not listed" and "lists nothing" stay distinct.
+ */
+function frameworkChoices() {
+  const caches = ((state.violation || {}).framework_caches) || [];
+  const base = String((state.bundle && state.bundle.path) || '').replace(/\/+$/, '');
+  const uris = [];
+  const offer = rel => {
+    const uri = rel && base ? `${base}/${rel}` : '';
+    if (uri && !uris.includes(uri)) uris.push(uri);
+  };
+  caches.forEach(c => offer(c.cache_file));
+  bundleFrameworkFiles().forEach(f => offer(f.rel));
+  return uris.map(uri => {
+    const rel = base ? uri.slice(base.length + 1) : uri;
+    const name = rel.split('/').pop();
+    const cache = caches.find(c => c.cache_file === rel);
+    const read = state.frameworkArticles[uri];
+    return {
+      uri,
+      rel,
+      name,
+      code: (cache && cache.framework_code) || frameworkCodeOf(name),
+      // A recorded cache's own article list wins over a re-parse: it is the list
+      // `build_norms_layer_tool` validated the cache against, so the chips and
+      // the accepted excerpt cannot disagree. Only a file the JSON does not
+      // record has to be read.
+      articles: cache ? (cache.articles_cached || []) : (read === undefined ? null : read),
+      recorded: Boolean(cache),
+    };
+  });
+}
+
+/** The framework file the S3 picker has selected, as the uri the bridge reads.
+ *
+ *  Read from the select on every use rather than copied into `state`: the picker
+ *  is the user's, and a second copy is a second thing that can be wrong.
+ */
+function selectedFrameworkUri() {
+  const el = document.getElementById('s3FrameworkFile');
+  return (el && el.value) || '';
+}
+
+/** Ask the bridge what a framework file the violation JSON does not record holds.
+ *
+ *  Such a file has no `articles_cached` to read and no cache row to read it
+ *  from, and a bundle listing is a listing — it carries no article numbers. The
+ *  route that reads one cached article also lists a cache when it is asked
+ *  without one, so the numbers and the text come from a single read of a single
+ *  file, and a file that route would refuse can never produce chips leading
+ *  nowhere.
+ */
+async function loadFrameworkArticles(uri) {
+  if (!uri || state.frameworkArticles[uri] !== undefined) return;
+  state.frameworkArticles[uri] = null;   // asked and in flight, not "empty"
+  try {
+    const payload = await API.frameworkArticle(uri);
+    state.frameworkArticles[uri] = payload.articles || [];
+  } catch (e) {
+    state.frameworkArticles[uri] = [];
+    pushLog(`← could not list the articles in ${uri} — ${e.message}`, 'S3', 'warn');
+  }
+  // Repaint only while S3 is still on screen: the answer can land after a step
+  // switch replaced the canvas, and a late repaint must never rewrite fields the
+  // current step does not have.
+  if (state.activeStep === 's3') hydrateS3();
+}
+
 /** Load one cached article's verbatim text into the S3 excerpt field.
  *
  *  The picker used to render inert chips: they named the article numbers the
@@ -4297,19 +4531,14 @@ function seedManifestSpecs(prefix) {
  *  which article is picked, so the fields below have to remember it too.
  */
 async function pickFrameworkArticle(article) {
-  const select = document.getElementById('s3FrameworkFile');
-  const code = (select && select.value) || '';
-  const cache = (((state.violation || {}).framework_caches) || [])
-    .find(c => c.framework_code === code);
-  const base = state.bundle && state.bundle.path;
-  const uri = (cache && cache.cache_file && base) ? `${base}/${cache.cache_file}` : '';
+  const uri = selectedFrameworkUri();
   if (!uri) {
-    pushLog('No framework cache path for this bundle — cannot read an article', 'S3', 'warn');
+    pushLog('No framework file selected — cannot read an article', 'S3', 'warn');
     return;
   }
   try {
     const payload = await API.frameworkArticle(uri, article);
-    state.pickedArticle = { code, article };
+    state.pickedArticle = { framework: uri, article };
     // `.value` assignment still works on a read-only input, which is the point
     // of using `readonly` rather than `disabled` throughout this file.
     setInput('s3ArticleId', payload.article_id || '');
@@ -4328,13 +4557,13 @@ async function pickFrameworkArticle(article) {
   }
 }
 
-/** The article the user picked, but only while it still belongs to `code`'s
- *  cache — switching frameworks must not leave a stale pick on screen. One rule,
- *  shared by the chip highlighting and by the excerpt/id fields, so the two can
- *  never disagree about which article is showing. */
-function pickedArticleFor(code, articles) {
+/** The article the user picked, but only while it still belongs to the selected
+ *  framework file — switching frameworks must not leave a stale pick on screen.
+ *  One rule, shared by the chip highlighting and by the excerpt/id fields, so the
+ *  two can never disagree about which article is showing. */
+function pickedArticleFor(framework, articles) {
   const picked = state.pickedArticle;
-  return picked && picked.code === code && articles.includes(picked.article)
+  return picked && picked.framework === framework && (articles || []).includes(picked.article)
     ? picked.article
     : '';
 }
@@ -4342,50 +4571,67 @@ function pickedArticleFor(code, articles) {
 function hydrateS3() {
   const v = state.violation;
   const sch = state.schema || {};
-  const caches = (v && v.framework_caches) || [];
-  const discovered = (state.sources && state.sources.frameworks) || [];
   const est = (v && v.established_articles) || [];
   const cands = (v && v.candidate_articles) || [];
+  const choices = frameworkChoices();
+  const recorded = choices.filter(c => c.recorded);
 
-  const options = caches.length
-    ? caches.map(c => ({ value: c.framework_code, label: `${c.framework_code} — ${c.cache_file || 'no cache file'}` }))
-    : discovered.map(f => ({ value: f.framework_code, label: `${f.framework_code} — ${f.path}` }));
-  const select = fillSelect('s3FrameworkFile', options, (caches[0] || discovered[0] || {}).framework_code,
+  // The picker offers framework *files* (`{uri}` values, not framework codes):
+  // one bundle can hold two files that share a code, and the route reads a file.
+  const select = fillSelect('s3FrameworkFile',
+    choices.map(c => ({ value: c.uri, label: `${c.code} — ${c.rel || 'not in this bundle'}` })),
+    // `fillSelect` keeps a still-offered value, so re-hydrating after a stage
+    // does not move the user off the file they picked.
+    (choices[0] || {}).uri,
     'No framework in this bundle');
 
+  /** Everything the current pick implies: the code field, and the chips that
+   *  quote the file — including asking what a file nothing has read yet holds. */
   const syncFramework = () => {
-    const code = select ? select.value : '';
-    const cache = caches.find(c => c.framework_code === code);
-    const disc = discovered.find(f => f.framework_code === code);
-    setInput('s3FrameworkCode', code || '');
-    const articles = cache ? (cache.articles_cached || []) : [];
-    if (articles.length) {
-      // Real buttons, not labels: the cache is the only thing that knows what
-      // "Art. 255" says, so the picker has to be able to fetch the text.
-      const pickedHere = pickedArticleFor(code, articles);
-      setHtml('s3ArticleChips', articles.map(a => {
-        const on = a === pickedHere;
-        return `<button class="chip chip-action${on ? ' is-selected' : ''}"`
-          + ` data-action="pick-article" data-article="${escapeHtml(a)}"`
-          + ` title="Load the cached text of Art. ${escapeHtml(a)} into the excerpt below">`
-          + `Art. ${escapeHtml(a)}</button>`;
-      }).join(''));
-    } else if (disc && disc.article_count) {
-      setHtml('s3ArticleChips', hintRow(`${disc.article_count} article(s) in ${disc.path} — not cached into this bundle yet.`));
-    } else {
-      setHtml('s3ArticleChips', hintRow(cache ? 'This cache lists no articles.' : 'No framework cache in this bundle.'));
+    const uri = selectedFrameworkUri();
+    const choice = choices.find(c => c.uri === uri);
+    // Derived, never typed: this is the code `build_norms_layer` registers the
+    // cache under and the code later steps look the norms up by.
+    setInput('s3FrameworkCode', choice ? choice.code : '');
+    if (!choice) {
+      setHtml('s3ArticleChips', hintRow('No framework cache in this bundle.'));
+      return;
     }
+    if (choice.articles === null) {
+      // Nothing has read this file's article numbers. Say so rather than render
+      // an empty row: `loadFrameworkArticles` re-hydrates S3 when it lands.
+      setHtml('s3ArticleChips', hintRow(`Reading the article numbers cached in ${choice.name}…`));
+      loadFrameworkArticles(uri);
+      return;
+    }
+    const articles = choice.articles || [];
+    if (!articles.length) {
+      setHtml('s3ArticleChips', hintRow(choice.recorded
+        ? `The cache recorded for ${choice.code} lists no articles.`
+        : `${choice.name} declares no cached articles, so there is nothing here to quote.`));
+      return;
+    }
+    // Real buttons, not labels: the cache is the only thing that knows what
+    // "Art. 255" says, so the picker has to be able to fetch the text.
+    const pickedHere = pickedArticleFor(uri, articles);
+    setHtml('s3ArticleChips', articles.map(a => {
+      const on = a === pickedHere;
+      return `<button class="chip chip-action${on ? ' is-selected' : ''}"`
+        + ` data-action="pick-article" data-article="${escapeHtml(a)}"`
+        + ` title="Load the cached text of Art. ${escapeHtml(a)} into the excerpt below">`
+        + `Art. ${escapeHtml(a)}</button>`;
+    }).join(''));
   };
   fillSelect('s3NormType', sch.norm_type, est[0] && est[0].norm_type, 'no established article');
 
   /** The excerpt, id and provenance line. Exactly one article is on screen at a
-   *  time — the pick if it is still valid for the selected framework, else the
-   *  bundle's established article — and the chip row is rendered from the same
-   *  rule, so the highlighted chip and these fields cannot disagree. */
+   *  time — the pick if it is still valid for the selected framework file, else
+   *  the bundle's established article — and the chip row is rendered from the
+   *  same rule, so the highlighted chip and these fields cannot disagree. */
   const renderArticle = () => {
-    const code = select ? select.value : '';
-    const cached = (caches.find(c => c.framework_code === code) || {}).articles_cached || [];
-    const picked = pickedArticleFor(code, cached);
+    const uri = selectedFrameworkUri();
+    const cached = ((choices.find(c => c.uri === uri) || {}).articles) || [];
+    const picked = pickedArticleFor(uri, cached);
     if (picked) {
       // Re-read through the very call the chip uses, so the two paths cannot
       // render the same article differently.
@@ -4394,12 +4640,12 @@ function hydrateS3() {
     }
     // The provenance names the cache the *established* article came from, which
     // is not necessarily the framework selected in the picker.
-    const estCache = caches.find(c => c.framework_code === (est[0] || {}).framework_code) || {};
+    const estCache = choices.find(c => c.code === (est[0] || {}).framework_code) || {};
     setInput('s3ArticleId', est.length ? est[0].article_id : '');
     setInput('s3Verbatim', est.length ? (est[0].verbatim_excerpt || '') : '');
     setText('s3VerbatimSource', est.length
       ? `${est[0].framework_cache_status || 'status unknown'} · ${est[0].applicability || 'applicability unknown'}`
-        + (estCache.cache_file ? ` · ${estCache.cache_file}` : '')
+        + (estCache.rel ? ` · ${estCache.rel}` : '')
       : '');
   };
 
@@ -4440,10 +4686,10 @@ function hydrateS3() {
     </div>`).join('') : hintRow('No candidate articles in this bundle.'));
 
   if (!v) setGate('s3Gate', 'Loading bundle…', 'pending');
-  else if (!caches.length && !est.length) setGate('s3Gate', 'No framework cache or established article in this bundle yet.', 'pending');
+  else if (!choices.length && !est.length) setGate('s3Gate', 'No framework cache or established article in this bundle yet.', 'pending');
   else setGate('s3Gate',
-    `${caches.length} framework cache(s) · ${est.length} established · ${cands.length} candidate` +
-    (caches.length ? ` · articles cached: ${caches.reduce((n, c) => n + (c.articles_cached || []).length, 0)}` : ''),
+    `${choices.length} framework file(s) · ${est.length} established · ${cands.length} candidate` +
+    (recorded.length ? ` · articles cached: ${recorded.reduce((n, c) => n + ((c.articles || []).length), 0)}` : ''),
     est.length ? 'met' : 'advisory');
 }
 
@@ -4791,6 +5037,15 @@ async function refreshBundleFiles() {
     if (!state.bundle || !fresh) return;
     if (Array.isArray(fresh.files)) state.bundle.files = fresh.files;
     if (fresh.manifest) state.bundle.manifest = fresh.manifest;
+    // The listing is also what decides which framework files S3 offers, so it
+    // decides which of their article lists are still meaningful: a file that is
+    // gone can hold no articles. A re-staged file keeps its read — S0 refuses to
+    // overwrite a file already in the bundle, so a same-name stage is a new
+    // name, and it arrives without a read of its own.
+    const present = new Set(bundleFrameworkFiles().map(f => f.uri));
+    Object.keys(state.frameworkArticles).forEach(f => {
+      if (!present.has(f)) delete state.frameworkArticles[f];
+    });
   } catch (e) {
     pushLog(`← could not re-read the bundle listing — ${e.message}`, 'S6', 'warn');
   }
