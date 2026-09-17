@@ -2,6 +2,15 @@
 
 Three hunks against `chile_scraper.py` at blob `53a163d5…`. Line numbers are approximate and will shift — apply with context, not offsets. Total net change: **+62 / −13**.
 
+> **⚠ APPLIED, WITH FOUR CORRECTIONS (2026-09-17, commit `2f4a2cd`).** Do not apply this diff again — the code already contains it. The applied version is described in `03-chile_scraper-playbook.md` §Phase B and `verification_report.md` §*Changes made*; what follows is kept as the record of what was drafted. Where the draft and the shipped code differ:
+>
+> 1. **Hunk C's rationale was wrong, though its shape was right.** The draft guessed that `#capa_contenedor_detalle_sentencia` was "a container dump guess… the probe confirmed the id exists but not that it becomes visible on click." The live detail probe showed the id **is** real and **does** become visible — at **t≈0.007 s**, while `#panel_contenedor_central_detalle_sentencia` still holds 94 chars and only later grows to ~78,900. So an `is_displayed()`-only predicate as drafted would have returned on an **empty panel**. The shipped `_wait_for_detail` gates on container-visible **and** panel text `>= 1000`.
+> 2. **Hunk A's removed line was transcribed wrong.** The draft shows `self._assert_not_blocked("waiting for results")`; the real source passes it as a keyword, `self._assert_not_blocked(context="waiting for results")`. Applying the draft literally would break the call.
+> 3. **New sub-hunk B-2b.** The draft kept `new_on_page == 0` terminal. It is, but a zero-yield page now **retries the click once when the preceding wait timed out**, and logs `readiness_reached=` / `ids_on_page=`. Unconditional terminality silently truncates the result set; unconditional retrying risks an infinite loop.
+> 4. **`_open_detail` needed the same treatment in two places.** The draft scoped hunk C to the post-click wait only. The pre-click page-advance loop called `_wait_for_results()` with no baseline, so it inherited the identical race; it now snapshots `page_ids` and passes them. The bare `time.sleep(0.3)` went with it.
+>
+> **Also note:** the "Commit shape" section below went out as the body of commit `500ae05`, which **made none of these code changes** (`git show 500ae05 -- juris-search/chile_scraper.py` is empty). The real change is `2f4a2cd`, whose subject line is the one this document specified. Work-order **B-1 was deliberately not applied** (measured no-op: 70 nodes scoped vs 70 unscoped).
+
 I'm assuming the file layout I saw earlier: `_wait_for_results` and `_click_next_page` around L389–425, `get_inteiro_links` around L296–350, `_open_detail` around L581. Verify before applying.
 
 ---
