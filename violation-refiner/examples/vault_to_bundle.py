@@ -86,11 +86,11 @@ from violation_pack.models import Violation  # noqa: E402
 from violation_pack.sources import MarkdownFrameworkSource  # noqa: E402
 from violation_pack.sources_json import JsonTranscriptSchemaError, JsonTranscriptSource  # noqa: E402
 
-#: Vault root (Olivia case share). ``_json/EN`` holds the authoritative set;
-#: ``_json/{BR,ES,IT}`` only carry a handful of translations.
-DEFAULT_SOURCE = Path(
-    "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN"
-)
+#: Vault root — repo-local since 2026-09-17: ``data/violations`` holds one flat
+#: ``<VID>.json`` per bundle, seeded from the ``build/<VID>/<VID>.json`` set.
+#: Those are schema-3.0 *bundle* docs, which ``load_violation`` rejects; see
+#: docs/vault_to_bundle_contract.md §5 finding 6 before relying on this default.
+DEFAULT_SOURCE = Path("data/violations")
 #: Read-only consumers of ``transcription``-owned data; both are symlinks into
 #: ``../transcription`` (see docs/data_source_of_truth.md).
 DEFAULT_TRANSCRIPT_DIR = Path("data/transcripts/json")
@@ -909,6 +909,55 @@ def _rewrite_prefix(value: str, old_prefix: str, new_prefix: str) -> str:
     return value
 
 
+def _merge_grid_elements(target: dict, incoming: list[dict]) -> tuple[int, int]:
+    """Fold ``incoming`` elements into ``target``'s element list, in place.
+
+    Returns ``(added, upgraded)``: how many element ids were new, and how many
+    had a ``not_developed`` status replaced by a developed one.
+
+    Two vault grids can canonicalize to the *same* ``article_id`` — the corpus
+    holds ``CL.CPCL.C1.Art.412`` alongside the mis-prefixed
+    ``CL.CPCL.T2.P6.Art.412`` for the same article (7 of 80 documents do this).
+    Appending both produced two ``element_grids`` entries sharing one
+    ``article_id``, so the nexus/witness lookup resolved against whichever
+    happened to come first: V11 ``E_NEXUS_UNKNOWN_ELEMENT`` fired for an
+    element the other copy carried, and V21 ``element_id_closure`` reported the
+    same article twice. Merging keeps one entry per article and loses nothing.
+    """
+    by_id = {el["element_id"]: el for el in target.get("elements") or []}
+    added = upgraded = 0
+    for element in incoming:
+        current = by_id.get(element["element_id"])
+        if current is None:
+            target.setdefault("elements", []).append(element)
+            by_id[element["element_id"]] = element
+            added += 1
+            continue
+        # A status is only ever *upgraded* from the placeholder; two genuine
+        # but differing statuses keep the first-seen one (the canonical grid),
+        # since the merge cannot know which opinion is correct.
+        if current.get("proof_status") == "not_developed" and (
+            element.get("proof_status") not in (None, "", "not_developed")
+        ):
+            current["proof_status"] = element["proof_status"]
+            upgraded += 1
+        # Evidence is a union: the element is supported by every segment either
+        # copy cites, and a duplicated row is exactly what V06 flags.
+        evidence = current.setdefault("proof_evidence_segments", [])
+        for segment_id in element.get("proof_evidence_segments") or []:
+            if segment_id not in evidence:
+                evidence.append(segment_id)
+        for key in ("label", "doctrinal_basis", "argument_es"):
+            if not current.get(key) and element.get(key):
+                current[key] = element[key]
+        for key in ("weaknesses", "open_questions"):
+            merged = current.setdefault(key, [])
+            for item in element.get(key) or []:
+                if item not in merged:
+                    merged.append(item)
+    return added, upgraded
+
+
 def build_violation_document(
     violation: dict,
     contract: dict,
@@ -1125,6 +1174,7 @@ def build_violation_document(
         )
 
     element_grids: list[dict] = []
+    grid_by_article: dict[str, dict] = {}  # article_id -> the grid already emitted
     prefix_rewrites: dict[str, str] = {}  # old article_id -> new article_id
 
     for article_id_in, elements, grid_short in grids_iter:
@@ -1204,13 +1254,28 @@ def build_violation_document(
                 "would carry no confidence weight"
             )
             continue
-        element_grids.append(
-            {
+        short_final = article_short or article_id
+        already = grid_by_article.get(article_id)
+        if already is None:
+            grid = {
                 "article_id": article_id,
-                "article_short": article_short or article_id,
+                "article_short": short_final,
                 "elements": translated,
             }
-        )
+            element_grids.append(grid)
+            grid_by_article[article_id] = grid
+        else:
+            # A second vault grid canonicalized onto this article_id. Merge
+            # rather than append: two entries sharing an article_id make the
+            # nexus/witness lookup order-dependent (see _merge_grid_elements).
+            added, upgraded = _merge_grid_elements(already, translated)
+            if not already.get("article_short") or already["article_short"] == article_id:
+                already["article_short"] = short_final
+            warnings.append(
+                f"element grid {article_id_in}: merged into the existing "
+                f"{article_id} grid (+{added} element(s), {upgraded} status "
+                "upgrade(s)) — two grids canonicalized to the same article_id"
+            )
 
     # ── Layer 4: nexus matrix ───────────────────────────────────────────────
     grid_article_ids = {g["article_id"] for g in element_grids}
@@ -1307,6 +1372,20 @@ def build_violation_document(
         for oq in contract.get("open_questions") or []
         if isinstance(oq, dict)
     ]
+    # `blocks_element` names a grid entry, so it must follow the same prefix
+    # rewrite the grid and nexus passes applied. Otherwise it points at an
+    # element_id no grid carries and V11 reports W_OQ_BLOCKS_UNKNOWN — CL-013
+    # had two questions blocking `CL.CPCL.T2.P6.Art.412.elem.*` after the grid
+    # pass had canonicalized that article onto `CL.CPCL.C1.Art.412`.
+    for oq in open_questions:
+        block = oq.get("blocks_element")
+        if not block:
+            continue
+        for old_prefix, new_prefix in prefix_rewrites.items():
+            rewritten = _rewrite_prefix(block, old_prefix, new_prefix)
+            if rewritten != block:
+                oq["blocks_element"] = rewritten
+                break
     cross_references = [
         {"ref": str(ref.get("ref") or ""), "relation": str(ref.get("relation") or "legacy_reference")}
         for ref in contract.get("cross_references") or []
@@ -1568,6 +1647,8 @@ def load_violation(path: Path) -> dict:
     if not isinstance(doc, dict):
         raise ValueError(f"{path}: expected a JSON object")
     if "segments" in doc and "full_segments" not in doc:
+        if "violation_id" in doc:  # a schema-3.0 bundle doc == this tool's output
+            raise ValueError(f"{path}: looks like a bundle document (schema 3.0)")
         raise ValueError(f"{path}: looks like a transcript, not a violation")
     doc["__source_path__"] = str(path)
     return doc

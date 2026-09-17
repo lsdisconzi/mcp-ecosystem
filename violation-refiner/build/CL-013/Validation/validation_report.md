@@ -1,20 +1,27 @@
 # Validation Report CL-013
 
-Total: 11  
-Pass: 8  
-Warn: 3  
-Fail: 0
+Total: 18  
+Pass: 13  
+Warn: 4  
+Fail: 1
 
 ## Checks
 
 - **V01 segment_resolution**: pass - 5 segment(s) checked; 0 unresolved.
 - **V02 verbatim_quote_match**: pass - All 5 quote(s) checked against their cited segment.
-- **V03 article_text_hash**: warn - WARN: framework CHIPENCOD self-reported SHA in metadata header (509efbf4…) does not match actual content SHA (5e189a4a…).
+- **V03 article_text_hash**: pass - All article-text hashes and excerpts match the framework cache. INFO: framework CHIPENCOD declares source SHA 509efbf4… (cache bytes: 5e189a4a…).
 - **V04 article_exists_in_framework_cache**: pass - All 6 established articles present in cache.
 - **V05 cross_references_resolve**: pass - All 38 cross-references resolve.
-- **V06 element_coverage**: warn - 5 uncovered: ['CL.CPCL.C1.Art.412.elem.falsedad_de_la_imputacion: status=strong but no nexus_matrix entry', 'CL.CPCL.T2.P6.Art.412.elem.falsedad_de_la_imputacion: status=strong but no nexus_matrix entry', 'CL.CPCL.C1.Art.416.elem.falsedad_de_imputacion: status=strong but no nexus_matrix entry', 'CL.CHIPENCOD.Art.211.elem.falsedad_de_la_imputacion: status=strong but no nexus_matrix entry', 'CL.LPDC.Art.3.b.elem.falsedad_informacion: status=contested but no nexus_matrix entry']
+- **V06 element_coverage**: warn - 4 uncovered: ['CL.CPCL.C1.Art.412.elem.falsedad_de_la_imputacion: status=strong but no nexus_matrix entry', 'CL.CPCL.C1.Art.416.elem.falsedad_de_imputacion: status=strong but no nexus_matrix entry', 'CL.CHIPENCOD.Art.211.elem.falsedad_de_la_imputacion: status=strong but no nexus_matrix entry', 'CL.LPDC.Art.3.b.elem.falsedad_informacion: status=contested but no nexus_matrix entry']
 - **V07 authorities_verification**: warn - No authorities listed. Jurisprudence/doctrine layer not populated.
 - **V08 contract_consistency**: pass - Main and contract views agree on all overlapping fields.
 - **V09 language_consistency**: pass - Bilingual fields (es/en) present throughout.
-- **V10 confidence_derivation**: pass - Confidence 0.67 matches recomputed formula.
+- **V10 confidence_derivation**: warn - No confidence value attached. Run derive_confidence/attach_confidence.
 - **V11 enrichment_integrity**: pass - Enrichment integrity verified (segments, excerpts, nexus, authorities).
+- **V12 speaker_attribution**: pass - 5 cited segment(s) had a declarable source; 0 with an undeclared speaker.
+- **V13 evidence_nexus_coherence**: warn - 38 nexus row(s) checked; 2 cite a segment their element does not list as evidence. ['CL.CPCL.C1.Art.412.elem.perseguibilidad_de_oficio <- I-002_03_NAR-05_STG_5_aircraft_removal.seg-11', 'CL.CPCL.C1.Art.412.elem.perseguibilidad_de_oficio <- I-002_03_NAR-05_STG_5_aircraft_removal.seg-11']
+- **V14 dead_weight_articles**: pass - No established article scores 0 over 5 grid(s).
+- **V15 verbatim_hash_integrity**: pass - 5 verbatim hash(es) recomputed; 0 mismatch.
+- **V16 authority_verification_coherence**: pass - 0 authorit(ies) coherent with the stored verification factor; every unverified stub states what would settle it and every verified authority names its protocol.
+- **V17 cross_view_consistency**: pass - Bundle and contract agree on 22 open question(s) and 38 cross-reference(s) (60 item(s) compared). Contract-only related_violations: 3 (not asserted against cross_references; reciprocity is a graph-level audit).
+- **V21 element_id_closure**: fail - 3 issue(s): CL.CPCL.C1.Art.412: template requires element(s) ['delito_perseguible_de_oficio', 'falsedad_imputacion', 'imputacion_delito_determinado'] not present in the grid; CL.CHIPENCOD.T4.C6.Art.211: template requires element(s) ['elemento_subjetivo_falsedad', 'hecha_ante_autoridad', 'imputacion_falsa_crimen'] not present in the grid; CL.LPDC.Art.23: template requires element(s) ['falla_calidad', 'menoscabo', 'proveedor', 'venta_o_prestacion'] not present in the grid | warnings: CL.CPCL.C1.Art.412: grid has element(s) ['dolo', 'falsedad_de_la_imputacion', 'imputacion_de_delito_determinado', 'modalidad_tipica', 'perseguibilidad_de_oficio', 'resultado_perjuicio', 'sujeto_activo', 'sujeto_pasivo'] outside its template; CL.CHIPENCOD.Art.211.elem.sujeto_activo: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.211; migrate when convenient; CL.CHIPENCOD.Art.211.elem.sujeto_pasivo: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.211; migrate when convenient; CL.CHIPENCOD.Art.211.elem.imputacion_de_delito: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.211; migrate when convenient; CL.CHIPENCOD.Art.211.elem.falsedad_de_la_imputacion: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.211; migrate when convenient; CL.CHIPENCOD.Art.211.elem.conocimiento_falsedad_dolo: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.211; migrate when convenient; CL.CHIPENCOD.Art.211.elem.modalidad_tipica: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.211; migrate when convenient; CL.CHIPENCOD.Art.211.elem.resultado_perjuicio: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.211; migrate when convenient; CL.CHIPENCOD.T4.C6.Art.211: grid has element(s) ['conocimiento_falsedad_dolo', 'falsedad_de_la_imputacion', 'imputacion_de_delito', 'modalidad_tipica', 'resultado_perjuicio', 'sujeto_activo', 'sujeto_pasivo'] outside its template; CL.LPDC.Art.3.b.elem.relacion_de_consumo: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.deber_informacion_veraz: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.informacion_oportuna: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.objeto_informacion: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.falsedad_informacion: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.perjuicio_consumidor: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.deber_consumidor_informarse: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.23: grid has element(s) ['deficiencia_calidad_servicio', 'menoscabo_consumidor', 'nexo_causal', 'sujeto_activo_proveedor', 'sujeto_pasivo_consumidor', 'venta_o_prestacion_servicio'] outside its template

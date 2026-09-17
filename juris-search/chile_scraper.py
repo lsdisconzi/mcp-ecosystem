@@ -732,6 +732,19 @@ class ChileJurisprudenciaScraper:
         if not (categoria and id_sentencia):
             return False
 
+        # ── Fast path: the row may already be on screen ──────────────────
+        # When download_all_inteiro_teor drives a result set that the search
+        # phase just rendered, the row is still in the DOM (opening a detail
+        # only *hides* the results) and "Volver a la página de búsqueda"
+        # restores it. Clicking in place is what keeps the WAF budget: the
+        # portal allows roughly ONE accepted POST to /busqueda/buscar_sentencias
+        # per Chrome profile, and the old code re-searched for EVERY document
+        # (docs/pjud-source.md, issue 12; verification_report.md issue 9).
+        # Matching is by unique data-idsentencia, so the on-screen query is
+        # irrelevant to correctness. Falls through to the full path on miss.
+        if self._click_row_detail(str(id_sentencia)):
+            return self._wait_for_detail(timeout=self.wait_time)
+
         self._navigate_to_category(categoria)
         pre_search_ids = self._current_result_ids()
         self._run_search_ui(result.get("search_terms") or "")
@@ -746,9 +759,30 @@ class ChileJurisprudenciaScraper:
             self._wait_for_results(previous_ids=page_ids)
 
         # Find the row and click the detail button.
+        if not self._click_row_detail(str(id_sentencia)):
+            return False
+
+        # The results predicate would still pass here — the click hides the
+        # result nodes rather than removing them — so wait on the detail panel
+        # itself. Return the PANEL's readiness, not "the click landed": a
+        # refused detail POST leaves page_source as a small error page, and
+        # saving that as the document is worse than reporting nothing.
+        return self._wait_for_detail(timeout=self.wait_time)
+
+    def _click_row_detail(self, id_sentencia: str) -> bool:
+        """Click 'Ver sentencia' on the visible row for id_sentencia.
+
+        Returns False when no matching, visible row (or no button) exists, so
+        callers can fall back to re-running the search. Deliberately does NOT
+        search or paginate — see _open_detail's fast path.
+        """
         try:
             rows = self.driver.find_elements(By.CSS_SELECTOR, "[data-idsentencia]")
-            for row in rows:
+        except Exception:
+            return False
+
+        for row in rows:
+            try:
                 if row.get_attribute("data-idsentencia") != str(id_sentencia):
                     continue
                 if not row.is_displayed():
@@ -762,14 +796,9 @@ class ChileJurisprudenciaScraper:
                 for btn in btns:
                     if btn.is_displayed():
                         self.driver.execute_script("arguments[0].click();", btn)
-                        # The results predicate would still pass here — the
-                        # click hides the result nodes rather than removing
-                        # them — so wait on the detail panel itself.
-                        self._wait_for_detail(timeout=self.wait_time)
                         return True
-        except Exception as e:
-            logger.error(f"Chile: detail click failed: {e}")
-
+            except Exception:
+                continue
         return False
 
     def download_inteiro_teor_url(
@@ -807,9 +836,13 @@ class ChileJurisprudenciaScraper:
         try:
             opened = self._open_detail(metadata)
             if not opened:
+                # Either no visible row to click, or the panel never received
+                # content. Both mean "no document" — never write page_source
+                # here, it would be the portal's error page.
                 logger.warning(
                     f"Chile: could not open detail for "
-                    f"id_sentencia={metadata.get('id_sentencia')}"
+                    f"id_sentencia={metadata.get('id_sentencia')} "
+                    f"(row not clickable or detail panel stayed empty)"
                 )
                 return None
 
@@ -869,7 +902,13 @@ class ChileJurisprudenciaScraper:
         final_save_dir = os.path.join(save_dir, *parts)
         os.makedirs(final_save_dir, exist_ok=True)
 
-        # Group by (categoria, page) so we only navigate per page, not per doc.
+        # NOTE: there is no page-level grouping here — every result still goes
+        # through _open_detail. What makes this viable is _open_detail's
+        # in-place fast path: while the search that produced these results is
+        # still on screen, each row is clicked without a new POST to
+        # /busqueda/buscar_sentencias (the WAF allows ~one per Chrome profile,
+        # docs/pjud-source.md issue 12). Navigating away, or losing the list,
+        # falls back to a full re-search per document as before.
         saved_files: List[str] = []
         for idx, res in enumerate(results, 1):
             rol = res.get("rol") or "unknown"

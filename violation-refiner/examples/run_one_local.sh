@@ -154,7 +154,7 @@ echo
 # transcript/law trees. Nothing here mirrors a framework list, a transcript
 # path or a code -> filename map, so there is nothing to keep in sync when the
 # corpus changes. Override VAULT_SOURCE to run a different case.
-VAULT_SOURCE="${VAULT_SOURCE:-/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN}"
+VAULT_SOURCE="${VAULT_SOURCE:-data/violations}"
 
 # ---- 1. convert ----------------------------------------------------------
 # vault_to_bundle.py writes the FINAL bundle directly (contract.json,

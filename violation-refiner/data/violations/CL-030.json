@@ -1,0 +1,648 @@
+{
+  "violation_id": "CL-030",
+  "title": "Chilean Penal Code Violations by Public Officials — Prevaricación, Abuso de Autoridad, and Obstruction of Justice During LA8159 Investigation",
+  "incident": [
+    [
+      "I-002-Chile-Santiago"
+    ]
+  ],
+  "incident_id": "I-002",
+  "jurisdiction": "CL",
+  "category": "Created from seed (Lote F)",
+  "severity": "CRITICAL",
+  "confidence": {
+    "value": 0.38,
+    "components": {
+      "CL.CPCL.T4.Art.255": 0.66,
+      "CL.LPDC.Art.3.b": 0,
+      "CL.LPDC.Art.23": 0.68
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T14:44:25.139721Z",
+    "history": [
+      "2026-05-12T14:25:33.549296+00:00: value=0.0",
+      "2026-05-12T14:28:23.174749+00:00: value=0.0",
+      "2026-05-12T14:30:15.082361+00:00: value=0.0"
+    ],
+    "validated": false,
+    "note": ""
+  },
+  "incident_timestamp": "2024-07-05T13:30:00-04:00",
+  "incident_timestamp_display": "2024-07-05",
+  "allegation_summary": "DGAC and PDI public officials violated multiple provisions of the Chilean Penal Code during their handling of the LA8159 incident and subsequent investigation. PDI officials, despite determining the passenger committed no offense (documented in EVID-001 CCTV review), failed to properly document this exoneration. DGAC officials engaged in prevaricación (Arts. 223-224 CPCL) by knowingly failing to exercise their statutory duties, abuso de autoridad (Art. 255 CPCL) by imposing arbitrary procedural obstacles, and obstruction of justice (Art. 269 TER CPCL) by failing to provide the passenger with exculpatory evidence. These are distinct from the false accusation by the LATAM [[SPK-stewardess-accuser]] (CL-001) — they represent independent criminal conduct by state officials.",
+  "evidentiary_strength": null,
+  "legal_theory": "Created from seed (Lote F)",
+  "required_elements_status": "PENDING_COUNSEL_MAPPING",
+  "legal_basis": [
+    {
+      "article_id": "CL.CPCL.T4.Art.223",
+      "article_note": [
+        [
+          "CL-CPCL-T4-Art-223"
+        ]
+      ],
+      "article_name": "El empleado público que, a sabiendas, dictare providencia o resolución manifiest"
+    },
+    {
+      "article_id": "CL.CPCL.T4.Art.224",
+      "article_note": [
+        [
+          "CL-CPCL-T4-Art-224"
+        ]
+      ],
+      "article_name": "El empleado público que, a sabiendas, omitiere o retardare algún acto de su carg"
+    },
+    {
+      "article_id": "CL.CPCL.T4.Art.255",
+      "article_note": [
+        [
+          "CL-CPCL-T4-Art-255"
+        ]
+      ],
+      "article_name": "El empleado público que, abusando de su oficio, cometiere vejaciones injustas co",
+      "duty_bearer": "state",
+      "norm_type": "definition",
+      "applicability_rationale": "legacy paraphrase: El empleado público que, abusando de su oficio, cometiere vejaciones injustas contra las personas o usare de innecesario rigor en el desempeño de sus funciones, será castigado con reclusión menor en su grado mínimo o multa.",
+      "framework_code": "CPCL",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "El empleado publico que, desempenando un acto del servicio, cometiere cualquier vejacion injusta contra las personas sera castigado con la pena de reclusion menor en su grado minimo, salvo que el hecho sea constitutivo de un delito de mayor gravedad, caso en el cual se aplicara solo la pena asignada por la ley a este."
+    },
+    {
+      "article_id": "CL.CPCL.C1.Art.269_ter",
+      "article_note": [
+        [
+          "CL-CPCL-C1-Art-269_ter"
+        ]
+      ],
+      "article_name": "El funcionario policial, el fiscal del Ministerio Publico, o el abogado asistent"
+    },
+    {
+      "article_id": "CL.LPDC.Art.3.b",
+      "article_note": [
+        [
+          "CL-LPDC-Art-3-b"
+        ]
+      ],
+      "article_name": "Son derechos y deberes basicos del consumidor: b) El derecho a una informacion v",
+      "duty_bearer": "air_operator",
+      "norm_type": "right",
+      "applicability_rationale": "legacy paraphrase: Son derechos y deberes basicos del consumidor: b) El derecho a una informacion veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratacion y otras caracteristicas relevantes de los mismos.",
+      "framework_code": "LPDC",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "> b) El derecho a una información veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratación y otras características relevantes de los mismos, y el deber de informarse responsablemente de ellos."
+    },
+    {
+      "article_id": "CL.LPDC.Art.23",
+      "article_note": [
+        [
+          "CL-LPDC-Art-23"
+        ]
+      ],
+      "article_name": "El proveedor de un servicio sera responsable de los danos y perjuicios que cause",
+      "duty_bearer": "air_operator",
+      "norm_type": "liability",
+      "applicability_rationale": "legacy paraphrase: El proveedor de un servicio sera responsable de los danos y perjuicios que cause al consumidor por la prestacion de un servicio defectuoso, incluyendo la falta de veracidad en la informacion proporcionada y el incumplimiento de las condiciones de contratacion.",
+      "framework_code": "LPDC",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "> Artículo 23.- Comete infracción a las disposiciones de la presente ley el proveedor que, en la venta de un bien o en la prestación de un servicio, **actuando con negligencia**, causa menoscabo al consumidor debido a fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio."
+    }
+  ],
+  "transcripts": [
+    [
+      [
+        "I-002_03_NAR-05_STG_5_aircraft_removal"
+      ]
+    ],
+    [
+      [
+        "I-002_04_NAR-06_STG_6_jetbridge_standoff"
+      ]
+    ],
+    [
+      [
+        "I-002_05_NAR-07_STG_7_post_removal_investigation"
+      ]
+    ]
+  ],
+  "evidence_links": [
+    [
+      [
+        "I-002_transcript_rendered_html_X-0035"
+      ]
+    ],
+    [
+      [
+        "I-002_transcript_rendered_html_X-0036"
+      ]
+    ],
+    [
+      [
+        "I-002_transcript_rendered_html_X-0041"
+      ]
+    ]
+  ],
+  "event_ids": [],
+  "related_violations": [],
+  "has_broken_refs": false,
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "classification": "Attorney Work Product — Privileged and Confidential",
+  "element_grids": {
+    "CL.CPCL.T4.Art.255": [
+      {
+        "element_name": "Sujeto activo: empleado público",
+        "status": "established",
+        "evidence": [
+          "STG-7.seg-40"
+        ],
+        "argument": "El hablante identificado como 'DGAC - Of' es un funcionario de la Dirección General de Aeronáutica Civil, organismo público, por lo que ostenta la calidad de empleado público.",
+        "element_id": "CL.CPCL.T4.Art.255.1.elem.sujeto_activo_empleado_publico",
+        "doctrinal_basis": "Verbatim: 'El empleado público'",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 255 N° 1 — vejación injusta (CPCL)"
+      },
+      {
+        "element_name": "Acto del servicio",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-40"
+        ],
+        "argument": "El oficial de DGAC se dirige al pasajero en el contexto de un reclamo, actuando en ejercicio de sus funciones oficiales según su rol en el incidente.",
+        "element_id": "CL.CPCL.T4.Art.255.1.elem.acto_del_servicio",
+        "doctrinal_basis": "Verbatim: 'desempeñando un acto del servicio'",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 255 N° 1 — vejación injusta (CPCL)"
+      },
+      {
+        "element_name": "Vejación injusta",
+        "status": "contested",
+        "evidence": [
+          "STG-7.seg-12",
+          "STG-7.seg-40"
+        ],
+        "argument": "La expresión 'En ese caso deve saber como son los procedimentos' del oficial de DGAC podría interpretarse como una vejación, pero no constituye una afrenta manifiesta. El pasajero manifestó sentirse humillado, pero la valoración definitiva depende de la interpretación judicial.",
+        "element_id": "CL.CPCL.T4.Art.255.1.elem.vejacion_injusta",
+        "doctrinal_basis": "Verbatim: 'cometiere cualquier vejación injusta'",
+        "weaknesses": [
+          "La declaración del oficial no contiene un agravio explícito ni trato humillante evidente, por lo que la subsunción en el tipo es dudosa."
+        ],
+        "open_questions": [
+          "¿Constituye esa frase una 'vejación injusta' en el sentido del art. 255?"
+        ],
+        "article_short": "Art. 255 N° 1 — vejación injusta (CPCL)"
+      },
+      {
+        "element_name": "Sujeto pasivo: personas",
+        "status": "established",
+        "evidence": [
+          "STG-7.seg-12"
+        ],
+        "argument": "El pasajero Leandro Disconzi es una persona natural afectada por la interacción con el funcionario público.",
+        "element_id": "CL.CPCL.T4.Art.255.1.elem.sujeto_pasivo_personas",
+        "doctrinal_basis": "Verbatim: 'contra las personas'",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 255 N° 1 — vejación injusta (CPCL)"
+      },
+      {
+        "element_name": "Dolo (tipicidad subjetiva)",
+        "status": "missing",
+        "evidence": [],
+        "argument": "No hay evidencia en los segmentos que acredite el conocimiento y voluntad del oficial de causar una vejación injusta, por lo que el dolo no está probado.",
+        "element_id": "CL.CPCL.T4.Art.255.1.elem.dolo",
+        "doctrinal_basis": "Se requiere dolo: conocimiento y voluntad de ejecutar la vejación en acto de servicio.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 255 N° 1 — vejación injusta (CPCL)"
+      }
+    ],
+    "CL.LPDC.Art.3.b": [
+      {
+        "element_name": "Sujeto activo: proveedor",
+        "status": "missing",
+        "evidence": [],
+        "argument": "Los segmentos proporcionados no identifican al proveedor ni acreditan su condición de tal en una relación de consumo.",
+        "element_id": "CL.LPDC.Art.3.b.elem.sujeto_activo",
+        "doctrinal_basis": "El artículo 3 b) de la LPDC establece el derecho del consumidor a recibir información veraz y oportuna, lo que implica una obligación para el proveedor.",
+        "weaknesses": [
+          "Falta de identificación del proveedor en los segmentos"
+        ],
+        "open_questions": [
+          "¿Quién es el proveedor en los hechos?"
+        ],
+        "article_short": "Art. 3 N° b — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Sujeto pasivo: consumidor",
+        "status": "missing",
+        "evidence": [],
+        "argument": "No hay evidencia de que el pasajero Leandro Disconzi actuara como consumidor en una transacción de servicios aéreos, aunque se infiere por el contexto de vuelo.",
+        "element_id": "CL.LPDC.Art.3.b.elem.sujeto_pasivo",
+        "doctrinal_basis": "El derecho protege al consumidor, definido en la LPDC.",
+        "weaknesses": [
+          "No se acredita relación de consumo en los segmentos"
+        ],
+        "open_questions": [
+          "¿El pasajero adquirió el boleto como consumidor?"
+        ],
+        "article_short": "Art. 3 N° b — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Acto de consumo: ofrecimiento de servicios",
+        "status": "missing",
+        "evidence": [],
+        "argument": "No hay segmentos que describan la oferta de servicios de transporte aéreo ni las condiciones de contratación.",
+        "element_id": "CL.LPDC.Art.3.b.elem.acto_consumo",
+        "doctrinal_basis": "Para que opere el derecho, debe existir una oferta de bienes o servicios.",
+        "weaknesses": [
+          "Ausencia de información sobre el servicio ofrecido"
+        ],
+        "open_questions": [
+          "¿Cuáles eran los servicios ofrecidos y las condiciones?"
+        ],
+        "article_short": "Art. 3 N° b — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Deber de informar veraz y oportunamente",
+        "status": "missing",
+        "evidence": [],
+        "argument": "Los segmentos no muestran que el proveedor haya incumplido este deber; se centran en una orden de desalojo sin contexto informativo.",
+        "element_id": "CL.LPDC.Art.3.b.elem.deber_informar",
+        "doctrinal_basis": "El proveedor debe proporcionar información veraz y oportuna sobre precio, condiciones y características relevantes.",
+        "weaknesses": [
+          "No se evidencia omisión o falsedad informativa"
+        ],
+        "open_questions": [
+          "¿Qué información se proporcionó al pasajero al momento de contratar?"
+        ],
+        "article_short": "Art. 3 N° b — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Contenido de la información: precio, condiciones, características relevantes",
+        "status": "missing",
+        "evidence": [],
+        "argument": "No hay referencia alguna a precio, condiciones de contratación o características relevantes del vuelo en los segmentos.",
+        "element_id": "CL.LPDC.Art.3.b.elem.contenido_informacion",
+        "doctrinal_basis": "La información debe versar sobre estos aspectos específicos.",
+        "weaknesses": [
+          "Segmentos irrelevantes para el contenido informativo."
+        ],
+        "open_questions": [
+          "¿Se informó sobre políticas de desalojo?"
+        ],
+        "article_short": "Art. 3 N° b — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Resultado: perjuicio al consumidor",
+        "status": "missing",
+        "evidence": [],
+        "argument": "El pasajero alega pérdida de vuelo y humillación, pero estos no se vinculan directamente con una infracción al deber de información.",
+        "element_id": "CL.LPDC.Art.3.b.elem.resultado_perjuicio",
+        "doctrinal_basis": "Aunque no siempre exigible, la falta de información puede causar un perjuicio.",
+        "weaknesses": [
+          "No se demuestra nexo causal entre falta de información y perjuicio."
+        ],
+        "open_questions": [
+          "¿El perjuicio se debe a falta de información o a otras causas?"
+        ],
+        "article_short": "Art. 3 N° b — Derecho a información veraz y oportuna (LPDC)"
+      }
+    ],
+    "CL.LPDC.Art.23": [
+      {
+        "element_name": "Sujeto activo: proveedor",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-6.seg-40"
+        ],
+        "argument": "Los segmentos muestran a personal de Latam actuando en funciones propias de la prestación de servicios de transporte aéreo, lo que permite inferir la calidad de proveedor de la aerolínea.",
+        "element_id": "CL.LPDC.Art.23.1.elem.proveedor",
+        "doctrinal_basis": "Art. 23 LPDC requiere que el infractor sea un proveedor en los términos de la ley.",
+        "weaknesses": [
+          "La calidad formal de proveedor no se acredita documentalmente en los segmentos."
+        ],
+        "open_questions": [],
+        "article_short": "Art. 23 N° 1 — Infracción por negligencia causante de menoscabo (LPDC)"
+      },
+      {
+        "element_name": "Venta de bien o prestación de servicio",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-6.seg-40",
+          "STG-7.seg-12"
+        ],
+        "argument": "La interacción ocurre en el contexto de abordaje y posterior remoción de un vuelo, lo que evidencia una relación de consumo por servicio de transporte aéreo.",
+        "element_id": "CL.LPDC.Art.23.1.elem.venta_o_prestacion",
+        "doctrinal_basis": "La conducta debe ocurrir en el marco de una relación de consumo regulada por la LPDC.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 23 N° 1 — Infracción por negligencia causante de menoscabo (LPDC)"
+      },
+      {
+        "element_name": "Negligencia del proveedor",
+        "status": "contested",
+        "evidence": [
+          "STG-6.seg-12",
+          "STG-7.seg-40"
+        ],
+        "argument": "El pasajero alega que la remoción fue arbitraria, mientras que el oficial de DGAC sugiere que se siguieron procedimientos, lo que deja la existencia de negligencia en disputa.",
+        "element_id": "CL.LPDC.Art.23.1.elem.negligencia",
+        "doctrinal_basis": "El proveedor debe haber actuado con negligencia.",
+        "weaknesses": [
+          "No hay evidencia directa de la falta de diligencia del proveedor."
+        ],
+        "open_questions": [
+          "¿Se siguió el procedimiento de seguridad esperado?",
+          "¿Fue la remoción justificada?"
+        ],
+        "article_short": "Art. 23 N° 1 — Infracción por negligencia causante de menoscabo (LPDC)"
+      },
+      {
+        "element_name": "Menoscabo al consumidor",
+        "status": "strong",
+        "evidence": [
+          "STG-7.seg-12"
+        ],
+        "argument": "El pasajero expresó haber perdido su vuelo y sentirse humillado, indicando un perjuicio cierto.",
+        "element_id": "CL.LPDC.Art.23.1.elem.menoscabo",
+        "doctrinal_basis": "Debe existir un perjuicio o daño al consumidor derivado de la conducta.",
+        "weaknesses": [
+          "La declaración del pasajero es auto-reportada y no está corroborada en los segmentos."
+        ],
+        "open_questions": [],
+        "article_short": "Art. 23 N° 1 — Infracción por negligencia causante de menoscabo (LPDC)"
+      },
+      {
+        "element_name": "Falla o deficiencia en calidad, seguridad o condiciones del servicio",
+        "status": "contested",
+        "evidence": [
+          "STG-6.seg-12"
+        ],
+        "argument": "El pasajero afirma que la remoción fue por una pregunta que no gustó, lo que podría constituir una falla en la calidad del servicio. Sin embargo, no hay confirmación de que esa fuera la causa real.",
+        "element_id": "CL.LPDC.Art.23.1.elem.falla_calidad",
+        "doctrinal_basis": "El menoscabo debe deberse a fallas o deficiencias en algunos de los atributos listados del bien o servicio (calidad, seguridad, etc.).",
+        "weaknesses": [
+          "No hay elementos objetivos que vinculen la remoción con una deficiencia del servicio; la alegación es unilateral."
+        ],
+        "open_questions": [
+          "¿Cuál fue la razón exacta de la remoción?",
+          "¿Constituyó la activación de seguridad una respuesta proporcionada?"
+        ],
+        "article_short": "Art. 23 N° 1 — Infracción por negligencia causante de menoscabo (LPDC)"
+      }
+    ]
+  },
+  "open_questions": [],
+  "cross_references": [],
+  "note": "Full JSON reconstruction from markdown – includes all key admissions, legal reasoning, candidate articles, and cross-references.",
+  "full_segments": [
+    {
+      "segment_id": "STG-5.seg-1",
+      "role_in_argument": "private_staff_removal_demand",
+      "audio_offset_start": 2.87,
+      "audio_offset_end": 3.52,
+      "speaker": "Latam Stewardess",
+      "verbatim_es": "Tiene que salir del avion, tiene que bajar",
+      "verbatim_sha256": "97c0a1e2f91f83562cb175fdeed34c32c69e31b990b92fbdddf0f4517d74ec8f",
+      "translation_en": "You have to leave the plane, you have to get off.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_5.html#seg-1",
+      "source_sha256": "88322947b6ce0c6461ab3571bafe058c055f5d99a9f5cc42365790fedfa744f3",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-5.seg-12",
+      "role_in_argument": "private_staff_security_activation_warning",
+      "audio_offset_start": 50,
+      "audio_offset_end": 51.7,
+      "speaker": "Latam Stewardess",
+      "verbatim_es": "Ya activamos seguridad. Igual va a tener que bajar",
+      "verbatim_sha256": "43d8b8f8f52c43afad737350fd42a4f7adddfcba075d58a6e599c5c25b9aa349",
+      "translation_en": "We already activated security. You are still going to have to get off.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_5.html#seg-12",
+      "source_sha256": "88322947b6ce0c6461ab3571bafe058c055f5d99a9f5cc42365790fedfa744f3",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-6.seg-1",
+      "role_in_argument": "passenger_seeks_confirmation",
+      "audio_offset_start": 13,
+      "audio_offset_end": 13.5,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "¿Sí?",
+      "verbatim_sha256": "9754246b4c9e01eb103c4eeada1d6e56323a2f802c3b593ab1f9c8963720bf8e",
+      "translation_en": "Yes?",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_6.html#seg-1",
+      "source_sha256": "eb5c0de30326eac272186164fd04796e665a8152b85f857408a977774a6c140a",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-6.seg-12",
+      "role_in_argument": "passenger_alleges_retaliatory_removal",
+      "audio_offset_start": 46.6,
+      "audio_offset_end": 54.4,
+      "speaker": "Leandro",
+      "verbatim_es": "Yo salgo solo. Pero pruebame eso, por que es simplesmente alguien que no le gusto de la pregunta que lo hice y esta intentando hacer eso. Simplesmente, entiendes?",
+      "verbatim_sha256": "af95061994ba0702af2010510a56e755f27f3bb981365a317b0cde4c200e3f03",
+      "translation_en": "I'll leave on my own. But prove that to me, because it's simply someone who didn't like the question I asked and is trying to do that. Simply, you understand?",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_6.html#seg-12",
+      "source_sha256": "eb5c0de30326eac272186164fd04796e665a8152b85f857408a977774a6c140a",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-6.seg-40",
+      "role_in_argument": "security_staff_boarding_eligibility_remark",
+      "audio_offset_start": 679.01,
+      "audio_offset_end": 679.58,
+      "speaker": "Joaquin Barraza (Latam security staff)",
+      "verbatim_es": "podía embarcar.",
+      "verbatim_sha256": "0eacbecad9479ba928ff637d4a2e82e4bc3d68c7e289cca79b96be33f8149363",
+      "translation_en": "could board.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_6.html#seg-40",
+      "source_sha256": "eb5c0de30326eac272186164fd04796e665a8152b85f857408a977774a6c140a",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-7.seg-1",
+      "role_in_argument": "passenger_seeks_target_identification",
+      "audio_offset_start": 95.2,
+      "audio_offset_end": 95.84,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "¿A él?",
+      "verbatim_sha256": "9ddfe645de780cea07e59a43d69ee290e78309025673af740107ee7c89ee9b83",
+      "translation_en": "To him?",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_7.html#seg-1",
+      "source_sha256": "e972cadc58604bb1a88ce3044ae52d3a314108389904a19e48bd1c69a23da180",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-7.seg-12",
+      "role_in_argument": "passenger_claims_humiliation_and_flight_loss",
+      "audio_offset_start": 136.98,
+      "audio_offset_end": 142.53,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "Yo estoy tranquilísimo porque estoy muy enojado porque perdí mi vuelo, fui humillado.",
+      "verbatim_sha256": "b46dccc4cf0984ac0fee1143e9b8c5f7e226614e59820d2e472a6f0b220bbfcc",
+      "translation_en": "I'm extremely calm because I'm very angry because I lost my flight, I was humiliated.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_7.html#seg-12",
+      "source_sha256": "e972cadc58604bb1a88ce3044ae52d3a314108389904a19e48bd1c69a23da180",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-7.seg-40",
+      "role_in_argument": "dgac_officer_dismisses_passenger_complaint",
+      "audio_offset_start": 393.23,
+      "audio_offset_end": 395.77,
+      "speaker": "DGAC - Of",
+      "verbatim_es": "En ese caso deve saber como son los procedimentos",
+      "verbatim_sha256": "522e6311e121960970cad020ccaf5c5b9fe04ed531da9f55a3dc732ed1450129",
+      "translation_en": "In that case you must know how the procedures are.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_7.html#seg-40",
+      "source_sha256": "e972cadc58604bb1a88ce3044ae52d3a314108389904a19e48bd1c69a23da180",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-5.seg-40",
+      "role_in_argument": "empty_segment",
+      "audio_offset_start": 0,
+      "audio_offset_end": 0,
+      "speaker": "unknown",
+      "verbatim_es": "",
+      "verbatim_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "translation_en": "",
+      "transcription_notes": "legacy-unanchored",
+      "source_uri": "legacy://CL-030/STG-5.seg-40",
+      "source_sha256": "134e8eaf25428c0a7ab00322e98148cc73c7456965089be0916f404656f0424a",
+      "audio_uri": null
+    }
+  ],
+  "incident_meta": {
+    "date": "2024-07-05",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T13:30:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "framework_caches": [
+    {
+      "framework_code": "CPCL",
+      "framework_name": "Codigo Penal de Chile",
+      "cache_file": "Legal framework/CPCL.md",
+      "cache_file_sha256": "0b2d5b975f2e95a699c22550dd660fe12fd724b9a0206361553c31927773b7fe",
+      "cache_self_reported_sha256": null,
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "17",
+        "94",
+        "255",
+        "269 ter",
+        "412",
+        "416",
+        "494 N 16"
+      ]
+    },
+    {
+      "framework_code": "LPDC",
+      "framework_name": "Ley 19.496 — Ley de Proteccion de los Derechos del Consumidor",
+      "cache_file": "Legal framework/LPDC.md",
+      "cache_file_sha256": "222cb7cef77794c04cb903a3a4d519641255fa339cf32487f9496a1e0ba4c530",
+      "cache_self_reported_sha256": null,
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "3 letra b)",
+        "3 letra e)",
+        "12",
+        "23",
+        "23 bis",
+        "50",
+        "50 A",
+        "58"
+      ]
+    }
+  ],
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CPCL.T4.Art.223",
+      "candidate_name": "CL.CPCL.T4.Art.223",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPCL.T4.Art.223 and confirm excerpt"
+      ],
+      "preliminary_view": "El empleado público que, a sabiendas, dictare providencia o resolución manifiestamente injusta en negocio contencioso-administrativo o meramente administrativo, será castigado con reclusión menor en su grado medio a inhabilitación especial ",
+      "history_note": "legacy import"
+    },
+    {
+      "candidate_article_id": "CL.CPCL.T4.Art.224",
+      "candidate_name": "CL.CPCL.T4.Art.224",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPCL.T4.Art.224 and confirm excerpt"
+      ],
+      "preliminary_view": "El empleado público que, a sabiendas, omitiere o retardare algún acto de su cargo, o no cumpliere con el deber de promover la persecución de los delincuentes, será castigado con reclusión menor en su grado mínimo y multa.",
+      "history_note": "legacy import"
+    },
+    {
+      "candidate_article_id": "CL.CPCL.C1.Art.269_ter",
+      "candidate_name": "CL.CPCL.C1.Art.269_ter",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPCL.C1.Art.269_ter and confirm excerpt"
+      ],
+      "preliminary_view": "El funcionario policial, el fiscal del Ministerio Publico, o el abogado asistente del fiscal, en su caso, que a sabiendas ocultare, alterare o destruyere cualquier antecedente, objeto o documento que permita establecer la existencia o inexi",
+      "history_note": "legacy import"
+    }
+  ],
+  "nexus_matrix": {},
+  "provenance": [
+    {
+      "timestamp": "2026-05-20T20:53:27.054061+00:00",
+      "actor": "manual_ingestion",
+      "operation": "ingest_v1",
+      "layer": 0,
+      "note": "From v1 _provenance"
+    },
+    {
+      "timestamp": "2026-05-12T14:35:16.319514Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CPCL.T4.Art.255: 5 elements; weighted score 0.66."
+    },
+    {
+      "timestamp": "2026-05-12T14:39:56.702714Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.LPDC.Art.3.b: 6 elements; weighted score 0.00."
+    },
+    {
+      "timestamp": "2026-05-12T14:44:25.137208Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.LPDC.Art.23: 5 elements; weighted score 0.68."
+    }
+  ],
+  "schema_version": "4.0"
+}

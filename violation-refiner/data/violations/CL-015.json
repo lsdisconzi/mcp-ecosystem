@@ -1,0 +1,2254 @@
+{
+  "violation_id": "CL-015",
+  "title": "Compliance Failure — Sales Department Involved in Security Protocol and Falsified Document Production",
+  "incident": "[[I-002-Chile-Santiago]]",
+  "incident_id": "I-002",
+  "jurisdiction": "CL",
+  "category": "Document Falsification / Sales Department Compliance Failure",
+  "severity": "HIGH",
+  "confidence": {
+    "value": 0.63,
+    "components": {
+      "CL.CHIPENCOD.T4.C3.Art.193": 0.567,
+      "CL.CHIPENCOD.T4.C3.Art.194": 0.714,
+      "CL.CHIPENCOD.T4.C3.Art.197": 0.688,
+      "CL.CPCL.C1.Art.255": 0.713,
+      "CL.LPDC.Art.3.b": 0.812,
+      "CL.LPDC.Art.23": 0.838
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T07:07:26.837728Z",
+    "history": [
+      "2026-05-12T06:56:20.383637+00:00: value=0.0",
+      "2026-05-12T06:56:32.354259+00:00: value=0.0",
+      "2026-05-12T06:56:40.413938+00:00: value=0.0",
+      "2026-05-12T07:02:42.354189+00:00: value=0.63",
+      "2026-05-12T07:03:50.818661+00:00: value=0.63",
+      "2026-05-12T07:05:03.363108+00:00: value=0.63",
+      "2026-05-12T07:06:13.335552+00:00: value=0.63",
+      "2026-05-12T07:07:15.805438+00:00: value=0.63"
+    ],
+    "validated": true,
+    "note": "V10 validated. 12/12 authorities pending verification. V01 warning: 3 segments unresolved (LATAM-2.seg-40, LATAM-3.seg-40, STG-5.seg-40). V11 warning: agent-misfit on CHIPENCOD 193 and CPCL 255 (public-official defendant required but LATAM is private)."
+  },
+  "incident_timestamp": "2024-07-05T13:30:00-04:00",
+  "incident_timestamp_display": "2024-07-05 (SCL, flight LA8159)",
+  "allegation_summary": "At 100.01s of STG-5, the [[SPK-stewardess-accuser]] instructs someone to call the sales department ('Llamen a la ventas') to summon security. This is highly significant because the sales department is where the falsified disembarkation letter was later printed and organized, and where LATAM Security Chief [[SPK-joaquin-barraza-latam-security]] is based. At 89.25s, the [[SPK-stewardess-accuser]] had already acknowledged that airport cameras could verify the situation ('Podemos pedir las cameras del aeropuerto') — yet no verification was performed before the removal. The connection between the initial call to sales and the subsequent production of a falsified document containing disproven allegations raises serious questions about what was organized within the sales department during this period.",
+  "evidentiary_strength": "12 segments across 4 transcripts (json_latam_STG_2, I-002_19_NAR_LATAM_STG_3, json_aeropuerto_arturo_merino_benitez_29, I-002_03_NAR-05_STG_5_aircraft_removal). 6 established articles with element grids, 48 nexus connections. 3 segments flagged as unresolved by V01 — segment indices require repair.",
+  "legal_theory": "Document Falsification / Sales Department Compliance Failure",
+  "required_elements_status": "PENDING_COUNSEL_MAPPING",
+  "legal_basis": [
+    {
+      "article_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "article_name": "Codigo Penal, Art. 194 — Falsificacion por particular en documento publico/autentico",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "state",
+      "norm_type": "penalty",
+      "applicability_rationale": "legacy paraphrase: El particular que cometiere en documento publico o autentico alguna de las falsedades designadas en el articulo anterior, sufrira la pena de presidio menor en sus grados medio a maximo.",
+      "framework_code": "CHIPENCOD",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "Art. 194. El particular que cometiere en documento público o auténtico alguna de las falsedades designadas en el artículo anterior, sufrirá la pena de presidio menor en sus grados medio a máximo."
+    },
+    {
+      "article_id": "CL.CHIPENCOD.T4.C3.Art.197",
+      "article_name": "Codigo Penal, Art. 197 — Falsificacion en instrumento privado con perjuicio de tercero",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "state",
+      "norm_type": "penalty",
+      "applicability_rationale": "legacy paraphrase: El que, con perjuicio de tercero, cometiere en instrumento privado alguna de las falsedades designadas en el art. 193, sufrira las penas de presidio menor y multa.",
+      "framework_code": "CHIPENCOD",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "Art. 197. El que, con perjuicio de tercero, cometiere en instrumento privado alguna de las falsedades designadas en el art. 193, sufrirá las penas de presidio menor en cualquiera de sus grados y multa de once a quince unidades tributarias mensuales, o sólo la primera de ellas según las circunstancias."
+    },
+    {
+      "article_id": "CL.CPCL.C1.Art.255",
+      "article_name": "Codigo Procesal Penal, Art. 255 — Abuso de autoridad por funcionario publico",
+      "status": "established",
+      "applicability": "direct",
+      "note": "⚠️ V11: agent-misfit — requires public-official defendant. LATAM is private. Verify applicability or demote.",
+      "duty_bearer": "state",
+      "norm_type": "prohibition",
+      "applicability_rationale": "legacy paraphrase: Abuso de autoridad: Funcionario publico que, fuera de los casos legales, ejerciere funciones publicas con infraccion de las leyes.",
+      "framework_code": "CPCL",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "El empleado publico que, desempenando un acto del servicio, cometiere cualquier vejacion injusta contra las personas sera castigado con la pena de reclusion menor en su grado minimo, salvo que el hecho sea constitutivo de un delito de mayor gravedad, caso en el cual se aplicara solo la pena asignada por la ley a este."
+    },
+    {
+      "article_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "article_name": "Codigo Penal, Art. 193 — Falsificacion por empleado publico con abuso de oficio",
+      "status": "established",
+      "applicability": "supporting",
+      "note": "⚠️ V11: agent-misfit — requires public-official defendant.",
+      "duty_bearer": "state",
+      "norm_type": "penalty",
+      "applicability_rationale": "legacy paraphrase: Sera castigado... el empleado publico que, abusando de su oficio, cometiere falsedad: 4. Faltando a la verdad en la narracion de hechos sustanciales.",
+      "framework_code": "CHIPENCOD",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "1.° Contrahaciendo o fingiendo letra, firma o rúbrica. 2.° Suponiendo en un acto la intervención de personas que no la han tenido. 3.° Atribuyendo a los que han intervenido en él declaraciones o manifestaciones diferentes de las que hubieren hecho. 4.° Faltando a la verdad en la narración de hechos sustanciales."
+    },
+    {
+      "article_id": "CL.LPDC.Art.3.b",
+      "article_name": "Ley 19.496, Art. 3(b) — Derecho a informacion veraz y oportuna",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "air_operator",
+      "norm_type": "right",
+      "applicability_rationale": "legacy paraphrase: Son derechos y deberes basicos del consumidor: b) El derecho a una informacion veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratacion y otras caracteristicas relevantes de los mismos.",
+      "framework_code": "LPDC",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "b) El derecho a una información veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratación y otras características relevantes de los mismos, y el deber de informarse responsablemente de ellos."
+    },
+    {
+      "article_id": "CL.LPDC.Art.23",
+      "article_name": "Ley 19.496, Art. 23 — Infraccion por negligencia del proveedor que causa menoscabo",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "air_operator",
+      "norm_type": "liability",
+      "applicability_rationale": "legacy paraphrase: El proveedor de un servicio sera responsable de los danos y perjuicios que cause al consumidor por la prestacion de un servicio defectuoso, incluyendo la falta de veracidad en la informacion proporcionada y el incumplimiento de las condiciones de contratacion.",
+      "framework_code": "LPDC",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "Comete infracción a las disposiciones de la presente ley el proveedor que, en la venta de un bien o en la prestación de un servicio, **actuando con negligencia**, causa menoscabo al consumidor debido a fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio."
+    }
+  ],
+  "transcripts": [
+    "[[I-002_17_NAR-21_STG_29]]",
+    "[[I-002_03_NAR-05_STG_5_aircraft_removal]]",
+    "[[I-002_18_NAR_LATAM_STG_2]]",
+    "[[I-002_19_NAR_LATAM_STG_3]]"
+  ],
+  "evidence_links": [
+    "[[I-002_transcript_rendered_html_X-0054]]",
+    "[[I-002_transcript_rendered_html_X-0056]]",
+    "[[I-002_transcript_rendered_html_X-0030]]",
+    "[[I-002_transcript_rendered_html_X-0035]]"
+  ],
+  "related_violations": [
+    "CL-001",
+    "CL-002",
+    "CL-003",
+    "CL-004",
+    "CL-005",
+    "CL-006",
+    "CL-007",
+    "CL-008",
+    "CL-009",
+    "CL-010"
+  ],
+  "framework_cache": "[[CHIPENCOD]] [[CPCL]] [[LPDC]]",
+  "validation_pack": "[[Validation report CL-015]]",
+  "has_broken_refs": false,
+  "tags": [
+    "violation",
+    "severity/high",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "classification": "Attorney Work Product — Privileged and Confidential",
+  "schema_version": "4.0",
+  "element_grids": {
+    "CL.CHIPENCOD.T4.C3.Art.193": [
+      {
+        "element_name": "Sujeto activo: empleado público",
+        "status": "contested",
+        "evidence": [
+          "STG-5.seg-12",
+          "STG-29.seg-12"
+        ],
+        "argument": "Los supervisores y tripulantes de LATAM activaron protocolos de seguridad y redactaron documentos de contingencia con efectos jurídicos (denuncia, denegación de embarque). La calificación como empleado público depende de si se les reconoce función pública delegada conforme al art. 260 CP.",
+        "element_id": "CL.CHIPENCOD.Art.193.1.elem.sujeto_activo_empleado_publico",
+        "doctrinal_basis": "Art. 193 exige que el autor sea empleado público. En doctrina chilena, funcionarios de aerolíneas que ejercen funciones delegadas de seguridad aeroportuaria pueden ser asimilados a empleados públicos cuando actúan en ejercicio de potestades públicas delegadas (art. 260 CP).",
+        "weaknesses": [
+          "No consta acto administrativo formal de delegación de potestad pública a personal de LATAM.",
+          "La jurisprudencia chilena es restrictiva en la extensión del concepto de empleado público a privados."
+        ],
+        "open_questions": [
+          "¿Existe normativa aeronáutica (DL 2.564, Código Aeronáutico) que confiera carácter de ministro de fe o función pública al personal de cabina al activar protocolos de seguridad?"
+        ],
+        "article_short": "Art. 193 N° 1, 2, 4 — Falsedad documental cometida por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Abuso del oficio",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-12",
+          "STG-29.seg-12",
+          "LATAM-2.seg-12"
+        ],
+        "argument": "El personal de LATAM utilizó sus atribuciones operativas (activación de seguridad, redacción de carta de contingencia, derivación al área legal) para producir documentación que contenía imputaciones falsas contra el pasajero. El abuso se configura porque las facultades del cargo fueron el medio para materializar la falsedad.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.abuso_del_oficio",
+        "doctrinal_basis": "El tipo exige que la falsedad se cometa 'abusando de su oficio', es decir, aprovechando las facultades inherentes al cargo para materializar la falsedad documental.",
+        "weaknesses": [
+          "Se requiere demostrar que la producción documental era función propia del cargo y no un acto ajeno a sus competencias."
+        ],
+        "open_questions": [],
+        "article_short": "Art. 193 N° 1, 2, 4 — Falsedad documental cometida por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Acto del oficio: documento público o auténtico",
+        "status": "contested",
+        "evidence": [
+          "STG-29.seg-12",
+          "LATAM-2.seg-1",
+          "LATAM-3.seg-12"
+        ],
+        "argument": "Existe evidencia de la redacción de una 'carta de contingencia' y de un documento que el pasajero esperaba le fuera firmado. Si estos documentos fueron presentados ante autoridades (PDI, fiscalía) como reportes oficiales de incidente, podrían calificar como documentos públicos o al menos como instrumentos con valor probatorio oficial.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.acto_del_oficio",
+        "doctrinal_basis": "La falsedad del art. 193 recae sobre documento público. La carta de contingencia y el reporte de seguridad deben calificar como documento público o al menos como documento oficial con fe pública para que el tipo sea aplicable.",
+        "weaknesses": [
+          "No se ha acreditado que el documento producido tenga naturaleza de instrumento público conforme al art. 1699 CC.",
+          "Podría tratarse de documento privado, lo que desplazaría la calificación al art. 197 CP."
+        ],
+        "open_questions": [
+          "¿La carta de contingencia fue incorporada a un procedimiento administrativo o judicial que le confiera carácter público?"
+        ],
+        "article_short": "Art. 193 N° 1, 2, 4 — Falsedad documental cometida por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Modalidad típica N°4: faltar a la verdad en la narración de hechos sustanciales",
+        "status": "strong",
+        "evidence": [
+          "STG-29.seg-40",
+          "STG-5.seg-12"
+        ],
+        "argument": "El pasajero declara que fue acusado de agresión y de pasar solo por la puerta de embarque, hechos que la policía verificó mediante CCTV como falsos. Estas imputaciones falsas fueron la base para activar el protocolo de seguridad y presumiblemente quedaron consignadas en la documentación de contingencia. Son hechos sustanciales porque fundamentaron la denegación de embarque y la intervención policial.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.modalidad_tipica_faltar_verdad_hechos_sustanciales",
+        "doctrinal_basis": "El numeral 4 del art. 193 sanciona consignar en el documento hechos que no ocurrieron o narrarlos de modo diverso a la realidad, siempre que sean sustanciales (relevantes para los efectos jurídicos del documento).",
+        "weaknesses": [
+          "La prueba directa del contenido del documento falsificado no consta en los segmentos; se infiere de las declaraciones del pasajero."
+        ],
+        "open_questions": [
+          "¿Se conserva copia de la carta de contingencia o reporte de incidente para verificar su contenido textual?"
+        ],
+        "article_short": "Art. 193 N° 1, 2, 4 — Falsedad documental cometida por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Modalidad típica N°2: suponer en un acto la intervención de personas que no la han tenido",
+        "status": "weak",
+        "evidence": [
+          "STG-29.seg-40"
+        ],
+        "argument": "El pasajero refiere acusaciones falsas atribuidas a una persona específica ('la misma persona que me acusó'), lo que podría implicar que en el documento se consignó la intervención de testigos o denunciantes que no presenciaron los hechos. Sin embargo, no hay evidencia directa en los segmentos de que el documento atribuya intervención a personas inexistentes o ausentes.",
+        "element_id": "CL.CHIPENCOD.Art.193.2.elem.modalidad_tipica_suponer_intervencion_personas",
+        "doctrinal_basis": "El numeral 2 sanciona atribuir participación en un acto documentado a personas que no intervinieron en él.",
+        "weaknesses": [
+          "No se identifica en los segmentos un documento que consigne participación ficticia de terceros.",
+          "La evidencia es inferencial y no directa."
+        ],
+        "open_questions": [
+          "¿El reporte de incidente atribuye declaraciones a testigos que no estuvieron presentes?"
+        ],
+        "article_short": "Art. 193 N° 1, 2, 4 — Falsedad documental cometida por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Modalidad típica N°1: contrahacer o fingir letra, firma o rúbrica",
+        "status": "weak",
+        "evidence": [
+          "LATAM-3.seg-12"
+        ],
+        "argument": "El pasajero menciona estar 'esperando la firma', lo que sugiere que un documento requería suscripción. No obstante, no hay evidencia en los segmentos de que se haya contrahecho o fingido una firma ajena.",
+        "element_id": "CL.CHIPENCOD.Art.193.1.elem.modalidad_tipica_contrahacer_firma",
+        "doctrinal_basis": "El numeral 1 sanciona la falsificación material mediante imitación de firma, letra o rúbrica.",
+        "weaknesses": [
+          "No existe prueba directa de falsificación material de firma.",
+          "El segmento solo evidencia la espera de una firma, no su falsificación."
+        ],
+        "open_questions": [
+          "¿Se firmó el documento a nombre del pasajero sin su consentimiento o se falsificó la firma de algún funcionario?"
+        ],
+        "article_short": "Art. 193 N° 1, 2, 4 — Falsedad documental cometida por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Objeto material: documento en que recae la falsedad",
+        "status": "contested",
+        "evidence": [
+          "STG-29.seg-12",
+          "LATAM-2.seg-1",
+          "LATAM-3.seg-12"
+        ],
+        "argument": "Se identifica al menos una 'carta de contingencia' cuyo contenido el supervisor de ventas propone 'ajustar', y un documento que el pasajero solicita ver y cuya firma espera. Estos constituyen el objeto material, pero su existencia física y contenido exacto no están plenamente acreditados en los segmentos disponibles.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.objeto_material_documento",
+        "doctrinal_basis": "El objeto material es el documento público o auténtico en el cual se plasma la falsedad. Debe ser un documento con aptitud probatoria y relevancia jurídica.",
+        "weaknesses": [
+          "No se ha incorporado copia del documento como evidencia directa.",
+          "La naturaleza jurídica del documento (público vs. privado) permanece indeterminada."
+        ],
+        "open_questions": [
+          "¿Se puede obtener copia certificada de la carta de contingencia y/o del reporte de incidente de seguridad?"
+        ],
+        "article_short": "Art. 193 N° 1, 2, 4 — Falsedad documental cometida por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Resultado / perjuicio",
+        "status": "strong",
+        "evidence": [
+          "STG-29.seg-40",
+          "STG-5.seg-1",
+          "STG-5.seg-12"
+        ],
+        "argument": "El pasajero fue removido del avión, sometido a intervención policial y acusado falsamente de agresión, con el consiguiente perjuicio a su libertad ambulatoria, honra y derecho al transporte contratado. El perjuicio es concreto y directamente derivado de la documentación falsificada.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.resultado_perjuicio",
+        "doctrinal_basis": "Si bien el art. 193 es un delito de peligro abstracto (no exige perjuicio efectivo como elemento típico), la existencia de perjuicio concreto refuerza la antijuridicidad material y la gravedad del hecho.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 193 N° 1, 2, 4 — Falsedad documental cometida por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Tipicidad subjetiva: dolo de falsedad",
+        "status": "strong",
+        "evidence": [
+          "STG-29.seg-12",
+          "STG-29.seg-40",
+          "STG-5.seg-12"
+        ],
+        "argument": "El supervisor de ventas propone 'ajustar' el contenido de la carta de contingencia, lo que evidencia conocimiento de que el contenido no se correspondía con la realidad y voluntad de modificarlo. Además, la verificación policial por CCTV demostró que las acusaciones eran falsas, y el personal que las formuló necesariamente conocía su falsedad al ser testigo directo de los hechos.",
+        "element_id": "CL.CHIPENCOD.Art.193.4.elem.tipicidad_subjetiva_dolo",
+        "doctrinal_basis": "Se requiere dolo directo: conocimiento de la falsedad de los hechos narrados y voluntad de consignarlos en el documento. El dolo eventual es discutido doctrinariamente para este tipo penal.",
+        "weaknesses": [
+          "Podría argumentarse error de tipo si el personal creyó genuinamente en la agresión antes de la verificación por cámara."
+        ],
+        "open_questions": [
+          "¿En qué momento temporal se redactó el documento: antes o después de la verificación policial por CCTV?"
+        ],
+        "article_short": "Art. 193 N° 1, 2, 4 — Falsedad documental cometida por empleado público (Código Penal)"
+      }
+    ],
+    "CL.CHIPENCOD.T4.C3.Art.194": [
+      {
+        "element_name": "Sujeto activo: particular (no funcionario público)",
+        "status": "strong",
+        "evidence": [
+          "STG-29.seg-12",
+          "STG-5.seg-12",
+          "LATAM-2.seg-12"
+        ],
+        "argument": "Los segmentos muestran que personal de LATAM (supervisores de ventas, tripulación) —quienes no son funcionarios públicos— participaron en la elaboración y uso de documentos. Diego (supervisor de ventas) interviene en la redacción de una 'carta de contingencia' y la tripulación activa protocolos de seguridad sobre la base de acusaciones que el pasajero afirma fueron probadas falsas. Estos sujetos actúan como particulares, no como empleados públicos.",
+        "element_id": "CL.CHIPENCOD.Art.194.elem.sujeto_activo_particular",
+        "doctrinal_basis": "Art. 194 exige que el autor sea un 'particular', es decir, una persona que no reviste la calidad de empleado público en los términos del Art. 260 CP. Se distingue así del Art. 193, cuyo sujeto activo es el empleado público que abusa de su oficio.",
+        "weaknesses": [
+          "No se ha establecido formalmente la identidad civil completa de los autores ni su relación contractual exacta con LATAM."
+        ],
+        "open_questions": [
+          "¿Alguno de los intervinientes podría tener calidad de funcionario público por delegación de funciones aeroportuarias?"
+        ],
+        "article_short": "Art. 194 — Falsedad en documento público cometida por particular (Código Penal)"
+      },
+      {
+        "element_name": "Sujeto pasivo: fe pública y perjudicado directo",
+        "status": "strong",
+        "evidence": [
+          "STG-29.seg-40",
+          "LATAM-2.seg-1",
+          "LATAM-3.seg-12"
+        ],
+        "argument": "El pasajero Leandro Disconzi aparece como perjudicado directo: solicita ver la carta que se le atribuye, espera una firma, y sufre consecuencias operativas (denegación de embarque, activación de seguridad) derivadas de documentos cuyo contenido impugna. La fe pública resulta afectada en cuanto los documentos producidos circulan ante autoridades policiales y aeroportuarias.",
+        "element_id": "CL.CHIPENCOD.Art.194.elem.sujeto_pasivo",
+        "doctrinal_basis": "El bien jurídico protegido es la fe pública. El sujeto pasivo mediato es la sociedad; el perjudicado directo es quien sufre las consecuencias del documento falsificado.",
+        "weaknesses": [
+          "No se cuenta con el documento mismo para verificar su naturaleza pública o auténtica."
+        ],
+        "open_questions": [],
+        "article_short": "Art. 194 — Falsedad en documento público cometida por particular (Código Penal)"
+      },
+      {
+        "element_name": "Objeto material: documento público o auténtico",
+        "status": "contested",
+        "evidence": [
+          "STG-29.seg-12",
+          "LATAM-2.seg-1",
+          "LATAM-3.seg-12"
+        ],
+        "argument": "Se hace referencia a una 'carta de contingencia' que el supervisor Diego solicita ajustar, y a una 'carta' que el pasajero pide ver y cuya firma espera. Si dicha carta constituye un acta de incidentes de seguridad aeronáutica o un informe oficial presentado ante la policía o la DGAC, podría calificar como documento público o auténtico. Sin embargo, los segmentos no permiten determinar con certeza la naturaleza jurídica del documento.",
+        "element_id": "CL.CHIPENCOD.Art.194.elem.objeto_material_documento_publico_o_autentico",
+        "doctrinal_basis": "Art. 194 requiere que la falsedad recaiga sobre un 'documento público o auténtico'. Documento público es el autorizado por funcionario competente con las solemnidades legales (Art. 1699 CC). Documento auténtico es aquel cuya autenticidad no se discute o que ha sido reconocido. La doctrina (Etcheberry, Garrido Montt) exige que el soporte documental tenga aptitud para producir efectos jurídicos en el tráfico.",
+        "weaknesses": [
+          "No se ha aportado copia del documento ni se ha identificado su destinatario institucional.",
+          "Si se trata de un documento meramente privado interno de la aerolínea, el tipo del Art. 194 no se configura."
+        ],
+        "open_questions": [
+          "¿La 'carta de contingencia' fue presentada ante alguna autoridad pública (PDI, Carabineros, DGAC)?",
+          "¿El documento lleva firma o sello de algún funcionario público que le confiera carácter de instrumento público?"
+        ],
+        "article_short": "Art. 194 — Falsedad en documento público cometida por particular (Código Penal)"
+      },
+      {
+        "element_name": "Modalidad típica: comisión de alguna de las falsedades del Art. 193",
+        "status": "strong",
+        "evidence": [
+          "STG-29.seg-40",
+          "STG-29.seg-12",
+          "STG-5.seg-12"
+        ],
+        "argument": "El pasajero declara que fue acusado de agresión y de pasar solo por la puerta de embarque, y que la policía verificó mediante cámaras que ambas acusaciones eran mentira. Si estas acusaciones falsas fueron plasmadas en la 'carta de contingencia' o en un informe de seguridad, se configuraría la modalidad del Art. 193 N° 4 (faltar a la verdad en la narración de hechos sustanciales). Además, el supervisor Diego solicita 'ajustar' el contenido de la carta, lo que sugiere manipulación deliberada del contenido documental.",
+        "element_id": "CL.CHIPENCOD.Art.194.elem.modalidad_tipica_falsedad_art193",
+        "doctrinal_basis": "Art. 194 remite al Art. 193, que enumera ocho modalidades de falsedad: (1) contrahaciendo o fingiendo letra/firma/rúbrica; (2) suponiendo intervención de personas que no la han tenido; (3) atribuyendo declaraciones distintas de las hechas; (4) faltando a la verdad en la narración de hechos sustanciales; (5) alterando fechas verdaderas; (6) haciendo alteración en documento verdadero; (7) haciendo en documento verdadero intercalaciones que varíen su sentido; (8) ocultando en perjuicio del Estado o de un particular cualquier documento. La modalidad más relevante aquí parece ser la del N° 4 (faltar a la verdad en la narración de hechos sustanciales) y potencialmente N° 3 (atribuir declaraciones distintas).",
+        "weaknesses": [
+          "No se dispone del texto del documento para contrastar las afirmaciones falsas con lo efectivamente consignado.",
+          "La verificación policial por cámaras se conoce solo por declaración del pasajero."
+        ],
+        "open_questions": [
+          "¿Qué hechos específicos fueron consignados en el documento y cuáles de ellos son demostrablemente falsos?",
+          "¿Existe acta policial que confirme la verificación por CCTV?"
+        ],
+        "article_short": "Art. 194 — Falsedad en documento público cometida por particular (Código Penal)"
+      },
+      {
+        "element_name": "Mutatio veritatis: discordancia entre lo declarado y la realidad",
+        "status": "strong",
+        "evidence": [
+          "STG-29.seg-40"
+        ],
+        "argument": "El segmento STG-29.seg-40 contiene la declaración del pasajero de que fue acusado de agresión y de pasar solo por el boarding gate, y que la policía comprobó mediante cámaras que ambas acusaciones eran falsas. Si estas acusaciones fueron incorporadas a un documento, la discordancia entre lo narrado documentalmente y la realidad verificada por CCTV constituiría la mutatio veritatis exigida por el tipo.",
+        "element_id": "CL.CHIPENCOD.Art.194.elem.mutatio_veritatis",
+        "doctrinal_basis": "La doctrina penal chilena (Etcheberry, Politoff/Matus/Ramírez) exige que la falsedad sea idónea, es decir, que la alteración de la verdad sea capaz de inducir a error y tenga relevancia jurídica. No basta una inexactitud inocua; debe existir una discordancia sustancial entre lo consignado en el documento y la realidad de los hechos.",
+        "weaknesses": [
+          "La prueba de la falsedad descansa hasta ahora en la declaración del propio pasajero y en una supuesta verificación policial cuyo registro no obra en autos."
+        ],
+        "open_questions": [
+          "¿Se puede obtener el registro CCTV o el acta policial que confirme la falsedad de las acusaciones?"
+        ],
+        "article_short": "Art. 194 — Falsedad en documento público cometida por particular (Código Penal)"
+      },
+      {
+        "element_name": "Resultado / perjuicio: daño efectivo o potencial derivado de la falsedad",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "LATAM-2.seg-12",
+          "LATAM-3.seg-1"
+        ],
+        "argument": "El pasajero fue obligado a descender del avión ('Tiene que salir del avion, tiene que bajar'), se activó el protocolo de seguridad ('Ya activamos seguridad'), y se le derivó al área legal sin resolución inmediata. Estos hechos constituyen perjuicios concretos: privación del transporte contratado, estigmatización ante otros pasajeros, y sometimiento a procedimientos policiales, todo ello sobre la base de acusaciones que el pasajero afirma fueron probadas falsas.",
+        "element_id": "CL.CHIPENCOD.Art.194.elem.resultado_perjuicio",
+        "doctrinal_basis": "Si bien el delito de falsedad documental es generalmente de peligro abstracto contra la fe pública, la doctrina reconoce que el perjuicio efectivo o potencial refuerza la tipicidad y es relevante para la determinación de la pena. En la modalidad del Art. 193 N° 8 (ocultación) se exige perjuicio expreso; en las demás modalidades, el perjuicio potencial basta.",
+        "weaknesses": [
+          "Falta cuantificación del perjuicio patrimonial (costo de pasaje, alojamiento, etc.).",
+          "No se ha acreditado formalmente el nexo causal entre el documento específico y la activación de seguridad."
+        ],
+        "open_questions": [
+          "¿El pasajero perdió el vuelo definitivamente o fue reubicado?",
+          "¿Existieron consecuencias adicionales (detención, antecedentes policiales)?"
+        ],
+        "article_short": "Art. 194 — Falsedad en documento público cometida por particular (Código Penal)"
+      },
+      {
+        "element_name": "Tipicidad subjetiva: dolo directo de falsificar",
+        "status": "contested",
+        "evidence": [
+          "STG-29.seg-12",
+          "STG-29.seg-40",
+          "STG-5.seg-12"
+        ],
+        "argument": "El segmento STG-29.seg-12 muestra al supervisor Diego solicitando que se 'ajuste' la carta de contingencia, lo que sugiere intervención consciente y deliberada en el contenido del documento. La activación de seguridad basada en acusaciones que la policía habría desmentido mediante CCTV indica que los autores conocían o debían conocer la falsedad de los hechos imputados al pasajero. Sin embargo, el dolo directo requiere prueba más robusta de que los autores sabían que las acusaciones eran falsas al momento de plasmarlas en el documento.",
+        "element_id": "CL.CHIPENCOD.Art.194.elem.tipicidad_subjetiva_dolo",
+        "doctrinal_basis": "El delito de falsedad documental exige dolo directo: el autor debe tener conocimiento de que está consignando hechos falsos en un documento público o auténtico y voluntad de hacerlo. No se admite la comisión culposa. La doctrina mayoritaria (Garrido Montt, Etcheberry) exige además conciencia de la idoneidad lesiva de la falsedad.",
+        "weaknesses": [
+          "El verbo 'ajustar' es ambiguo y podría referirse a correcciones legítimas.",
+          "No se ha probado que los autores del documento tuvieran conocimiento previo de la verificación policial por CCTV."
+        ],
+        "open_questions": [
+          "¿En qué momento temporal se redactó el documento respecto de la verificación policial?",
+          "¿Existen comunicaciones internas de LATAM que evidencien conocimiento de la falsedad?"
+        ],
+        "article_short": "Art. 194 — Falsedad en documento público cometida por particular (Código Penal)"
+      }
+    ],
+    "CL.CHIPENCOD.T4.C3.Art.197": [
+      {
+        "element_name": "Sujeto activo (autor de la falsedad)",
+        "status": "contested",
+        "evidence": [
+          "STG-29.seg-12",
+          "STG-5.seg-12",
+          "LATAM-2.seg-12"
+        ],
+        "argument": "Los segmentos muestran que personal de LATAM (supervisor Diego, tripulación de cabina, supervisora Antonela) participó en la cadena de producción y uso de documentos cuestionados —carta de contingencia y acusaciones formales—. Sin embargo, no se identifica con precisión quién redactó materialmente el instrumento privado falsificado. La participación del departamento de ventas en el ajuste de la 'carta de contingencia' (STG-29.seg-12) sugiere autoría o coautoría funcional, pero requiere prueba adicional de individualización.",
+        "element_id": "CL.CHIPENCOD.Art.197.elem.sujeto_activo",
+        "doctrinal_basis": "Art. 197 CP emplea la fórmula 'El que…', por lo que el sujeto activo es común: cualquier persona natural. No se exige calidad especial, a diferencia del Art. 193 que requiere empleado público. La imputación debe individualizar a la(s) persona(s) que materialmente confeccionaron o participaron en la confección del instrumento privado falsificado.",
+        "weaknesses": [
+          "No se identifica nominativamente al autor material del documento falsificado",
+          "La cadena de mando entre ventas, tripulación y área legal dificulta la atribución individual"
+        ],
+        "open_questions": [
+          "¿Quién firmó o confeccionó materialmente el instrumento privado impugnado?",
+          "¿Existe coautoría funcional entre el supervisor Diego y otros empleados?"
+        ],
+        "article_short": "Art. 197 — Falsedad en instrumento privado con perjuicio de tercero (Código Penal)"
+      },
+      {
+        "element_name": "Sujeto pasivo (tercero perjudicado)",
+        "status": "strong",
+        "evidence": [
+          "STG-29.seg-40",
+          "LATAM-2.seg-1",
+          "LATAM-3.seg-1"
+        ],
+        "argument": "El pasajero Leandro Disconzi aparece claramente como el tercero afectado: solicita ver la carta (LATAM-2.seg-1), reconoce la complejidad del procedimiento (LATAM-3.seg-1) y fue objeto de acusaciones falsas documentadas. Su individualización como sujeto pasivo es suficiente, aunque la cuantificación del perjuicio requiere desarrollo adicional.",
+        "element_id": "CL.CHIPENCOD.Art.197.elem.sujeto_pasivo",
+        "doctrinal_basis": "El 'tercero' del Art. 197 es la persona natural o jurídica que sufre perjuicio patrimonial o extrapatrimonial derivado de la falsedad. La doctrina chilena (Garrido Montt, Etcheberry) exige que el perjuicio recaiga sobre persona determinada o determinable.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 197 — Falsedad en instrumento privado con perjuicio de tercero (Código Penal)"
+      },
+      {
+        "element_name": "Objeto material (instrumento privado)",
+        "status": "strong",
+        "evidence": [
+          "STG-29.seg-12",
+          "LATAM-2.seg-1",
+          "LATAM-3.seg-12"
+        ],
+        "argument": "Se identifican al menos dos instrumentos privados relevantes: (1) la 'carta de contingencia' cuyo contenido el supervisor Diego propone ajustar (STG-29.seg-12), y (2) la carta o documento que el pasajero solicita ver y cuya firma espera (LATAM-2.seg-1, LATAM-3.seg-12). Ambos constituyen instrumentos privados con aptitud probatoria en el contexto del transporte aéreo y eventuales reclamaciones.",
+        "element_id": "CL.CHIPENCOD.Art.197.elem.objeto_material",
+        "doctrinal_basis": "Art. 197 exige que la falsedad recaiga sobre un 'instrumento privado', es decir, un documento no otorgado ante funcionario público competente pero que tiene aptitud probatoria en el tráfico jurídico. La doctrina (Politoff/Matus/Ramírez) incluye cartas, informes internos, actas de hechos y documentos corporativos que producen efectos jurídicos frente a terceros.",
+        "weaknesses": [
+          "No se dispone de copia física o digital del instrumento para cotejo pericial",
+          "No se ha determinado si la carta de contingencia y la carta solicitada por el pasajero son el mismo documento"
+        ],
+        "open_questions": [
+          "¿Se conserva el instrumento privado original para peritaje caligráfico o de contenido?",
+          "¿Cuántos documentos distintos están involucrados en la falsificación?"
+        ],
+        "article_short": "Art. 197 — Falsedad en instrumento privado con perjuicio de tercero (Código Penal)"
+      },
+      {
+        "element_name": "Modalidad típica (alguna de las falsedades del Art. 193 CP)",
+        "status": "strong",
+        "evidence": [
+          "STG-29.seg-40",
+          "STG-29.seg-12",
+          "STG-5.seg-12"
+        ],
+        "argument": "La evidencia apunta principalmente a la modalidad del Art. 193 N°4 (faltar a la verdad en la narración de hechos sustanciales): el pasajero declara que fue acusado falsamente de agresión y de pasar solo por la puerta de embarque, hechos desmentidos por cámaras de seguridad (STG-29.seg-40). Adicionalmente, la propuesta de 'ajustar' la carta de contingencia (STG-29.seg-12) sugiere la modalidad del N°3 (atribuir declaraciones distintas) o N°6 (alterar documento cambiando su sentido). La activación de seguridad sobre bases falsificadas (STG-5.seg-12) corrobora que el contenido mendaz del instrumento tuvo efectos operativos.",
+        "element_id": "CL.CHIPENCOD.Art.197.elem.modalidad_tipica",
+        "doctrinal_basis": "Art. 197 remite a las modalidades falsarias del Art. 193 CP, que incluye: contrahaciendo o fingiendo firma (N°1), suponiendo intervención de personas que no la han tenido (N°2), atribuyendo declaraciones distintas de las hechas (N°3), faltando a la verdad en la narración de hechos sustanciales (N°4), alterando fechas verdaderas (N°5), haciendo alteración en documento que cambie su sentido (N°6), dando copia en forma fehaciente de documento supuesto (N°7), u ocultando en perjuicio del Estado o particular (N°8). Basta que se configure una de estas modalidades.",
+        "weaknesses": [
+          "No se ha determinado con certeza cuál de las ocho modalidades del Art. 193 se configura de manera principal",
+          "La remisión al Art. 193 requiere prueba específica de la modalidad falsaria concreta"
+        ],
+        "open_questions": [
+          "¿Se invoca Art. 193 N°4 (narración falsa de hechos) como modalidad principal o concurren varias?",
+          "¿El 'ajuste' propuesto por Diego constituye alteración (N°6) o narración falsa originaria (N°4)?"
+        ],
+        "article_short": "Art. 197 — Falsedad en instrumento privado con perjuicio de tercero (Código Penal)"
+      },
+      {
+        "element_name": "Naturaleza de la falsedad (material o ideológica en instrumento privado)",
+        "status": "contested",
+        "evidence": [
+          "STG-29.seg-40",
+          "STG-29.seg-12"
+        ],
+        "argument": "La evidencia disponible sugiere falsedad ideológica: el contenido del instrumento (acusaciones de agresión y paso no autorizado) fue desmentido por verificación policial con cámaras (STG-29.seg-40). La propuesta de 'ajustar' la carta (STG-29.seg-12) podría también configurar falsedad material si implicó alteración de un documento preexistente. La calificación exacta es contestada y depende del examen pericial del instrumento.",
+        "element_id": "CL.CHIPENCOD.Art.197.elem.falsedad_material_o_ideologica",
+        "doctrinal_basis": "La doctrina mayoritaria chilena (Etcheberry, Garrido Montt) acepta que el Art. 197 abarca tanto la falsedad material (alteración física del documento) como la falsedad ideológica (consignar hechos falsos en documento formalmente genuino) cuando se trata de instrumento privado, a diferencia de la discusión más restrictiva en instrumentos públicos. La jurisprudencia reciente ha admitido la falsedad ideológica en instrumento privado cuando el documento tiene función probatoria relevante.",
+        "weaknesses": [
+          "Parte de la doctrina chilena cuestiona la punibilidad de la falsedad ideológica en instrumento privado",
+          "Sin acceso al documento físico no puede determinarse si hubo alteración material"
+        ],
+        "open_questions": [
+          "¿Se trata de un documento creado ab initio con contenido falso o de uno alterado posteriormente?",
+          "¿La jurisdicción competente sigue la tesis amplia de falsedad ideológica en instrumento privado?"
+        ],
+        "article_short": "Art. 197 — Falsedad en instrumento privado con perjuicio de tercero (Código Penal)"
+      },
+      {
+        "element_name": "Perjuicio de tercero (resultado típico)",
+        "status": "strong",
+        "evidence": [
+          "STG-29.seg-40",
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "LATAM-3.seg-1"
+        ],
+        "argument": "El perjuicio se manifiesta en múltiples dimensiones: (1) el pasajero fue forzado a descender del avión mediante activación de protocolo de seguridad basado en acusaciones falsas (STG-5.seg-1, STG-5.seg-12), lo que constituye perjuicio patrimonial (pérdida del servicio de transporte contratado) y extrapatrimonial (afectación a la honra por acusación de agresión); (2) las acusaciones falsas fueron desmentidas por verificación policial con CCTV (STG-29.seg-40), confirmando que el perjuicio derivó directamente de la falsedad; (3) el pasajero reconoce la complejidad y gravedad de su situación (LATAM-3.seg-1).",
+        "element_id": "CL.CHIPENCOD.Art.197.elem.perjuicio_de_tercero",
+        "doctrinal_basis": "Art. 197 exige expresamente perjuicio de tercero como elemento del tipo, a diferencia del Art. 193 (instrumento público) donde el perjuicio no es requisito típico. La doctrina dominante (Politoff/Matus/Ramírez, Garrido Montt) entiende que el perjuicio puede ser patrimonial o extrapatrimonial, y debe tener relación causal con la falsedad. Debe ser efectivo, no meramente potencial.",
+        "weaknesses": [
+          "No se ha cuantificado el perjuicio patrimonial (valor del pasaje, gastos adicionales, lucro cesante)",
+          "El perjuicio extrapatrimonial requiere prueba de la afectación concreta a la honra o integridad"
+        ],
+        "open_questions": [
+          "¿Se ha documentado formalmente la denegación de embarque y sus consecuencias económicas?",
+          "¿Existen antecedentes policiales o judiciales derivados de las acusaciones falsas que agraven el perjuicio?"
+        ],
+        "article_short": "Art. 197 — Falsedad en instrumento privado con perjuicio de tercero (Código Penal)"
+      },
+      {
+        "element_name": "Nexo causal entre falsedad y perjuicio",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-12",
+          "STG-29.seg-40",
+          "STG-5.seg-1"
+        ],
+        "argument": "La cadena causal se reconstruye así: (1) se confeccionaron acusaciones falsas contra el pasajero (agresión, paso no autorizado por puerta de embarque); (2) sobre la base de dichas acusaciones se activó el protocolo de seguridad (STG-5.seg-12: 'Ya activamos seguridad'); (3) se forzó el desembarque del pasajero (STG-5.seg-1); (4) la policía verificó mediante CCTV que las acusaciones eran falsas (STG-29.seg-40). El nexo causal entre la falsedad documental y el perjuicio (desembarque forzoso, acusación infundada) es directo y está corroborado por la verificación policial.",
+        "element_id": "CL.CHIPENCOD.Art.197.elem.nexo_causal",
+        "doctrinal_basis": "La doctrina exige relación de causalidad directa entre el acto falsario y el perjuicio sufrido por el tercero. El perjuicio debe ser consecuencia del uso o existencia del instrumento falsificado, no de circunstancias independientes.",
+        "weaknesses": [
+          "Podría argumentarse que la decisión de desembarque obedeció a facultades discrecionales del comandante independientes del documento"
+        ],
+        "open_questions": [
+          "¿La activación de seguridad se fundó exclusivamente en el instrumento falsificado o concurrieron otros antecedentes?"
+        ],
+        "article_short": "Art. 197 — Falsedad en instrumento privado con perjuicio de tercero (Código Penal)"
+      },
+      {
+        "element_name": "Tipicidad subjetiva / dolo (conocimiento y voluntad de falsificar con perjuicio)",
+        "status": "contested",
+        "evidence": [
+          "STG-29.seg-12",
+          "STG-29.seg-40",
+          "LATAM-2.seg-12"
+        ],
+        "argument": "El dolo se infiere de indicios convergentes: (1) el supervisor Diego propone deliberadamente 'ajustar' el contenido de la carta de contingencia (STG-29.seg-12), lo que evidencia conocimiento y voluntad de modificar el contenido documental; (2) las acusaciones contenidas en el instrumento fueron probadamente falsas según verificación policial (STG-29.seg-40), y quien las formuló debía conocer su falsedad por haber presenciado los hechos; (3) la derivación al área legal (LATAM-2.seg-12) sugiere conciencia institucional de la irregularidad. Sin embargo, la prueba del dolo es siempre inferencial y la defensa podría alegar error de hecho.",
+        "element_id": "CL.CHIPENCOD.Art.197.elem.tipicidad_subjetiva_dolo",
+        "doctrinal_basis": "Art. 197 exige dolo directo: el autor debe conocer la falsedad del contenido del instrumento privado y querer su confección o alteración, con conocimiento de que producirá perjuicio a tercero. La doctrina mayoritaria (Etcheberry, Garrido Montt) exige dolo respecto de ambos elementos: la falsedad y el perjuicio. No se admite comisión culposa.",
+        "weaknesses": [
+          "El dolo debe probarse respecto de cada interviniente individualmente",
+          "La propuesta de 'ajustar' podría interpretarse como corrección legítima y no como falsificación dolosa",
+          "No hay confesión ni reconocimiento expreso de la intención falsaria"
+        ],
+        "open_questions": [
+          "¿Existen comunicaciones internas (correos, mensajes) que evidencien el conocimiento de la falsedad?",
+          "¿El supervisor Diego actuó por instrucción superior o por iniciativa propia?",
+          "¿Puede acreditarse que quien formuló las acusaciones de agresión sabía que eran falsas al momento de documentarlas?"
+        ],
+        "article_short": "Art. 197 — Falsedad en instrumento privado con perjuicio de tercero (Código Penal)"
+      }
+    ],
+    "CL.CPCL.C1.Art.255": [
+      {
+        "element_name": "Sujeto activo: empleado público",
+        "status": "contested",
+        "evidence": [
+          "STG-5.seg-12",
+          "STG-29.seg-12",
+          "LATAM-2.seg-12"
+        ],
+        "argument": "Los segmentos muestran actuaciones de personal de LATAM (supervisores, tripulación) que activan protocolos de seguridad y redactan documentos oficiales de contingencia. Sin embargo, la calidad de 'empleado público' de personal de una aerolínea privada es discutible; podría sostenerse delegación de funciones públicas de seguridad aeroportuaria, pero requiere verificación jurídica.",
+        "element_id": "CL.CPCL.C1.Art.255.inc1.elem.sujeto_activo",
+        "doctrinal_basis": "El tipo exige que el autor sea un 'empleado público' en el sentido del Art. 260 CP, es decir, quien desempeña un cargo o función pública.",
+        "weaknesses": [
+          "LATAM es empresa privada; sus empleados no son funcionarios públicos salvo delegación expresa de funciones de policía aeronáutica.",
+          "No se acredita investidura pública formal."
+        ],
+        "open_questions": [
+          "¿Actúan los tripulantes como delegados de la autoridad aeronáutica al activar protocolos de seguridad conforme al Código Aeronáutico (Art. 64)?",
+          "¿Aplica el Art. 260 CP por extensión funcional?"
+        ],
+        "article_short": "Art. 255 inc. 1 — Vejaciones injustas cometidas por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Desempeñando un acto del servicio",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-29.seg-12"
+        ],
+        "argument": "La activación del protocolo de seguridad ('Ya activamos seguridad'), la orden de desembarco y la redacción de la carta de contingencia son actos realizados en el marco del servicio aeronáutico. El nexo funcional entre la conducta y las funciones de la tripulación/supervisión es claro.",
+        "element_id": "CL.CPCL.C1.Art.255.inc1.elem.acto_del_servicio",
+        "doctrinal_basis": "La vejación debe cometerse mientras el sujeto activo ejecuta un acto propio de su función o servicio; nexo funcional entre la conducta y el cargo.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 255 inc. 1 — Vejaciones injustas cometidas por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Modalidad típica: cometer vejación injusta contra las personas",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-29.seg-40"
+        ],
+        "argument": "El pasajero fue obligado a descender del avión mediante activación de seguridad basada en acusaciones que la propia policía verificó como falsas (agresión inexistente, paso no autorizado desmentido por CCTV). La expulsión forzada bajo premisas mendaces constituye un trato vejatorio injusto.",
+        "element_id": "CL.CPCL.C1.Art.255.inc1.elem.modalidad_tipica",
+        "doctrinal_basis": "La conducta consiste en cualquier acto de maltrato, humillación o abuso que no esté justificado legalmente y que afecte la dignidad o libertad de la persona.",
+        "weaknesses": [
+          "Podría argumentarse que la tripulación actuó de buena fe al momento de activar el protocolo, sin conocer la falsedad de las acusaciones."
+        ],
+        "open_questions": [
+          "¿Conocía la tripulación la falsedad de los cargos al momento de ejecutar la expulsión?"
+        ],
+        "article_short": "Art. 255 inc. 1 — Vejaciones injustas cometidas por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Carácter injusto (ausencia de causa legal)",
+        "status": "strong",
+        "evidence": [
+          "STG-29.seg-40",
+          "STG-5.seg-12"
+        ],
+        "argument": "Las acusaciones de agresión y paso no autorizado fueron desmentidas por las cámaras de seguridad según verificación policial. Al fundarse la activación de seguridad en hechos probadamente falsos, no existía causa legal que justificara la expulsión, tornando la vejación injusta.",
+        "element_id": "CL.CPCL.C1.Art.255.inc1.elem.injusticia_de_la_vejacion",
+        "doctrinal_basis": "La vejación es 'injusta' cuando carece de fundamento legal o se ejecuta fuera de los supuestos autorizados por la normativa; si existiera causa legal legítima, la conducta sería atípica.",
+        "weaknesses": [
+          "La defensa podría alegar que al momento de la activación existía una denuncia aparentemente válida que justificaba la medida cautelar."
+        ],
+        "open_questions": [
+          "¿Se verificó la falsedad antes o después de la expulsión efectiva?"
+        ],
+        "article_short": "Art. 255 inc. 1 — Vejaciones injustas cometidas por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Sujeto pasivo: persona afectada por la vejación",
+        "status": "established",
+        "evidence": [
+          "STG-29.seg-40",
+          "LATAM-2.seg-1",
+          "LATAM-3.seg-1"
+        ],
+        "argument": "El pasajero Leandro Disconzi es claramente identificado como la persona afectada: fue acusado falsamente, obligado a descender del avión y sometido a un procedimiento que él mismo describe como vejatorio. Su identidad y calidad de víctima no están en disputa.",
+        "element_id": "CL.CPCL.C1.Art.255.inc1.elem.sujeto_pasivo",
+        "doctrinal_basis": "El tipo protege a cualquier persona que sufra la vejación injusta en el contexto del acto de servicio.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 255 inc. 1 — Vejaciones injustas cometidas por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Objeto material: documentación falsificada como instrumento de la vejación",
+        "status": "contested",
+        "evidence": [
+          "STG-29.seg-12",
+          "LATAM-2.seg-1",
+          "LATAM-3.seg-12"
+        ],
+        "argument": "El supervisor Diego interviene en la redacción de una 'carta de contingencia' cuyo contenido se pretende ajustar ('podrá ajustar'). El pasajero solicita ver 'su carta' y espera una firma. Esto sugiere producción documental irregular, pero no se dispone del documento mismo para verificar su contenido falsificado.",
+        "element_id": "CL.CPCL.C1.Art.255.inc1.elem.objeto_material",
+        "doctrinal_basis": "Si bien el Art. 255 no exige un objeto material documental, la producción de documentos falsos (carta de contingencia con contenido mendaz) puede constituir el medio comisivo de la vejación.",
+        "weaknesses": [
+          "No se tiene acceso al texto de la carta de contingencia para confirmar falsedad.",
+          "El segmento es ambiguo respecto al contenido específico que se pretendía 'ajustar'."
+        ],
+        "open_questions": [
+          "¿Qué contenido específico se 'ajustó' en la carta de contingencia?",
+          "¿Se conserva copia del documento para pericia?"
+        ],
+        "article_short": "Art. 255 inc. 1 — Vejaciones injustas cometidas por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Resultado / perjuicio sufrido por la víctima",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-29.seg-40",
+          "LATAM-3.seg-1"
+        ],
+        "argument": "El pasajero fue expulsado del avión, acusado públicamente de agresión (hecho desmentido por CCTV), sometido a intervención policial y privado de su transporte. El perjuicio material (pérdida del vuelo) y moral (acusación pública falsa) están acreditados por los segmentos.",
+        "element_id": "CL.CPCL.C1.Art.255.inc1.elem.resultado_perjuicio",
+        "doctrinal_basis": "Aunque el Art. 255 es un delito de mera actividad, la acreditación de perjuicio refuerza la tipicidad y es relevante para la determinación de la pena.",
+        "weaknesses": [],
+        "open_questions": [
+          "¿Existen consecuencias adicionales documentadas (inclusión en listas de no-fly, daño reputacional)?"
+        ],
+        "article_short": "Art. 255 inc. 1 — Vejaciones injustas cometidas por empleado público (Código Penal)"
+      },
+      {
+        "element_name": "Tipicidad subjetiva: dolo (conocimiento y voluntad de vejar injustamente)",
+        "status": "contested",
+        "evidence": [
+          "STG-29.seg-12",
+          "STG-5.seg-12",
+          "LATAM-2.seg-12"
+        ],
+        "argument": "La intervención del supervisor en el 'ajuste' de la carta de contingencia y la deflexión al área legal sugieren conciencia de irregularidad. La activación de seguridad basada en acusaciones no verificadas podría configurar dolo eventual. Sin embargo, no hay confesión explícita de intención vejatoria.",
+        "element_id": "CL.CPCL.C1.Art.255.inc1.elem.tipicidad_subjetiva_dolo",
+        "doctrinal_basis": "El tipo requiere dolo directo o eventual: el agente debe saber que actúa sin causa legal y querer o aceptar el resultado vejatorio.",
+        "weaknesses": [
+          "Podría alegarse error de tipo: la tripulación creyó genuinamente en las acusaciones al momento de actuar.",
+          "La deflexión al área legal podría interpretarse como protocolo estándar, no como conciencia de ilicitud."
+        ],
+        "open_questions": [
+          "¿Existió comunicación interna previa que evidencie conocimiento de la falsedad de las acusaciones?",
+          "¿Se verificaron las acusaciones antes de activar el protocolo de seguridad?"
+        ],
+        "article_short": "Art. 255 inc. 1 — Vejaciones injustas cometidas por empleado público (Código Penal)"
+      }
+    ],
+    "CL.LPDC.Art.3.b": [
+      {
+        "element_name": "Sujeto obligado: proveedor profesional",
+        "status": "established",
+        "evidence": [
+          "LATAM-2.seg-12",
+          "STG-29.seg-1",
+          "STG-29.seg-12"
+        ],
+        "argument": "LATAM Airlines actúa como proveedor de servicios de transporte aéreo. Los segmentos muestran a supervisores de LATAM (Antonela, Diego) interactuando directamente con el pasajero en calidad de representantes del proveedor, gestionando documentos y protocolos de contingencia.",
+        "element_id": "CL.LPDC.Art.3.b.elem.sujeto_obligado_proveedor",
+        "doctrinal_basis": "El deber de información veraz recae sobre el proveedor en los términos del Art. 1 N°2 LPDC, quien ofrece bienes o servicios al consumidor.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Sujeto titular: consumidor",
+        "status": "established",
+        "evidence": [
+          "LATAM-2.seg-1",
+          "LATAM-3.seg-1",
+          "STG-29.seg-40"
+        ],
+        "argument": "Leandro Disconzi es pasajero que adquirió un servicio de transporte aéreo para uso personal, calificando como consumidor. Los segmentos lo muestran solicitando documentación y reclamando información sobre su situación contractual.",
+        "element_id": "CL.LPDC.Art.3.b.elem.sujeto_titular_consumidor",
+        "doctrinal_basis": "El derecho a información veraz corresponde al consumidor final definido en Art. 1 N°1 LPDC.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Existencia de relación de consumo vigente",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "LATAM-3.seg-12"
+        ],
+        "argument": "El pasajero se encontraba a bordo de la aeronave o en proceso de embarque, lo que demuestra la existencia de un contrato de transporte en ejecución. La tripulación le ordena descender y activa protocolos de seguridad, todo dentro de la prestación del servicio contratado.",
+        "element_id": "CL.LPDC.Art.3.b.elem.existencia_relacion_consumo",
+        "doctrinal_basis": "El deber informativo opera dentro de una relación de consumo (contrato de transporte aéreo vigente o en ejecución).",
+        "weaknesses": [
+          "No se aporta copia del billete o contrato de transporte como prueba documental directa."
+        ],
+        "open_questions": [],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Deber de entregar información veraz (no falsa ni engañosa)",
+        "status": "strong",
+        "evidence": [
+          "STG-29.seg-40",
+          "STG-5.seg-12",
+          "STG-29.seg-12"
+        ],
+        "argument": "El pasajero declara que fue acusado de agresión y de pasar solo por la puerta de embarque, hechos que la policía verificó mediante CCTV como falsos. La activación de seguridad y la producción de una 'carta de contingencia' se basaron en información no veraz generada por personal de LATAM, vulnerando el deber de veracidad informativa hacia el consumidor.",
+        "element_id": "CL.LPDC.Art.3.b.elem.deber_informacion_veraz",
+        "doctrinal_basis": "Art. 3 letra b) exige que la información proporcionada sea veraz, es decir, que corresponda a la realidad de los hechos y no induzca a error al consumidor.",
+        "weaknesses": [
+          "La prueba principal del carácter falso de las acusaciones es la declaración del propio pasajero sobre la verificación policial; se requiere el acta policial o registro CCTV como corroboración."
+        ],
+        "open_questions": [
+          "¿Se obtuvo copia del informe policial que confirma la falsedad de las acusaciones?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Deber de entregar información oportuna",
+        "status": "strong",
+        "evidence": [
+          "LATAM-2.seg-1",
+          "LATAM-2.seg-12",
+          "LATAM-3.seg-12"
+        ],
+        "argument": "El pasajero solicita ver su carta y espera una firma, pero la supervisora Antonela difiere toda explicación al 'área legal' sin entregar información en el momento relevante. La dilación y derivación impiden al consumidor conocer oportunamente los fundamentos de la decisión que lo afecta (denegación de embarque/desembarco forzado).",
+        "element_id": "CL.LPDC.Art.3.b.elem.deber_informacion_oportuna",
+        "doctrinal_basis": "La oportunidad exige que la información se entregue en tiempo útil para que el consumidor pueda ejercer sus derechos y tomar decisiones informadas.",
+        "weaknesses": [],
+        "open_questions": [
+          "¿Existía un protocolo interno que obligara a informar al pasajero in situ sobre los motivos del desembarco?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Objeto de la información: condiciones de contratación y características relevantes del servicio",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "LATAM-2.seg-12",
+          "STG-29.seg-12"
+        ],
+        "argument": "La información omitida o falseada se refiere a las razones del desembarco forzado y al contenido de la carta de contingencia, ambas características relevantes del servicio de transporte que el consumidor tenía derecho a conocer veraz y oportunamente. El supervisor Diego participa en la redacción de la carta sin transparentar su contenido al pasajero.",
+        "element_id": "CL.LPDC.Art.3.b.elem.objeto_informacion_condiciones_servicio",
+        "doctrinal_basis": "El Art. 3 b) cubre no solo precio sino 'condiciones de contratación y otras características relevantes', incluyendo las causales de denegación de embarque y los derechos del pasajero ante incidentes.",
+        "weaknesses": [
+          "No se dispone del texto de la carta de contingencia para verificar su contenido específico."
+        ],
+        "open_questions": [
+          "¿Qué decía exactamente la carta de contingencia y fue entregada al pasajero?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Perjuicio derivado de la infracción informativa",
+        "status": "contested",
+        "evidence": [
+          "STG-29.seg-40",
+          "STG-5.seg-1",
+          "LATAM-3.seg-1"
+        ],
+        "argument": "El pasajero fue desembarcado con base en acusaciones falsas, sufrió la activación de un protocolo de seguridad y la complejidad procesal que él mismo reconoce. Sin embargo, la cuantificación precisa del perjuicio (pérdida de vuelo, daño moral, gastos) no se desprende directamente de los segmentos disponibles.",
+        "element_id": "CL.LPDC.Art.3.b.elem.perjuicio_al_consumidor",
+        "doctrinal_basis": "Si bien el Art. 3 b) no exige perjuicio como elemento típico de la infracción, la existencia de daño refuerza la procedencia de indemnización (Art. 3 letra e) LPDC).",
+        "weaknesses": [
+          "Falta prueba documental del daño patrimonial concreto (boletos perdidos, gastos adicionales).",
+          "El daño moral requiere desarrollo argumentativo adicional."
+        ],
+        "open_questions": [
+          "¿El pasajero perdió efectivamente el vuelo?",
+          "¿Se generaron gastos adicionales de alojamiento o transporte?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Nexo causal entre la información falsa/omitida y la afectación del consumidor",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-12",
+          "STG-29.seg-40",
+          "LATAM-2.seg-12"
+        ],
+        "argument": "La secuencia causal es clara: personal de LATAM genera acusaciones falsas (verificadas como mentira por CCTV policial), activa seguridad con base en ellas, y luego niega al consumidor información oportuna sobre los fundamentos, derivándolo al área legal. La desinformación impidió al pasajero defenderse en tiempo real y ejercer sus derechos contractuales.",
+        "element_id": "CL.LPDC.Art.3.b.elem.nexo_causal_informacion_decision",
+        "doctrinal_basis": "Debe acreditarse que la falta de información veraz y oportuna fue determinante en la afectación de los derechos del consumidor, impidiéndole ejercer sus facultades contractuales.",
+        "weaknesses": [
+          "Se requiere consolidar la línea temporal con mayor precisión documental."
+        ],
+        "open_questions": [
+          "¿Quién específicamente formuló las acusaciones falsas iniciales y en qué documento constan?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      }
+    ],
+    "CL.LPDC.Art.23": [
+      {
+        "element_name": "Sujeto activo: proveedor de un bien o servicio",
+        "status": "established",
+        "evidence": [
+          "LATAM-2.seg-12",
+          "STG-29.seg-12",
+          "STG-5.seg-12"
+        ],
+        "argument": "LATAM Airlines actúa como proveedor de servicios de transporte aéreo. Los segmentos muestran a personal de LATAM (supervisora Antonela, supervisor Diego, tripulación) actuando en representación de la aerolínea en la prestación del servicio contratado por el pasajero.",
+        "element_id": "CL.LPDC.Art.23.inciso1.elem.sujeto_activo_proveedor",
+        "doctrinal_basis": "El sujeto activo debe ser un 'proveedor' en los términos del Art. 1 N°2 LPDC, es decir, quien habitualmente desarrolla actividades de producción, fabricación, importación, distribución o comercialización de bienes o prestación de servicios a consumidores.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 23 inciso 1 — Infracción por negligencia del proveedor que causa menoscabo al consumidor (LPDC)"
+      },
+      {
+        "element_name": "Sujeto pasivo: consumidor final",
+        "status": "established",
+        "evidence": [
+          "LATAM-2.seg-1",
+          "LATAM-3.seg-1",
+          "STG-29.seg-40"
+        ],
+        "argument": "Leandro Disconzi es un pasajero que contrató un servicio de transporte aéreo con LATAM, actuando como consumidor final. Los segmentos lo identifican solicitando documentos relativos a su servicio y esperando resolución de su situación como cliente.",
+        "element_id": "CL.LPDC.Art.23.inciso1.elem.sujeto_pasivo_consumidor",
+        "doctrinal_basis": "El afectado debe ser un 'consumidor' conforme al Art. 1 N°1 LPDC, persona natural o jurídica que adquiere, utiliza o disfruta bienes o servicios como destinatario final.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 23 inciso 1 — Infracción por negligencia del proveedor que causa menoscabo al consumidor (LPDC)"
+      },
+      {
+        "element_name": "Contexto: venta de un bien o prestación de un servicio",
+        "status": "established",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-29.seg-12"
+        ],
+        "argument": "Los hechos ocurren durante la prestación del servicio de transporte aéreo: el pasajero se encontraba a bordo del avión o en proceso de embarque cuando se activaron protocolos de seguridad y se le exigió descender. La carta de contingencia y la intervención de supervisores de ventas confirman el contexto de prestación de servicio.",
+        "element_id": "CL.LPDC.Art.23.inciso1.elem.contexto_prestacion_servicio",
+        "doctrinal_basis": "La infracción debe producirse 'en la venta de un bien o en la prestación de un servicio', es decir, en el marco de la relación de consumo.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 23 inciso 1 — Infracción por negligencia del proveedor que causa menoscabo al consumidor (LPDC)"
+      },
+      {
+        "element_name": "Elemento subjetivo: actuación con negligencia",
+        "status": "strong",
+        "evidence": [
+          "STG-29.seg-40",
+          "STG-5.seg-12",
+          "STG-29.seg-12"
+        ],
+        "argument": "La negligencia se configura por la activación de protocolos de seguridad basados en acusaciones que resultaron ser falsas (agresión, paso no autorizado por boarding gate), sin verificación previa adecuada. Además, el departamento de ventas participó en la redacción de una carta de contingencia, sugiriendo ajustes a su contenido, lo que evidencia falta de diligencia en los procedimientos internos de control de calidad del servicio.",
+        "element_id": "CL.LPDC.Art.23.inciso1.elem.negligencia",
+        "doctrinal_basis": "El Art. 23 inciso 1 exige que el proveedor haya actuado 'con negligencia', es decir, con falta de diligencia debida en la prestación del servicio. No se requiere dolo, pero sí un estándar de culpa que puede incluir la falta de verificación de hechos antes de actuar.",
+        "weaknesses": [
+          "No se cuenta con un protocolo escrito de LATAM que establezca el estándar de verificación exigible antes de activar seguridad, lo que dificulta medir la desviación del deber de cuidado."
+        ],
+        "open_questions": [
+          "¿Existía un procedimiento interno que obligara a verificar las acusaciones mediante CCTV antes de desembarcar al pasajero?"
+        ],
+        "article_short": "Art. 23 inciso 1 — Infracción por negligencia del proveedor que causa menoscabo al consumidor (LPDC)"
+      },
+      {
+        "element_name": "Modalidad típica: fallas o deficiencias en calidad, seguridad o identidad del servicio",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-12",
+          "STG-29.seg-40",
+          "STG-29.seg-12"
+        ],
+        "argument": "La deficiencia se manifiesta en dos dimensiones: (1) en la seguridad del servicio, al activar un protocolo de desembarque forzoso basado en acusaciones falsificadas que la policía desmintió mediante revisión de cámaras; y (2) en la calidad del servicio, al involucrar al departamento de ventas en la redacción de documentos de contingencia con posibles ajustes indebidos a su contenido, comprometiendo la veracidad documental.",
+        "element_id": "CL.LPDC.Art.23.inciso1.elem.falla_deficiencia_servicio",
+        "doctrinal_basis": "El menoscabo debe derivar de 'fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio'. En servicios de transporte aéreo, esto incluye deficiencias en la seguridad del procedimiento y en la calidad/veracidad de la información que sustenta decisiones operativas.",
+        "weaknesses": [
+          "La conexión entre la participación de ventas en la carta de contingencia y una 'deficiencia del servicio' en sentido estricto del Art. 23 podría ser cuestionada como un acto posterior al servicio."
+        ],
+        "open_questions": [
+          "¿La carta de contingencia forma parte de la prestación del servicio o es un acto administrativo posterior?"
+        ],
+        "article_short": "Art. 23 inciso 1 — Infracción por negligencia del proveedor que causa menoscabo al consumidor (LPDC)"
+      },
+      {
+        "element_name": "Resultado: menoscabo causado al consumidor",
+        "status": "strong",
+        "evidence": [
+          "STG-29.seg-40",
+          "STG-5.seg-1",
+          "LATAM-3.seg-1"
+        ],
+        "argument": "El pasajero fue desembarcado del avión bajo acusaciones falsas de agresión, sufriendo menoscabo consistente en: privación del servicio de transporte contratado, afectación a su honra por acusaciones infundadas ante otros pasajeros y autoridades, y la complejidad procedimental que él mismo reconoce. Las acusaciones fueron desmentidas por la policía mediante CCTV, confirmando que el menoscabo fue injustificado.",
+        "element_id": "CL.LPDC.Art.23.inciso1.elem.menoscabo_consumidor",
+        "doctrinal_basis": "Debe acreditarse un 'menoscabo al consumidor', concepto amplio que incluye daño patrimonial (pérdida del pasaje, gastos adicionales) y extrapatrimonial (afectación a la dignidad, honor, estrés).",
+        "weaknesses": [
+          "No se cuantifica el daño patrimonial concreto en los segmentos disponibles (costo del pasaje perdido, gastos de alojamiento, etc.)."
+        ],
+        "open_questions": [
+          "¿Cuál fue el destino final del pasajero y cuánto tiempo demoró en completar su viaje?",
+          "¿Se generaron gastos adicionales documentables?"
+        ],
+        "article_short": "Art. 23 inciso 1 — Infracción por negligencia del proveedor que causa menoscabo al consumidor (LPDC)"
+      },
+      {
+        "element_name": "Nexo causal entre la negligencia del proveedor y el menoscabo",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-12",
+          "STG-29.seg-40",
+          "STG-5.seg-1"
+        ],
+        "argument": "El nexo causal es directo: la tripulación de LATAM activó seguridad y ordenó el desembarque del pasajero (causa) basándose en acusaciones que la policía verificó como falsas mediante CCTV (negligencia en la verificación), lo que produjo la privación del servicio y el daño al pasajero (efecto). Sin la activación negligente del protocolo, el pasajero habría completado su vuelo normalmente.",
+        "element_id": "CL.LPDC.Art.23.inciso1.elem.nexo_causal",
+        "doctrinal_basis": "Debe existir relación de causalidad directa entre la actuación negligente del proveedor (falla o deficiencia del servicio) y el menoscabo sufrido por el consumidor.",
+        "weaknesses": [
+          "Podría argumentarse que la tripulación actuó conforme a protocolos de seguridad aeronáutica obligatorios, lo que rompería parcialmente el nexo causal con la negligencia."
+        ],
+        "open_questions": [
+          "¿La normativa aeronáutica (DAN 91, Código Aeronáutico) obligaba a la tripulación a desembarcar al pasajero sin verificación previa, excluyendo la negligencia?"
+        ],
+        "article_short": "Art. 23 inciso 1 — Infracción por negligencia del proveedor que causa menoscabo al consumidor (LPDC)"
+      },
+      {
+        "element_name": "Circunstancia agravante: producción de documentos con contenido falso",
+        "status": "contested",
+        "evidence": [
+          "STG-29.seg-12",
+          "STG-29.seg-40",
+          "LATAM-3.seg-12"
+        ],
+        "argument": "El supervisor de ventas Diego solicita 'ajustar' el contenido de la carta de contingencia, lo que sugiere manipulación documental. El pasajero denuncia que las acusaciones de agresión fueron comprobadas como mentira por la policía mediante CCTV. Sin embargo, no se cuenta con la carta de contingencia final ni con el informe policial como prueba documental directa en los segmentos.",
+        "element_id": "CL.LPDC.Art.23.inciso1.elem.documento_falsificado",
+        "doctrinal_basis": "Si bien no es un elemento típico autónomo del Art. 23, la producción de documentos con contenido falsificado (carta de contingencia ajustada por ventas, acusaciones desmentidas por CCTV) refuerza la negligencia y puede constituir una infracción agravada conforme al Art. 24 LPDC para efectos de determinación de multa.",
+        "weaknesses": [
+          "El segmento STG-29.seg-12 es ambiguo respecto al alcance del 'ajuste' solicitado.",
+          "No se dispone del documento final para comparar con los hechos verificados por CCTV."
+        ],
+        "open_questions": [
+          "¿Qué contenido específico tenía la carta de contingencia final?",
+          "¿El informe policial que desmiente las acusaciones está disponible como prueba documental?",
+          "¿La participación de ventas en la redacción de la carta constituye una irregularidad procedimental interna de LATAM?"
+        ],
+        "article_short": "Art. 23 inciso 1 — Infracción por negligencia del proveedor que causa menoscabo al consumidor (LPDC)"
+      }
+    ]
+  },
+  "cross_references": [
+    {
+      "ref": "CL-001",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-002",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-003",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-004",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-005",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-006",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-007",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-008",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-009",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-010",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-011",
+      "relation": "document_withheld_from_passenger_denies_due_process"
+    },
+    {
+      "ref": "CL-012",
+      "relation": "sales_involvement_parallels_pdi_latam_coordination_pattern"
+    },
+    {
+      "ref": "CL-013",
+      "relation": "falsified_document_perpetuates_escalating_false_accusations"
+    },
+    {
+      "ref": "CL-014",
+      "relation": "security_activation_based_on_mischaracterized_passenger_inquiry"
+    },
+    {
+      "ref": "CL-016",
+      "relation": "sales_department_involved_in_drafting_unsigned_carta_de_desembarque"
+    },
+    {
+      "ref": "CL-016__opus46",
+      "relation": "sales_contingency_letter_drafting_relates_to_invalid_document_production"
+    },
+    {
+      "ref": "CL-016__opus47",
+      "relation": "sales_contingency_letter_drafting_relates_to_invalid_document_production"
+    },
+    {
+      "ref": "CL-016__sonnet4",
+      "relation": "sales_contingency_letter_drafting_relates_to_invalid_document_production"
+    },
+    {
+      "ref": "CL-015__opus46",
+      "relation": "duplicate_analysis_of_same_violation"
+    }
+  ],
+  "note": "Full JSON reconstruction from markdown – includes all key admissions, legal reasoning, candidate articles, and cross-references.",
+  "full_segments": [
+    {
+      "segment_id": "LATAM-2.seg-1",
+      "role_in_argument": "document_production_request",
+      "audio_offset_start": 11.43,
+      "audio_offset_end": 13.47,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "hay mi carta? Déjame ver.",
+      "verbatim_sha256": "f41b518296af0ca97417972f45f299609a028e434a63a17ddec69db665b74dce",
+      "translation_en": "Is there my letter? Let me see it.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_latam_STG_2.html#seg-1",
+      "source_sha256": "781f3f1267a4474986366f4f81bb3ce37ccd5d26e335b485023b5bd3e5f6d178",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "LATAM-2.seg-12",
+      "role_in_argument": "sales_deflection_to_legal",
+      "audio_offset_start": 81.49,
+      "audio_offset_end": 90.69,
+      "speaker": "Latam Supervisora (Antonela)",
+      "verbatim_es": "Eso lo tiene que ver después con el área legal cuando lo contacten. Eso no lo vemos nosotros, lo ve el área legal.",
+      "verbatim_sha256": "a7a0119396747b10d8585f34d18596df29104fed422a897d5690201c28227eae",
+      "translation_en": "That has to be reviewed later with the legal department when they contact you. We don't handle that; the legal department handles it.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_latam_STG_2.html#seg-12",
+      "source_sha256": "781f3f1267a4474986366f4f81bb3ce37ccd5d26e335b485023b5bd3e5f6d178",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "LATAM-3.seg-1",
+      "role_in_argument": "passenger_acknowledges_procedural_complexity",
+      "audio_offset_start": 9.19,
+      "audio_offset_end": 12.06,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "creo que queda un poco complejo esto.",
+      "verbatim_sha256": "a1151ebbe601decc3e1e6756545ee263005c539a8b212b217f3407af38474f8e",
+      "translation_en": "I think this is getting a bit complicated.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_latam_STG_3.html#seg-1",
+      "source_sha256": "cae14ce169dcf8d9146e74f032f3b1d9b39471509e43cf27d02951f3660a2025",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "LATAM-3.seg-12",
+      "role_in_argument": "passenger_awaiting_document_signature",
+      "audio_offset_start": 55.78,
+      "audio_offset_end": 57.12,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "y yo estoy esperando a la firma.",
+      "verbatim_sha256": "b48de2168bdb4029435ee9650213b8de60563b357979560bd017b5a8bce0bde3",
+      "translation_en": "And I am waiting for the signature.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_latam_STG_3.html#seg-12",
+      "source_sha256": "cae14ce169dcf8d9146e74f032f3b1d9b39471509e43cf27d02951f3660a2025",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-29.seg-1",
+      "role_in_argument": "sales_supervisor_initiates_contact",
+      "audio_offset_start": 6.32,
+      "audio_offset_end": 7.17,
+      "speaker": "Latam supervisor (Diego)",
+      "verbatim_es": "hola señor",
+      "verbatim_sha256": "7c8ce78b03b029a547484f6b0daadb7db1ebf496bd49dda4cbc28afe6dd0ef7e",
+      "translation_en": "Hello, sir.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_29.html#seg-1",
+      "source_sha256": "02af37830e37e1b77fc4cf59481520f10fc29797d8e8dedb6d23fb98edba273e",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-29.seg-12",
+      "role_in_argument": "sales_involvement_in_contingency_letter_drafting",
+      "audio_offset_start": 86.29,
+      "audio_offset_end": 92.54,
+      "speaker": "Latam supervisor (Diego)",
+      "verbatim_es": "¿y en esa carta de contingencia podrá ajustar como para el te digo yo?",
+      "verbatim_sha256": "1745f9057ad71117cf50ee6db4c1edccfb77497d406086a95241104a68e3e4d0",
+      "translation_en": "And in that contingency letter, could you adjust it so that — let me tell you?",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_29.html#seg-12",
+      "source_sha256": "02af37830e37e1b77fc4cf59481520f10fc29797d8e8dedb6d23fb98edba273e",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-29.seg-40",
+      "role_in_argument": "falsified_accusations_rebutted_by_cctv",
+      "audio_offset_start": 254,
+      "audio_offset_end": 276.97,
+      "speaker": "SPEAKER_01",
+      "verbatim_es": "pónete en mi lugar, pónete en mi lugar. Yo fui acusado de agresión, eso no pasó. Yo fui acusado de pasar solo en el boarding gate. La misma persona que me acusó de agresión, eso también no pasó. La policía verificó eso en la cámara, eso fue comprobado que era una mentira.",
+      "verbatim_sha256": "bdd3fcb8e55b5647f783d9847ad8d6b15d28bbb4bc7ffcfab2454dff01327186",
+      "translation_en": "Put yourself in my place, put yourself in my place. I was accused of aggression — that didn't happen. I was accused of passing alone through the boarding gate. The same person who accused me of aggression — that also didn't happen. The police verified it on camera; it was proven to be a lie.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_29.html#seg-40",
+      "source_sha256": "02af37830e37e1b77fc4cf59481520f10fc29797d8e8dedb6d23fb98edba273e",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-5.seg-1",
+      "role_in_argument": "security_protocol_enforcement_by_crew",
+      "audio_offset_start": 2.87,
+      "audio_offset_end": 3.52,
+      "speaker": "Latam Stewardess",
+      "verbatim_es": "Tiene que salir del avion, tiene que bajar",
+      "verbatim_sha256": "97c0a1e2f91f83562cb175fdeed34c32c69e31b990b92fbdddf0f4517d74ec8f",
+      "translation_en": "You have to leave the aircraft; you have to get off.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_5.html#seg-1",
+      "source_sha256": "88322947b6ce0c6461ab3571bafe058c055f5d99a9f5cc42365790fedfa744f3",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-5.seg-12",
+      "role_in_argument": "security_activation_based_on_falsified_grounds",
+      "audio_offset_start": 50,
+      "audio_offset_end": 51.7,
+      "speaker": "Latam Stewardess",
+      "verbatim_es": "Ya activamos seguridad. Igual va a tener que bajar",
+      "verbatim_sha256": "43d8b8f8f52c43afad737350fd42a4f7adddfcba075d58a6e599c5c25b9aa349",
+      "translation_en": "We've already activated security. You're still going to have to get off.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_5.html#seg-12",
+      "source_sha256": "88322947b6ce0c6461ab3571bafe058c055f5d99a9f5cc42365790fedfa744f3",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "LATAM-2.seg-40",
+      "role_in_argument": "unidentified_segment",
+      "audio_offset_start": 0,
+      "audio_offset_end": 0,
+      "speaker": "unknown",
+      "verbatim_es": "",
+      "verbatim_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "translation_en": "",
+      "transcription_notes": "Empty verbatim; no content to translate.",
+      "source_uri": "legacy://CL-015/LATAM-2.seg-40",
+      "source_sha256": "047bde2be5034314634616b8a7b2c36aec5773ebdf92436f668f63ef0377e3e5",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "LATAM-3.seg-40",
+      "role_in_argument": "unidentified_segment",
+      "audio_offset_start": 0,
+      "audio_offset_end": 0,
+      "speaker": "unknown",
+      "verbatim_es": "",
+      "verbatim_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "translation_en": "",
+      "transcription_notes": "Empty verbatim; no content to translate.",
+      "source_uri": "legacy://CL-015/LATAM-3.seg-40",
+      "source_sha256": "321443baa12e2c5f4dec0a1825e0128abee3ff89b95c421319ae7057b80d1378",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-5.seg-40",
+      "role_in_argument": "unidentified_segment",
+      "audio_offset_start": 0,
+      "audio_offset_end": 0,
+      "speaker": "unknown",
+      "verbatim_es": "",
+      "verbatim_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "translation_en": "",
+      "transcription_notes": "Empty verbatim; no content to translate.",
+      "source_uri": "legacy://CL-015/STG-5.seg-40",
+      "source_sha256": "134e8eaf25428c0a7ab00322e98148cc73c7456965089be0916f404656f0424a",
+      "audio_uri": null
+    }
+  ],
+  "incident_meta": {
+    "date": "2024-07-05",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T13:30:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "framework_caches": [
+    {
+      "framework_code": "CHIPENCOD",
+      "framework_name": "Codigo Penal de Chile",
+      "cache_file": "Legal framework/CHIPENCOD.md",
+      "cache_file_sha256": "5e189a4a8d31010c3c09610bd439368e1b5d120d4b8a6cae7f13fa19d18cfb9f",
+      "cache_self_reported_sha256": "509efbf4814f18b681903a7e6c1cd828443c47cb4930c67991d7a32c69fe0baf",
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "1",
+        "141",
+        "148",
+        "193",
+        "194",
+        "195",
+        "196",
+        "197",
+        "211",
+        "212",
+        "255",
+        "296"
+      ]
+    },
+    {
+      "framework_code": "CPCL",
+      "framework_name": "Codigo Penal de Chile (Definitions)",
+      "cache_file": "Legal framework/CPCL.md",
+      "cache_file_sha256": "0b2d5b975f2e95a699c22550dd660fe12fd724b9a0206361553c31927773b7fe",
+      "cache_self_reported_sha256": null,
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "17",
+        "94",
+        "255",
+        "269 ter",
+        "412",
+        "416",
+        "494 N 16"
+      ]
+    },
+    {
+      "framework_code": "LPDC",
+      "framework_name": "Ley 19.496 — Ley de Proteccion de los Derechos del Consumidor",
+      "cache_file": "Legal framework/LPDC.md",
+      "cache_file_sha256": "222cb7cef77794c04cb903a3a4d519641255fa339cf32487f9496a1e0ba4c530",
+      "cache_self_reported_sha256": null,
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "3 letra b)",
+        "3 letra e)",
+        "12",
+        "23",
+        "23 bis",
+        "50",
+        "50 A",
+        "58"
+      ]
+    }
+  ],
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.LPDC.Art.12",
+      "candidate_name": "Cláusulas abusivas — nulidad de estipulaciones contrarias a buena fe",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.12 from bcn.cl/leychile (Ley 19.496)",
+        "Confirm whether internal 'contingency letters' drafted by sales staff with adjusted content could constitute abusive contractual stipulations imposed on the consumer"
+      ],
+      "preliminary_view": "If the 'contingency letter' that the sales supervisor (Diego) sought to adjust constitutes a contractual document or waiver presented to the passenger, Art. 12 may render abusive clauses therein void. Requires verification of the letter's legal character.",
+      "history_note": "New candidate — not previously analyzed. Arises from STG-29.seg-12 where sales supervisor requests adjustments to a contingency letter."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.16.g",
+      "candidate_name": "Cláusulas abusivas — limitación de responsabilidad del proveedor",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.16 letra g from bcn.cl/leychile (Ley 19.496)",
+        "Assess whether the contingency letter or any document produced by LATAM staff attempted to limit the airline's liability for the denied boarding or falsified accusations"
+      ],
+      "preliminary_view": "Art. 16 g declares abusive any clause that limits the provider's liability to the detriment of the consumer. If the drafted contingency letter contained liability-limiting language, this provision is directly applicable.",
+      "history_note": "New candidate. Motivated by the sales department's involvement in drafting/adjusting the contingency letter (STG-29.seg-12)."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.3.a",
+      "candidate_name": "Derecho a libre elección del bien o servicio",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.3 letra a from bcn.cl/leychile (Ley 19.496)",
+        "Determine whether forced removal from the aircraft and denial of the contracted flight service constitutes a violation of the consumer's right to free choice of the service"
+      ],
+      "preliminary_view": "The passenger held a valid ticket for LA8159 and was forcibly removed based on accusations later proven false by CCTV. This may constitute a violation of the right to the free exercise of the contracted service.",
+      "history_note": "New candidate. Art. 3.b is already established; Art. 3.a addresses a distinct right (libre elección)."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.3.e",
+      "candidate_name": "Derecho a la reparación e indemnización adecuada y oportuna",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.3 letra e from bcn.cl/leychile (Ley 19.496)",
+        "Confirm that the deflection to 'legal department' (LATAM-2.seg-12) without immediate remedy engages this right"
+      ],
+      "preliminary_view": "Supervisora Antonela's deflection to the legal department without offering any immediate reparation may violate the consumer's right to adequate and timely redress under Art. 3 e.",
+      "history_note": "New candidate. Distinct from Art. 3.b (information) already in the bundle."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.28",
+      "candidate_name": "Publicidad engañosa — inducción a error sobre características del servicio",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.28 from bcn.cl/leychile (Ley 19.496)",
+        "Assess whether the falsified accusations (aggression, unauthorized boarding) communicated to the passenger and to police constitute misleading representations about the conditions of service provision"
+      ],
+      "preliminary_view": "Art. 28 prohibits inducing error regarding the nature, characteristics, or conditions of a service. The fabrication of false grounds for removal could be characterized as a misleading representation about the conditions under which the service was denied. Applicability is plausible but requires careful analysis of whether the norm extends beyond advertising to operational misrepresentations.",
+      "history_note": "New candidate. Extends the information-verity line beyond Art. 3.b."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Responsabilidad extracontractual — el que ha cometido un delito o cuasidelito que ha inferido daño a otro",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2314 from bcn.cl/leychile (Código Civil)",
+        "Confirm applicability to LATAM employees/agents whose false accusations (proven by CCTV) caused harm to the passenger"
+      ],
+      "preliminary_view": "Art. 2314 CC establishes the general duty to indemnify for damage caused by fault or negligence. The falsified accusations of aggression, disproven by police review of CCTV, constitute a tortious act causing reputational and material harm to the passenger.",
+      "history_note": "New candidate. General tort provision supporting civil damages claim alongside the LPDC framework."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2329",
+      "candidate_name": "Responsabilidad extracontractual — todo daño imputable a malicia o negligencia",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2329 from bcn.cl/leychile (Código Civil)",
+        "Assess whether the coordinated conduct (false accusations + security activation + document drafting by sales) constitutes malice or negligence under this provision"
+      ],
+      "preliminary_view": "Art. 2329 reinforces Art. 2314 by establishing a presumption that damage attributable to malice or negligence of another must be repaired. The deliberate fabrication of accusations later disproven by CCTV evidence strongly suggests malice.",
+      "history_note": "New candidate. Complements Art. 2314 CC."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1546",
+      "candidate_name": "Buena fe contractual — los contratos deben ejecutarse de buena fe",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.1546 from bcn.cl/leychile (Código Civil)",
+        "Determine whether LATAM's conduct (false accusations, security activation on fabricated grounds, sales involvement in document drafting) constitutes bad faith in the execution of the transport contract"
+      ],
+      "preliminary_view": "The transport contract between the passenger and LATAM must be performed in good faith. Fabricating accusations of aggression to justify removal from a flight, then having the sales department draft adjusted contingency letters, is a paradigmatic breach of good faith in contract performance.",
+      "history_note": "New candidate. Foundational civil law principle applicable to the air transport contract."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.131",
+      "candidate_name": "Obligaciones del transportador aéreo — denegación de embarque",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.131 from bcn.cl/leychile (Código Aeronáutico, DFL 221 de 1931 / Ley 18.916)",
+        "Verify whether this article governs the airline's obligations when denying boarding or removing a passenger, and whether it requires documented justification"
+      ],
+      "preliminary_view": "The Código Aeronáutico regulates the air transport contract. Art. 131 (or nearby articles in Título IX) may impose specific obligations on the carrier when denying boarding. The removal based on fabricated grounds would violate these obligations. Exact article number requires verification.",
+      "history_note": "New candidate. Sector-specific regulation that should be checked for the precise article governing denied boarding obligations."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.147",
+      "candidate_name": "Responsabilidad del transportador por incumplimiento del contrato de transporte aéreo",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.147 from bcn.cl/leychile (Código Aeronáutico, Ley 18.916)",
+        "Confirm whether this article establishes carrier liability for failure to perform the transport contract and the applicable compensation regime"
+      ],
+      "preliminary_view": "Art. 147 CACH (or nearby provisions in Título IX, Párrafo 3) likely establishes the carrier's liability for non-performance of the transport contract. The forced removal from the aircraft constitutes non-performance. Exact article number requires verification against the current consolidated text.",
+      "history_note": "New candidate. The Código Aeronáutico is the lex specialis for air transport disputes in Chile."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.207",
+      "candidate_name": "Falso testimonio / denuncia calumniosa",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CP.Art.207 from bcn.cl/leychile (Código Penal)",
+        "Verify whether the false accusations of aggression reported to police (later disproven by CCTV) constitute the crime of denuncia calumniosa or falso testimonio under this or a nearby article (Arts. 206-213)"
+      ],
+      "preliminary_view": "The passenger states he was accused of aggression and unauthorized boarding, both proven false by CCTV. If these accusations were formally communicated to police as a denuncia, Art. 207 or Art. 211 CP (denuncia calumniosa) may apply. The exact article within the Title on false testimony requires verification.",
+      "history_note": "New candidate. Distinct from the falsification of documents articles (Arts. 193-197) already established; this addresses the false accusation itself rather than the documentary falsification."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.211",
+      "candidate_name": "Denuncia calumniosa — acusación falsa ante autoridad",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CP.Art.211 from bcn.cl/leychile (Código Penal)",
+        "Confirm whether the LATAM employee's false report of aggression to police, disproven by CCTV, meets the elements of denuncia calumniosa"
+      ],
+      "preliminary_view": "Art. 211 CP penalizes anyone who falsely accuses another of a crime before the authorities. The CCTV-disproven accusations of aggression reported to police at SCL airport appear to meet the elements of this offense. Requires verification of the exact statutory text and whether a formal denuncia was filed.",
+      "history_note": "New candidate. Complements the document falsification articles already established."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.3",
+      "candidate_name": "Garantía constitucional — igual protección de la ley en el ejercicio de derechos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19 numeral 3 from bcn.cl/leychile (Constitución Política de la República)",
+        "Assess whether the fabrication of false accusations and activation of security protocols on false grounds violates the passenger's constitutional right to equal protection and due process"
+      ],
+      "preliminary_view": "Art. 19 N°3 CPR guarantees equal protection of the law and due process. The passenger was subjected to security removal based on fabricated accusations without any procedural safeguard. While this is primarily a vertical right (state vs. individual), the involvement of police in enforcing the removal based on false information may engage the constitutional guarantee.",
+      "history_note": "New candidate. Constitutional dimension of the due process violation."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.4",
+      "candidate_name": "Garantía constitucional — respeto y protección a la vida privada y a la honra",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19 numeral 4 from bcn.cl/leychile (Constitución Política de la República)",
+        "Determine whether the false public accusations of aggression in front of other passengers and police constitute an affront to the passenger's honor protected by this provision"
+      ],
+      "preliminary_view": "The false accusations of aggression made in a public setting (aircraft, airport) before police and other passengers directly implicate the passenger's constitutional right to honor and reputation under Art. 19 N°4 CPR.",
+      "history_note": "New candidate. Constitutional basis for the reputational harm claim."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.24",
+      "candidate_name": "Multas por infracciones a la Ley del Consumidor",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.24 from bcn.cl/leychile (Ley 19.496)",
+        "Confirm the applicable fine range for infractions under Art. 23 and Art. 3.b already established"
+      ],
+      "preliminary_view": "Art. 24 establishes the sanction regime (multas) for infractions of the LPC. Since Arts. 3.b and 23 are already established, Art. 24 provides the enforcement mechanism and fine quantum. Necessary for the remedial analysis.",
+      "history_note": "New candidate. Procedural/sanctions complement to the substantive violations already identified."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.3.d",
+      "candidate_name": "Derecho a la seguridad en el consumo de bienes y servicios",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.3 letra d from bcn.cl/leychile (Ley 19.496)",
+        "Assess whether the misuse of security protocols (activated on fabricated grounds) paradoxically violated the passenger's own right to security in the consumption of the air transport service"
+      ],
+      "preliminary_view": "Art. 3 d guarantees the consumer's right to security in the consumption of goods and services. The weaponization of security protocols based on false accusations — rather than genuine safety concerns — perverts the security guarantee and may itself constitute a violation of the passenger's right to safe service consumption.",
+      "history_note": "New candidate. Distinct from Art. 3.b (information) and Art. 3.e (reparation)."
+    },
+    {
+      "candidate_article_id": "CL.CP.Art.296",
+      "candidate_name": "Amenazas — amenaza de un mal que constituya delito",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CP.Art.296 from bcn.cl/leychile (Código Penal)",
+        "Assess whether the activation of security and forced removal under threat ('Ya activamos seguridad. Igual va a tener que bajar') based on fabricated grounds constitutes criminal threats"
+      ],
+      "preliminary_view": "The statement 'Ya activamos seguridad. Igual va a tener que bajar' (STG-5.seg-12), made on the basis of accusations later proven false, could constitute an implicit threat of coercive action. However, applicability depends on whether the crew's conduct exceeds legitimate authority. This is a weaker candidate requiring careful analysis.",
+      "history_note": "New candidate. Weaker applicability — included for completeness given the coercive nature of the removal."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1489",
+      "candidate_name": "Condición resolutoria tácita — resolución por incumplimiento contractual",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.1489 from bcn.cl/leychile (Código Civil)",
+        "Determine whether the passenger may invoke the implied resolutory condition to seek contract resolution plus damages for LATAM's non-performance of the transport obligation"
+      ],
+      "preliminary_view": "Art. 1489 CC provides that in bilateral contracts, the implied resolutory condition entitles the aggrieved party to seek either specific performance or resolution, plus damages. The passenger's transport contract was breached by LATAM's refusal to perform (forced removal). This provides a contractual damages basis.",
+      "history_note": "New candidate. General contractual remedy applicable to the air transport contract."
+    }
+  ],
+  "nexus_matrix": [
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.modalidad_tipica_faltar_verdad_hechos_sustanciales",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Passenger states accusations of aggression were proven false by CCTV, establishing falsity in narration of material facts."
+    },
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.2.elem.modalidad_tipica_suponer_intervencion_personas",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "False accusation of passenger passing alone through boarding gate implies fabricated participation attributed to him in official record."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.1.elem.sujeto_activo_empleado_publico",
+      "nexus_type": "functional_context",
+      "strength": "medium",
+      "rationale_oneline": "Crew activating security exercises delegated public-safety authority, potentially qualifying as functional public employee."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.abuso_del_oficio",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Security activation based on fabricated aggression charge constitutes abuse of official function to enforce unlawful removal."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.acto_del_oficio",
+      "nexus_type": "functional_context",
+      "strength": "medium",
+      "rationale_oneline": "Security activation and resulting incident report constitute an official act within crew's delegated authority."
+    },
+    {
+      "fact_id": "STG-29.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.objeto_material_documento",
+      "nexus_type": "system_state_corroboration",
+      "strength": "medium",
+      "rationale_oneline": "Reference to 'contingency letter' with adjustable content identifies the document bearing the falsity."
+    },
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.resultado_perjuicio",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger was forcibly removed from aircraft and subjected to police investigation based on proven lies."
+    },
+    {
+      "fact_id": "STG-29.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.4.elem.tipicidad_subjetiva_dolo",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Request to 'adjust' contingency letter content reveals deliberate intent to craft false narrative."
+    },
+    {
+      "fact_id": "LATAM-3.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.193",
+      "element_id": "CL.CHIPENCOD.Art.193.1.elem.modalidad_tipica_contrahacer_firma",
+      "nexus_type": "circumstantial_omission",
+      "strength": "medium",
+      "rationale_oneline": "Passenger waiting for a signature suggests document requires authentication that may be fabricated or withheld."
+    },
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "element_id": "CL.CHIPENCOD.Art.194.elem.mutatio_veritatis",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "CCTV-verified proof that aggression accusation was a lie establishes discordance between declaration and reality."
+    },
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "element_id": "CL.CHIPENCOD.Art.194.elem.sujeto_activo_particular",
+      "nexus_type": "speaker_identification",
+      "strength": "medium",
+      "rationale_oneline": "The accusing crew member or ground staff acts as a private individual committing falsity in a public-facing document."
+    },
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "element_id": "CL.CHIPENCOD.Art.194.elem.sujeto_pasivo",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger is the direct victim whose rights and public faith were injured by the false accusations."
+    },
+    {
+      "fact_id": "STG-29.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "element_id": "CL.CHIPENCOD.Art.194.elem.objeto_material_documento_publico_o_autentico",
+      "nexus_type": "system_state_corroboration",
+      "strength": "medium",
+      "rationale_oneline": "Contingency letter discussed for adjustment constitutes the authentic document bearing the falsity."
+    },
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "element_id": "CL.CHIPENCOD.Art.194.elem.modalidad_tipica_falsedad_art193",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "False narration of aggression and unauthorized boarding gate passage maps to Art. 193 N°4 falsity modality."
+    },
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "element_id": "CL.CHIPENCOD.Art.194.elem.resultado_perjuicio",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Forced deboarding, police investigation, and reputational harm constitute effective damage from the falsity."
+    },
+    {
+      "fact_id": "STG-29.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "element_id": "CL.CHIPENCOD.Art.194.elem.tipicidad_subjetiva_dolo",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Deliberate request to adjust contingency letter wording demonstrates direct intent to falsify."
+    },
+    {
+      "fact_id": "STG-29.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.197",
+      "element_id": "CL.CHIPENCOD.Art.197.elem.objeto_material",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "The 'contingency letter' whose content is being adjusted is a private instrument used against the passenger."
+    },
+    {
+      "fact_id": "STG-29.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.197",
+      "element_id": "CL.CHIPENCOD.Art.197.elem.sujeto_activo",
+      "nexus_type": "speaker_identification",
+      "strength": "medium",
+      "rationale_oneline": "Sales supervisor requesting letter adjustment identifies as participant in the falsification chain."
+    },
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.197",
+      "element_id": "CL.CHIPENCOD.Art.197.elem.sujeto_pasivo",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger explicitly identifies himself as the third party harmed by the proven false accusations."
+    },
+    {
+      "fact_id": "STG-29.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.197",
+      "element_id": "CL.CHIPENCOD.Art.197.elem.modalidad_tipica",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Request to adjust letter content mirrors Art. 193 N°4 falsity — altering truth in narration of material facts."
+    },
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.197",
+      "element_id": "CL.CHIPENCOD.Art.197.elem.falsedad_material_o_ideologica",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "CCTV disproof of aggression confirms ideological falsity — document states facts that never occurred."
+    },
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.197",
+      "element_id": "CL.CHIPENCOD.Art.197.elem.perjuicio_de_tercero",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Forced removal, police intervention, and denial of transport constitute concrete third-party harm."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.197",
+      "element_id": "CL.CHIPENCOD.Art.197.elem.nexo_causal",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Security activation directly caused by the false report demonstrates causal link between falsity and harm."
+    },
+    {
+      "fact_id": "STG-29.seg-12",
+      "norm_id": "CL.CHIPENCOD.T4.C3.Art.197",
+      "element_id": "CL.CHIPENCOD.Art.197.elem.tipicidad_subjetiva_dolo",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Deliberate negotiation of letter wording shows knowledge and will to produce a false instrument causing harm."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.CPCL.C1.Art.255",
+      "element_id": "CL.CPCL.C1.Art.255.inc1.elem.modalidad_tipica",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Ordering passenger off aircraft based on fabricated grounds constitutes an unjust vexation against a person."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.CPCL.C1.Art.255",
+      "element_id": "CL.CPCL.C1.Art.255.inc1.elem.sujeto_activo",
+      "nexus_type": "functional_context",
+      "strength": "medium",
+      "rationale_oneline": "Crew member activating security exercises delegated public authority over aircraft safety."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.CPCL.C1.Art.255",
+      "element_id": "CL.CPCL.C1.Art.255.inc1.elem.acto_del_servicio",
+      "nexus_type": "functional_context",
+      "strength": "high",
+      "rationale_oneline": "Security activation and forced deboarding occur during performance of official crew duties aboard aircraft."
+    },
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.CPCL.C1.Art.255",
+      "element_id": "CL.CPCL.C1.Art.255.inc1.elem.injusticia_de_la_vejacion",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "CCTV proof that accusations were lies eliminates any legal cause for the forced removal."
+    },
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.CPCL.C1.Art.255",
+      "element_id": "CL.CPCL.C1.Art.255.inc1.elem.sujeto_pasivo",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "Passenger speaking identifies himself as the person subjected to the unjust vexation."
+    },
+    {
+      "fact_id": "STG-29.seg-12",
+      "norm_id": "CL.CPCL.C1.Art.255",
+      "element_id": "CL.CPCL.C1.Art.255.inc1.elem.objeto_material",
+      "nexus_type": "system_state_corroboration",
+      "strength": "medium",
+      "rationale_oneline": "Contingency letter with adjustable false content serves as the documentary instrument enabling the vexation."
+    },
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.CPCL.C1.Art.255",
+      "element_id": "CL.CPCL.C1.Art.255.inc1.elem.resultado_perjuicio",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger suffered forced removal, police investigation, and public humiliation based on proven false accusations."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.CPCL.C1.Art.255",
+      "element_id": "CL.CPCL.C1.Art.255.inc1.elem.tipicidad_subjetiva_dolo",
+      "nexus_type": "active_concealment_directive",
+      "strength": "medium",
+      "rationale_oneline": "Pre-emptive security activation before passenger can contest shows deliberate intent to enforce unjust removal."
+    },
+    {
+      "fact_id": "LATAM-2.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.deber_informacion_veraz",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Deflecting passenger to legal department prevents delivery of truthful information about service conditions."
+    },
+    {
+      "fact_id": "LATAM-2.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.deber_informacion_oportuna",
+      "nexus_type": "circumstantial_omission",
+      "strength": "high",
+      "rationale_oneline": "Deferral to unspecified future legal contact denies timely information when consumer needs it most."
+    },
+    {
+      "fact_id": "LATAM-2.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.sujeto_obligado_proveedor",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "LATAM sales representative speaking is the professional provider obligated under consumer protection law."
+    },
+    {
+      "fact_id": "LATAM-2.seg-1",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.sujeto_titular_consumidor",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "Passenger requesting his letter identifies himself as the consumer exercising information rights."
+    },
+    {
+      "fact_id": "LATAM-2.seg-1",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.existencia_relacion_consumo",
+      "nexus_type": "functional_context",
+      "strength": "high",
+      "rationale_oneline": "Passenger requesting airline documentation confirms active consumer-provider relationship."
+    },
+    {
+      "fact_id": "LATAM-2.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.objeto_informacion_condiciones_servicio",
+      "nexus_type": "active_concealment_directive",
+      "strength": "medium",
+      "rationale_oneline": "Information about legal consequences and service conditions is withheld by redirecting to another department."
+    },
+    {
+      "fact_id": "LATAM-3.seg-1",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.perjuicio_al_consumidor",
+      "nexus_type": "harm_crystallization",
+      "strength": "medium",
+      "rationale_oneline": "Consumer acknowledges procedural complexity resulting from lack of clear, timely information."
+    },
+    {
+      "fact_id": "LATAM-2.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.nexo_causal_informacion_decision",
+      "nexus_type": "circumstantial_omission",
+      "strength": "medium",
+      "rationale_oneline": "Deflection to legal department directly causes consumer's inability to make informed decisions about his rights."
+    },
+    {
+      "fact_id": "LATAM-2.seg-12",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.inciso1.elem.sujeto_activo_proveedor",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "LATAM representative speaking confirms airline as the provider of the transport service."
+    },
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.inciso1.elem.sujeto_pasivo_consumidor",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "Passenger narrating his experience identifies himself as the final consumer harmed by the service."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.inciso1.elem.contexto_prestacion_servicio",
+      "nexus_type": "functional_context",
+      "strength": "high",
+      "rationale_oneline": "Forced removal from aircraft occurs during provision of contracted air transport service."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.inciso1.elem.negligencia",
+      "nexus_type": "system_state_corroboration",
+      "strength": "medium",
+      "rationale_oneline": "Activating security without verifying accusations demonstrates negligent disregard for passenger's rights."
+    },
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.inciso1.elem.falla_deficiencia_servicio",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Removal based on CCTV-disproven lies constitutes a fundamental deficiency in service quality and security."
+    },
+    {
+      "fact_id": "STG-29.seg-40",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.inciso1.elem.menoscabo_consumidor",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Forced deboarding, police involvement, and denial of contracted transport constitute severe consumer harm."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.inciso1.elem.nexo_causal",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Security activation based on false report directly caused the consumer's forced removal and resulting harm."
+    },
+    {
+      "fact_id": "STG-29.seg-12",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.inciso1.elem.documento_falsificado",
+      "nexus_type": "contemporaneous_admission_of_intent",
+      "strength": "high",
+      "rationale_oneline": "Request to adjust contingency letter content confirms production of documents with false content as aggravating factor."
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-015-DELEGACION-PUBLICA",
+      "question": "¿Existe normativa aeronáutica (DL 2.564, Código Aeronáutico Art. 64, reglamentos DGAC) que confiera carácter de ministro de fe o función pública delegada al personal de cabina o supervisores de aerolíneas al activar protocolos de seguridad?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.1.elem.sujeto_activo_empleado_publico",
+      "priority": "critical",
+      "obtaining_method": "Solicitud de información a la Dirección General de Aeronáutica Civil (DGAC) vía Ley 20.285 de Transparencia, requiriendo copia de resoluciones, circulares o normativa que delegue funciones públicas a personal de aerolíneas comerciales en materia de seguridad aeroportuaria."
+    },
+    {
+      "id": "OQ-015-CARTA-CONTINGENCIA",
+      "question": "¿Se conserva copia de la carta de contingencia y/o reporte de incidente de seguridad redactado por personal de LATAM, y cuál es su contenido textual exacto?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.4.elem.objeto_material_documento",
+      "priority": "critical",
+      "obtaining_method": "Solicitud formal a LATAM Airlines mediante requerimiento judicial (Art. 273 N°3 CPC, medida prejudicial) o solicitud directa del pasajero invocando Art. 12 LPDC (derecho a documentación), exigiendo copia íntegra de toda documentación generada con ocasión del incidente."
+    },
+    {
+      "id": "OQ-015-NATURALEZA-DOCUMENTO",
+      "question": "¿La carta de contingencia fue presentada ante alguna autoridad pública (PDI, Carabineros, DGAC, Fiscalía) de modo que adquiera carácter de documento público o auténtico conforme al Art. 1699 CC?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.4.elem.acto_del_oficio",
+      "priority": "critical",
+      "obtaining_method": "Solicitud de información a PDI y Carabineros vía Ley 20.285 consultando si se recibió documentación de LATAM relativa al incidente; alternativamente, requerimiento al Ministerio Público para verificar si la carta fue incorporada a alguna carpeta investigativa."
+    },
+    {
+      "id": "OQ-015-ACTA-POLICIAL-CCTV",
+      "question": "¿Existe acta policial o informe de PDI/Carabineros que consigne la verificación mediante CCTV de la falsedad de las acusaciones de agresión y paso no autorizado?",
+      "blocks_element": "CL.CHIPENCOD.Art.194.elem.mutatio_veritatis",
+      "priority": "critical",
+      "obtaining_method": "Solicitud de copia de parte policial y acta de verificación de cámaras a la unidad de PDI del aeropuerto correspondiente, vía Ley 20.285 o mediante requerimiento judicial en causa penal."
+    },
+    {
+      "id": "OQ-015-REGISTRO-CCTV",
+      "question": "¿Se puede obtener el registro de video CCTV del aeropuerto que demuestra la falsedad de las acusaciones formuladas contra el pasajero?",
+      "blocks_element": "CL.CHIPENCOD.Art.194.elem.modalidad_tipica_falsedad_art193",
+      "priority": "critical",
+      "obtaining_method": "Solicitud de preservación y entrega de grabaciones CCTV al operador aeroportuario (SCL, Nuevo Pudahuel u otro) mediante medida cautelar judicial (Art. 273 CPC) antes de que expire el plazo de retención de imágenes (generalmente 30-90 días)."
+    },
+    {
+      "id": "OQ-015-TEMPORALIDAD-REDACCION",
+      "question": "¿En qué momento temporal se redactó la carta de contingencia: antes o después de la verificación policial por CCTV que desmintió las acusaciones?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.4.elem.tipicidad_subjetiva_dolo",
+      "priority": "high",
+      "obtaining_method": "Análisis de metadatos del documento digital (si existe versión electrónica), cotejo con hora del parte policial, y declaraciones testimoniales de los policías intervinientes sobre la secuencia cronológica de eventos."
+    },
+    {
+      "id": "OQ-015-COMUNICACIONES-INTERNAS",
+      "question": "¿Existen comunicaciones internas de LATAM (correos electrónicos, mensajes de WhatsApp, registros de sistema) que evidencien el conocimiento de la falsedad de las acusaciones por parte de quienes redactaron o ajustaron la documentación?",
+      "blocks_element": "CL.CHIPENCOD.Art.197.elem.tipicidad_subjetiva_dolo",
+      "priority": "high",
+      "obtaining_method": "Requerimiento judicial de exhibición de documentos (Art. 273 N°3 CPC) dirigido a LATAM Airlines, solicitando registros de comunicaciones internas del personal involucrado en el incidente durante las 24 horas circundantes al evento."
+    },
+    {
+      "id": "OQ-015-AUTOR-MATERIAL",
+      "question": "¿Quién firmó o confeccionó materialmente la carta de contingencia y/o el reporte de incidente, y bajo instrucciones de quién?",
+      "blocks_element": "CL.CHIPENCOD.Art.197.elem.sujeto_activo",
+      "priority": "high",
+      "obtaining_method": "Peritaje caligráfico del documento original (si es manuscrito) o análisis de metadatos de autoría (si es digital); complementado con declaraciones testimoniales del personal de LATAM presente durante el incidente."
+    },
+    {
+      "id": "OQ-015-PROTOCOLO-VERIFICACION",
+      "question": "¿Existía un procedimiento interno de LATAM que obligara a verificar las acusaciones (por ejemplo, mediante revisión de CCTV) antes de activar el protocolo de seguridad y desembarcar al pasajero?",
+      "blocks_element": "CL.LPDC.Art.23.inciso1.elem.negligencia",
+      "priority": "high",
+      "obtaining_method": "Solicitud de exhibición del Manual de Operaciones de Cabina y protocolos de seguridad de LATAM mediante requerimiento judicial o solicitud administrativa ante la DGAC que custodia los manuales aprobados de las aerolíneas."
+    },
+    {
+      "id": "OQ-015-NORMATIVA-DESEMBARQUE",
+      "question": "¿La normativa aeronáutica chilena (DAN 91, Código Aeronáutico) obligaba a la tripulación a desembarcar al pasajero sin verificación previa ante una denuncia de agresión, excluyendo así la negligencia?",
+      "blocks_element": "CL.LPDC.Art.23.inciso1.elem.nexo_causal",
+      "priority": "high",
+      "obtaining_method": "Consulta jurídica a la DGAC sobre el marco regulatorio aplicable y revisión de las DAN (Disposiciones de Aeronavegabilidad) pertinentes; solicitud vía Ley 20.285 de los protocolos de seguridad aeronáutica vigentes."
+    },
+    {
+      "id": "OQ-015-ART260-EXTENSION",
+      "question": "¿Aplica el Art. 260 CP (extensión del concepto de empleado público) a tripulantes de aerolíneas privadas cuando ejercen funciones de seguridad aeronáutica delegadas por la autoridad?",
+      "blocks_element": "CL.CPCL.C1.Art.255.inc1.elem.sujeto_activo",
+      "priority": "high",
+      "obtaining_method": "Investigación jurisprudencial en bases de datos del Poder Judicial (SRAJ) y doctrina penal chilena sobre la aplicación del Art. 260 CP a personal de empresas privadas con funciones de seguridad delegadas; consulta a la Fiscalía Nacional sobre criterios de actuación."
+    },
+    {
+      "id": "OQ-015-TESTIGOS-FICTICIOS",
+      "question": "¿El reporte de incidente o carta de contingencia atribuye declaraciones o intervención a testigos que no estuvieron presentes en los hechos?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.2.elem.modalidad_tipica_suponer_intervencion_personas",
+      "priority": "medium",
+      "obtaining_method": "Cotejo del contenido del documento (una vez obtenido) con la lista de pasajeros y tripulantes presentes, y declaraciones testimoniales de las personas mencionadas en el reporte."
+    },
+    {
+      "id": "OQ-015-FIRMA-FALSIFICADA",
+      "question": "¿Se firmó algún documento a nombre del pasajero sin su consentimiento o se falsificó la firma de algún funcionario o tripulante?",
+      "blocks_element": "CL.CHIPENCOD.Art.193.1.elem.modalidad_tipica_contrahacer_firma",
+      "priority": "medium",
+      "obtaining_method": "Peritaje caligráfico del documento original comparando firmas con muestras indubitadas del pasajero y del personal de LATAM involucrado."
+    },
+    {
+      "id": "OQ-015-PERDIDA-VUELO",
+      "question": "¿El pasajero perdió definitivamente el vuelo o fue reubicado, y cuáles fueron las consecuencias económicas concretas (gastos de alojamiento, pasaje adicional, lucro cesante)?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.perjuicio_al_consumidor",
+      "priority": "medium",
+      "obtaining_method": "Recopilación de documentación del pasajero: boarding pass, comprobantes de gastos adicionales, comunicaciones con LATAM sobre reubicación, y estados de cuenta bancarios del período."
+    },
+    {
+      "id": "OQ-015-ANTECEDENTES-POLICIALES",
+      "question": "¿Se generaron antecedentes policiales, registros en sistemas de seguridad aeroportuaria o inclusión en listas de pasajeros conflictivos como consecuencia de las acusaciones falsas?",
+      "blocks_element": "CL.CHIPENCOD.Art.194.elem.resultado_perjuicio",
+      "priority": "medium",
+      "obtaining_method": "Solicitud de certificado de antecedentes al Registro Civil; consulta a PDI sobre registros en sistema AFIICH; solicitud a LATAM sobre inclusión del pasajero en listas internas de restricción."
+    },
+    {
+      "id": "OQ-015-FALSEDAD-IDEOLOGICA-PRIVADO",
+      "question": "¿La jurisdicción competente (tribunal oral en lo penal del territorio) sigue la tesis amplia que admite la punibilidad de la falsedad ideológica en instrumento privado conforme al Art. 197 CP?",
+      "blocks_element": "CL.CHIPENCOD.Art.197.elem.falsedad_material_o_ideologica",
+      "priority": "medium",
+      "obtaining_method": "Investigación jurisprudencial en SRAJ y Westlaw Chile sobre sentencias del tribunal competente y de la Corte de Apelaciones respectiva en materia de falsedad ideológica en instrumento privado (Art. 197 CP)."
+    },
+    {
+      "id": "OQ-015-CARTA-ENTREGADA",
+      "question": "¿La carta de contingencia fue efectivamente entregada al pasajero o se le negó acceso a su contenido?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.deber_informacion_oportuna",
+      "priority": "medium",
+      "obtaining_method": "Declaración testimonial del pasajero y cotejo con registros de LATAM sobre entrega de documentación al cliente; revisión de grabaciones de audio disponibles."
+    },
+    {
+      "id": "OQ-015-DIEGO-INSTRUCCION",
+      "question": "¿El supervisor Diego actuó por instrucción de un superior jerárquico al solicitar el ajuste de la carta de contingencia, o por iniciativa propia?",
+      "blocks_element": "CL.CHIPENCOD.Art.197.elem.tipicidad_subjetiva_dolo",
+      "priority": "medium",
+      "obtaining_method": "Declaración testimonial del supervisor Diego y revisión de comunicaciones internas (correos, sistema de gestión de incidentes) que evidencien la cadena de mando en la decisión de ajustar el documento."
+    },
+    {
+      "id": "OQ-015-VERIFICACION-PREVIA",
+      "question": "¿Se verificaron las acusaciones de agresión antes de activar el protocolo de seguridad y ejecutar la expulsión, o la verificación policial por CCTV fue posterior al desembarque?",
+      "blocks_element": "CL.CPCL.C1.Art.255.inc1.elem.tipicidad_subjetiva_dolo",
+      "priority": "high",
+      "obtaining_method": "Cotejo de la hora registrada en el parte policial de verificación CCTV con la hora de activación del protocolo de seguridad (registros del sistema de operaciones de LATAM y bitácora de vuelo)."
+    },
+    {
+      "id": "OQ-015-DOCUMENTOS-DISTINTOS",
+      "question": "¿La carta de contingencia mencionada por el supervisor Diego y la carta que el pasajero solicita ver y cuya firma espera son el mismo documento o documentos distintos?",
+      "blocks_element": "CL.CHIPENCOD.Art.197.elem.objeto_material",
+      "priority": "medium",
+      "obtaining_method": "Declaración testimonial del pasajero y del personal de LATAM involucrado; solicitud de exhibición de todos los documentos generados con ocasión del incidente."
+    }
+  ],
+  "provenance": [
+    {
+      "timestamp": "",
+      "actor": "manual_ingestion",
+      "operation": "ingest_v1",
+      "layer": 0,
+      "note": "From v1 _provenance"
+    },
+    {
+      "timestamp": "2026-05-12T06:58:22.277018Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CHIPENCOD.T4.C3.Art.193: 9 elements; weighted score 0.57."
+    },
+    {
+      "timestamp": "2026-05-12T06:59:18.972329Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CHIPENCOD.T4.C3.Art.194: 7 elements; weighted score 0.71."
+    },
+    {
+      "timestamp": "2026-05-12T07:00:27.162194Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CHIPENCOD.T4.C3.Art.197: 8 elements; weighted score 0.69."
+    },
+    {
+      "timestamp": "2026-05-12T07:01:12.350569Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CPCL.C1.Art.255: 8 elements; weighted score 0.71."
+    },
+    {
+      "timestamp": "2026-05-12T07:01:54.180515Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.LPDC.Art.3.b: 8 elements; weighted score 0.81."
+    },
+    {
+      "timestamp": "2026-05-12T07:02:42.353659Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.LPDC.Art.23: 8 elements; weighted score 0.84."
+    },
+    {
+      "timestamp": "2026-05-12T07:03:50.818532Z",
+      "actor": "layers.build_nexus_layer",
+      "operation": "add_or_replace_nexus_entries",
+      "layer": 4,
+      "note": "Upserted 48 nexus entries."
+    },
+    {
+      "timestamp": "2026-05-12T07:06:13.335282Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-FUNC-PUBLICO-PRIVADO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:06:13.335397Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-DOC-PUBLICO-PRIVADO-NATURALEZA (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:06:13.335413Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-FALSEDAD-IDEOLOGICA-PRIVADO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:06:13.335422Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-DOLO-FALSEDAD-CONTEXTO-COMERCIAL (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:06:13.335429Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-VEJACION-FALSIFICACION-INSTRUMENTAL (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:06:13.335435Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-LPDC-INFORMACION-FALSA-SEGURIDAD (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:06:13.335442Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-GARRIDO-FALSIFICACION (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:06:13.335448Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-ART260-CONCEPTO-AMPLIO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:06:13.335454Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-CONCURSO-FALSIFICACION-ESTAFA (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:06:13.335460Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-LPDC-NEGLIGENCIA-ORGANIZACIONAL (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:06:13.335466Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-PERJUICIO-POTENCIAL-FALSEDAD (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T07:06:13.335472Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-SUPONER-INTERVENCION-PERSONAS (verified=False)."
+    }
+  ]
+}

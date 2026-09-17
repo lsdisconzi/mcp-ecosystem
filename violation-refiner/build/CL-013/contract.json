@@ -22,21 +22,6 @@
   },
   "category": "False Accusation / Escalation Pattern",
   "severity": "CRITICAL",
-  "confidence": {
-    "value": 0.67,
-    "components": {
-      "CL.CPCL.C1.Art.412": 0.738,
-      "CL.CPCL.T2.P6.Art.412": 0.771,
-      "CL.CPCL.C1.Art.416": 0.786,
-      "CL.CHIPENCOD.T4.C6.Art.211": 0.814,
-      "CL.LPDC.Art.3.b": 0.743,
-      "CL.LPDC.Art.23": 0.886
-    },
-    "authorities_verification_factor": 0.85,
-    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
-    "derived_at": "2026-09-13T15:40:47.615786Z",
-    "history": []
-  },
   "incident": {
     "date": "2024-07-05",
     "location": "Santiago Airport (SCL), Chile",
@@ -461,7 +446,7 @@
     {
       "id": "OQ-CL013-CREW-NAME",
       "question": "¿Consta en actas, informes internos de LATAM o registros de la DGAC la identidad completa (nombre, RUT) de la tripulante que formuló la acusación y ordenó el desembarco?",
-      "blocks_element": "CL.CPCL.T2.P6.Art.412.elem.sujeto_activo",
+      "blocks_element": "CL.CPCL.C1.Art.412.elem.sujeto_activo",
       "priority": "critical"
     },
     {
@@ -485,7 +470,7 @@
     {
       "id": "OQ-CL013-POLICE-REPORT",
       "question": "¿Se levantó acta policial (PDI o Carabineros) o acta de la DGAC que documente la versión de los hechos, la calificación jurídica de la conducta imputada y su resultado (archivo, sobreseimiento, formalización)?",
-      "blocks_element": "CL.CPCL.T2.P6.Art.412.elem.perseguibilidad_de_oficio",
+      "blocks_element": "CL.CPCL.C1.Art.412.elem.perseguibilidad_de_oficio",
       "priority": "critical"
     },
     {
@@ -574,7 +559,7 @@
     "status/open"
   ],
   "_provenance": {
-    "source": "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN/CL-013.json",
+    "source": "data/violations/CL-013.json",
     "vault_operations": 17,
     "converted_by": "examples/vault_to_bundle.py"
   },

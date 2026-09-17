@@ -1,0 +1,2128 @@
+{
+  "violation_id": "CL-010",
+  "title": "Rights Violation — Systematic Denial of Fundamental Passenger Rights",
+  "incident": "[[I-002-Chile-Santiago]]",
+  "incident_id": "I-002",
+  "jurisdiction": "CL",
+  "category": "Systematic Rights Denial",
+  "severity": "CRITICAL",
+  "confidence": {
+    "value": 0.7,
+    "components": {
+      "CL.CONST.T1.C1.Art.1": 0.7,
+      "CL.CONST.T1.C3.P1.Art.19.1": 0.788,
+      "CL.L20285.T1.Art.3": 0.814,
+      "CL.LPDC.Art.3.b": 0.914,
+      "CL.LPDC.Art.23": 0.875
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-05-12T06:56:33.387305Z",
+    "history": [
+      "2026-05-12T06:47:48.126076+00:00: value=0.0",
+      "2026-05-12T06:47:58.344741+00:00: value=0.0",
+      "2026-05-12T06:48:05.292293+00:00: value=0.0",
+      "2026-05-12T06:51:46.181380+00:00: value=0.7",
+      "2026-05-12T06:53:00.489580+00:00: value=0.7",
+      "2026-05-12T06:53:49.500005+00:00: value=0.7",
+      "2026-05-12T06:54:56.757145+00:00: value=0.7",
+      "2026-05-12T06:56:26.569146+00:00: value=0.7"
+    ],
+    "validated": true,
+    "note": "Validated by V10 pipeline check. Lowered from legacy contract value (0.96) to formula-derived value (0.65)."
+  },
+  "incident_timestamp": "2024-07-05T13:30:00-04:00",
+  "incident_timestamp_display": "2024-07-05 — Voo LA8159 — Aeroporto SCL",
+  "allegation_summary": "The LA8159 incident involved systematic denial of the passenger's fundamental rights across multiple dimensions: (1) violation of inherent dignity and equality (CONST Art. 1), (2) violation of physical and mental integrity (CONST Art. 19 N°1), (3) denial of access to public information about the removal decision (Ley 20.285 Art. 3), (4) denial of truthful consumer information (LPDC Art. 3.b), and (5) negligent service provision causing consumer harm (LPDC Art. 23). These violations were not isolated — they reflect an institutional pattern of rights negation.",
+  "evidentiary_strength": "9 transcript segments spanning STG-13 (security confrontation), STG-22 (passenger requesting documentation), and STG-7 (PDI CCTV review). The 5 element grids cover 36 elements across constitutional, transparency, and consumer-protection frameworks. The pipeline-assigned confidence of 65% is the weighted average of 5 article-level scores (0.743-0.838) discounted by the 0.85 authorities factor.",
+  "legal_theory": "Denegación Sistemática de Derechos Fundamentales del Pasajero",
+  "required_elements_status": "ENRICHED",
+  "legal_basis": [
+    {
+      "article_id": "CL.CONST.T1.C1.Art.1",
+      "article_name": "Constitución, Art. 1 — Dignidad, libertad e igualdad",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "state",
+      "norm_type": "right",
+      "applicability_rationale": "legacy paraphrase: Persons are born free and equal, in dignity and rights. The State is at the service of the human person and its goal is to promote the common good, with full respect for the rights and guaranties established by this Constitution.",
+      "framework_code": "CONST",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "The State is at the service of the human person and its goal is to promote the common good, for which it must contribute to create the social conditions which may allow each and every one of the members of the national community to achieve their greatest possible spiritual and material fulfillment, with full respect for the rights and guaranties established by this Constitutions. It is the duty of the State to safeguard national security, to provide protection to the population and the family, tending the strengthening of the latter, to promote the harmonized integration of all the sectors of the Nation and to ensure everyone the right to participate in the national life with equal opportunities."
+    },
+    {
+      "article_id": "CL.CONST.T1.C3.P1.Art.19.1",
+      "article_name": "Constitución, Art. 19 N°1 — Vida e integridad física y psíquica",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "state",
+      "norm_type": "right",
+      "applicability_rationale": "legacy paraphrase: The right to life and to the physical and mental integrity of the person. The application of any illegitimate constrain is forbidden.",
+      "framework_code": "CONST",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "The right to life and to the physical and mental integrity of the person."
+    },
+    {
+      "article_id": "CL.L20285.T1.Art.3",
+      "article_name": "Ley 20.285, Art. 3 — Transparencia y acceso a información pública",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "state",
+      "norm_type": "right",
+      "applicability_rationale": "legacy paraphrase: Toda persona tiene derecho a solicitar y a recibir informacion de cualquier organo de la Administracion del Estado, en la forma y condiciones que establece esta ley.",
+      "framework_code": "L20285",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "Artículo 3° - Principio de Transparencia. La función pública se ejerce con transparencia, de modo que permita y promueva el conocimiento de los procedimientos, contenidos y decisiones que se adopten en ejercicio de ella."
+    },
+    {
+      "article_id": "CL.LPDC.Art.3.b",
+      "article_name": "Ley 19.496, Art. 3(b) — Derecho a información veraz y oportuna",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "air_operator",
+      "norm_type": "right",
+      "applicability_rationale": "legacy paraphrase: Son derechos y deberes basicos del consumidor: b) El derecho a una informacion veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratacion y otras caracteristicas relevantes de los mismos.",
+      "framework_code": "LPDC",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "b) El derecho a una información veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratación y otras características relevantes de los mismos, y el deber de informarse responsablemente de ellos."
+    },
+    {
+      "article_id": "CL.LPDC.Art.23",
+      "article_name": "Ley 19.496, Art. 23 — Infracciones del proveedor",
+      "status": "established",
+      "applicability": "direct",
+      "duty_bearer": "air_operator",
+      "norm_type": "liability",
+      "applicability_rationale": "legacy paraphrase: El proveedor de un servicio sera responsable de los danos y perjuicios que cause al consumidor por la prestacion de un servicio defectuoso, incluyendo la falta de veracidad en la informacion proporcionada y el incumplimiento de las condiciones de contratacion.",
+      "framework_code": "LPDC",
+      "framework_cache_status": "verified_in_bundle",
+      "verbatim_text": "Artículo 23.- Comete infracción a las disposiciones de la presente ley el proveedor que, en la venta de un bien o en la prestación de un servicio, **actuando con negligencia**, causa menoscabo al consumidor debido a fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio."
+    }
+  ],
+  "transcripts": [
+    "[[I-002_06_NAR-06_STG_13_post_PDI_corridor]]",
+    "[[I-002_12_NAR-15_STG_22_DGAC_office]]",
+    "[[I-002_05_NAR-07_STG_7_post_removal_investigation]]"
+  ],
+  "evidence_links": [
+    "[[I-002_transcript_rendered_html_X-0010]]",
+    "[[I-002_transcript_rendered_html_X-0018]]",
+    "[[I-002_transcript_rendered_html_X-0041]]"
+  ],
+  "event_ids": [
+    "[[E-0084]]",
+    "[[E-0085]]",
+    "[[E-0086]]",
+    "[[E-0087]]",
+    "[[E-0088]]",
+    "[[E-0089]]",
+    "[[E-0090]]",
+    "[[E-0110]]",
+    "[[E-0111]]",
+    "[[E-0115]]",
+    "[[E-0116]]",
+    "[[E-0117]]",
+    "[[E-0123]]",
+    "[[E-0124]]",
+    "[[E-0125]]",
+    "[[E-0126]]",
+    "[[E-0195]]",
+    "[[E-0196]]",
+    "[[E-0197]]",
+    "[[E-0202]]",
+    "[[E-0203]]",
+    "[[E-0205]]",
+    "[[E-0212]]",
+    "[[E-0216]]"
+  ],
+  "evidence_ids": [
+    "[[I-002_transcript_rendered_html_X-0012]]",
+    "[[I-002_transcript_rendered_html_X-0013]]",
+    "[[I-002_transcript_json_X-0037]]",
+    "[[I-002_transcript_json_X-0038]]",
+    "[[I-002_email_latam_communication_X-0059]]",
+    "[[I-002_email_latam_communication_X-0063]]",
+    "[[I-002_email_latam_communication_X-0064]]",
+    "[[I-002_email_dgac_communication_X-0075]]",
+    "[[I-002_email_dgac_communication_X-0082]]"
+  ],
+  "framework_cache": "[[CONST]]",
+  "validation_pack": "[[Validation report CL-010]]",
+  "related_violations": [
+    "CL-001",
+    "CL-008"
+  ],
+  "has_broken_refs": false,
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "classification": "Attorney Work Product — Privileged and Confidential",
+  "schema_version": "4.0",
+  "element_grids": {
+    "CL.CONST.T1.C1.Art.1": [
+      {
+        "element_name": "El Estado está al servicio de la persona humana",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-26.seg-1",
+          "STG-26.seg-12"
+        ],
+        "argument": "Los segmentos muestran que agentes de una empresa concesionaria de servicio público (transporte aéreo) actuaron en contra de la persona del pasajero, forzando su desembarque sin explicación y negando documentación justificativa. El Estado, a través de su marco regulatorio y la actuación de seguridad aeroportuaria, no garantizó las condiciones mínimas de respeto a la dignidad del pasajero.",
+        "element_id": "CL.CONST.T1.C1.Art.1.4.elem.servicio_persona_humana",
+        "doctrinal_basis": "Inc. 4°: El Estado está al servicio de la persona humana y su finalidad es promover el bien común, contribuyendo a crear las condiciones sociales que permitan a todos y cada uno de los integrantes de la comunidad nacional su mayor realización espiritual y material posible.",
+        "weaknesses": [
+          "No se acredita directamente una acción u omisión estatal stricto sensu; la conducta es de un operador privado regulado.",
+          "Falta evidencia de requerimiento formal al Estado o sus órganos fiscalizadores."
+        ],
+        "open_questions": [
+          "¿Intervino personal de la DGAC o PDI en la ejecución del desembarque forzado?",
+          "¿Existía un deber de fiscalización estatal incumplido en el momento de los hechos?"
+        ],
+        "article_short": "Art. 1 incs. 4° y 5° — Deber del Estado de servir a la persona humana y promover el bien común (CPR)"
+      },
+      {
+        "element_name": "Con pleno respeto a los derechos y garantías constitucionales",
+        "status": "strong",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-22.seg-1",
+          "STG-26.seg-12",
+          "STG-5.seg-1"
+        ],
+        "argument": "El pasajero fue removido del vuelo sin que se le informaran las razones ni se le entregara documentación escrita, vulnerando su derecho a la información, al debido proceso y a la igualdad ante la ley. La frase '¡Porque tú no colaboraste!' evidencia una justificación arbitraria que no respeta garantías fundamentales.",
+        "element_id": "CL.CONST.T1.C1.Art.1.4.elem.respeto_derechos_garantias",
+        "doctrinal_basis": "Inc. 4° in fine: la promoción del bien común debe realizarse con pleno respeto a los derechos y garantías que esta Constitución establece.",
+        "weaknesses": [
+          "La conexión entre la conducta del privado y la obligación constitucional del Estado requiere desarrollo doctrinario sobre eficacia horizontal de derechos fundamentales (Drittwirkung)."
+        ],
+        "open_questions": [
+          "¿Se agotaron las vías administrativas ante la DGAC o el SERNAC antes de invocar la norma constitucional?"
+        ],
+        "article_short": "Art. 1 incs. 4° y 5° — Deber del Estado de servir a la persona humana y promover el bien común (CPR)"
+      },
+      {
+        "element_name": "Deber del Estado de dar protección a la población",
+        "status": "contested",
+        "evidence": [
+          "STG-5.seg-12",
+          "STG-13.seg-1"
+        ],
+        "argument": "La activación de seguridad aeroportuaria ('Ya activamos seguridad') se utilizó no para proteger al pasajero sino para forzar su salida del avión. El deber de protección se invirtió, instrumentalizando la fuerza estatal contra la persona que debía ser protegida.",
+        "element_id": "CL.CONST.T1.C1.Art.1.5.elem.proteccion_poblacion",
+        "doctrinal_basis": "Inc. 5°: Es deber del Estado resguardar la seguridad nacional, dar protección a la población y a la familia.",
+        "weaknesses": [
+          "No queda claro si el personal de seguridad era estatal (PDI/Carabineros) o privado de la aerolínea.",
+          "El concepto de 'protección a la población' es amplio y su aplicación a un caso individual requiere mayor fundamentación."
+        ],
+        "open_questions": [
+          "¿Qué entidad de seguridad fue activada y bajo qué protocolo?",
+          "¿Se labró algún parte o acta de la intervención de seguridad?"
+        ],
+        "article_short": "Art. 1 incs. 4° y 5° — Deber del Estado de servir a la persona humana y promover el bien común (CPR)"
+      },
+      {
+        "element_name": "Derecho a participar con igualdad de oportunidades",
+        "status": "strong",
+        "evidence": [
+          "STG-22.seg-1",
+          "STG-13.seg-1",
+          "STG-26.seg-1",
+          "STG-26.seg-12"
+        ],
+        "argument": "Al pasajero se le negó sistemáticamente la documentación que justificara su remoción del vuelo, impidiéndole ejercer sus derechos en igualdad de condiciones frente al operador. La negativa reiterada ('no es necesario') y el condicionamiento culpabilizador ('porque tú no colaboraste') evidencian un trato desigual y arbitrario que excluye al individuo de la participación normal en el servicio de transporte aéreo.",
+        "element_id": "CL.CONST.T1.C1.Art.1.5.elem.igualdad_oportunidades",
+        "doctrinal_basis": "Inc. 5° in fine: asegurar el derecho de las personas a participar con igualdad de oportunidades en la vida nacional.",
+        "weaknesses": [
+          "La igualdad de oportunidades en el inc. 5° se refiere primariamente a la vida nacional en sentido amplio; su aplicación a un contrato de transporte específico puede considerarse extensiva."
+        ],
+        "open_questions": [
+          "¿Existieron otros pasajeros en situación comparable que recibieron trato diferente?",
+          "¿Se puede acreditar un patrón discriminatorio sistemático?"
+        ],
+        "article_short": "Art. 1 incs. 4° y 5° — Deber del Estado de servir a la persona humana y promover el bien común (CPR)"
+      },
+      {
+        "element_name": "Contribuir a crear condiciones sociales para la realización de las personas",
+        "status": "contested",
+        "evidence": [
+          "STG-22.seg-1",
+          "STG-5.seg-1",
+          "STG-26.seg-12"
+        ],
+        "argument": "La remoción forzada del vuelo sin justificación documentada impidió la realización material del pasajero (desplazamiento, cumplimiento de compromisos). El Estado no creó condiciones regulatorias suficientes para evitar esta situación, evidenciando una omisión en su deber de generar un marco protector.",
+        "element_id": "CL.CONST.T1.C1.Art.1.4.elem.condiciones_sociales_realizacion",
+        "doctrinal_basis": "Inc. 4°: contribuir a crear las condiciones sociales que permitan a todos y cada uno de los integrantes de la comunidad nacional su mayor realización espiritual y material posible.",
+        "weaknesses": [
+          "Este elemento es programático y de difícil justiciabilidad directa.",
+          "No se acredita un nexo causal directo entre omisión estatal regulatoria y el perjuicio concreto."
+        ],
+        "open_questions": [
+          "¿Existe normativa sectorial (JAC/DGAC) que debió aplicarse y no se aplicó?",
+          "¿Se puede cuantificar el perjuicio material sufrido por el pasajero?"
+        ],
+        "article_short": "Art. 1 incs. 4° y 5° — Deber del Estado de servir a la persona humana y promover el bien común (CPR)"
+      },
+      {
+        "element_name": "Dignidad de la persona humana como fundamento del orden institucional",
+        "status": "strong",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-22.seg-1"
+        ],
+        "argument": "El trato dispensado al pasajero —desembarque forzado sin explicación, culpabilización verbal, negativa a entregar documentación, activación de seguridad como mecanismo coercitivo— constituye un menoscabo a la dignidad humana. Los segmentos muestran un patrón de conducta que cosifica al pasajero y lo priva de su condición de sujeto de derechos.",
+        "element_id": "CL.CONST.T1.C1.Art.1.4.elem.dignidad_persona",
+        "doctrinal_basis": "Interpretación sistemática del Art. 1 incs. 1° y 4°: las personas nacen libres e iguales en dignidad y derechos; el Estado sirve a la persona humana.",
+        "weaknesses": [
+          "La dignidad como elemento autónomo requiere conectarse con una garantía específica del Art. 19 para efectos de acción de protección."
+        ],
+        "open_questions": [
+          "¿Se interpuso recurso de protección invocando Art. 19 N° 2 o N° 24 en conexión con Art. 1?"
+        ],
+        "article_short": "Art. 1 incs. 4° y 5° — Deber del Estado de servir a la persona humana y promover el bien común (CPR)"
+      }
+    ],
+    "CL.CONST.T1.C3.P1.Art.19.1": [
+      {
+        "element_name": "Sujeto pasivo: titular del derecho fundamental",
+        "status": "established",
+        "evidence": [
+          "STG-22.seg-1",
+          "STG-13.seg-1"
+        ],
+        "argument": "El pasajero Leandro Disconzi está plenamente individualizado como la persona afectada por las acciones de la aerolínea. Los segmentos lo identifican como quien fue removido del vuelo y a quien se le negaron derechos.",
+        "element_id": "CL.CONST.Art.19.1.elem.sujeto_pasivo",
+        "doctrinal_basis": "Toda persona natural es titular del derecho a la integridad física y psíquica garantizado por el Art. 19 N° 1 CPR. En recurso de protección, debe acreditarse la individualización del afectado.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 19 N° 1 — Derecho a la vida e integridad física y psíquica (Constitución Política de Chile)"
+      },
+      {
+        "element_name": "Sujeto activo: agente que ejecuta la afectación",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-13.seg-1",
+          "STG-26.seg-1",
+          "STG-26.seg-12"
+        ],
+        "argument": "Se identifican múltiples agentes de LATAM Airlines: azafata que ordena el desembarco forzado, jefe de seguridad (Joaquín Barraza) que culpabiliza al pasajero, y supervisora que niega documentación. La cadena de mando corporativa está parcialmente acreditada.",
+        "element_id": "CL.CONST.Art.19.1.elem.sujeto_activo_agresor",
+        "doctrinal_basis": "El recurso de protección procede contra actos u omisiones arbitrarios o ilegales de cualquier persona, incluyendo particulares (Art. 20 CPR). Debe identificarse al agente responsable.",
+        "weaknesses": [
+          "No se identifica con precisión el nombre completo de todos los intervinientes corporativos."
+        ],
+        "open_questions": [
+          "¿Quién dio la orden original de remoción del vuelo?"
+        ],
+        "article_short": "Art. 19 N° 1 — Derecho a la vida e integridad física y psíquica (Constitución Política de Chile)"
+      },
+      {
+        "element_name": "Acto u omisión que afecta la integridad física",
+        "status": "contested",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-13.seg-1"
+        ],
+        "argument": "La azafata ordena bajar del avión y confirma la activación de seguridad ('Ya activamos seguridad. Igual va a tener que bajar'). El jefe de seguridad atribuye la situación a falta de cooperación del pasajero. Sin embargo, no hay evidencia directa en los segmentos de contacto físico o uso de fuerza corporal.",
+        "element_id": "CL.CONST.Art.19.1.elem.acto_lesivo_integridad_fisica",
+        "doctrinal_basis": "La garantía prohíbe todo apremio ilegítimo. La remoción forzada de un pasajero con intervención de seguridad puede constituir una afectación a la integridad física si se ejecuta con coacción corporal.",
+        "weaknesses": [
+          "No se describe en los segmentos disponibles un acto de fuerza física directa sobre el cuerpo del pasajero.",
+          "La mera activación de seguridad no equivale per se a apremio físico consumado."
+        ],
+        "open_questions": [
+          "¿Se ejerció fuerza física durante la remoción?",
+          "¿Existen registros médicos o testimonios adicionales de contacto corporal?"
+        ],
+        "article_short": "Art. 19 N° 1 — Derecho a la vida e integridad física y psíquica (Constitución Política de Chile)"
+      },
+      {
+        "element_name": "Afectación a la integridad psíquica",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-13.seg-1",
+          "STG-26.seg-1",
+          "STG-26.seg-12"
+        ],
+        "argument": "El conjunto de segmentos evidencia un patrón de trato degradante: remoción forzada sin explicación, culpabilización del pasajero ('¡Porque tú no colaboraste!'), amenaza con seguridad, y posterior negativa sistemática a entregar información. Este patrón configura una situación de humillación y angustia que afecta la integridad psíquica del pasajero.",
+        "element_id": "CL.CONST.Art.19.1.elem.afectacion_integridad_psiquica",
+        "doctrinal_basis": "La jurisprudencia constitucional chilena reconoce que la integridad psíquica incluye la protección contra tratos degradantes, humillación pública y situaciones de estrés extremo provocadas arbitrariamente. No se requiere lesión física.",
+        "weaknesses": [
+          "No existe peritaje psicológico en los segmentos que cuantifique el daño psíquico."
+        ],
+        "open_questions": [
+          "¿Se cuenta con informe pericial psicológico que acredite secuelas?"
+        ],
+        "article_short": "Art. 19 N° 1 — Derecho a la vida e integridad física y psíquica (Constitución Política de Chile)"
+      },
+      {
+        "element_name": "Carácter arbitrario o ilegal del acto",
+        "status": "strong",
+        "evidence": [
+          "STG-22.seg-1",
+          "STG-26.seg-1",
+          "STG-26.seg-12",
+          "STG-13.seg-1"
+        ],
+        "argument": "El pasajero solicita reiteradamente documentación que explique su remoción del vuelo. La supervisora responde que 'no es necesario' entregar tal documentación y el jefe de seguridad solo atribuye culpa al pasajero sin dar razón objetiva. La ausencia total de justificación formal evidencia arbitrariedad manifiesta.",
+        "element_id": "CL.CONST.Art.19.1.elem.arbitrariedad_ilegalidad",
+        "doctrinal_basis": "Para la procedencia del recurso de protección, el acto debe ser arbitrario (carente de fundamento racional) o ilegal (contrario a norma vigente). La negativa a informar motivos de remoción y la ausencia de justificación escrita configuran arbitrariedad.",
+        "weaknesses": [
+          "Podría argumentarse que existió una razón operacional no revelada en los segmentos disponibles."
+        ],
+        "open_questions": [
+          "¿Existe algún registro interno de LATAM que documente la causa de la remoción?",
+          "¿Se invocó alguna norma de seguridad aérea como fundamento?"
+        ],
+        "article_short": "Art. 19 N° 1 — Derecho a la vida e integridad física y psíquica (Constitución Política de Chile)"
+      },
+      {
+        "element_name": "Prohibición de apremios ilegítimos (inciso final Art. 19 N° 1)",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-12",
+          "STG-13.seg-1",
+          "STG-5.seg-1"
+        ],
+        "argument": "La activación de seguridad como mecanismo de presión ('Ya activamos seguridad. Igual va a tener que bajar'), combinada con la orden perentoria de abandonar la aeronave sin explicación alguna, y la posterior culpabilización ('¡Porque tú no colaboraste!'), configuran un apremio ilegítimo: se utilizó la amenaza de fuerza institucional para doblegar la voluntad del pasajero sin base legal comunicada.",
+        "element_id": "CL.CONST.Art.19.1.elem.apremio_ilegitimo",
+        "doctrinal_basis": "El inciso final del Art. 19 N° 1 CPR prohíbe la aplicación de todo apremio ilegítimo. La doctrina incluye en esta categoría las coacciones, amenazas y presiones indebidas que buscan doblegar la voluntad de una persona sin fundamento legal.",
+        "weaknesses": [
+          "El concepto de apremio ilegítimo se ha desarrollado principalmente en contexto de actuación estatal; su aplicación a particulares requiere argumentación adicional."
+        ],
+        "open_questions": [
+          "¿Participó personal policial o de la DGAC en la remoción, lo que reforzaría el carácter de apremio estatal?"
+        ],
+        "article_short": "Art. 19 N° 1 — Derecho a la vida e integridad física y psíquica (Constitución Política de Chile)"
+      },
+      {
+        "element_name": "Nexo causal entre el acto y la afectación",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-13.seg-1",
+          "STG-22.seg-1"
+        ],
+        "argument": "La secuencia temporal es clara: la orden de desembarco forzado (STG-5) genera la intervención de seguridad, la cual produce la situación de coacción y humillación documentada en STG-13, y la posterior denegación de información (STG-22, STG-26) perpetúa la afectación. El nexo causal entre las acciones de LATAM y la vulneración es directo y continuo.",
+        "element_id": "CL.CONST.Art.19.1.elem.nexo_causal",
+        "doctrinal_basis": "Debe acreditarse que la perturbación, privación o amenaza al derecho es consecuencia directa del acto u omisión del recurrido.",
+        "weaknesses": [],
+        "open_questions": [
+          "¿Existió algún acto previo del pasajero que pudiera interrumpir el nexo causal?"
+        ],
+        "article_short": "Art. 19 N° 1 — Derecho a la vida e integridad física y psíquica (Constitución Política de Chile)"
+      },
+      {
+        "element_name": "Patrón sistemático de denegación de derechos fundamentales",
+        "status": "strong",
+        "evidence": [
+          "STG-22.seg-1",
+          "STG-13.seg-12",
+          "STG-26.seg-1",
+          "STG-26.seg-12",
+          "STG-22.seg-12"
+        ],
+        "argument": "Los segmentos demuestran un patrón reiterado: el pasajero solicita explicación escrita en múltiples instancias (STG-13.seg-12: '¡Por escrito!'; STG-22.seg-1: 'Yo estoy esperando una documentación...') y en cada oportunidad la aerolínea niega, minimiza o evade la solicitud (STG-26.seg-1: 'ya hablaron con usted'; STG-26.seg-12: 'no es necesario'). La sistematicidad refuerza el carácter arbitrario.",
+        "element_id": "CL.CONST.Art.19.1.elem.denegacion_sistematica_derechos",
+        "doctrinal_basis": "La reiteración y sistematicidad de la conducta vulneratoria agrava la calificación de arbitrariedad y refuerza la configuración de la afectación constitucional, según doctrina de protección de derechos fundamentales.",
+        "weaknesses": [
+          "La calificación de 'sistemático' podría ser cuestionada si se trata de un incidente aislado con múltiples interacciones."
+        ],
+        "open_questions": [
+          "¿Existen otros pasajeros afectados por el mismo patrón que refuercen la sistematicidad?"
+        ],
+        "article_short": "Art. 19 N° 1 — Derecho a la vida e integridad física y psíquica (Constitución Política de Chile)"
+      }
+    ],
+    "CL.L20285.T1.Art.3": [
+      {
+        "element_name": "Sujeto obligado — órgano de la Administración del Estado o entidad sujeta al principio de transparencia",
+        "status": "contested",
+        "evidence": [
+          "STG-26.seg-1",
+          "STG-26.seg-12",
+          "STG-5.seg-1"
+        ],
+        "argument": "Los segmentos muestran que personal de LATAM (supervisor, tripulación) actuó en ejercicio de funciones operacionales reguladas por la autoridad aeronáutica, lo que podría configurar ejercicio de función pública delegada. Sin embargo, la calificación de LATAM como sujeto obligado bajo la Ley 20.285 no es pacífica y requiere argumentación adicional sobre la extensión del principio de transparencia a concesionarios.",
+        "element_id": "CL.L20285.Art.3.elem.sujeto_obligado",
+        "doctrinal_basis": "Art. 3 Ley 20.285 impone el deber de transparencia a quienes ejercen función pública. La aplicabilidad a concesionarios de servicios públicos (aerolíneas con concesión de transporte aéreo) es discutida doctrinariamente pero sostenible bajo la tesis de función pública delegada y normativa sectorial (JAC/DGAC).",
+        "weaknesses": [
+          "LATAM es una empresa privada; la Ley 20.285 se aplica primariamente a órganos del Estado",
+          "No hay resolución judicial que declare a aerolíneas como sujetos obligados bajo esta ley"
+        ],
+        "open_questions": [
+          "¿Se extiende la obligación de transparencia a concesionarios de transporte aéreo por ejercer función pública delegada?",
+          "¿Es más apropiado invocar normativa sectorial (Res. DGAC, Código Aeronáutico) en lugar de la Ley 20.285?"
+        ],
+        "article_short": "Art. 3 — Principio de Transparencia (Ley 20.285)"
+      },
+      {
+        "element_name": "Ejercicio de función pública — acto o decisión adoptada en ejercicio de la función",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-13.seg-1"
+        ],
+        "argument": "Los segmentos acreditan que se adoptó una decisión operacional concreta — la remoción forzada del pasajero del vuelo — con activación de seguridad. Esta decisión constituye un acto con consecuencias jurídicas directas (privación del servicio contratado, restricción de libertad ambulatoria) adoptado en ejercicio de funciones reguladas.",
+        "element_id": "CL.L20285.Art.3.elem.funcion_publica_ejercida",
+        "doctrinal_basis": "El principio de transparencia se activa respecto de 'procedimientos, contenidos y decisiones que se adopten en ejercicio' de la función pública. La decisión de desembarcar a un pasajero constituye un acto con efectos jurídicos directos sobre derechos del administrado/usuario.",
+        "weaknesses": [
+          "La calificación como 'función pública' depende de resolver el elemento anterior sobre sujeto obligado"
+        ],
+        "open_questions": [],
+        "article_short": "Art. 3 — Principio de Transparencia (Ley 20.285)"
+      },
+      {
+        "element_name": "Deber de permitir y promover el conocimiento — obligación activa de informar procedimientos y fundamentos",
+        "status": "strong",
+        "evidence": [
+          "STG-26.seg-12",
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-13.seg-1"
+        ],
+        "argument": "Los segmentos demuestran que el operador no solo omitió informar los fundamentos de la decisión, sino que activamente declaró que la documentación 'no es necesario' (STG-26.seg-12) y ejecutó la remoción sin explicación previa (STG-5.seg-1). La única justificación ofrecida fue una imputación genérica de falta de colaboración (STG-13.seg-1), sin especificar procedimiento, norma o fundamento.",
+        "element_id": "CL.L20285.Art.3.elem.deber_de_conocimiento",
+        "doctrinal_basis": "Art. 3 establece que la función se ejerce 'de modo que permita y promueva el conocimiento de los procedimientos, contenidos y decisiones'. Esto impone un deber activo, no meramente pasivo, de facilitar información al afectado.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 3 — Principio de Transparencia (Ley 20.285)"
+      },
+      {
+        "element_name": "Solicitud de información por el afectado — requerimiento expreso de conocer fundamentos",
+        "status": "established",
+        "evidence": [
+          "STG-13.seg-12",
+          "STG-22.seg-1",
+          "STG-22.seg-12"
+        ],
+        "argument": "Los segmentos acreditan de forma inequívoca que el pasajero solicitó reiteradamente documentación escrita que explicara los motivos de su remoción: exigió la justificación '¡Por escrito!' (STG-13.seg-12) y declaró estar 'esperando una documentación que explique por qué me sacaron del vuelo' (STG-22.seg-1). La persistencia queda evidenciada en múltiples interacciones.",
+        "element_id": "CL.L20285.Art.3.elem.solicitud_de_informacion",
+        "doctrinal_basis": "Si bien el Art. 3 impone un deber proactivo, la existencia de una solicitud expresa refuerza la infracción al demostrar que el afectado ejerció activamente su derecho y fue denegado.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 3 — Principio de Transparencia (Ley 20.285)"
+      },
+      {
+        "element_name": "Denegación u omisión de entrega de información — incumplimiento del deber de transparencia",
+        "status": "established",
+        "evidence": [
+          "STG-26.seg-1",
+          "STG-26.seg-12",
+          "STG-13.seg-1"
+        ],
+        "argument": "La denegación está acreditada por múltiples segmentos convergentes: el supervisor desestimó el requerimiento señalando que 'ya hablaron con usted' (STG-26.seg-1), declaró expresamente que la documentación 'no es necesario' (STG-26.seg-12), y la única respuesta sustantiva fue una imputación de culpa al pasajero sin fundamento normativo (STG-13.seg-1). No se entregó documentación escrita alguna.",
+        "element_id": "CL.L20285.Art.3.elem.denegacion_u_omision",
+        "doctrinal_basis": "La infracción al principio se configura tanto por denegación expresa como por omisión de entrega de la información solicitada sobre procedimientos y decisiones.",
+        "weaknesses": [],
+        "open_questions": [
+          "¿Existe constancia de que posteriormente se haya entregado documentación por otro canal (correo, carta)?"
+        ],
+        "article_short": "Art. 3 — Principio de Transparencia (Ley 20.285)"
+      },
+      {
+        "element_name": "Perjuicio — afectación de derechos del requirente por la falta de transparencia",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-22.seg-1",
+          "STG-26.seg-12"
+        ],
+        "argument": "El pasajero fue removido del vuelo (STG-5.seg-1) sin recibir documentación que le permitiera conocer el fundamento de la decisión para impugnarla. La denegación de información (STG-26.seg-12) perpetuó su estado de indefensión, impidiéndole ejercer oportunamente recursos ante la DGAC, JAC o tribunales. El perjuicio material (pérdida del transporte) se suma al perjuicio jurídico (imposibilidad de defensa informada).",
+        "element_id": "CL.L20285.Art.3.elem.perjuicio_al_afectado",
+        "doctrinal_basis": "La falta de información impide al afectado ejercer recursos administrativos o judiciales, configurando indefensión. El perjuicio puede ser material (pérdida del vuelo, gastos) o jurídico (imposibilidad de impugnar la decisión con conocimiento de causa).",
+        "weaknesses": [
+          "El perjuicio jurídico podría atenuarse si el pasajero logró posteriormente obtener información por otros medios"
+        ],
+        "open_questions": [
+          "¿Se presentó reclamo ante la JAC/DGAC y fue obstaculizado por falta de documentación?"
+        ],
+        "article_short": "Art. 3 — Principio de Transparencia (Ley 20.285)"
+      },
+      {
+        "element_name": "Sistematicidad — patrón de conducta reiterada de denegación",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-13.seg-1",
+          "STG-26.seg-1",
+          "STG-26.seg-12"
+        ],
+        "argument": "Los segmentos demuestran que la denegación de información no fue un acto aislado sino un patrón reiterado por distintos agentes del operador: la tripulación no informó motivos al desembarcar (STG-5), seguridad culpó al pasajero sin dar razones normativas (STG-13), y el supervisor rechazó expresamente la necesidad de documentar (STG-26). Tres instancias distintas, tres agentes distintos, misma conducta de opacidad.",
+        "element_id": "CL.L20285.Art.3.elem.sistematicidad",
+        "doctrinal_basis": "La reiteración de la conducta infractora en múltiples instancias y por distintos funcionarios evidencia una práctica institucional contraria al principio de transparencia, no un hecho aislado.",
+        "weaknesses": [
+          "Con solo un incidente (un pasajero, un vuelo), la 'sistematicidad' podría cuestionarse como patrón institucional más amplio"
+        ],
+        "open_questions": [
+          "¿Existen otros casos documentados de la misma práctica por parte del operador?"
+        ],
+        "article_short": "Art. 3 — Principio de Transparencia (Ley 20.285)"
+      }
+    ],
+    "CL.LPDC.Art.3.b": [
+      {
+        "element_name": "Sujeto obligado (proveedor)",
+        "status": "established",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-26.seg-1",
+          "STG-26.seg-12"
+        ],
+        "argument": "LATAM Airlines, a través de sus dependientes (azafata, supervisor, jefe de seguridad), actuó como proveedor del servicio de transporte aéreo. Los segmentos muestran interacciones directas de personal de LATAM con el pasajero en el contexto de la prestación del servicio contratado.",
+        "element_id": "CL.LPDC.Art.3.b.elem.sujeto_obligado",
+        "doctrinal_basis": "El proveedor de bienes o servicios en los términos del Art. 1 N°2 LPDC es el obligado a entregar información veraz y oportuna al consumidor.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Sujeto titular del derecho (consumidor)",
+        "status": "established",
+        "evidence": [
+          "STG-22.seg-1",
+          "STG-13.seg-12"
+        ],
+        "argument": "Leandro Disconzi es el pasajero-consumidor que contrató el servicio de transporte aéreo y que reiteradamente exigió información sobre las razones de su desembarco, ejerciendo su derecho como titular.",
+        "element_id": "CL.LPDC.Art.3.b.elem.sujeto_titular",
+        "doctrinal_basis": "El consumidor final que contrata un servicio tiene derecho a información veraz y oportuna conforme al Art. 3 letra b) LPDC.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Objeto de la información debida (condiciones del servicio y características relevantes)",
+        "status": "strong",
+        "evidence": [
+          "STG-22.seg-1",
+          "STG-5.seg-1"
+        ],
+        "argument": "El pasajero fue removido del vuelo sin que se le informara la causal específica que justificaba la interrupción del servicio contratado. La información sobre los motivos del desembarco constituye una 'característica relevante' de las condiciones de prestación del servicio.",
+        "element_id": "CL.LPDC.Art.3.b.elem.objeto_informacion",
+        "doctrinal_basis": "La norma exige información sobre bienes y servicios ofrecidos, su precio, condiciones de contratación y otras características relevantes. En transporte aéreo, incluye las causales de denegación de embarque o desembarco forzado.",
+        "weaknesses": [
+          "No se acredita con documento contractual específico qué información debía entregarse según el contrato de transporte."
+        ],
+        "open_questions": [
+          "¿Existía protocolo interno de LATAM que obligara a entregar justificación escrita al pasajero desembarcado?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Veracidad de la información (o ausencia total de información veraz)",
+        "status": "strong",
+        "evidence": [
+          "STG-13.seg-1",
+          "STG-26.seg-1",
+          "STG-26.seg-12"
+        ],
+        "argument": "La única explicación ofrecida fue '¡Porque tú no colaboraste!' (STG-13.seg-1), que no constituye una causal contractual o legal válida. El supervisor posteriormente señaló que 'ya hablaron con usted' y que documentación 'no es necesario', sin entregar información veraz sobre la razón del desembarco.",
+        "element_id": "CL.LPDC.Art.3.b.elem.veracidad",
+        "doctrinal_basis": "La información debe ser veraz, es decir, corresponder a la realidad de los hechos y no inducir a error. La omisión total de información equivale a infracción del deber de veracidad.",
+        "weaknesses": [
+          "La frase 'porque tú no colaboraste' podría interpretarse como una explicación parcial, aunque insuficiente."
+        ],
+        "open_questions": [
+          "¿Existió alguna comunicación previa documentada que contuviera información veraz sobre la causal?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Oportunidad de la información (entrega oportuna)",
+        "status": "established",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-22.seg-1"
+        ],
+        "argument": "Al momento del desembarco forzado, la azafata solo indicó 'Tiene que salir del avión' y 'Ya activamos seguridad', sin proporcionar motivo alguno. Posteriormente, el pasajero continuó esperando documentación explicativa ('Yo estoy esperando una documentación que explique por qué me sacaron del vuelo'), evidenciando que la información nunca fue entregada oportunamente.",
+        "element_id": "CL.LPDC.Art.3.b.elem.oportunidad",
+        "doctrinal_basis": "La información debe ser oportuna, es decir, entregada en tiempo útil para que el consumidor pueda ejercer sus derechos. En caso de desembarco, debe proporcionarse al momento de la decisión o inmediatamente después.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Conducta infractora: negativa sistemática a informar",
+        "status": "established",
+        "evidence": [
+          "STG-13.seg-12",
+          "STG-22.seg-1",
+          "STG-26.seg-1",
+          "STG-26.seg-12"
+        ],
+        "argument": "El pasajero solicitó reiteradamente información escrita sobre las razones del desembarco (STG-13.seg-12: '¡Por escrito!'; STG-22.seg-1). La respuesta del proveedor fue sistemáticamente evasiva o denegatoria: el supervisor indicó que 'ya hablaron con usted' y que documentación 'no es necesario' (STG-26.seg-1, STG-26.seg-12). Esto configura una negativa activa y reiterada.",
+        "element_id": "CL.LPDC.Art.3.b.elem.negativa_sistematica",
+        "doctrinal_basis": "La infracción al Art. 3 letra b) se configura tanto por omisión como por negativa activa a entregar la información debida. La reiteración agrava la infracción.",
+        "weaknesses": [],
+        "open_questions": [
+          "¿Se entregó información por otro canal (correo electrónico, carta posterior) que no conste en los segmentos de audio/video?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      },
+      {
+        "element_name": "Perjuicio al consumidor derivado de la falta de información",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-22.seg-1",
+          "STG-5.seg-12"
+        ],
+        "argument": "La falta de información impidió al consumidor conocer la causal de desembarco, ejercer sus derechos de reclamación oportuna, y evaluar la procedencia de acciones legales inmediatas. Fue desembarcado sin explicación y posteriormente no pudo obtener documentación que respaldara o refutara la decisión del proveedor.",
+        "element_id": "CL.LPDC.Art.3.b.elem.perjuicio_consumidor",
+        "doctrinal_basis": "Si bien el Art. 3 letra b) no exige perjuicio como elemento típico de la infracción, la existencia de daño es relevante para la determinación de indemnizaciones conforme al Art. 50 LPDC.",
+        "weaknesses": [
+          "El perjuicio patrimonial específico (pérdida de vuelo, gastos adicionales) no se acredita directamente en los segmentos disponibles."
+        ],
+        "open_questions": [
+          "¿Cuál fue el destino final del pasajero y qué costos adicionales incurrió por la denegación del servicio?"
+        ],
+        "article_short": "Art. 3 letra b) — Derecho a información veraz y oportuna (LPDC)"
+      }
+    ],
+    "CL.LPDC.Art.23": [
+      {
+        "element_name": "Sujeto activo: proveedor de bienes o servicios",
+        "status": "established",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-26.seg-1",
+          "STG-26.seg-12"
+        ],
+        "argument": "LATAM Airlines actúa como proveedor de servicios de transporte aéreo de pasajeros. Los segmentos muestran a personal de LATAM (azafata, supervisor, jefe de seguridad) actuando en representación de la aerolínea en la prestación del servicio contratado. No existe controversia sobre la calidad de proveedor de LATAM.",
+        "element_id": "CL.LPDC.Art.23.1.elem.sujeto_activo_proveedor",
+        "doctrinal_basis": "Art. 23 LPDC exige que el infractor sea un 'proveedor' en los términos del Art. 1 N° 2 LPDC, es decir, quien habitualmente desarrolla actividades de producción, fabricación, importación, distribución o comercialización de bienes o prestación de servicios a consumidores.",
+        "weaknesses": [],
+        "open_questions": [],
+        "article_short": "Art. 23 N° 1 — Infracción por menoscabo al consumidor con negligencia en la prestación de un servicio (LPDC)"
+      },
+      {
+        "element_name": "Sujeto pasivo: consumidor final",
+        "status": "established",
+        "evidence": [
+          "STG-22.seg-1",
+          "STG-13.seg-12",
+          "STG-22.seg-12"
+        ],
+        "argument": "Leandro Disconzi es un pasajero que adquirió un servicio de transporte aéreo como destinatario final. Los segmentos lo muestran ejerciendo derechos propios de un consumidor: exigiendo documentación y explicaciones por la interrupción del servicio contratado.",
+        "element_id": "CL.LPDC.Art.23.1.elem.sujeto_pasivo_consumidor",
+        "doctrinal_basis": "Art. 1 N° 1 LPDC define consumidor como persona natural o jurídica que adquiere, utiliza o disfruta bienes o servicios como destinatario final. El menoscabo debe recaer sobre un consumidor.",
+        "weaknesses": [],
+        "open_questions": [
+          "Verificar si el pasaje fue adquirido directamente por el consumidor o por un tercero (empresa), lo que podría afectar la legitimación activa bajo LPDC."
+        ],
+        "article_short": "Art. 23 N° 1 — Infracción por menoscabo al consumidor con negligencia en la prestación de un servicio (LPDC)"
+      },
+      {
+        "element_name": "Existencia de relación de consumo: venta de bien o prestación de servicio",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-22.seg-1"
+        ],
+        "argument": "El pasajero se encontraba a bordo de la aeronave, lo que presupone la existencia de un contrato de transporte aéreo vigente. El segmento STG-5.seg-1 muestra que fue forzado a descender del avión donde ya estaba embarcado, y STG-22.seg-1 confirma que fue 'sacado del vuelo', evidenciando una prestación de servicio en curso que fue interrumpida unilateralmente.",
+        "element_id": "CL.LPDC.Art.23.1.elem.relacion_de_consumo",
+        "doctrinal_basis": "Art. 23 LPDC requiere que la infracción ocurra 'en la venta de un bien o en la prestación de un servicio'. Debe acreditarse un vínculo contractual o de consumo entre proveedor y consumidor.",
+        "weaknesses": [
+          "No se aporta copia del billete de pasaje o boarding pass como prueba documental directa del contrato."
+        ],
+        "open_questions": [],
+        "article_short": "Art. 23 N° 1 — Infracción por menoscabo al consumidor con negligencia en la prestación de un servicio (LPDC)"
+      },
+      {
+        "element_name": "Negligencia del proveedor (actuando con negligencia)",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-26.seg-1",
+          "STG-26.seg-12",
+          "STG-13.seg-1"
+        ],
+        "argument": "La negligencia se configura por múltiples omisiones convergentes: (1) desembarco forzado sin explicación previa de motivos (STG-5.seg-1); (2) escalamiento a seguridad sin agotar instancias de diálogo ni informar derechos (STG-5.seg-12); (3) negativa expresa a proporcionar documentación justificativa (STG-26.seg-12); (4) desestimación de las solicitudes legítimas del consumidor (STG-26.seg-1); y (5) culpabilización del pasajero sin fundamento ('porque tú no colaboraste', STG-13.seg-1). Un proveedor diligente habría informado los motivos, ofrecido alternativas y documentado la situación conforme a la normativa aeronáutica y de protección al consumidor.",
+        "element_id": "CL.LPDC.Art.23.1.elem.conducta_negligente",
+        "doctrinal_basis": "Art. 23 LPDC exige que el proveedor haya actuado 'con negligencia'. La doctrina y jurisprudencia del SERNAC interpretan que basta la culpa leve, es decir, la falta de diligencia que un proveedor razonable habría empleado en las mismas circunstancias. La negligencia puede manifestarse en omisiones de información, falta de protocolos adecuados o incumplimiento de deberes legales.",
+        "weaknesses": [
+          "La defensa podría argumentar que existieron razones de seguridad operacional que justificaban la actuación urgente sin explicación detallada.",
+          "No se cuenta con protocolos internos de LATAM para contrastar el estándar de diligencia exigible."
+        ],
+        "open_questions": [
+          "¿Existió alguna causa objetiva de seguridad que pudiera excluir la negligencia?",
+          "¿Cuáles son los protocolos internos de LATAM para desembarco involuntario y cuál es el estándar de información al pasajero?"
+        ],
+        "article_short": "Art. 23 N° 1 — Infracción por menoscabo al consumidor con negligencia en la prestación de un servicio (LPDC)"
+      },
+      {
+        "element_name": "Menoscabo al consumidor (daño o perjuicio efectivo)",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-22.seg-1",
+          "STG-13.seg-1",
+          "STG-26.seg-12"
+        ],
+        "argument": "El menoscabo patrimonial se configura por la privación del servicio de transporte contratado (desembarco forzado, STG-5.seg-1) sin ofrecimiento de alternativas ni reembolso documentado. El menoscabo extrapatrimonial se evidencia en el trato degradante: culpabilización pública del pasajero (STG-13.seg-1), negativa a entregar justificación escrita (STG-26.seg-12), y la situación de desamparo informativo en que fue dejado el consumidor (STG-22.seg-1). El pasajero fue privado de su vuelo y sometido a un proceso humillante sin información ni asistencia.",
+        "element_id": "CL.LPDC.Art.23.1.elem.menoscabo_al_consumidor",
+        "doctrinal_basis": "Art. 23 LPDC exige que la conducta negligente 'cause menoscabo al consumidor'. El menoscabo comprende tanto el daño patrimonial (pérdida del servicio contratado, gastos adicionales) como el daño extrapatrimonial (dignidad, angustia). La jurisprudencia de policía local ha reconocido el menoscabo moral en casos de trato indigno al consumidor.",
+        "weaknesses": [
+          "No se cuantifica el daño patrimonial concreto (valor del pasaje, gastos de alojamiento, vuelo alternativo).",
+          "El daño moral requiere prueba adicional para su cuantificación en sede judicial."
+        ],
+        "open_questions": [
+          "¿El pasajero fue reubicado en un vuelo posterior o perdió completamente el servicio?",
+          "¿Se generaron gastos adicionales documentables (alojamiento, alimentación, transporte)?"
+        ],
+        "article_short": "Art. 23 N° 1 — Infracción por menoscabo al consumidor con negligencia en la prestación de un servicio (LPDC)"
+      },
+      {
+        "element_name": "Fallas o deficiencias en la calidad del servicio",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-26.seg-1",
+          "STG-26.seg-12",
+          "STG-13.seg-1"
+        ],
+        "argument": "Se identifican múltiples deficiencias en la calidad del servicio: (1) deficiencia en la prestación misma del servicio al interrumpir unilateralmente el transporte contratado (STG-5.seg-1); (2) deficiencia en la seguridad del consumidor al activar protocolo de seguridad como mecanismo coercitivo sin justificación comunicada (STG-5.seg-12); (3) deficiencia en la calidad de atención al negar información y documentación (STG-26.seg-1, STG-26.seg-12); y (4) deficiencia en el trato al consumidor al responsabilizarlo sin fundamento (STG-13.seg-1). Estas fallas son sistémicas y no aisladas, lo que agrava la infracción.",
+        "element_id": "CL.LPDC.Art.23.1.elem.falla_o_deficiencia_calidad_servicio",
+        "doctrinal_basis": "Art. 23 LPDC especifica que el menoscabo debe deberse a 'fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio'. En servicios de transporte aéreo, la calidad comprende no solo el traslado físico sino también el trato digno, la información oportuna y el respeto a los derechos del pasajero.",
+        "weaknesses": [
+          "La defensa podría argumentar que la interrupción del servicio obedeció a causas imputables al propio pasajero."
+        ],
+        "open_questions": [
+          "¿Qué conducta específica del pasajero, si alguna, motivó el desembarco?",
+          "¿Existe registro documental (bitácora de vuelo, informe del comandante) que justifique la decisión?"
+        ],
+        "article_short": "Art. 23 N° 1 — Infracción por menoscabo al consumidor con negligencia en la prestación de un servicio (LPDC)"
+      },
+      {
+        "element_name": "Nexo causal entre la conducta negligente y el menoscabo",
+        "status": "strong",
+        "evidence": [
+          "STG-5.seg-1",
+          "STG-5.seg-12",
+          "STG-22.seg-1",
+          "STG-13.seg-1"
+        ],
+        "argument": "El nexo causal es directo y evidente: fue la decisión unilateral de LATAM de desembarcar al pasajero (STG-5.seg-1), reforzada con la activación de seguridad (STG-5.seg-12), la que privó al consumidor del servicio contratado. La posterior negativa a informar y documentar (STG-22.seg-1) y la culpabilización sin fundamento (STG-13.seg-1) son conductas negligentes adicionales que profundizaron el menoscabo. No se advierte intervención de un tercero o fuerza mayor que interrumpa la cadena causal.",
+        "element_id": "CL.LPDC.Art.23.1.elem.nexo_causal",
+        "doctrinal_basis": "La infracción del Art. 23 LPDC requiere que el menoscabo sea consecuencia directa de la actuación negligente del proveedor. Debe existir una relación de causalidad adecuada entre las fallas del servicio y el daño sufrido por el consumidor.",
+        "weaknesses": [
+          "Si se acredita una conducta disruptiva del pasajero que justificara el desembarco por razones de seguridad, el nexo causal podría verse interrumpido o atenuado."
+        ],
+        "open_questions": [
+          "¿Existe evidencia objetiva de conducta disruptiva del pasajero previa al desembarco?"
+        ],
+        "article_short": "Art. 23 N° 1 — Infracción por menoscabo al consumidor con negligencia en la prestación de un servicio (LPDC)"
+      },
+      {
+        "element_name": "Infracción agravante: denegación del derecho a información veraz y oportuna (Art. 3 letra b LPDC)",
+        "status": "established",
+        "evidence": [
+          "STG-22.seg-1",
+          "STG-13.seg-12",
+          "STG-26.seg-1",
+          "STG-26.seg-12"
+        ],
+        "argument": "La denegación del derecho a información está plenamente acreditada por los segmentos: el pasajero solicitó reiteradamente documentación escrita que explicara los motivos de su desembarco (STG-22.seg-1, STG-13.seg-12), y el proveedor respondió con evasivas ('ya hablaron con usted', STG-26.seg-1) y negativas expresas ('no es necesario', STG-26.seg-12). Esta denegación sistemática constituye evidencia directa e incontrovertible de una deficiencia grave en la calidad del servicio.",
+        "element_id": "CL.LPDC.Art.23.1.elem.denegacion_derecho_informacion",
+        "doctrinal_basis": "El Art. 3 letra b) LPDC consagra el derecho básico del consumidor a una información veraz y oportuna sobre los bienes y servicios ofrecidos. La denegación sistemática de información constituye una circunstancia agravante de la infracción del Art. 23, pues evidencia una deficiencia adicional en la calidad del servicio y una vulneración autónoma de derechos del consumidor.",
+        "weaknesses": [],
+        "open_questions": [
+          "¿Se proporcionó información por escrito en algún momento posterior no registrado en los segmentos disponibles?"
+        ],
+        "article_short": "Art. 23 N° 1 — Infracción por menoscabo al consumidor con negligencia en la prestación de un servicio (LPDC)"
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CONST.T1.C3.P3.Art.19.3",
+      "candidate_name": "CL.CONST.T1.C3.P3.Art.19.3",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CONST.T1.C3.P3.Art.19.3 and confirm excerpt"
+      ],
+      "preliminary_view": "Equal protection under the law in the exercise of their rights. All person has the right to legal defense in the manner indicated by the law and no authority or individual may prevent, restrict or distort the due intervention of the legal c",
+      "history_note": "legacy paraphrase: Equal protection under the law in the exercise of their rights. All person has the right to legal defense. No authority or individual may prevent, restrict or distort the due intervention of the legal counsel. Any ruling of a body that exercises jurisdiction must be based on a previous legally held process. The legislator must always establish the guarantees of a rational and just procedure and investigation."
+    },
+    {
+      "candidate_article_id": "CL.CONST.T1.C3.P7.Art.19.7",
+      "candidate_name": "CL.CONST.T1.C3.P7.Art.19.7",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CONST.T1.C3.P7.Art.19.7 and confirm excerpt"
+      ],
+      "preliminary_view": "The right to personal freedom and to individual security. Therefore, a. Everyone has the right to reside and remain in any place of the Republic, move from one place to another and enter and leave its territory, provided that the norms esta",
+      "history_note": "legacy paraphrase: The right to personal freedom and to individual security. No one may be deprived of his personal freedom nor may such be restricted except in the cases and the manner established by the Constitution and the laws."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.133",
+      "candidate_name": "Código Aeronáutico Art. 133 - Obligaciones del transportador respecto del pasajero",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for DFL 221 (Código Aeronáutico) Art. 133 from bcn.cl/leychile",
+        "Confirm whether it establishes the carrier's obligation to inform the passenger of the reasons for denial of boarding or removal from aircraft"
+      ],
+      "preliminary_view": "The Código Aeronáutico regulates the obligations of the air carrier toward passengers. Art. 133 and surrounding provisions may establish duties regarding information and justification when a passenger is denied transport or removed from an aircraft. Directly applicable to LATAM as air operator.",
+      "history_note": "Not previously cited. The Código Aeronáutico (DFL 221 of 1931, replaced by Ley 18.916 of 1990) is the primary Chilean framework governing air transport obligations. Needs verification of exact article number and content."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.131",
+      "candidate_name": "Código Aeronáutico Art. 131 - Contrato de transporte aéreo",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Ley 18.916 (Código Aeronáutico) Art. 131 from bcn.cl/leychile",
+        "Confirm whether it defines the carrier's contractual obligations including completion of transport"
+      ],
+      "preliminary_view": "Art. 131 defines the air transport contract and the carrier's obligation to transport the passenger to the agreed destination. Unilateral removal without written justification may constitute breach of this contractual obligation. Directly applicable to LATAM.",
+      "history_note": "Not previously cited. Requires verification of exact text and numbering in current consolidated version of Código Aeronáutico."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.145",
+      "candidate_name": "Código Aeronáutico Art. 145 - Responsabilidad del transportador por incumplimiento",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Código Aeronáutico Art. 145 from bcn.cl/leychile",
+        "Verify whether it establishes carrier liability for failure to perform the transport contract and applicable indemnification"
+      ],
+      "preliminary_view": "Establishes the carrier's liability regime when it fails to perform the transport contract. Removal of a boarded passenger without proper justification could trigger this liability provision. Applicable to LATAM as carrier.",
+      "history_note": "Not previously cited. Exact article number needs verification against current consolidated text of Ley 18.916."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.12",
+      "candidate_name": "Ley 19.496 Art. 12 - Incumplimiento de condiciones ofrecidas o convenidas",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Ley 19.496 Art. 12 from bcn.cl/leychile",
+        "Confirm whether it addresses the provider's obligation to comply with the terms and conditions offered or agreed upon in the contract"
+      ],
+      "preliminary_view": "Art. 12 of the LPC establishes that every provider must respect the terms and conditions offered or agreed upon with the consumer. LATAM's unilateral removal of a boarded passenger without written justification may constitute a violation of contracted service conditions.",
+      "history_note": "Not previously cited. Complements the already-established Art. 3(b) and Art. 23 of the same law."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.3.e",
+      "candidate_name": "Ley 19.496 Art. 3 letra e) - Derecho a la reparación e indemnización",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Ley 19.496 Art. 3 letra e) from bcn.cl/leychile",
+        "Confirm whether it establishes the consumer's right to adequate and timely reparation for damages suffered"
+      ],
+      "preliminary_view": "Art. 3(e) establishes the consumer's right to adequate and timely reparation for all damages suffered as a consequence of acts that violate the consumer protection norms. Applicable given the systematic denial of passenger rights documented in the incident.",
+      "history_note": "Not previously cited. Art. 3(b) is already established; letter (e) addresses the reparation right specifically."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1545",
+      "candidate_name": "Código Civil Art. 1545 - Fuerza obligatoria del contrato",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Código Civil Art. 1545 from bcn.cl/leychile",
+        "Confirm pacta sunt servanda principle and its application to unilateral termination of transport contract"
+      ],
+      "preliminary_view": "Art. 1545 CC establishes that a legally executed contract is law for the contracting parties and cannot be invalidated except by mutual consent or legal causes. LATAM's unilateral removal of a passenger with a valid ticket/boarding pass may violate this principle.",
+      "history_note": "Not previously cited. General civil law principle supporting the specific aviation and consumer law claims."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.1546",
+      "candidate_name": "Código Civil Art. 1546 - Buena fe contractual",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Código Civil Art. 1546 from bcn.cl/leychile",
+        "Confirm obligation of good faith in contract performance and whether refusal to provide written justification constitutes bad faith"
+      ],
+      "preliminary_view": "Art. 1546 CC requires contracts to be performed in good faith, obligating not only what is expressly stipulated but also what emanates from the nature of the obligation or by law or custom. The systematic refusal to provide written reasons for deplaning may constitute bad faith performance.",
+      "history_note": "Not previously cited. Supports the argument that LATAM's conduct violated good faith obligations inherent in the transport contract."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Código Civil Art. 2314 - Responsabilidad extracontractual",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Código Civil Art. 2314 from bcn.cl/leychile",
+        "Confirm general tort liability rule and its applicability to damages caused by airline's conduct beyond contractual scope"
+      ],
+      "preliminary_view": "Art. 2314 CC establishes that whoever commits a wrongful act (delito o cuasidelito) that causes damage to another is obligated to indemnify. May apply to damages (moral, material) caused by the manner of removal and systematic denial of information, beyond mere contractual breach.",
+      "history_note": "Not previously cited. Provides alternative basis for damages claim if contractual route is insufficient."
+    },
+    {
+      "candidate_article_id": "CL.CONST.Art.19.24",
+      "candidate_name": "Constitución Art. 19 N°24 - Derecho de propiedad (sobre derechos incorporales)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CPR Art. 19 N°24 from bcn.cl/leychile",
+        "Verify applicability of property right over incorporeal rights (the contractual right to transport) per Chilean constitutional jurisprudence"
+      ],
+      "preliminary_view": "Chilean constitutional doctrine recognizes property over incorporeal rights, including contractual rights. The passenger's right to transport under a valid ticket constitutes a property right protected by Art. 19 N°24. Deprivation without due process may constitute a constitutional violation. However, this is a horizontal-effect argument requiring careful doctrinal support.",
+      "history_note": "Not previously cited. Chilean courts have applied this provision to protect contractual rights via recurso de protección."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.16.g",
+      "candidate_name": "Ley 19.496 Art. 16 letra g) - Cláusulas abusivas",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Ley 19.496 Art. 16 from bcn.cl/leychile",
+        "Confirm whether letra g) or another subsection addresses clauses that allow unilateral termination without adequate justification as abusive"
+      ],
+      "preliminary_view": "Art. 16 of the LPC declares abusive those contractual clauses that grant the provider the unilateral right to terminate the contract without equivalent faculty for the consumer, or that contravene good faith requirements. If LATAM relied on conditions of carriage permitting removal without written justification, such clauses may be deemed abusive.",
+      "history_note": "Not previously cited. Requires verification of exact letter applicable to unilateral termination clauses."
+    },
+    {
+      "candidate_article_id": "CL.CONST.Art.19.2",
+      "candidate_name": "Constitución Art. 19 N°2 - Igualdad ante la ley",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CPR Art. 19 N°2 from bcn.cl/leychile",
+        "Assess whether discriminatory treatment in denial of rights (compared to other passengers) engages this provision"
+      ],
+      "preliminary_view": "Art. 19 N°2 guarantees equality before the law and prohibits arbitrary discrimination. If the passenger was singled out for removal and denial of information without objective justification while other passengers were not similarly treated, this provision may be engaged. Requires factual evidence of differential treatment.",
+      "history_note": "Not previously cited. Complements the already-established Art. 19 N°1 and proposed Art. 19 N°3 and N°7."
+    }
+  ],
+  "authorities": [],
+  "open_questions": [
+    {
+      "id": "`OQ-CL010-LATAM-CONCESION`",
+      "question": "",
+      "blocks_element": "",
+      "priority": "critical"
+    },
+    {
+      "id": "`OQ-CL010-CAUSAL-DESEMBARCO`",
+      "question": "",
+      "blocks_element": "",
+      "priority": "critical"
+    },
+    {
+      "id": "`OQ-CL010-IDENTIDAD-AGENTES`",
+      "question": "",
+      "blocks_element": "",
+      "priority": "high"
+    },
+    {
+      "id": "+ 17 additional questions",
+      "question": "",
+      "blocks_element": "",
+      "priority": ""
+    },
+    {
+      "id": "OQ-CL010-DGAC-INTERVENCION",
+      "question": "¿Intervino personal de la DGAC o PDI en la ejecución del desembarque forzado del pasajero?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.4.elem.servicio_persona_humana",
+      "priority": "critical",
+      "obtaining_method": "Solicitud de acceso a información pública (Ley 20.285) dirigida a la DGAC y a la PDI requiriendo registros de intervención de personal en el vuelo, fecha y aeropuerto correspondientes. Complementar con solicitud de cámaras de seguridad del aeropuerto al concesionario aeroportuario."
+    },
+    {
+      "id": "OQ-CL010-FISCALIZACION-DEBER",
+      "question": "¿Existía un deber de fiscalización estatal (DGAC, JAC) incumplido al momento de los hechos respecto de los protocolos de desembarque involuntario?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.4.elem.servicio_persona_humana",
+      "priority": "high",
+      "obtaining_method": "Solicitud Ley 20.285 a la DGAC y JAC requiriendo normativa vigente sobre fiscalización de protocolos de desembarque involuntario, actas de fiscalización a LATAM en el período relevante, y resoluciones sancionatorias previas por hechos análogos."
+    },
+    {
+      "id": "OQ-CL010-VIAS-ADMIN-AGOTADAS",
+      "question": "¿Se agotaron las vías administrativas ante la DGAC o el SERNAC antes de invocar la norma constitucional?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.4.elem.respeto_derechos_garantias",
+      "priority": "medium",
+      "obtaining_method": "Revisión del expediente del cliente para verificar presentación de reclamos ante SERNAC y DGAC. Si no existen, evaluar presentación inmediata para agotar vía administrativa y documentar la respuesta institucional."
+    },
+    {
+      "id": "OQ-CL010-SEGURIDAD-ENTIDAD",
+      "question": "¿Qué entidad de seguridad fue activada (PDI, Carabineros, seguridad privada aeroportuaria, seguridad interna de LATAM) y bajo qué protocolo normativo se ejecutó la intervención?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.5.elem.proteccion_poblacion",
+      "priority": "critical",
+      "obtaining_method": "Solicitud Ley 20.285 a la PDI (Policía de Investigaciones) y Carabineros requiriendo partes o registros de intervención en el aeropuerto, fecha y vuelo específicos. Solicitud paralela al concesionario aeroportuario sobre registros de seguridad privada. Oficio judicial si se inicia causa."
+    },
+    {
+      "id": "OQ-CL010-ACTA-SEGURIDAD",
+      "question": "¿Se labró algún parte, acta o informe de la intervención de seguridad durante el desembarque del pasajero?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.5.elem.proteccion_poblacion",
+      "priority": "critical",
+      "obtaining_method": "Solicitud Ley 20.285 a PDI y DGAC. Solicitud directa a LATAM vía carta certificada exigiendo copia de todo registro interno del incidente. Si existe causa judicial, solicitar exhibición de documentos conforme al Art. 349 CPC."
+    },
+    {
+      "id": "OQ-CL010-PATRON-DISCRIMINATORIO",
+      "question": "¿Existieron otros pasajeros en situación comparable (mismo vuelo u otros vuelos) que recibieron trato diferente, lo que permitiría acreditar un patrón discriminatorio?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.5.elem.igualdad_oportunidades",
+      "priority": "high",
+      "obtaining_method": "Solicitud al SERNAC de reclamos presentados contra LATAM por desembarque involuntario en el mismo período. Búsqueda en bases de datos de jurisprudencia (VLex, MicroJuris) de casos análogos. Solicitud Ley 20.285 a la JAC sobre estadísticas de denegación de embarque de LATAM."
+    },
+    {
+      "id": "OQ-CL010-NORMATIVA-SECTORIAL",
+      "question": "¿Existe normativa sectorial vigente (resoluciones DGAC, regulaciones JAC, Código Aeronáutico) que obligara a LATAM a informar por escrito los motivos del desembarque y que no fue aplicada?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.4.elem.condiciones_sociales_realizacion",
+      "priority": "high",
+      "obtaining_method": "Investigación normativa en el repositorio de la DGAC y JAC. Solicitud Ley 20.285 a la DGAC requiriendo las resoluciones y circulares vigentes sobre derechos de pasajeros en caso de desembarque involuntario. Revisión del DFL 221 (Código Aeronáutico) y DS 172 (Reglamento de Transporte Aéreo)."
+    },
+    {
+      "id": "OQ-CL010-PERJUICIO-CUANTIFICACION",
+      "question": "¿Se puede cuantificar el perjuicio material sufrido por el pasajero (valor del pasaje, gastos de alojamiento, transporte alternativo, compromisos incumplidos)?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.4.elem.condiciones_sociales_realizacion",
+      "priority": "medium",
+      "obtaining_method": "Recopilación documental del cliente: boleta/factura del pasaje, comprobantes de gastos adicionales, correos o documentos que acrediten compromisos frustrados en destino. Declaración jurada del pasajero detallando perjuicios."
+    },
+    {
+      "id": "OQ-CL010-RECURSO-PROTECCION",
+      "question": "¿Se interpuso recurso de protección invocando Art. 19 N° 1, N° 2 o N° 24 CPR en conexión con Art. 1, y dentro del plazo de 30 días corridos?",
+      "blocks_element": "CL.CONST.T1.C1.Art.1.4.elem.dignidad_persona",
+      "priority": "high",
+      "obtaining_method": "Revisión del expediente del cliente y consulta en el sistema de la Corte de Apelaciones competente (por domicilio del afectado o lugar de los hechos). Si no se interpuso, evaluar plazo remanente conforme al Auto Acordado sobre Recurso de Protección."
+    },
+    {
+      "id": "OQ-CL010-FUERZA-FISICA",
+      "question": "¿Se ejerció fuerza física directa sobre el cuerpo del pasajero durante la remoción del avión?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.acto_lesivo_integridad_fisica",
+      "priority": "critical",
+      "obtaining_method": "Declaración detallada del pasajero sobre la dinámica física del desembarque. Solicitud de grabaciones de cámaras de seguridad del avión y manga de embarque al concesionario aeroportuario y a LATAM. Identificación y declaración de testigos (otros pasajeros, tripulantes)."
+    },
+    {
+      "id": "OQ-CL010-REGISTROS-MEDICOS",
+      "question": "¿Existen registros médicos, constancias de lesiones o certificados de atención posteriores al incidente que acrediten afectación a la integridad física?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.acto_lesivo_integridad_fisica",
+      "priority": "high",
+      "obtaining_method": "Solicitar al pasajero certificados médicos, fichas de atención de urgencia o constancias de lesiones. Si no existen, evaluar la pertinencia de un examen médico retrospectivo o declaración jurada sobre síntomas físicos."
+    },
+    {
+      "id": "OQ-CL010-PERITAJE-PSICOLOGICO",
+      "question": "¿Se cuenta con informe pericial psicológico que acredite secuelas psíquicas derivadas del incidente?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.afectacion_integridad_psiquica",
+      "priority": "high",
+      "obtaining_method": "Derivar al pasajero a evaluación pericial psicológica con profesional habilitado. El informe debe documentar sintomatología (estrés postraumático, ansiedad, etc.), nexo causal con el incidente y pronóstico. Preservar cadena de custodia del informe para uso judicial."
+    },
+    {
+      "id": "OQ-CL010-REGISTRO-INTERNO-LATAM",
+      "question": "¿Existe algún registro interno de LATAM (bitácora de vuelo, informe del comandante, reporte de incidente, sistema de gestión de pasajeros) que documente la causa de la remoción?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.arbitrariedad_ilegalidad",
+      "priority": "critical",
+      "obtaining_method": "Carta certificada a LATAM Airlines exigiendo exhibición de documentos conforme al Art. 3 letra b) LPDC. Si existe causa judicial, solicitar exhibición conforme al Art. 349 CPC o medida prejudicial de exhibición (Art. 273 N° 3 CPC). Solicitud a la DGAC de copia de reportes de incidentes del vuelo."
+    },
+    {
+      "id": "OQ-CL010-NORMA-SEGURIDAD-INVOCADA",
+      "question": "¿Se invocó alguna norma de seguridad aérea (Código Aeronáutico, regulaciones DGAC, normas OACI) como fundamento para la remoción del pasajero?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.arbitrariedad_ilegalidad",
+      "priority": "high",
+      "obtaining_method": "Requerimiento formal a LATAM solicitando identificación de la norma o protocolo invocado para la decisión de desembarque. Solicitud Ley 20.285 a la DGAC sobre si recibió notificación del incidente y bajo qué causal normativa."
+    },
+    {
+      "id": "OQ-CL010-POLICIA-APREMIO",
+      "question": "¿Participó personal policial (PDI o Carabineros) o de la DGAC directamente en la remoción física del pasajero, lo que reforzaría el carácter de apremio estatal ilegítimo?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.apremio_ilegitimo",
+      "priority": "critical",
+      "obtaining_method": "Solicitud Ley 20.285 a PDI y Carabineros requiriendo partes de servicio del aeropuerto en la fecha y hora del incidente. Solicitud a la DGAC sobre intervención de inspectores. Declaración del pasajero identificando uniformes y credenciales del personal interviniente."
+    },
+    {
+      "id": "OQ-CL010-CONDUCTA-PREVIA-PASAJERO",
+      "question": "¿Existió algún acto previo del pasajero (conducta disruptiva, incumplimiento de instrucciones de seguridad, estado de ebriedad u otro) que pudiera interrumpir el nexo causal o justificar el desembarque?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.nexo_causal",
+      "priority": "critical",
+      "obtaining_method": "Declaración jurada detallada del pasajero sobre toda la secuencia de hechos previos al desembarque. Solicitud de grabaciones de cámaras del avión. Identificación y declaración de pasajeros testigos. Solicitud a LATAM del registro de incidentes y bitácora del comandante."
+    },
+    {
+      "id": "OQ-CL010-OTROS-PASAJEROS-PATRON",
+      "question": "¿Existen otros pasajeros afectados por el mismo patrón de desembarque forzado sin información que refuercen la calificación de sistematicidad institucional?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.denegacion_sistematica_derechos",
+      "priority": "medium",
+      "obtaining_method": "Solicitud al SERNAC de estadísticas y reclamos por desembarque involuntario contra LATAM. Búsqueda en jurisprudencia de Juzgados de Policía Local y Cortes de Apelaciones. Consulta a organizaciones de consumidores (ODECU, CONADECUS) sobre casos similares."
+    },
+    {
+      "id": "OQ-CL010-TRANSPARENCIA-CONCESIONARIO",
+      "question": "¿Se extiende la obligación de transparencia de la Ley 20.285 a concesionarios de transporte aéreo por ejercer función pública delegada, o es más apropiado invocar normativa sectorial?",
+      "blocks_element": "CL.L20285.Art.3.elem.sujeto_obligado",
+      "priority": "high",
+      "obtaining_method": "Investigación doctrinaria y jurisprudencial sobre aplicación de Ley 20.285 a concesionarios de servicios públicos. Consulta de decisiones del Consejo para la Transparencia sobre solicitudes dirigidas a empresas concesionarias. Análisis del Art. 2 inc. 3° Ley 20.285 y dictámenes de Contraloría sobre función pública delegada."
+    },
+    {
+      "id": "OQ-CL010-DOCUMENTACION-POSTERIOR",
+      "question": "¿Existe constancia de que LATAM haya entregado posteriormente documentación justificativa del desembarque por otro canal (correo electrónico, carta, respuesta a reclamo SERNAC)?",
+      "blocks_element": "CL.L20285.Art.3.elem.denegacion_u_omision",
+      "priority": "high",
+      "obtaining_method": "Revisión exhaustiva de la correspondencia del pasajero (correo electrónico, correo postal). Consulta en plataforma SERNAC sobre estado de reclamo si fue presentado. Solicitud formal a LATAM de copia de toda comunicación enviada al pasajero con posterioridad al incidente."
+    },
+    {
+      "id": "OQ-CL010-RECLAMO-JAC-DGAC",
+      "question": "¿Se presentó reclamo ante la JAC o DGAC y fue obstaculizado por la falta de documentación entregada por LATAM?",
+      "blocks_element": "CL.L20285.Art.3.elem.perjuicio_al_afectado",
+      "priority": "medium",
+      "obtaining_method": "Revisión del expediente del cliente. Si se presentó reclamo, solicitar copia del expediente administrativo a la JAC/DGAC vía Ley 20.285. Si no se presentó, documentar la imposibilidad de hacerlo por falta de información como evidencia de perjuicio."
+    },
+    {
+      "id": "OQ-CL010-PROTOCOLO-INTERNO-LATAM",
+      "question": "¿Cuáles son los protocolos internos de LATAM para desembarque involuntario y qué estándar de información al pasajero establecen?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.objeto_informacion",
+      "priority": "high",
+      "obtaining_method": "Solicitud formal a LATAM vía carta certificada requiriendo copia de protocolos y manuales de procedimiento para desembarque involuntario. Si existe causa judicial, solicitar exhibición como medida prejudicial (Art. 273 N° 3 CPC). Solicitud a la DGAC de los manuales de operaciones aprobados para LATAM."
+    },
+    {
+      "id": "OQ-CL010-COMUNICACION-PREVIA-VERAZ",
+      "question": "¿Existió alguna comunicación previa documentada (antes del desembarque o inmediatamente después) que contuviera información veraz sobre la causal de remoción?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.veracidad",
+      "priority": "medium",
+      "obtaining_method": "Declaración del pasajero sobre toda comunicación recibida. Revisión de correos electrónicos, SMS, notificaciones en app de LATAM. Solicitud a LATAM de registros de comunicaciones al pasajero en el sistema de gestión de reservas."
+    },
+    {
+      "id": "OQ-CL010-LEGITIMACION-PASAJE",
+      "question": "¿El pasaje fue adquirido directamente por el consumidor o por un tercero (empresa, agencia), lo que podría afectar la legitimación activa bajo LPDC?",
+      "blocks_element": "CL.LPDC.Art.23.1.elem.sujeto_pasivo_consumidor",
+      "priority": "medium",
+      "obtaining_method": "Solicitar al pasajero copia del billete de pasaje, boarding pass, comprobante de compra y medio de pago utilizado. Verificar si fue adquirido por persona jurídica empleadora, lo que requeriría análisis de legitimación activa conforme al Art. 1 N° 1 LPDC."
+    },
+    {
+      "id": "OQ-CL010-CAUSA-OBJETIVA-SEGURIDAD",
+      "question": "¿Existió alguna causa objetiva de seguridad operacional (alerta de seguridad, instrucción del comandante, incidente técnico) que pudiera excluir la negligencia del proveedor?",
+      "blocks_element": "CL.LPDC.Art.23.1.elem.conducta_negligente",
+      "priority": "critical",
+      "obtaining_method": "Solicitud a la DGAC de reportes de incidentes del vuelo. Solicitud a LATAM de la bitácora del comandante y reportes de cabina. Si existe causa judicial, solicitar como prueba documental. Consulta al sistema de reportes de seguridad operacional de la DGAC."
+    },
+    {
+      "id": "OQ-CL010-DESTINO-REUBICACION",
+      "question": "¿El pasajero fue reubicado en un vuelo posterior, recibió reembolso, o perdió completamente el servicio contratado? ¿Qué gastos adicionales documentables se generaron?",
+      "blocks_element": "CL.LPDC.Art.23.1.elem.menoscabo_al_consumidor",
+      "priority": "high",
+      "obtaining_method": "Declaración detallada del pasajero. Recopilación de comprobantes: nuevo pasaje, alojamiento, alimentación, transporte terrestre, pérdida de conexiones. Extracto bancario o de tarjeta de crédito que acredite gastos. Estado de la reserva en sistema de LATAM."
+    },
+    {
+      "id": "OQ-CL010-BITACORA-COMANDANTE",
+      "question": "¿Existe registro en la bitácora de vuelo o informe del comandante que documente la decisión de desembarque y su fundamento?",
+      "blocks_element": "CL.LPDC.Art.23.1.elem.falla_o_deficiencia_calidad_servicio",
+      "priority": "critical",
+      "obtaining_method": "Solicitud Ley 20.285 a la DGAC requiriendo copia de la bitácora de vuelo y reportes del comandante. Solicitud directa a LATAM. Si existe causa judicial, medida prejudicial de exhibición de documentos (Art. 273 N° 3 CPC)."
+    },
+    {
+      "id": "OQ-CL010-ORDEN-ORIGINAL",
+      "question": "¿Quién dio la orden original de remoción del pasajero del vuelo (comandante, jefe de cabina, personal de tierra, sistema automatizado)?",
+      "blocks_element": "CL.CONST.Art.19.1.elem.sujeto_activo_agresor",
+      "priority": "high",
+      "obtaining_method": "Solicitud a LATAM de identificación del funcionario que ordenó el desembarque y la cadena de mando involucrada. Solicitud a la DGAC de reportes del comandante. Declaración del pasajero sobre lo comunicado por la tripulación respecto del origen de la orden."
+    },
+    {
+      "id": "OQ-CL010-INFO-ESCRITA-POSTERIOR",
+      "question": "¿Se proporcionó información por escrito al pasajero en algún momento posterior al incidente que no conste en los segmentos de audio/video disponibles?",
+      "blocks_element": "CL.LPDC.Art.23.1.elem.denegacion_derecho_informacion",
+      "priority": "medium",
+      "obtaining_method": "Declaración jurada del pasajero confirmando si recibió o no documentación posterior. Revisión de correo electrónico, buzón postal y notificaciones de la app de LATAM. Solicitud a LATAM de registro de comunicaciones post-incidente dirigidas al pasajero."
+    }
+  ],
+  "pipeline_validation": {
+    "pack": "Validation report CL-001",
+    "results": [
+      {
+        "check": "V01-V05, V09-V11",
+        "name": "All structural checks",
+        "result": "✅ pass",
+        "detail": "8 checks passed"
+      },
+      {
+        "check": "V06",
+        "name": "element_coverage",
+        "result": "⚠️ warn",
+        "detail": "Some elements uncovered in nexus"
+      },
+      {
+        "check": "V07",
+        "name": "authorities_verification",
+        "result": "⚠️ warn",
+        "detail": "15/15 unverified (anti-fabrication)"
+      },
+      {
+        "check": "V08",
+        "name": "contract_consistency",
+        "result": "⚠️ warn",
+        "detail": "derived=0.65 vs. contract=0.96"
+      }
+    ],
+    "summary": {
+      "pass": 1,
+      "warn": 3,
+      "fail": 0
+    },
+    "note": "Validation results pre-Recommendation 9.3"
+  },
+  "cross_references": [
+    {
+      "ref": "CL-008",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-001",
+      "relation": "related"
+    },
+    {
+      "ref": "CL-002",
+      "relation": "forcible_removal_executed_without_rights_disclosure"
+    },
+    {
+      "ref": "CL-003",
+      "relation": "institutional_collusion_enabled_systematic_rights_denial"
+    },
+    {
+      "ref": "CL-004",
+      "relation": "concealment_of_exoneration_perpetuated_rights_denial"
+    },
+    {
+      "ref": "CL-005",
+      "relation": "cctv_exoneration_should_have_restored_denied_rights"
+    },
+    {
+      "ref": "CL-006",
+      "relation": "boarding_denial_continued_pattern_of_rights_violation"
+    },
+    {
+      "ref": "CL-007",
+      "relation": "failure_to_rectify_perpetuated_rights_denial"
+    },
+    {
+      "ref": "CL-009",
+      "relation": "icao_standards_require_passenger_rights_protections_violated_here"
+    },
+    {
+      "ref": "CL-016",
+      "relation": "invalid_document_used_as_pretext_denying_written_justification"
+    },
+    {
+      "ref": "CL-010__opus46",
+      "relation": "duplicate_or_variant_analysis_of_same_violation"
+    }
+  ],
+  "note": "Full JSON reconstruction from markdown – includes all key admissions, legal reasoning, candidate articles, and cross-references.",
+  "full_segments": [
+    {
+      "segment_id": "STG-13.seg-1",
+      "role_in_argument": "blame_shifting_denial_of_rights",
+      "audio_offset_start": 4.35,
+      "audio_offset_end": 6.26,
+      "speaker": "Joaquin Barraza (Chief of security Latam?)",
+      "verbatim_es": "¡Porque tú no colaboraste!",
+      "verbatim_sha256": "06f8074fac51565b07036e202a6bf55264ee8d7579c52bd7e008a7d62e38eeea",
+      "translation_en": "Because you didn't cooperate!",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_13.html#seg-1",
+      "source_sha256": "f39afedf2b10be698dd96abcdf10ec363d530bf81b7b1254e372d619895c363e",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-13.seg-12",
+      "role_in_argument": "passenger_demand_written_justification",
+      "audio_offset_start": 29.85,
+      "audio_offset_end": 30.6,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "¡Por escrito!",
+      "verbatim_sha256": "c6a2055e378b6e050bf952dfe9c0a93915563b1862b36fc4d889738b812c4a0b",
+      "translation_en": "In writing!",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_13.html#seg-12",
+      "source_sha256": "f39afedf2b10be698dd96abcdf10ec363d530bf81b7b1254e372d619895c363e",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-22.seg-1",
+      "role_in_argument": "passenger_demand_written_justification",
+      "audio_offset_start": 0.66,
+      "audio_offset_end": 5.87,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "Yo estoy esperando una documentación que explique por qué me sacaron del vuelo.",
+      "verbatim_sha256": "2c4d4ff297f7702f4fbd531f94eb27a16d04fb6a42b9c1d789077e148094b587",
+      "translation_en": "I am waiting for documentation explaining why I was removed from the flight.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_22.html#seg-1",
+      "source_sha256": "fe5c1bb3133354a5503bfddd8d886781343693be1dd895927d5ef1a8369fec76",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-22.seg-12",
+      "role_in_argument": "passenger_persistence_requesting_information",
+      "audio_offset_start": 44.94,
+      "audio_offset_end": 45.8,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "Dale, dale tu.",
+      "verbatim_sha256": "78d885f79aff546879fd5196126b9cc09d803cfe7240723201ce1130fcf0d5a6",
+      "translation_en": "Go ahead, go ahead you.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_22.html#seg-12",
+      "source_sha256": "fe5c1bb3133354a5503bfddd8d886781343693be1dd895927d5ef1a8369fec76",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-22.seg-40",
+      "role_in_argument": "passenger_acknowledgment_video_evidence",
+      "audio_offset_start": 143.59,
+      "audio_offset_end": 143.62,
+      "speaker": "Leandro Disconzi (passenger)",
+      "verbatim_es": "¡Gracias por ver el video!",
+      "verbatim_sha256": "04eb97d1c881218650769071502588c03acb0beafb000f501186c2ae13ca83dd",
+      "translation_en": "Thank you for watching the video!",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_22.html#seg-40",
+      "source_sha256": "fe5c1bb3133354a5503bfddd8d886781343693be1dd895927d5ef1a8369fec76",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-26.seg-1",
+      "role_in_argument": "operator_dismissal_of_information_request",
+      "audio_offset_start": 2.44,
+      "audio_offset_end": 3.86,
+      "speaker": "Latam Supervisor",
+      "verbatim_es": "Yo Creo que ya hablaron con usted, señor.",
+      "verbatim_sha256": "4a266fddcfa703aab25ae6a2380e9d23763230796c5653d54e879826d2406c20",
+      "translation_en": "I believe they already spoke with you, sir.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_26.html#seg-1",
+      "source_sha256": "7c8b044b665f6cc070d2ca1977eb39e9cc58b8e9dcba29e904de1dc5c2582a96",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-26.seg-12",
+      "role_in_argument": "operator_refusal_to_provide_documentation",
+      "audio_offset_start": 76.46,
+      "audio_offset_end": 78.77,
+      "speaker": "Latam Supervisor",
+      "verbatim_es": "no es necesario. ¿no es necesario?",
+      "verbatim_sha256": "52f23b4497910ace04013461370d2fe81abd4aef594150f87aeb20e51a09083a",
+      "translation_en": "It's not necessary. It's not necessary?",
+      "transcription_notes": "Appears to be supervisor stating written documentation is unnecessary, directly denying passenger's right to information.",
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_26.html#seg-12",
+      "source_sha256": "7c8b044b665f6cc070d2ca1977eb39e9cc58b8e9dcba29e904de1dc5c2582a96",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-5.seg-1",
+      "role_in_argument": "forced_deplaning_without_explanation",
+      "audio_offset_start": 2.87,
+      "audio_offset_end": 3.52,
+      "speaker": "Latam Stewardess",
+      "verbatim_es": "Tiene que salir del avion, tiene que bajar",
+      "verbatim_sha256": "97c0a1e2f91f83562cb175fdeed34c32c69e31b990b92fbdddf0f4517d74ec8f",
+      "translation_en": "You have to leave the aircraft, you have to get off.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_5.html#seg-1",
+      "source_sha256": "88322947b6ce0c6461ab3571bafe058c055f5d99a9f5cc42365790fedfa744f3",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-5.seg-12",
+      "role_in_argument": "security_escalation_without_rights_disclosure",
+      "audio_offset_start": 50,
+      "audio_offset_end": 51.7,
+      "speaker": "Latam Stewardess",
+      "verbatim_es": "Ya activamos seguridad. Igual va a tener que bajar",
+      "verbatim_sha256": "43d8b8f8f52c43afad737350fd42a4f7adddfcba075d58a6e599c5c25b9aa349",
+      "translation_en": "We already activated security. You will still have to get off.",
+      "transcription_notes": null,
+      "source_uri": "Transcripts/timeline_aeropuerto_STG_5.html#seg-12",
+      "source_sha256": "88322947b6ce0c6461ab3571bafe058c055f5d99a9f5cc42365790fedfa744f3",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-13.seg-40",
+      "role_in_argument": "unidentified_context",
+      "audio_offset_start": 0,
+      "audio_offset_end": 0,
+      "speaker": "unknown",
+      "verbatim_es": "",
+      "verbatim_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "translation_en": "",
+      "transcription_notes": "Empty verbatim; no content to translate.",
+      "source_uri": "legacy://CL-010/STG-13.seg-40",
+      "source_sha256": "fb8fb873746a359f415ae4ae8ec682a891dcb41e34c90521e85731e3e84aeedb",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-26.seg-40",
+      "role_in_argument": "unidentified_context",
+      "audio_offset_start": 0,
+      "audio_offset_end": 0,
+      "speaker": "unknown",
+      "verbatim_es": "",
+      "verbatim_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "translation_en": "",
+      "transcription_notes": "Empty verbatim; no content to translate.",
+      "source_uri": "legacy://CL-010/STG-26.seg-40",
+      "source_sha256": "fc34d1b0110c704200b42a4fe236065d6226729265b88788ce1cb5107d54dd73",
+      "audio_uri": null
+    },
+    {
+      "segment_id": "STG-5.seg-40",
+      "role_in_argument": "unidentified_context",
+      "audio_offset_start": 0,
+      "audio_offset_end": 0,
+      "speaker": "unknown",
+      "verbatim_es": "",
+      "verbatim_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "translation_en": "",
+      "transcription_notes": "Empty verbatim; no content to translate.",
+      "source_uri": "legacy://CL-010/STG-5.seg-40",
+      "source_sha256": "134e8eaf25428c0a7ab00322e98148cc73c7456965089be0916f404656f0424a",
+      "audio_uri": null
+    }
+  ],
+  "incident_meta": {
+    "date": "2024-07-05",
+    "location": "Santiago Airport (SCL), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines",
+    "clock_time_estimate": "2024-07-05T13:30:00-04:00",
+    "clock_time_confidence": "unknown"
+  },
+  "framework_caches": [
+    {
+      "framework_code": "CONST",
+      "framework_name": "Constitucion Politica de la Republica de Chile",
+      "cache_file": "Legal framework/CONST.md",
+      "cache_file_sha256": "a42140a74935d28b0fef0a348c03c37153a98f774b70ebc4a13b3fdf1e0bfca8",
+      "cache_self_reported_sha256": "26b530c199a5505c31d320758d810f9d28b4e8bdf6c92e8eda78d06c1583e302",
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "1",
+        "5",
+        "6",
+        "19.1",
+        "19.3",
+        "19.7"
+      ]
+    },
+    {
+      "framework_code": "L20285",
+      "framework_name": "Ley 20.285 sobre Acceso a la Informacion Publica",
+      "cache_file": "Legal framework/L20285.md",
+      "cache_file_sha256": "4e6f01dfa2c767c6cece0780bac8ca2be4f16984ce054b69643f19bb4f1236e8",
+      "cache_self_reported_sha256": "b96e4db1d3b2cde5e323d97c6d77566897168d2af25dfaeaee6348d69852418a",
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20"
+      ]
+    },
+    {
+      "framework_code": "LPDC",
+      "framework_name": "Ley 19.496 — Ley de Proteccion de los Derechos del Consumidor",
+      "cache_file": "Legal framework/LPDC.md",
+      "cache_file_sha256": "222cb7cef77794c04cb903a3a4d519641255fa339cf32487f9496a1e0ba4c530",
+      "cache_self_reported_sha256": null,
+      "cache_source_url": null,
+      "cache_fetched_at": null,
+      "articles_cached": [
+        "3 letra b)",
+        "3 letra e)",
+        "12",
+        "23",
+        "23 bis",
+        "50",
+        "50 A",
+        "58"
+      ]
+    }
+  ],
+  "nexus_matrix": [
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.CONST.T1.C1.Art.1",
+      "element_id": "CL.CONST.T1.C1.Art.1.4.elem.servicio_persona_humana",
+      "nexus_type": "circumstantial_omission",
+      "strength": "high",
+      "rationale_oneline": "Forced deplaning order without explanation shows the State-regulated operator failed to serve the person."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.CONST.T1.C1.Art.1",
+      "element_id": "CL.CONST.T1.C1.Art.1.4.elem.respeto_derechos_garantias",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Ordering passenger off aircraft with no rights disclosure directly breaches duty of full respect for guarantees."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.CONST.T1.C1.Art.1",
+      "element_id": "CL.CONST.T1.C1.Art.1.5.elem.proteccion_poblacion",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Activating security to coerce compliance without justification inverts the State's protective duty."
+    },
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.CONST.T1.C1.Art.1",
+      "element_id": "CL.CONST.T1.C1.Art.1.5.elem.igualdad_oportunidades",
+      "nexus_type": "blame_shifting_denial_of_rights",
+      "strength": "medium",
+      "rationale_oneline": "Blaming passenger for non-cooperation denies equal opportunity to exercise rights in the service relationship."
+    },
+    {
+      "fact_id": "STG-26.seg-12",
+      "norm_id": "CL.CONST.T1.C1.Art.1",
+      "element_id": "CL.CONST.T1.C1.Art.1.4.elem.condiciones_sociales_realizacion",
+      "nexus_type": "circumstantial_omission",
+      "strength": "medium",
+      "rationale_oneline": "Declaring documentation 'not necessary' obstructs conditions for the passenger's personal realization."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.CONST.T1.C1.Art.1",
+      "element_id": "CL.CONST.T1.C1.Art.1.4.elem.dignidad_persona",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Peremptory deplaning command without reason directly affronts the passenger's dignity."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.CONST.T1.C3.P1.Art.19.1",
+      "element_id": "CL.CONST.Art.19.1.elem.sujeto_pasivo",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "The passenger ordered off the aircraft is the identifiable holder of the fundamental right."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.CONST.T1.C3.P1.Art.19.1",
+      "element_id": "CL.CONST.Art.19.1.elem.sujeto_activo_agresor",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "Airline crew member issuing the deplaning order is the agent executing the harmful act."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.CONST.T1.C3.P1.Art.19.1",
+      "element_id": "CL.CONST.Art.19.1.elem.acto_lesivo_integridad_fisica",
+      "nexus_type": "active_concealment_directive",
+      "strength": "medium",
+      "rationale_oneline": "Activating security to physically remove passenger constitutes an act capable of affecting physical integrity."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.CONST.T1.C3.P1.Art.19.1",
+      "element_id": "CL.CONST.Art.19.1.elem.afectacion_integridad_psiquica",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Threat of security intervention creates intimidation and distress, directly affecting psychic integrity."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.CONST.T1.C3.P1.Art.19.1",
+      "element_id": "CL.CONST.Art.19.1.elem.arbitrariedad_ilegalidad",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Deplaning order given without any stated legal basis or factual justification is inherently arbitrary."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.CONST.T1.C3.P1.Art.19.1",
+      "element_id": "CL.CONST.Art.19.1.elem.apremio_ilegitimo",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Summoning security to coerce compliance without lawful grounds constitutes an illegitimate form of duress."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.CONST.T1.C3.P1.Art.19.1",
+      "element_id": "CL.CONST.Art.19.1.elem.nexo_causal",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Security escalation directly caused the coercive removal and consequent physical and psychic harm."
+    },
+    {
+      "fact_id": "STG-26.seg-12",
+      "norm_id": "CL.CONST.T1.C3.P1.Art.19.1",
+      "element_id": "CL.CONST.Art.19.1.elem.denegacion_sistematica_derechos",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Repeated refusal to provide documentation confirms a systematic pattern of denying fundamental rights."
+    },
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.CONST.T1.C3.P1.Art.19.1",
+      "element_id": "CL.CONST.Art.19.1.elem.denegacion_sistematica_derechos",
+      "nexus_type": "corroborating_admission",
+      "strength": "medium",
+      "rationale_oneline": "Blame-shifting onto passenger corroborates the systematic denial pattern by deflecting accountability."
+    },
+    {
+      "fact_id": "STG-22.seg-1",
+      "norm_id": "CL.L20285.T1.Art.3",
+      "element_id": "CL.L20285.Art.3.elem.sujeto_obligado",
+      "nexus_type": "functional_context",
+      "strength": "medium",
+      "rationale_oneline": "Passenger's demand for documentation presupposes the airline operates under transparency obligations."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.L20285.T1.Art.3",
+      "element_id": "CL.L20285.Art.3.elem.funcion_publica_ejercida",
+      "nexus_type": "functional_context",
+      "strength": "medium",
+      "rationale_oneline": "Deplaning order is a decision taken in exercise of a regulated public-interest function (air transport)."
+    },
+    {
+      "fact_id": "STG-26.seg-12",
+      "norm_id": "CL.L20285.T1.Art.3",
+      "element_id": "CL.L20285.Art.3.elem.deber_de_conocimiento",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Declaring documentation 'not necessary' is a direct admission of refusal to fulfill the duty to inform."
+    },
+    {
+      "fact_id": "STG-22.seg-1",
+      "norm_id": "CL.L20285.T1.Art.3",
+      "element_id": "CL.L20285.Art.3.elem.solicitud_de_informacion",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Passenger explicitly requests documentation explaining the removal, satisfying the formal request element."
+    },
+    {
+      "fact_id": "STG-13.seg-12",
+      "norm_id": "CL.L20285.T1.Art.3",
+      "element_id": "CL.L20285.Art.3.elem.solicitud_de_informacion",
+      "nexus_type": "corroborating_admission",
+      "strength": "high",
+      "rationale_oneline": "Passenger's demand for written justification reinforces the express information request."
+    },
+    {
+      "fact_id": "STG-26.seg-12",
+      "norm_id": "CL.L20285.T1.Art.3",
+      "element_id": "CL.L20285.Art.3.elem.denegacion_u_omision",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Operator's statement that documentation is 'not necessary' constitutes express denial of information."
+    },
+    {
+      "fact_id": "STG-26.seg-1",
+      "norm_id": "CL.L20285.T1.Art.3",
+      "element_id": "CL.L20285.Art.3.elem.denegacion_u_omision",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Dismissing the request by claiming 'they already spoke with you' is an evasive denial of information."
+    },
+    {
+      "fact_id": "STG-22.seg-1",
+      "norm_id": "CL.L20285.T1.Art.3",
+      "element_id": "CL.L20285.Art.3.elem.perjuicio_al_afectado",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Passenger left without explanation for removal suffers concrete prejudice to exercise of legal remedies."
+    },
+    {
+      "fact_id": "STG-26.seg-1",
+      "norm_id": "CL.L20285.T1.Art.3",
+      "element_id": "CL.L20285.Art.3.elem.sistematicidad",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Multiple operator agents across stages consistently refuse information, evidencing a systematic pattern."
+    },
+    {
+      "fact_id": "STG-26.seg-12",
+      "norm_id": "CL.L20285.T1.Art.3",
+      "element_id": "CL.L20285.Art.3.elem.sistematicidad",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Second refusal in same stage confirms the reiterative character of the denial conduct."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.sujeto_obligado",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "Airline crew issuing deplaning order identifies the provider as the obligated subject under LPDC."
+    },
+    {
+      "fact_id": "STG-22.seg-1",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.sujeto_titular",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "Passenger demanding documentation is identifiable as the consumer and rights-holder under LPDC."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.objeto_informacion",
+      "nexus_type": "circumstantial_omission",
+      "strength": "high",
+      "rationale_oneline": "Deplaning without stating reasons shows the specific information owed — grounds for service denial — was withheld."
+    },
+    {
+      "fact_id": "STG-26.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.veracidad",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Claiming documentation is 'not necessary' provides no truthful information whatsoever about the removal."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.oportunidad",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Information was owed at the moment of deplaning; none was provided, failing the timeliness requirement."
+    },
+    {
+      "fact_id": "STG-26.seg-1",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.negativa_sistematica",
+      "nexus_type": "system_state_corroboration",
+      "strength": "high",
+      "rationale_oneline": "Dismissive response after prior refusals confirms a systematic pattern of refusing to inform the consumer."
+    },
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.negativa_sistematica",
+      "nexus_type": "corroborating_admission",
+      "strength": "medium",
+      "rationale_oneline": "Blame-shifting instead of informing corroborates the systematic refusal to provide information."
+    },
+    {
+      "fact_id": "STG-22.seg-1",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.perjuicio_consumidor",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Consumer left without explanation for removal from flight suffers concrete prejudice to rights and remedies."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.1.elem.sujeto_activo_proveedor",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "Crew member ordering deplaning identifies the airline as the provider subject under Art. 23."
+    },
+    {
+      "fact_id": "STG-22.seg-1",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.1.elem.sujeto_pasivo_consumidor",
+      "nexus_type": "speaker_identification",
+      "strength": "high",
+      "rationale_oneline": "Passenger requesting documentation is the affected final consumer under the service relationship."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.1.elem.relacion_de_consumo",
+      "nexus_type": "functional_context",
+      "strength": "high",
+      "rationale_oneline": "Passenger was aboard the aircraft under a ticket contract, establishing the consumption relationship."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.1.elem.conducta_negligente",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Ordering deplaning without providing any justification demonstrates negligent disregard for consumer rights."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.1.elem.conducta_negligente",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Escalating to security without first providing reasons compounds the negligent conduct."
+    },
+    {
+      "fact_id": "STG-22.seg-1",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.1.elem.menoscabo_al_consumidor",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Consumer removed from flight and denied explanation suffers effective harm to transport service and dignity."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.1.elem.menoscabo_al_consumidor",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Security threat intensifies the consumer's detriment beyond mere service denial."
+    },
+    {
+      "fact_id": "STG-26.seg-12",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.1.elem.falla_o_deficiencia_calidad_servicio",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Refusing to provide documentation is a direct deficiency in the quality of the service rendered."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.1.elem.falla_o_deficiencia_calidad_servicio",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Unexplained removal from a boarded flight is a fundamental failure in service quality."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.1.elem.nexo_causal",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "The deplaning order directly caused the consumer's loss of the contracted transport service."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.1.elem.nexo_causal",
+      "nexus_type": "harm_crystallization",
+      "strength": "high",
+      "rationale_oneline": "Security escalation is the proximate mechanism linking negligent conduct to the coerced removal."
+    },
+    {
+      "fact_id": "STG-26.seg-12",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.1.elem.denegacion_derecho_informacion",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Express statement that documentation is 'not necessary' directly denies the Art. 3(b) information right."
+    },
+    {
+      "fact_id": "STG-26.seg-1",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.1.elem.denegacion_derecho_informacion",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Dismissing the request as already addressed conceals the obligation to provide written justification."
+    },
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.LPDC.Art.23",
+      "element_id": "CL.LPDC.Art.23.1.elem.denegacion_derecho_informacion",
+      "nexus_type": "corroborating_admission",
+      "strength": "medium",
+      "rationale_oneline": "Blaming the passenger for non-cooperation corroborates the pattern of denying information rights."
+    },
+    {
+      "fact_id": "STG-22.seg-12",
+      "norm_id": "CL.L20285.T1.Art.3",
+      "element_id": "CL.L20285.Art.3.elem.solicitud_de_informacion",
+      "nexus_type": "corroborating_admission",
+      "strength": "medium",
+      "rationale_oneline": "Passenger's persistent urging reinforces the ongoing, unmet demand for information."
+    },
+    {
+      "fact_id": "STG-22.seg-40",
+      "norm_id": "CL.CONST.T1.C3.P1.Art.19.1",
+      "element_id": "CL.CONST.Art.19.1.elem.sujeto_pasivo",
+      "nexus_type": "functional_context",
+      "strength": "low",
+      "rationale_oneline": "Passenger's acknowledgment of video evidence confirms their identity as the affected rights-holder."
+    },
+    {
+      "fact_id": "STG-13.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.objeto_informacion",
+      "nexus_type": "direct_admission",
+      "strength": "high",
+      "rationale_oneline": "Demand for written justification specifies the exact information object owed by the provider."
+    },
+    {
+      "fact_id": "STG-22.seg-12",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.negativa_sistematica",
+      "nexus_type": "system_state_corroboration",
+      "strength": "medium",
+      "rationale_oneline": "Passenger's continued insistence implies the refusal persists, corroborating the systematic denial."
+    },
+    {
+      "fact_id": "STG-13.seg-1",
+      "norm_id": "CL.CONST.T1.C1.Art.1",
+      "element_id": "CL.CONST.T1.C1.Art.1.4.elem.dignidad_persona",
+      "nexus_type": "corroborating_admission",
+      "strength": "high",
+      "rationale_oneline": "Blaming the passenger for their own removal directly affronts personal dignity."
+    },
+    {
+      "fact_id": "STG-26.seg-1",
+      "norm_id": "CL.LPDC.Art.3.b",
+      "element_id": "CL.LPDC.Art.3.b.elem.oportunidad",
+      "nexus_type": "circumstantial_omission",
+      "strength": "high",
+      "rationale_oneline": "Post-removal dismissal of the request shows information was never timely provided at any stage."
+    },
+    {
+      "fact_id": "STG-5.seg-12",
+      "norm_id": "CL.CONST.T1.C1.Art.1",
+      "element_id": "CL.CONST.T1.C1.Art.1.4.elem.respeto_derechos_garantias",
+      "nexus_type": "active_concealment_directive",
+      "strength": "high",
+      "rationale_oneline": "Security escalation without rights disclosure violates the duty of full respect for constitutional guarantees."
+    },
+    {
+      "fact_id": "STG-26.seg-1",
+      "norm_id": "CL.L20285.T1.Art.3",
+      "element_id": "CL.L20285.Art.3.elem.sujeto_obligado",
+      "nexus_type": "speaker_identification",
+      "strength": "medium",
+      "rationale_oneline": "Operator agent responding to the request identifies the entity as the subject bound by transparency duties."
+    },
+    {
+      "fact_id": "STG-5.seg-1",
+      "norm_id": "CL.L20285.T1.Art.3",
+      "element_id": "CL.L20285.Art.3.elem.perjuicio_al_afectado",
+      "nexus_type": "harm_crystallization",
+      "strength": "medium",
+      "rationale_oneline": "Unexplained removal deprives the passenger of the factual basis needed to seek legal remedies."
+    }
+  ],
+  "provenance": [
+    {
+      "timestamp": "2026-05-12T06:48:44.335811Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CONST.T1.C1.Art.1: 6 elements; weighted score 0.70."
+    },
+    {
+      "timestamp": "2026-05-12T06:49:30.505549Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.CONST.T1.C3.P1.Art.19.1: 8 elements; weighted score 0.79."
+    },
+    {
+      "timestamp": "2026-05-12T06:50:14.624733Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.L20285.T1.Art.3: 7 elements; weighted score 0.81."
+    },
+    {
+      "timestamp": "2026-05-12T06:50:50.018773Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.LPDC.Art.3.b: 7 elements; weighted score 0.91."
+    },
+    {
+      "timestamp": "2026-05-12T06:51:46.181130Z",
+      "actor": "layers.add_element_grid",
+      "operation": "add_or_replace_element_grid",
+      "layer": 3,
+      "note": "Grid for CL.LPDC.Art.23: 8 elements; weighted score 0.88."
+    },
+    {
+      "timestamp": "2026-05-12T06:53:00.489400Z",
+      "actor": "layers.build_nexus_layer",
+      "operation": "add_or_replace_nexus_entries",
+      "layer": 4,
+      "note": "Upserted 56 nexus entries."
+    },
+    {
+      "timestamp": "2026-05-12T06:54:56.756450Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-DIGNIDAD-SERVICIALIDAD (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:54:56.756716Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-INTEGRIDAD-PSIQUICA-CONSUMO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:54:56.756746Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-APREMIO-ILEGITIMO-PRIVADOS (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:54:56.756762Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-TRANSPARENCIA-PRIVADOS-CONCESION (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:54:56.756783Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-DRITTWIRKUNG-CHILE (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:54:56.756798Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-NEGLIGENCIA-AEROLINEA-LPDC (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:54:56.756822Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-INFORMACION-VERAZ-SISTEMATICA (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:54:56.756842Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-PATRON-SISTEMATICO-AGRAVANTE (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:54:56.756868Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-SERVICIOS-ESENCIALES-DIGNIDAD (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:54:56.756882Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-REGLAMENTO-EU261-COMPARADO (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:54:56.756895Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-NEXO-CAUSAL-OMISION (verified=False)."
+    },
+    {
+      "timestamp": "2026-05-12T06:54:56.756909Z",
+      "actor": "layers.add_authority_stub",
+      "operation": "add_authority_stub",
+      "layer": 5,
+      "note": "Stubbed authority AUTH-TRANSPARENCIA-ACTIVA-FUNDAMENTOS (verified=False)."
+    }
+  ]
+}
