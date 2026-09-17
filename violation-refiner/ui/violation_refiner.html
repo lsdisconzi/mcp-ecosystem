@@ -267,6 +267,12 @@ code {
 .seg-jump-text { font-family: var(--serif); font-size: 0.84rem; font-style: italic; color: var(--text-secondary); margin-top: 4px; }
 .rr-detail { font-size: 0.82rem; color: var(--text-secondary); margin-top: 3px; }
 .rr-detail.quote { font-family: var(--serif); font-style: italic; }
+/* The S3 candidate check's verdict line. Two colours, not a status palette: the
+   answer is "in the bundle" or "not", and a third shade would suggest a third
+   kind of answer. */
+.rr-check-ok { color: var(--status-note); }
+.rr-check-warn { color: var(--status-analysis); }
+.rr-check-err { color: var(--status-flag); }
 .rr-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-left: auto; flex-shrink: 0; }
 .rr-remove { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.95rem; line-height: 1; }
 .rr-remove:hover { color: var(--status-flag); }
@@ -1295,6 +1301,14 @@ let state = {
   // "asked and in flight", an array "this is what the file holds" — three states
   // a single missing key cannot express.
   frameworkArticles: {},
+  // The live "is this candidate's article in the bundle?" answer, keyed by the
+  // candidate's id, as `{status, payload}` / `{status, error}`. `undefined`
+  // means "not asked". It cannot be read off the record: the candidate's own
+  // `framework_cache_status` is written by the LLM `candidates` stage and
+  // re-decided only when that stage re-runs, so it keeps saying `not_in_bundle`
+  // for an article staged into the bundle afterwards — which is the case this
+  // check exists to settle.
+  candidateChecks: {},
   settings: {},
 };
 
@@ -1317,6 +1331,15 @@ const API = {
   // framework file the violation JSON does not record gets its article numbers.
   frameworkArticle: (uri, article) => fetchJson('/api/framework-article?uri=' + encodeURIComponent(uri)
     + (article === undefined || article === null || article === '' ? '' : '&article=' + encodeURIComponent(article))),
+  // Ask the bundle *on disk* whether a candidate's article is in it. A GET and
+  // read-only, and deliberately separate from the candidate record: the recorded
+  // `framework_cache_status` is written by the LLM `candidates` stage and is
+  // stale for anything staged into the bundle afterwards. A miss answers 200
+  // with `in_bundle: false` — that is the answer, not a failure — so a 4xx here
+  // means the check could not run at all.
+  candidateArticle: (violationId, reference) => fetchJson('/api/candidate-article'
+    + '?violation_id=' + encodeURIComponent(violationId)
+    + '&article=' + encodeURIComponent(reference)),
   browse: (path, kind) => fetchJson('/api/browse?path=' + encodeURIComponent(path) + '&kind=' + kind),
   // Stage one source-of-truth file into the bundle: either a workspace path the
   // picker just walked to, or bytes the browser holds and the server has never
@@ -2116,6 +2139,15 @@ document.addEventListener('DOMContentLoaded', () => {
       pickFrameworkArticle(t.dataset.article || '');
     }
 
+    // S3: ask the bundle on disk whether a candidate's article is in it. The
+    // badge beside the row is the *recorded* status, written by the LLM
+    // candidates stage, so it says `not_in_bundle` for anything staged into the
+    // bundle afterwards — the check is the only thing that can settle it.
+    if (action === 'check-candidate') {
+      e.preventDefault();
+      checkCandidateArticle(t.dataset.candidate || '');
+    }
+
     // The element grid's two ways in: a dot names a segment and the element it
     // proves, a proof badge names the element alone.
     if (action === 'open-segment') {
@@ -2460,6 +2492,9 @@ function switchBundle(bundleId) {
   // keeps S3 from quoting one bundle's text under another bundle's name.
   state.frameworkArticles = {};
   state.pickedArticle = null;
+  // The candidate check answers a question about files in that directory too,
+  // so its answers do not survive the switch either.
+  state.candidateChecks = {};
   localStorage.removeItem('vp.violation');
   resetStats();
   syncStepCompletion(null);
@@ -4568,6 +4603,110 @@ function pickedArticleFor(framework, articles) {
     : '';
 }
 
+/** The S3 candidate check's control, for the row's meta column.
+ *
+ *  Rendered while a check is in flight too — disabled, so it cannot be
+ *  double-fired — because a control that disappears on click and comes back is
+ *  one a reviewer cannot tell apart from a broken one. */
+function candidateCheckButton(c) {
+  const id = c.candidate_article_id || '';
+  const check = state.candidateChecks[id];
+  const busy = Boolean(check) && check.status === 'pending';
+  return `<button class="chip chip-action" data-action="check-candidate"`
+    + ` data-candidate="${escapeHtml(id)}"${busy ? ' disabled' : ''}`
+    + ` title="Read this bundle's Legal framework/ files and report whether they hold this article">`
+    + `${busy ? 'Checking…' : 'Check in bundle'}</button>`;
+}
+
+/** The S3 candidate check's verdict, as a line of the row's own prose.
+ *
+ *  Kept out of the meta column: that column is a row of badges, and a sentence
+ *  about a file set sitting in it would squeeze the id it belongs to. Empty
+ *  until a check has been asked for — the check is the reviewer's to run, so the
+ *  row claims nothing it has not been told.
+ *
+ *  The recorded `framework_cache_status` is not replaced by this line, it is
+ *  set beside it (as the badge in the meta column). Saying *both* is the point:
+ *  the recorded value is the stale one, and a reviewer who can see them disagree
+ *  can see why the check exists.
+ */
+function candidateCheckDetail(c) {
+  const id = c.candidate_article_id || '';
+  const check = state.candidateChecks[id];
+  if (!check || check.status === 'pending') return '';
+  if (check.status === 'error') {
+    return `<div class="rr-detail rr-check-err">✗ check failed — ${escapeHtml(check.error || 'unknown error')}</div>`;
+  }
+  const p = check.payload || {};
+  const matches = p.matches || [];
+  if (p.verdict === 'in_bundle') {
+    const hits = matches.map(m => `${m.rel}${m.article_id ? ` (declares ${m.article_id})` : ''}`);
+    const recorded = c.framework_cache_status;
+    const stale = recorded && recorded !== 'verified_in_bundle'
+      ? ` · the recorded status still says ${recorded}`
+      : '';
+    return `<div class="rr-detail rr-check-ok">✓ in this bundle: ${escapeHtml(hits.join(' · '))}${escapeHtml(stale)}</div>`;
+  }
+  if (p.verdict === 'in_bundle_other_code') {
+    const hits = matches.map(m => `${m.rel} [${m.article_id || 'no declared id'}]`);
+    return `<div class="rr-detail rr-check-warn">⚠ found only in ${escapeHtml(hits.join(' · '))}, which is not`
+      + ` ${escapeHtml(p.framework_code || 'the named code')} — another statute's article of the same number</div>`;
+  }
+  const searched = (p.files || []).map(f => `${f.name} (${(f.articles || []).length})`).join(', ');
+  return `<div class="rr-detail rr-check-warn">✗ not in this bundle`
+    + (p.article_tail ? ` — no cache there declares Art. ${escapeHtml(p.article_tail)}` : ' — the reference names no article number')
+    + (searched ? ` · searched: ${escapeHtml(searched)}` : ' · this bundle carries no framework file')
+    + '</div>';
+}
+
+/** One log line for a check, from the same payload the row renders.
+ *
+ *  Built from the payload rather than re-worded per caller so the log and the
+ *  row can never come to two different conclusions about the same answer. */
+function candidateCheckLog(id, payload) {
+  const files = (payload.matches || []).map(m => m.rel).join(', ');
+  if (payload.verdict === 'in_bundle') {
+    return `✓ ${id} is in this bundle — ${files}`;
+  }
+  if (payload.verdict === 'in_bundle_other_code') {
+    return `⚠ ${id} appears only in ${files}, a different statute than ${payload.framework_code}`;
+  }
+  return `✗ ${id} is not in this bundle — searched ${(payload.files || []).length} framework file(s)`;
+}
+
+/** Run the S3 candidate check: is this candidate's article in the bundle on disk?
+ *
+ *  Read-only, and deliberately outside the write gate: the answer is a fact
+ *  about the files under `build/<id>/Legal framework/`, not a field of the
+ *  violation. Nothing here promotes the candidate or rewrites its
+ *  `framework_cache_status` — a check that re-recorded its own answer would be a
+ *  check on its own output, and the whole point of this one is that it can
+ *  disagree with the record.
+ *
+ *  Re-rendered only while S3 is on screen, for the reason `loadFrameworkArticles`
+ *  gives: the answer can land after a step switch replaced the canvas, and a late
+ *  repaint must never rewrite fields the current step does not have.
+ */
+async function checkCandidateArticle(reference) {
+  const id = reference || '';
+  if (!id) return;
+  if (!state.bundleId) {
+    pushLog('No bundle selected — nothing to check the article against', 'S3', 'warn');
+    return;
+  }
+  state.candidateChecks[id] = { status: 'pending' };
+  if (state.activeStep === 's3') hydrateS3();
+  try {
+    const payload = await API.candidateArticle(state.bundleId, id);
+    state.candidateChecks[id] = { status: 'done', payload };
+    pushLog(candidateCheckLog(id, payload), 'S3', payload.in_bundle ? 'ok' : 'warn');
+  } catch (err) {
+    state.candidateChecks[id] = { status: 'error', error: err.message };
+    pushLog(`Could not check ${id} in the bundle — ${err.message}`, 'S3', 'err');
+  }
+  if (state.activeStep === 's3') hydrateS3();
+}
+
 function hydrateS3() {
   const v = state.violation;
   const sch = state.schema || {};
@@ -4681,8 +4820,9 @@ function hydrateS3() {
           c.verification_required && c.verification_required.length ? `verify: ${c.verification_required.join('; ')}` : null,
           c.history_note || null,
         ].filter(Boolean).join(' · '))}</div>
+        ${candidateCheckDetail(c)}
       </div>
-      <div class="rr-meta">${tag(c.framework_cache_status)}</div>
+      <div class="rr-meta">${tag(c.framework_cache_status)}${candidateCheckButton(c)}</div>
     </div>`).join('') : hintRow('No candidate articles in this bundle.'));
 
   if (!v) setGate('s3Gate', 'Loading bundle…', 'pending');
@@ -5035,6 +5175,14 @@ async function refreshBundleFiles() {
   try {
     const fresh = await API.bundle(state.bundleId);
     if (!state.bundle || !fresh) return;
+    // What S3 offered *before* this refresh, so the framework file set can be
+    // compared with the one that lands. A candidate check is an answer of the
+    // form "the file that holds this article is X", and X cannot survive the set
+    // of framework files moving — a freshly staged file is exactly what makes a
+    // `not_in_bundle` verdict stale. Comparing the two sets is what keeps an
+    // unrelated tool run (which also calls this) from discarding verdicts that
+    // still hold.
+    const frameworksBefore = bundleFrameworkFiles().map(f => f.uri);
     if (Array.isArray(fresh.files)) state.bundle.files = fresh.files;
     if (fresh.manifest) state.bundle.manifest = fresh.manifest;
     // The listing is also what decides which framework files S3 offers, so it
@@ -5046,6 +5194,12 @@ async function refreshBundleFiles() {
     Object.keys(state.frameworkArticles).forEach(f => {
       if (!present.has(f)) delete state.frameworkArticles[f];
     });
+    // The candidate checks were computed against the *previous* framework file
+    // set, so they are dropped only when that set actually moved. A check is
+    // cheap; a verdict kept past the listing it was computed against is a
+    // verdict about a bundle that no longer exists.
+    const frameworksAfter = bundleFrameworkFiles().map(f => f.uri);
+    if (frameworksAfter.join('\n') !== frameworksBefore.join('\n')) state.candidateChecks = {};
   } catch (e) {
     pushLog(`← could not re-read the bundle listing — ${e.message}`, 'S6', 'warn');
   }

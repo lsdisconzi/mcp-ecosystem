@@ -49,7 +49,9 @@ from violation_pack.ui_server import (  # noqa: E402
     discover_sources,
     discover_transcript,
     browse_workspace,
+    candidate_article_reason,
     discover_bundles,
+    discover_candidate_article,
     find_ui_path,
     framework_article_reason,
     framework_uri_reason,
@@ -62,7 +64,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 HTML_PATH = REPO_ROOT / "ui" / UI_FILENAME
 
 #: API routes the bridge promises. `/health` is MCP-owned and asserted too.
-EXPECTED_API_ROUTES = {"/", "/api/health", "/api/tools", "/api/tool", "/api/tool-job", "/api/catalog", "/api/sources", "/api/source-transcript", "/api/framework-article", "/api/browse", "/api/bundle-source", "/api/bundles", "/api/bundle", "/api/schema", "/api/settings", "/api/authority-source", "/api/authority-source/delete", "/api/authority-source/reading"}
+EXPECTED_API_ROUTES = {"/", "/api/health", "/api/tools", "/api/tool", "/api/tool-job", "/api/catalog", "/api/sources", "/api/source-transcript", "/api/framework-article", "/api/candidate-article", "/api/browse", "/api/bundle-source", "/api/bundles", "/api/bundle", "/api/schema", "/api/settings", "/api/authority-source", "/api/authority-source/delete", "/api/authority-source/reading"}
 
 
 @pytest.fixture(scope="module")
@@ -657,6 +659,522 @@ def test_api_framework_article_error_distinguishes_the_cause(client):
     )
     assert escaped.status_code == 400
     assert "absolute" in escaped.json()["error"]
+
+
+# ---------------------------------------------------------------------------
+# S3 — is this candidate's article in the bundle?
+# ---------------------------------------------------------------------------
+#
+# The recorded `framework_cache_status` cannot answer that. It is written by the
+# LLM `candidates` stage and re-decided only when that stage re-runs, so it keeps
+# reading `not_in_bundle` for an article staged into the bundle afterwards. These
+# tests are about the *second* answer, read off `build/<id>/Legal framework/` at
+# the moment the reviewer asks.
+
+#: The cache the tracked CL-030 bundle carries for the Constitution. Its declared
+#: ids are the only place the hierarchy segments ('T1.C3.P3') exist — the article
+#: headers do not encode them — so a reference that names only the article has to
+#: be matched against what the file *declares*.
+CONSTITUCION_REL = "Legal framework/Constitucion.md"
+
+
+def _candidate_payload(verdict, **overrides):
+    """One `/api/candidate-article` body, in the shape the route returns."""
+    payload = {
+        "ok": True,
+        "violation_id": "CL-900",
+        "reference": "CL.CPCL.Art.2234",
+        "framework_code": "CL.CPCL",
+        "article_tail": "2234",
+        "in_bundle": verdict == "in_bundle",
+        "verdict": verdict,
+        "matches": [],
+        "files": [{"name": "CPCL.md", "rel": "Legal framework/CPCL.md", "articles": ["2234"]}],
+    }
+    payload.update(overrides)
+    return payload
+
+
+def _write_framework_cache(directory: Path, name: str, articles, *, code: str = "", table: bool = True):
+    """Write one `Legal framework/<name>.md`, in the shape the reader parses.
+
+    `articles` is ``[(header identifier, declared ELI id or None, title)]``. The
+    metadata table is a second source of codes for `_framework_codes`, and
+    ``table=False`` is a real shape rather than a simplification: the tracked
+    `build/CL-030/Legal framework/Constitucion.md` carries no table at all.
+    """
+    lines: list[str] = []
+    if table:
+        lines += ["| Campo | Valor |", "| --- | --- |", f"| **Framework code** | {code} |", ""]
+    for identifier, eli, title in articles:
+        lines.append(f"### Art. {identifier} — {title}")
+        if eli:
+            lines += [f"**ELI ID:** `{eli}`", ""]
+        lines += [f"El texto del articulo {identifier}.", ""]
+    directory.joinpath(name).write_text("\n".join(lines), encoding="utf-8")
+
+
+@pytest.fixture
+def candidate_workspace(tmp_path, monkeypatch):
+    """A throwaway workspace with one bundle carrying a mixed `Legal framework/`.
+
+    Every shape the real CL-030 bundle has and one it does not: a cache for a
+    *different* statute holding the same article number, a cache with no
+    `**ELI ID:**` line at all, a per-file symlink out of the bundle, and two
+    entries under `Legal framework/` that are not caches. `find_workspace_root` is
+    re-read on every call, so this seam works through the live `client` too.
+    """
+    root = tmp_path / "ws"
+    frameworks = root / "build" / "CL-900" / "Legal framework"
+    frameworks.mkdir(parents=True)
+    (root / "build" / "CL-900" / "CL-900.json").write_text("{}", encoding="utf-8")
+
+    _write_framework_cache(frameworks, "CPCL.md",
+                           [("2234", "CL.CPCL.T4.Art.2234", "Prevaricacion")], code="CPCL")
+    # The same article in a second cache — the shape of the real `269 ter`, which
+    # CL-030 holds in both `CPCL.md` and `CodigoPenal_269bis_269ter.md`.
+    _write_framework_cache(frameworks, "CPCL_CP.md",
+                           [("2234", "CL.CPCL.T4.Art.2234", "Prevaricacion")], code="CPCL")
+    # No `**ELI ID:**` anywhere, so the code can only come from the table.
+    _write_framework_cache(frameworks, "SinId.md", [("20", None, "Cohecho")], code="CPCL")
+
+    # A per-file symlink out of the bundle: the shape every tracked
+    # `build/CL-030/Legal framework/*.md` has, and the reason `_resolve_framework_uri`
+    # must not resolve its candidate.
+    law = root / "data" / "law"
+    law.mkdir(parents=True)
+    _write_framework_cache(law, "LPDC.md",
+                           [("19", "CL.LPDC.T1.Art.19", "Probidad")], code="LPDC / CPENAL")
+    frameworks.joinpath("LPDC.md").symlink_to(law / "LPDC.md")
+
+    # Not caches, and neither may be read. The nested file is deliberately named
+    # after a top-level cache: a recursive scan yields it with `name ==
+    # "CPCL.md"` and the loop then addresses the *top-level* file, so the
+    # giveaway is a duplicate entry rather than a mere extra one.
+    (frameworks / "notes.txt").write_text("no es un cache", encoding="utf-8")
+    (frameworks / "sub").mkdir()
+    (frameworks / "sub" / "CPCL.md").write_text(
+        "### Art. 1 — Un articulo fuera del directorio\n\nSí.\n", encoding="utf-8"
+    )
+
+    monkeypatch.setattr("violation_pack.ui_server.find_workspace_root", lambda: root)
+    return root
+
+
+# --- against the real bundle -------------------------------------------------
+
+def test_candidate_check_finds_the_article_under_a_reference_the_cache_does_not_spell():
+    """The candidate names the statute and the article; the hierarchy segments are
+    the part this check must not require.
+
+    `CL.CONST.Art.19.3` is not the cache's `CL.CONST.T1.C3.P3.Art.19.3`, and a
+    lookup keyed on the whole id answers "not in this bundle" while the article is
+    sitting in the file — an answer a reviewer has no way to catch.
+    """
+    payload = discover_candidate_article("CL-030", "CL.CONST.Art.19.3")
+    assert payload is not None
+    assert payload["verdict"] == "in_bundle"
+    assert payload["in_bundle"] is True
+    hit, = payload["matches"]
+    assert hit["rel"] == CONSTITUCION_REL
+    assert hit["matched_by"] == "eli_id"
+    assert hit["article_id"] == "CL.CONST.T1.C3.P3.Art.19.3"
+    assert hit["code_agrees"] is True
+    assert len(hit["cache_sha256"]) == 64
+
+
+def test_candidate_check_refuses_another_statutes_article_of_the_same_number():
+    """`Art. 19.3` exists in several codes. The corpus candidate for this one says
+    `CL.CPR` — and the file that holds it declares `CL.CONST`. Reporting that as a
+    hit would be the check widening its own scope, which is the one thing a
+    reviewer could not then trust it to be narrow about."""
+    payload = discover_candidate_article("CL-030", "CL.CPR.Art.19.3")
+    assert payload["verdict"] == "in_bundle_other_code"
+    assert payload["in_bundle"] is False
+    assert payload["framework_code"] == "CL.CPR"
+    hit, = payload["matches"]
+    assert hit["rel"] == CONSTITUCION_REL
+    assert hit["article_id"] == "CL.CONST.T1.C3.P3.Art.19.3"
+    assert hit["code_agrees"] is False
+
+
+def test_candidate_check_miss_names_the_files_it_searched():
+    """A miss is an answer, so it comes back with what it looked at: "not in this
+    bundle" about a bundle whose `Legal framework/` the reviewer cannot see is a
+    claim about an invisible file set."""
+    payload = discover_candidate_article("CL-030", "CL.CC.Art.2314")
+    assert payload["verdict"] == "not_in_bundle"
+    assert payload["in_bundle"] is False
+    assert payload["article_tail"] == "2314"
+    assert payload["matches"] == []
+    names = [f["name"] for f in payload["files"]]
+    assert "CPCL.md" in names and "Constitucion.md" in names
+    assert all(name.endswith(".md") for name in names)
+
+
+def test_candidate_check_distinguishes_could_not_run_from_not_found():
+    """``None`` means the check *could not run*, and a candidate the bundle does not
+    carry must never come back that way: the route turns one into a 400 and the
+    other into an answer, so collapsing them would let a typo in a bundle id read
+    as a verification that failed."""
+    assert discover_candidate_article("NOPE", "CL.CPCL.Art.223") is None
+    assert discover_candidate_article("CL-030", "   ") is None
+    # ...and the ordinary miss is not None, so the two are distinguishable at all.
+    assert discover_candidate_article("CL-030", "CL.CC.Art.2314") is not None
+
+    assert candidate_article_reason("NOPE", "CL.CPCL.Art.223") == "No bundle build/NOPE/ on disk."
+    assert candidate_article_reason("CL-030", "  ") == "no article reference was supplied"
+    # The reason may only describe why there is *no* answer. "not in this bundle"
+    # is an answer, and a reason that said it would be the message a reviewer acts on.
+    for reason in (candidate_article_reason("NOPE", "CL.CPCL.Art.223"),
+                   candidate_article_reason("CL-030", "  ")):
+        assert "not in this bundle" not in reason
+        assert "Art." not in reason
+
+
+# --- against a controlled bundle ---------------------------------------------
+
+def test_candidate_check_matches_the_article_number_and_not_a_prefix_of_it(candidate_workspace):
+    """`Art.223` must not be satisfied by a cache holding only `Art.2234`.
+
+    The reader's own `_resolve_article_key` matches a *prefix*, so that a bare
+    `133` finds the cached `133 A`, and that rule is right for a header identifier.
+    Applied to an id's article tail it turns any candidate into a hit and the
+    check reports "in this bundle" for an article nobody has.
+
+    Asserted as a pair, because a rule that refused everything would satisfy the
+    first assertion on its own.
+    """
+    miss = discover_candidate_article("CL-900", "CL.CPCL.Art.223")
+    assert miss["verdict"] == "not_in_bundle"
+    assert miss["matches"] == []
+    hit = discover_candidate_article("CL-900", "CL.CPCL.Art.2234")
+    assert hit["verdict"] == "in_bundle"
+
+
+def test_candidate_check_reports_every_cache_that_holds_the_article(candidate_workspace):
+    """CL-030 caches `Art. 269 ter` twice, so the check names every file that holds
+    the article — a check that returned the first would be describing a bundle
+    other than the one on disk."""
+    payload = discover_candidate_article("CL-900", "CL.CPCL.Art.2234")
+    assert sorted(m["rel"] for m in payload["matches"]) == [
+        "Legal framework/CPCL.md",
+        "Legal framework/CPCL_CP.md",
+    ]
+
+
+def test_candidate_check_reads_a_symlinked_cache(candidate_workspace):
+    """A `Legal framework/*.md` that is a symlink out of the bundle is every cache
+    the real bundle has. A containment check that resolved the candidate would walk
+    out of the bundle and refuse all of them, which is how the canonical transcript
+    corpus once became unreachable."""
+    link = candidate_workspace / "build" / "CL-900" / "Legal framework" / "LPDC.md"
+    assert link.is_symlink(), "the fixture stopped covering the symlink this guards"
+    payload = discover_candidate_article("CL-900", "CL.LPDC.Art.19")
+    assert payload["verdict"] == "in_bundle"
+    hit, = payload["matches"]
+    assert hit["rel"] == "Legal framework/LPDC.md"
+    assert hit["article_id"] == "CL.LPDC.T1.Art.19"
+
+
+def test_candidate_check_reads_only_the_files_the_reader_would(candidate_workspace):
+    """`Legal framework/` is scanned for `*.md` and nothing else, exactly as
+    `/api/framework-article` resolves them. `sub/CPCL.md` holds `Art. 1` and a
+    check that walked the directory would report an article the reader then refuses
+    to quote — a pass on a bundle state that cannot be built.
+
+    The nested file is named after a top-level cache on purpose, because that is
+    the only form of "walked the directory" this code can express. The uri is
+    built from `item.name` (a bare basename) and validated by
+    `_resolve_framework_uri`, which refuses the 5 parts of a nested path — so a
+    recursive scan cannot leak `sub/CPCL.md`'s *content*; it leaks a second
+    `Legal framework/CPCL.md` addressed by the same basename. Measured: with
+    `rglob` the `files` list below becomes `[CPCL.md, CPCL.md, CPCL_CP.md,
+    LPDC.md, SinId.md]`. The assertion is therefore on the whole list, not on
+    membership, and a fixture whose nested file had a unique name left the
+    `glob`→`rglob` mutation green."""
+    nested = (candidate_workspace / "build" / "CL-900"
+              / "Legal framework" / "sub" / "CPCL.md")
+    assert "### Art. 1" in nested.read_text(encoding="utf-8")
+    payload = discover_candidate_article("CL-900", "CL.CPCL.Art.1")
+    assert payload["verdict"] == "not_in_bundle"
+    assert payload["matches"] == []
+    assert [f["name"] for f in payload["files"]] == [
+        "CPCL.md", "CPCL_CP.md", "LPDC.md", "SinId.md",
+    ]
+    assert len({f["uri"] for f in payload["files"]}) == len(payload["files"])
+
+
+def test_candidate_check_matches_a_cache_that_declares_no_eli_id(candidate_workspace):
+    """`**ELI ID:**` is optional, so a cache can hold an article and name no id for
+    it. The check falls back to the reader's own `_resolve_article_key`, and it
+    reports `article_id: None` rather than inventing one — the hierarchy segments
+    are that file's to state and nothing else can supply them."""
+    payload = discover_candidate_article("CL-900", "CL.CPCL.Art.20")
+    assert payload["verdict"] == "in_bundle"
+    hit, = payload["matches"]
+    assert hit["rel"] == "Legal framework/SinId.md"
+    assert hit["matched_by"] == "header"
+    assert hit["article_id"] is None
+    assert payload["files"][3]["eli_ids"] == []
+
+
+# --- the route ---------------------------------------------------------------
+
+def test_api_candidate_article_answers_a_miss_with_200(client, candidate_workspace):
+    """A miss is the answer this route exists to give. A 4xx would put it in the
+    same class as the request that could not be made, and a reviewer cannot tell
+    those apart from a status code alone."""
+    res = client.get(
+        "/api/candidate-article",
+        params={"violation_id": "CL-900", "article": "CL.CC.Art.2314"},
+    )
+    assert res.status_code == 200, res.text
+    body = res.json()
+    assert body["ok"] is True
+    assert body["in_bundle"] is False
+    assert body["verdict"] == "not_in_bundle"
+    assert [f["name"] for f in body["files"]] == [
+        "CPCL.md", "CPCL_CP.md", "LPDC.md", "SinId.md",
+    ]
+
+
+def test_api_candidate_article_serves_the_bundle_cache(client, candidate_workspace):
+    res = client.get(
+        "/api/candidate-article",
+        params={"violation_id": "CL-900", "article": "CL.CPCL.Art.2234"},
+    )
+    assert res.status_code == 200, res.text
+    body = res.json()
+    assert body["in_bundle"] is True
+    assert body["matches"][0]["article_id"] == "CL.CPCL.T4.Art.2234"
+
+
+def test_api_candidate_article_error_is_not_a_verdict(client, candidate_workspace):
+    """The two failures carry no verdict fields at all, so a 400 cannot be read as
+    "the article is not in the bundle" — the reading this whole feature exists to
+    stop a reviewer from having to make."""
+    for params in (
+        {"violation_id": "CL-999", "article": "CL.CPCL.Art.2234"},
+        {"violation_id": "CL-900", "article": "   "},
+    ):
+        res = client.get("/api/candidate-article", params=params)
+        assert res.status_code == 400, res.text
+        body = res.json()
+        assert body["ok"] is False
+        assert "verdict" not in body and "in_bundle" not in body
+        assert body["error"]
+    # The cause is named, so a bad bundle id and a blank reference stay apart.
+    unknown = client.get(
+        "/api/candidate-article", params={"violation_id": "CL-999", "article": "X"}
+    ).json()
+    assert "No bundle build/CL-999/" in unknown["error"]
+
+
+# --- the page ----------------------------------------------------------------
+
+def test_s3_candidate_row_offers_the_check_beside_the_recorded_badge():
+    """Both, side by side — which is the point of the feature.
+
+    The badge is the stale value, and the check is the live one. Replacing the
+    badge would hide the value the reviewer already trusts; showing only the badge
+    is where this started.
+    """
+    html = HTML_PATH.read_text(encoding="utf-8")
+    assert re.search(
+        r'<div class="rr-meta">\$\{tag\(c\.framework_cache_status\)\}'
+        r'\$\{candidateCheckButton\(c\)\}</div>', html
+    ), "the check's button did not replace the recorded badge, or was not added beside it"
+    assert re.search(r"\$\{candidateCheckDetail\(c\)\}", html), "the verdict is not rendered in the row"
+    assert 'data-action="check-candidate"' in html
+    assert re.search(r"if \(action === 'check-candidate'\)", html), "the button is not wired"
+    assert re.search(r"checkCandidateArticle\(t\.dataset\.candidate", html)
+    # The verdict is keyed by candidate id and dropped when the bundle or its
+    # framework file set changes — a verdict about a file set that no longer
+    # exists is a verdict about a bundle other than the one on screen.
+    assert html.count("state.candidateChecks = {};") == 2
+
+
+def test_candidate_check_api_url_carries_both_parameters():
+    html = HTML_PATH.read_text(encoding="utf-8")
+    call = re.search(
+        r"candidateArticle: \(violationId, reference\) => fetchJson\(([\s\S]*?)\),\n", html
+    )
+    assert call, "the API client for /api/candidate-article is not declared"
+    assert "/api/candidate-article" in call.group(1)
+    assert "encodeURIComponent(violationId)" in call.group(1)
+    assert "encodeURIComponent(reference)" in call.group(1)
+
+
+def test_candidate_check_detail_and_log_read_the_same_verdict():
+    """The row and the log are built from one payload, and this asserts they cannot
+    come to two different conclusions about it: a log line that said "is in this
+    bundle" under a row that said "not in this bundle" is the disagreement a
+    reviewer would have to resolve by hand."""
+    cases = [
+        {
+            "key": "found",
+            "row": {"candidate_article_id": "CL.CPCL.T4.Art.223",
+                    "framework_cache_status": "not_in_bundle"},
+            "payload": _candidate_payload("in_bundle", matches=[{
+                "rel": "Legal framework/CodigoPenal_Prevaricacion.md",
+                "article_id": "CL.CPCL.C1.Art.223",
+            }]),
+        },
+        {
+            "key": "other-code",
+            "row": {"candidate_article_id": "CL.CPCL.T4.Art.2234",
+                    "framework_cache_status": "not_in_bundle"},
+            "payload": _candidate_payload("in_bundle_other_code", matches=[{
+                "rel": "Legal framework/LPDC.md", "article_id": "CL.LPDC.T1.Art.19",
+            }]),
+        },
+        {
+            "key": "miss",
+            "row": {"candidate_article_id": "CL.CPCL.T4.Art.9999",
+                    "framework_cache_status": "not_in_bundle"},
+            "payload": _candidate_payload("not_in_bundle"),
+        },
+        {
+            "key": "unnamed",
+            "row": {"candidate_article_id": "INT.AN9.C3.S44",
+                    "framework_cache_status": "not_in_bundle"},
+            "payload": _candidate_payload("not_in_bundle", article_tail=None, files=[]),
+        },
+        {
+            "key": "pending",
+            "row": {"candidate_article_id": "CL.CPCL.T4.Art.255",
+                    "framework_cache_status": "not_in_bundle"},
+            "payload": None,
+        },
+    ]
+    # One entry per candidate: two cases sharing an id would leave the state map
+    # holding only the last of them, and every assertion about the first would
+    # then pass for a reason the fixture never intended.
+    checks = {
+        case["row"]["candidate_article_id"]: (
+            {"status": "pending"} if case["payload"] is None
+            else {"status": "done", "payload": case["payload"]}
+        )
+        for case in cases
+    }
+    script = "\n".join([
+        f"const state = {{ candidateChecks: {json.dumps(checks)} }};",
+        _js_function("escapeHtml"),
+        _js_function("candidateCheckDetail"),
+        _js_function("candidateCheckLog"),
+        f"const cases = {json.dumps(cases)};",
+        "const out = {};",
+        "cases.forEach(c => {",
+        "  const detail = candidateCheckDetail(c.row);",
+        "  const log = c.payload ? candidateCheckLog(c.row.candidate_article_id, c.payload) : '';",
+        "  out[c.key] = { detail, log,",
+        "    detailGlyph: detail.replace(/<[^>]*>/g, '').trim().charAt(0),",
+        "    logGlyph: log.trim().charAt(0) };",
+        "});",
+        "console.log(JSON.stringify(out));",
+    ])
+    out = _run_js(script)
+
+    assert out["found"]["detail"].startswith('<div class="rr-detail rr-check-ok">✓')
+    assert "Legal framework/CodigoPenal_Prevaricacion.md (declares CL.CPCL.C1.Art.223)" in out["found"]["detail"]
+    # The recorded status is stated beside the live verdict, not swapped for it.
+    assert "the recorded status still says not_in_bundle" in out["found"]["detail"]
+
+    assert out["other-code"]["detail"].startswith('<div class="rr-detail rr-check-warn">⚠')
+    assert "which is not CL.CPCL" in out["other-code"]["detail"]
+    assert "another statute" in out["other-code"]["detail"]
+
+    assert out["miss"]["detail"].startswith('<div class="rr-detail rr-check-warn">✗ not in this bundle')
+    assert "no cache there declares Art. 2234" in out["miss"]["detail"]
+    assert "searched: CPCL.md (1)" in out["miss"]["detail"]
+
+    # A reference that names no article at all, and a bundle with no framework
+    # file: two different misses, and neither may claim an article was looked for.
+    assert "the reference names no article number" in out["unnamed"]["detail"]
+    assert "this bundle carries no framework file" in out["unnamed"]["detail"]
+
+    # Nothing is claimed before the check is run — the reviewer asks for it.
+    assert out["pending"]["detail"] == ""
+
+    assert out["found"]["log"] == (
+        "✓ CL.CPCL.T4.Art.223 is in this bundle — Legal framework/CodigoPenal_Prevaricacion.md"
+    )
+    assert out["other-code"]["log"] == (
+        "⚠ CL.CPCL.T4.Art.2234 appears only in Legal framework/LPDC.md, "
+        "a different statute than CL.CPCL"
+    )
+    assert out["miss"]["log"] == (
+        "✗ CL.CPCL.T4.Art.9999 is not in this bundle — searched 1 framework file(s)"
+    )
+    for key in ("found", "other-code", "miss"):
+        assert out[key]["detailGlyph"] == out[key]["logGlyph"], (
+            f"the log line and the row disagree about {key}"
+        )
+
+
+def test_checking_a_candidate_writes_nothing():
+    """The answer is a fact about the files under `build/<id>/Legal framework/`, not
+    a field of the violation.
+
+    A check that recorded its own verdict into `framework_cache_status` would be
+    checking its own output — and the entire reason this check exists is that it can
+    disagree with the recorded value. Nothing here may reach the write gate.
+    """
+    source = _js_function("checkCandidateArticle")
+    assert "API.candidateArticle" in source
+    assert "state.candidateChecks[" in source
+    assert not re.search(r"state\.violation\s*=", source)
+    assert "framework_cache_status" not in source
+    # No tool run either: the S3 gate is not what authorises this.
+    assert "runTool" not in source and "openStep" not in source
+    # A late answer may repaint S3 only — never the step the reviewer moved to.
+    assert source.count("if (state.activeStep === 's3') hydrateS3();") == 2
+
+
+def test_refreshing_the_listing_drops_a_verdict_only_when_the_file_set_moved():
+    """A verdict is an answer about a set of files ("the one holding this article is
+    X"), so it cannot survive that set changing — a freshly staged framework file is
+    exactly what makes a `not_in_bundle` stale.
+
+    But the same refresh runs after every tool, so discarding a verdict that still
+    holds would make the button look as if it had forgotten the answer, and a
+    reviewer would run it again to no effect.
+    """
+    def run(extra: list[dict]):
+        before = [{"path": "build/CL-900/Legal framework/CPCL.md", "kind": "file"}]
+        state = {
+            "bundleId": "CL-900",
+            "activeStep": "s3",
+            "bundle": {"path": "build/CL-900", "files": before},
+            "frameworkArticles": {},
+            "candidateChecks": {"CL.CPCL.Art.2234": {"status": "done"}},
+        }
+        script = "\n".join([
+            f"const state = {json.dumps(state)};",
+            "function pushLog(m) { logs.push(String(m)); }",
+            "const logs = [];",
+            f"const API = {{ bundle: async (id) => ({{ id, files: {json.dumps(before + extra)} }}) }};",
+            _js_const("FRAMEWORK_CACHE_DIR"),
+            _js_function("bundleFiles"),
+            _js_function("bundleFrameworkFiles"),
+            _js_function("refreshBundleFiles"),
+            "(async () => {",
+            "  await refreshBundleFiles();",
+            "  console.log(JSON.stringify({",
+            "    files: bundleFiles().length,",
+            "    checks: Object.keys(state.candidateChecks),",
+            "  }));",
+            "})();",
+        ])
+        return _run_js(script)
+
+    kept = run([])
+    assert kept["files"] == 1, "the refresh did not adopt the listing at all"
+    assert kept["checks"] == ["CL.CPCL.Art.2234"], "a still-valid verdict was discarded"
+
+    dropped = run([{"path": "build/CL-900/Legal framework/Nuevo.md", "kind": "file"}])
+    assert dropped["checks"] == [], "a verdict outlived the file set it was computed against"
 
 
 def test_s3_article_chips_are_buttons_wired_to_the_picker():
@@ -4252,7 +4770,8 @@ def test_re_reading_the_listing_does_not_discard_an_unwritten_verification():
     stale copy a verification that has not been written yet would be reverted to.
     """
     state = {"violation": _PROOF_AUTHORITY, "bundleId": "CL-900",
-             "bundle": {"violation": _PROOF_ON_DISK_BEFORE, "files": []}, "settings": {}}
+             "bundle": {"path": "build/CL-900", "violation": _PROOF_ON_DISK_BEFORE,
+                        "files": []}, "settings": {}}
     # The listing carries the directory itself; an artefact is a file, and a
     # sizeless directory row in the list is not something the reviewer can open.
     fresh_file = {"path": "build/CL-900/Authority sources/CL.DOCTRINE.ETCHEBERRY__note.text.txt",
@@ -4266,6 +4785,8 @@ def test_re_reading_the_listing_does_not_discard_an_unwritten_verification():
         f"const API = {{ bundle: async (id) => ({{ id, files: [{json.dumps(fresh_dir)}, {json.dumps(fresh_file)}],"
         f" violation: {json.dumps(_PROOF_ON_DISK_BEFORE)} }}) }};",
         _js_function("bundleFiles"),
+        _js_function("bundleFrameworkFiles"),
+        _js_const("FRAMEWORK_CACHE_DIR"),
         _js_function("proofArtefactsFor"),
         _js_function("proofStem"),
         _js_function("proofArtefactGroup"),

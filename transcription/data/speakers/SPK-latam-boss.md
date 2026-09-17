@@ -11,11 +11,11 @@ transcripts_appearing:
   - "[[I-002_05_NAR-07_STG_7_post_removal_investigation]]"
 appearances:
   - transcript_id: "I-002_05_NAR-07_STG_7_post_removal_investigation"
-    segment_labels: ""
-    segment_indices: ""
-    segment_count: "0"
+    segment_labels: "airline_head_manager"
+    segment_indices: "56, 63, 65, 66"
+    segment_count: "4"
 appearance_count: "1"
-segment_count: "0"
+segment_count: "4"
 key_statements: []
 tags:
   - speaker
@@ -41,11 +41,11 @@ _provenance:
 <!-- BEGIN:APPEARANCES -->
 ## Appearances
 
-**1 transcript(s) · 0 mapped segment instance(s)**
+**1 transcript(s) · 4 mapped segment instance(s)**
 
 | Transcript | Segments | Labels |
 | --- | --- | --- |
-| [[I-002_05_NAR-07_STG_7_post_removal_investigation]] | 0 | — |
+| [[I-002_05_NAR-07_STG_7_post_removal_investigation]] | 4 <br><code>56, 63, 65, 66</code> | `airline_head_manager` |
 
 <!-- END:APPEARANCES -->
 

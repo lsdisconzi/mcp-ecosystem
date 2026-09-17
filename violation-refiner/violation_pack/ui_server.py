@@ -776,6 +776,257 @@ def framework_article_reason(uri: str, article: str) -> str:
     )
 
 
+# ---------------------------------------------------------------------------
+# Is this candidate's article in the bundle?
+# ---------------------------------------------------------------------------
+
+# A candidate id is a *claimed* ELI id, and the hierarchy segments are the part
+# the claim gets wrong. Measured on the live corpus: the CL-030 bundle's caches
+# declare `CL.CPCL.C1.Art.223` where the candidate says `CL.CPCL.T4.Art.223`, and
+# `CL.CONST.T1.C3.P3.Art.19.3` where the candidate says `CL.CPR.Art.19.3`. So a
+# lookup keyed on the whole id reports "not here" while the article is sitting in
+# the bundle — which is precisely the case a reviewer wants checked. The tail
+# after `Art.` is the one segment both spellings agree on, and it is what this
+# check matches on.
+_ARTICLE_TAIL_PATTERN = re.compile(
+    r"(?:^|\.)art\.?\s*([0-9]+(?:[._][A-Za-z0-9]+)*)", re.IGNORECASE
+)
+# `| **Framework code** | CPCL / CPENAL |` — a cache may declare more than one.
+_FRAMEWORK_CODE_LINE_PATTERN = re.compile(
+    r"^\|\s*\*\*Framework code\*\*\s*\|([^|]*)\|", re.MULTILINE
+)
+
+
+def _article_tail(reference: str) -> str | None:
+    """The article number in an ELI-shaped reference, or ``None`` when it names no article.
+
+    Only the *last* ``Art.`` marker counts: the token can also appear inside a
+    title segment, and the operator's reference is the trailing one.
+    """
+    matches = _ARTICLE_TAIL_PATTERN.findall(reference or "")
+    return matches[-1] if matches else None
+
+
+def _reference_code(reference: str) -> str:
+    """The statute a reference names, as ``<JUR>.<CODE>``.
+
+    ELI ids put the hierarchy segments *after* the code, so the first two
+    segments name the statute even when the segments that follow are wrong:
+    ``CL.CPCL.T4.Art.223`` and ``CL.CPCL.C1.Art.223`` are both the Código Penal.
+    """
+    parts = [p for p in (reference or "").split(".") if p]
+    return ".".join(parts[:2]) if len(parts) >= 2 else (reference or "")
+
+
+def _declared_eli_ids(source: Any) -> dict[str, str]:
+    """The ELI id each cached article declares, keyed by its header identifier."""
+    ids: dict[str, str] = {}
+    for identifier in source.articles_cached():
+        eli = source.get_article_eli_id(identifier)
+        if eli:
+            ids[identifier] = eli
+    return ids
+
+
+def _framework_codes(path: Path, source: Any, eli_ids: dict[str, str]) -> set[str]:
+    """Every name one cache file can be recognized by.
+
+    Three independent declarations, and all three are needed. The file stem is
+    what ``discover_framework_article`` uses (``CPCL_CP.md`` -> ``CPCL``), the
+    metadata table may name more than one (``CPCL / CPENAL``), and the prefixes
+    of the ELI ids its own articles declare are the *only* name a cache without a
+    metadata table has — ``build/CL-030/Legal framework/Constitucion.md`` carries
+    no table at all and is recognizable only as ``CL.CONST``.
+    """
+    codes = {path.stem.split("_")[0].upper()}
+    match = _FRAMEWORK_CODE_LINE_PATTERN.search(source.raw_text() or "")
+    if match:
+        for token in re.split(r"[/,]", match.group(1)):
+            token = token.strip().upper()
+            if token:
+                codes.add(token)
+    for eli in eli_ids.values():
+        parts = [p for p in eli.split(".") if p]
+        if len(parts) >= 2:
+            codes.add(".".join(parts[:2]))
+            codes.add(parts[1].upper())
+    return codes
+
+
+def _match_cached_article(
+    source: Any,
+    eli_ids: dict[str, str],
+    normalized_reference: str,
+    article_tail: str | None,
+) -> tuple[str, str] | None:
+    """Find the cached article a candidate reference names, as ``(identifier, how)``.
+
+    Four attempts, in order, and the order is the finding:
+
+    1. the whole reference equals a declared ELI id (a candidate that is already
+       spelled canonically);
+    2. the reference's article tail equals a declared ELI id's article tail —
+       ``CL.CPCL.T4.Art.223`` finding ``CL.CPCL.C1.Art.223``. This is the attempt
+       that matters, because the segments before ``Art.`` are the part the
+       candidate gets wrong;
+    3. a reference naming no article at all, matched against the whole declared id
+       by prefix (``INT.AN9.C3.S44``);
+    4. the header identifier, resolved through the reader's own
+       ``_resolve_article_key`` — so a candidate number and the excerpt later read
+       against it cannot resolve to two different articles.
+
+    Tails are compared for *equality* and never by prefix: ``Art.223`` must not
+    be satisfied by ``Art.2234``, which the reader's prefix rule would allow for
+    a bare number.
+    """
+    from .sources import _normalize_article_key
+
+    wanted_tail = _normalize_article_key(article_tail) if article_tail else None
+    for identifier, eli in eli_ids.items():
+        if _normalize_article_key(eli) == normalized_reference:
+            return identifier, "eli_id"
+    if wanted_tail is not None:
+        for identifier, eli in eli_ids.items():
+            declared_tail = _article_tail(eli)
+            if declared_tail and _normalize_article_key(declared_tail) == wanted_tail:
+                return identifier, "eli_id"
+    else:
+        for identifier, eli in eli_ids.items():
+            if _normalize_article_key(eli).startswith(normalized_reference):
+                return identifier, "eli_id_prefix"
+    if article_tail:
+        key = source._resolve_article_key(article_tail)
+        if key is not None:
+            return key, "header"
+    return None
+
+
+def discover_candidate_article(violation_id: str, reference: str) -> dict[str, Any] | None:
+    """Answer whether a candidate's article is in the bundle, from the files on disk.
+
+    ``None`` means the check *could not run* — no such bundle, or no reference —
+    and never "not found". A candidate the bundle does not carry is the answer
+    this route exists to give, so it comes back with ``in_bundle: False`` and a
+    reason. Collapsing the two would let a typo in a bundle id read as a
+    verification that failed.
+
+    The recorded ``framework_cache_status`` on the candidate cannot answer this.
+    It is written by the LLM ``candidates`` stage and re-decided only when that
+    stage re-runs, so it keeps saying ``not_in_bundle`` for an article staged
+    into the bundle afterwards — measured on CL-030: two framework files were
+    added under ``Legal framework/`` and the candidate for ``Art. 223`` still
+    read ``not_in_bundle``.
+
+    Nothing outside the bundle is read. A statute in ``data/law/`` that the
+    bundle does not carry is **not** in the bundle, and answering from there
+    would make this check agree with a reader that later refuses to quote the
+    text (``_resolve_framework_uri``'s whole rationale).
+
+    Every framework file is reported, not just the match, because the bundle can
+    hold the same article twice — ``Art. 269 ter`` is cached in both ``CPCL.md``
+    and ``CodigoPenal_269bis_269ter.md`` of CL-030 — and a check that hid the
+    second copy would be describing a bundle other than the one on disk.
+    """
+    from .sources import MarkdownFrameworkSource, _normalize_article_key
+
+    bundle = resolve_bundle_dir(violation_id)
+    if bundle is None:
+        return None
+    reference = (reference or "").strip()
+    if not reference:
+        return None
+
+    directory = bundle / _FRAMEWORK_CACHE_DIR
+    names = sorted(item.name for item in directory.glob("*.md")) if directory.is_dir() else []
+
+    articles_tail = _article_tail(reference)
+    code = _reference_code(reference)
+    code_bare = code.split(".")[-1]
+    normalized_reference = _normalize_article_key(reference)
+
+    files: list[dict[str, Any]] = []
+    matches: list[dict[str, Any]] = []
+    for name in names:
+        uri = f"build/{violation_id}/{_FRAMEWORK_CACHE_DIR}/{name}"
+        # Through the same resolver the reader uses, so this check can only ever
+        # speak about files `/api/framework-article` would read back.
+        path = _resolve_framework_uri(uri)
+        if path is None:
+            continue
+        stem_code = path.stem.split("_")[0].upper()
+        source = MarkdownFrameworkSource(path, stem_code, uri)
+        eli_ids = _declared_eli_ids(source)
+        codes = _framework_codes(path, source, eli_ids)
+        file_entry = {
+            "uri": uri,
+            "rel": f"{_FRAMEWORK_CACHE_DIR}/{name}",
+            "name": name,
+            "framework_code": stem_code,
+            "codes": sorted(codes),
+            # Whether this file is even *about* the statute the candidate names.
+            # The bare code is compared too: a cache declares `CPCL`, the
+            # candidate writes `CL.CPCL`, and both are the same statute.
+            "code_agrees": code in codes or code_bare in codes,
+            "articles": source.articles_cached(),
+            "eli_ids": [eli_ids[key] for key in source.articles_cached() if key in eli_ids],
+        }
+        files.append(file_entry)
+        found = _match_cached_article(source, eli_ids, normalized_reference, articles_tail)
+        if found is None:
+            continue
+        identifier, how = found
+        matches.append({
+            "uri": uri,
+            "rel": file_entry["rel"],
+            "matched_by": how,
+            "article": identifier,
+            # The declared id, never a reconstruction: the hierarchy segments are
+            # this file's to state and nothing else can supply them.
+            "article_id": eli_ids.get(identifier),
+            "article_name": source.get_article_title(identifier),
+            "code_agrees": file_entry["code_agrees"],
+            "cache_sha256": source.cache_sha256(),
+        })
+
+    agreeing = [m for m in matches if m["code_agrees"]]
+    if agreeing:
+        verdict = "in_bundle"
+    elif matches:
+        # Found, but in a file for a different statute — `Art. 6` exists in
+        # several codes. Reported as a miss with the near-match named, never as
+        # a pass: a check that quietly widened its own scope could not be
+        # trusted to be narrow.
+        verdict = "in_bundle_other_code"
+    else:
+        verdict = "not_in_bundle"
+
+    return {
+        "ok": True,
+        "violation_id": violation_id,
+        "reference": reference,
+        "framework_code": code,
+        "article_tail": articles_tail,
+        "in_bundle": verdict == "in_bundle",
+        "verdict": verdict,
+        "matches": matches,
+        "files": files,
+    }
+
+
+def candidate_article_reason(violation_id: str, reference: str) -> str:
+    """Explain *why* ``discover_candidate_article`` returned ``None``.
+
+    Mirrors the resolver's two causes exactly. A reason that disagreed with the
+    resolver would send the reader after the wrong cause, the same trap
+    ``framework_article_reason`` documents.
+    """
+    if resolve_bundle_dir(violation_id) is None:
+        return f"No bundle build/{violation_id}/ on disk."
+    if not (reference or "").strip():
+        return "no article reference was supplied"
+    return f"build/{violation_id}/ could not be read"
+
+
 def _source_id_from_stem(stem: str) -> str:
     """Derive a display source id from a filename stem (HTML corpus convention)."""
     match = re.search(r"(?:^|_)STG[_-](\d+)(?:_|$)", stem)
@@ -1359,6 +1610,49 @@ def build_ui_routes(mcp):
                     "error": f"could not read article — {framework_article_reason(uri, article)}",
                     "uri": uri,
                     "article": article,
+                },
+                status_code=400,
+            )
+        return json_response(payload)
+
+    @mcp.custom_route("/api/candidate-article", methods=["GET", "OPTIONS"])
+    async def api_candidate_article(request) -> Response:
+        """Check whether one candidate's article is in the bundle, on disk.
+
+        The S3 candidate rows show ``framework_cache_status``, which is a
+        *recorded* field: the LLM ``candidates`` stage writes it and only that
+        stage ever re-decides it, so an article staged into the bundle afterwards
+        keeps reading ``not_in_bundle`` and the row cannot tell the reviewer
+        whether their staging worked. This route answers the same question from
+        the files the bundle actually carries, and it is the only thing that can.
+
+        A GET, and read-only: it cannot promote a candidate, cannot rewrite the
+        recorded status, and cannot write to the bundle. A check that re-recorded
+        its own answer would be a check on its own output.
+
+        Both parameters travel as query strings because the request *names* an
+        article; it does not carry one — the same reasoning
+        ``/api/authority-source/reading`` gives for its three.
+
+        A miss is a 200. The two failures this route reports as 4xx are "no such
+        bundle" and "no reference given", and neither is an answer about the
+        article, so neither may be allowed to look like one.
+        """
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+        violation_id = request.query_params.get("violation_id", "")
+        reference = request.query_params.get("article", "")
+        payload = discover_candidate_article(violation_id, reference)
+        if payload is None:
+            return json_response(
+                {
+                    "ok": False,
+                    "error": (
+                        "could not check the article — "
+                        f"{candidate_article_reason(violation_id, reference)}"
+                    ),
+                    "violation_id": violation_id,
+                    "article": reference,
                 },
                 status_code=400,
             )
