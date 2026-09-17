@@ -27,14 +27,16 @@
     "components": {
       "CL.CONST.T1.C1.Art.1": 0.7,
       "CL.CONST.T1.C3.P1.Art.19.1": 0.788,
-      "CL.L20285.T1.Art.3": 0.814,
+      "CL.L20285.T1.C1.Art.3": 0.814,
       "CL.LPDC.Art.3.b": 0.914,
       "CL.LPDC.Art.23": 0.875
     },
     "authorities_verification_factor": 0.85,
     "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
-    "derived_at": "2026-09-13T15:40:47.598745Z",
-    "history": []
+    "derived_at": "2026-09-17T11:41:16.414191Z",
+    "history": [
+      "2026-09-13T15:40:47.598745+00:00: value=0.7"
+    ]
   },
   "incident": {
     "date": "2024-07-05",
@@ -84,13 +86,13 @@
         "framework_file": "CL/L20285_Transparencia.md",
         "articles": [
           {
-            "article_id": "CL.L20285.T1.Art.3",
-            "article_name": "Ley 20.285, Art. 3 — Transparencia y acceso a información pública",
+            "article_id": "CL.L20285.T1.C1.Art.3",
+            "article_name": "Principio de Transparencia de la función pública",
             "article_text": "Artículo 3° - Principio de Transparencia. La función pública se ejerce con transparencia, de modo que permita y promueva el conocimiento de los procedimientos, contenidos y decisiones que se adopten en ejercicio de ella.",
-            "applicability_rationale": "legacy paraphrase: Toda persona tiene derecho a solicitar y a recibir informacion de cualquier organo de la Administracion del Estado, en la forma y condiciones que establece esta ley.",
+            "applicability_rationale": "Legacy paraphrase corrected 2026-09-17. The prior wording — 'Toda persona tiene derecho a solicitar y a recibir información de cualquier órgano de la Administración del Estado…' — is the text of the current law's Art. 3 (CL.L20285.T1.Art.3, derecho de acceso a la información), a different article from the one quoted here. The excerpt and every element of this grid are built on the earlier edition's Art. 3, declared in the cache as CL.L20285.T1.C1.Art.3, which establishes the Principio de Transparencia: 'la función pública se ejerce con transparencia, de modo que permita y promueva el conocimiento de los procedimientos, contenidos y decisiones que se adopten en ejercicio de ella'. The citation and the element ids now carry that declared id, and the entry is characterised as that text is — a principle of general application (norm_type 'definition') whose operative effect here is to found the access duty the incident breaches, rather than to be directly actionable in itself (applicability 'supporting').",
             "duty_bearer": "state",
-            "norm_type": "right",
-            "applicability": "direct",
+            "norm_type": "definition",
+            "applicability": "supporting",
             "subsections_invoked": [],
             "status": "established"
           }
@@ -446,19 +448,19 @@
     {
       "id": "OQ-CL010-TRANSPARENCIA-CONCESIONARIO",
       "question": "¿Se extiende la obligación de transparencia de la Ley 20.285 a concesionarios de transporte aéreo por ejercer función pública delegada, o es más apropiado invocar normativa sectorial?",
-      "blocks_element": "CL.L20285.Art.3.elem.sujeto_obligado",
+      "blocks_element": "CL.L20285.T1.C1.Art.3.elem.sujeto_obligado",
       "priority": "high"
     },
     {
       "id": "OQ-CL010-DOCUMENTACION-POSTERIOR",
       "question": "¿Existe constancia de que LATAM haya entregado posteriormente documentación justificativa del desembarque por otro canal (correo electrónico, carta, respuesta a reclamo SERNAC)?",
-      "blocks_element": "CL.L20285.Art.3.elem.denegacion_u_omision",
+      "blocks_element": "CL.L20285.T1.C1.Art.3.elem.denegacion_u_omision",
       "priority": "high"
     },
     {
       "id": "OQ-CL010-RECLAMO-JAC-DGAC",
       "question": "¿Se presentó reclamo ante la JAC o DGAC y fue obstaculizado por la falta de documentación entregada por LATAM?",
-      "blocks_element": "CL.L20285.Art.3.elem.perjuicio_al_afectado",
+      "blocks_element": "CL.L20285.T1.C1.Art.3.elem.perjuicio_al_afectado",
       "priority": "medium"
     },
     {
@@ -529,7 +531,7 @@
   "established_article_ids": [
     "CL.CONST.T1.C1.Art.1",
     "CL.CONST.T1.C3.P1.Art.19.1",
-    "CL.L20285.T1.Art.3",
+    "CL.L20285.T1.C1.Art.3",
     "CL.LPDC.Art.23",
     "CL.LPDC.Art.3.b"
   ]

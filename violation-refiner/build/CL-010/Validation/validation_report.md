@@ -1,20 +1,27 @@
 # Validation Report CL-010
 
-Total: 11  
-Pass: 8  
+Total: 18  
+Pass: 14  
 Warn: 3  
-Fail: 0
+Fail: 1
 
 ## Checks
 
 - **V01 segment_resolution**: pass - 5 segment(s) checked; 0 unresolved.
 - **V02 verbatim_quote_match**: pass - All 5 quote(s) checked against their cited segment.
-- **V03 article_text_hash**: warn - WARN: framework CONST self-reported SHA in metadata header (26b530c1…) does not match actual content SHA (a42140a7…). | WARN: framework L20285 self-reported SHA in metadata header (b96e4db1…) does not match actual content SHA (4e6f01df…).
+- **V03 article_text_hash**: pass - All article-text hashes and excerpts match the framework cache. INFO: framework CONST declares source SHA 26b530c1… (cache bytes: a42140a7…). INFO: framework L20285 declares source SHA b96e4db1… (cache bytes: 4e6f01df…).
 - **V04 article_exists_in_framework_cache**: pass - All 5 established articles present in cache.
 - **V05 cross_references_resolve**: pass - All 11 cross-references resolve.
-- **V06 element_coverage**: warn - 5 uncovered: ['CL.CONST.T1.C1.Art.1.5.elem.igualdad_oportunidades: status=strong but no nexus_matrix entry', 'CL.CONST.T1.C1.Art.1.4.elem.condiciones_sociales_realizacion: status=contested but no nexus_matrix entry', 'CL.CONST.Art.19.1.elem.denegacion_sistematica_derechos: status=strong but no nexus_matrix entry', 'CL.L20285.Art.3.elem.deber_de_conocimiento: status=strong but no nexus_matrix entry', 'CL.LPDC.Art.3.b.elem.veracidad: status=strong but no nexus_matrix entry']
+- **V06 element_coverage**: warn - 5 uncovered: ['CL.CONST.T1.C1.Art.1.5.elem.igualdad_oportunidades: status=strong but no nexus_matrix entry', 'CL.CONST.T1.C1.Art.1.4.elem.condiciones_sociales_realizacion: status=contested but no nexus_matrix entry', 'CL.CONST.Art.19.1.elem.denegacion_sistematica_derechos: status=strong but no nexus_matrix entry', 'CL.L20285.T1.C1.Art.3.elem.deber_de_conocimiento: status=strong but no nexus_matrix entry', 'CL.LPDC.Art.3.b.elem.veracidad: status=strong but no nexus_matrix entry']
 - **V07 authorities_verification**: warn - No authorities listed. Jurisprudence/doctrine layer not populated.
 - **V08 contract_consistency**: pass - Main and contract views agree on all overlapping fields.
 - **V09 language_consistency**: pass - Bilingual fields (es/en) present throughout.
 - **V10 confidence_derivation**: pass - Confidence 0.7 matches recomputed formula.
 - **V11 enrichment_integrity**: pass - Enrichment integrity verified (segments, excerpts, nexus, authorities).
+- **V12 speaker_attribution**: pass - 5 cited segment(s) had a declarable source; 0 with an undeclared speaker.
+- **V13 evidence_nexus_coherence**: warn - 40 nexus row(s) checked; 7 cite a segment their element does not list as evidence. ['CL.CONST.Art.19.1.elem.sujeto_pasivo <- I-002_03_NAR-05_STG_5_aircraft_removal.seg-1', 'CL.CONST.Art.19.1.elem.arbitrariedad_ilegalidad <- I-002_03_NAR-05_STG_5_aircraft_removal.seg-1', 'CL.L20285.T1.C1.Art.3.elem.sujeto_obligado <- I-002_12_NAR-15_STG_22_DGAC_office.seg-2', 'CL.LPDC.Art.23.1.elem.menoscabo_al_consumidor <- I-002_03_NAR-05_STG_5_aircraft_removal.seg-11', 'CL.LPDC.Art.3.b.elem.negativa_sistematica <- I-002_12_NAR-15_STG_22_DGAC_office.seg-21', 'CL.LPDC.Art.3.b.elem.oportunidad <- I-002_13_NAR-18_STG_26_self_narration.seg-1', 'CL.CONST.T1.C1.Art.1.4.elem.respeto_derechos_garantias <- I-002_03_NAR-05_STG_5_aircraft_removal.seg-11']
+- **V14 dead_weight_articles**: pass - No established article scores 0 over 5 grid(s).
+- **V15 verbatim_hash_integrity**: pass - 5 verbatim hash(es) recomputed; 0 mismatch.
+- **V16 authority_verification_coherence**: pass - 0 authorit(ies) coherent with the stored verification factor; every unverified stub states what would settle it and every verified authority names its protocol.
+- **V17 cross_view_consistency**: pass - Bundle and contract agree on 32 open question(s) and 11 cross-reference(s) (43 item(s) compared). Contract-only related_violations: 2 (not asserted against cross_references; reciprocity is a graph-level audit).
+- **V21 element_id_closure**: fail - 1 issue(s): CL.LPDC.Art.23: template requires element(s) ['falla_calidad', 'menoscabo', 'negligencia', 'proveedor', 'venta_o_prestacion'] not present in the grid | warnings: CL.CONST.Art.19.1.elem.sujeto_pasivo: article prefix drops hierarchy segments of CL.CONST.T1.C3.P1.Art.19.1; migrate when convenient; CL.CONST.Art.19.1.elem.sujeto_activo_agresor: article prefix drops hierarchy segments of CL.CONST.T1.C3.P1.Art.19.1; migrate when convenient; CL.CONST.Art.19.1.elem.acto_lesivo_integridad_fisica: article prefix drops hierarchy segments of CL.CONST.T1.C3.P1.Art.19.1; migrate when convenient; CL.CONST.Art.19.1.elem.afectacion_integridad_psiquica: article prefix drops hierarchy segments of CL.CONST.T1.C3.P1.Art.19.1; migrate when convenient; CL.CONST.Art.19.1.elem.arbitrariedad_ilegalidad: article prefix drops hierarchy segments of CL.CONST.T1.C3.P1.Art.19.1; migrate when convenient; CL.CONST.Art.19.1.elem.apremio_ilegitimo: article prefix drops hierarchy segments of CL.CONST.T1.C3.P1.Art.19.1; migrate when convenient; CL.CONST.Art.19.1.elem.nexo_causal: article prefix drops hierarchy segments of CL.CONST.T1.C3.P1.Art.19.1; migrate when convenient; CL.CONST.Art.19.1.elem.denegacion_sistematica_derechos: article prefix drops hierarchy segments of CL.CONST.T1.C3.P1.Art.19.1; migrate when convenient; CL.LPDC.Art.3.b.elem.sujeto_obligado: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.sujeto_titular: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.objeto_informacion: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.veracidad: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.oportunidad: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.negativa_sistematica: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.perjuicio_consumidor: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.23: grid has element(s) ['conducta_negligente', 'denegacion_derecho_informacion', 'falla_o_deficiencia_calidad_servicio', 'menoscabo_al_consumidor', 'nexo_causal', 'relacion_de_consumo', 'sujeto_activo_proveedor', 'sujeto_pasivo_consumidor'] outside its template

@@ -2,7 +2,7 @@
   "schema_version": "4.0",
   "violation_id": "CL-029",
   "violation_number": "CL-029",
-  "title": "DGAC Violations of Ley 16.752 (Organic Law) — Specific Article Violations During LA8159 Complaint Processing",
+  "title": "LA8159 (I-002) — DGAC Oversight Failures Under Ley 16.752, Transparency Principle Under Ley 20.285, and Air-Operator Consumer Duties Under LPDC",
   "case": {
     "id": "I-002",
     "name": "I-002-Chile-Santiago"
@@ -23,31 +23,20 @@
   "category": "Created from seed (Lote F)",
   "severity": "CRITICAL",
   "confidence": {
-    "value": 0.28,
+    "value": 0.44,
     "components": {
-      "CL.LEY16752.Art.3": 0.578,
-      "CL.LEY16752.Art.1": 0.0,
-      "CL.LEY20285.Art.3": 0.32,
-      "CL.LEY20285.Art.14": 0.0,
+      "CL.LEY16752.Art.3": 0.62,
+      "CL.L20285.T1.C1.Art.3": 0.35,
       "CL.LPDC.Art.3.b": 0.4,
       "CL.LPDC.Art.23": 0.68
     },
     "authorities_verification_factor": 0.85,
     "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
-    "derived_at": "2026-09-17T10:34:06.077972Z",
-    "history": [
-      "2026-09-17T10:32:06.046419+00:00: value=0.39",
-      "2026-09-17T10:32:08.291263+00:00: value=0.39",
-      "2026-09-17T10:32:11.097764+00:00: value=0.39",
-      "2026-09-17T10:33:26.386477+00:00: value=0.28",
-      "2026-09-17T10:33:33.967203+00:00: value=0.28",
-      "2026-09-17T10:33:41.861067+00:00: value=0.28",
-      "2026-09-17T10:33:50.578398+00:00: value=0.28",
-      "2026-09-17T10:34:02.248909+00:00: value=0.28"
-    ]
+    "derived_at": "2026-09-17T11:35:31.135361Z",
+    "history": []
   },
   "incident": {
-    "date": "2024-11-06",
+    "date": "2024-07-05",
     "location": "Santiago Airport (SCL), Chile",
     "flight": "LA8159",
     "operator": "LATAM Airlines",
@@ -67,8 +56,8 @@
           {
             "article_id": "CL.LEY16752.Art.3",
             "article_name": "Corresponderá a la Dirección General de Aeronáutica Civil velar por la seguridad",
-            "article_text": "j) Fiscalizar las actividades de la aviación civil, en resguardo de la seguridad de vuelo y dictar las instrucciones de general aplicación que sean necesarias para los fines señalados.",
-            "applicability_rationale": "legacy paraphrase: Corresponderá a la Dirección General de Aeronáutica Civil velar por la seguridad de las operaciones aéreas y ejercer la fiscalización de la aeronavegación civil en todo el territorio nacional.",
+            "article_text": "j) Fiscalizar las actividades de la aviación civil, en resguardo de la seguridad de vuelo y dictar las instrucciones de general aplicación que sean necesarias para los fines señalados. m) Llevar el Registro Nacional de Aeronaves, practicar las inscripciones, subinscripciones, anotaciones y cancelaciones que procedan, y otorgar las copias y certificados que se le soliciten. n) Autorizar provisionalmente a las aeronaves que se construyan o adquieran en el extranjero para volar con distintivo chileno. ñ) Inspeccionar las aeronaves matriculadas en Chile para determinar sus condiciones y estado para el vuelo; otorgar los correspondientes certificados de aeronavegabilidad, suspenderlos y cancelarlos; y mantener el registro correspondiente. Podrá también inspeccionar, en la misma forma, las aeronaves extranjeras que operen en Chile. o) Otorgar licencias a todo el personal aeronáutico que, en conformidad a los reglamentos, requiera de ellas; convalidar, cuando proceda, las otorgadas por otros Estados; suspenderlas, cancelarlas y llevar el registro correspondiente. p) Impartir instrucción técnica aeronaútica y otorgar los títulos en las especialidades que determine el respectivo reglamento. q) Dictar normas para que la operación de aeronaves se efectúe dentro de los límites de la seguridad aérea. r) Investigar las infracciones a las leyes, reglamentos y demás disposiciones relacionadas con la navegación aérea cuya aplicación y control le corresponda y, en especial, los accidentes que ocurran a aeronaves civiles de cualquiera nacionalidad en territorio chileno. s) Cumplir y hacer cumplir los acuerdos de la Junta de Aeronáutica Civil en lo que se refiere a las operaciones aéreas que se realicen. t) Proponer la adopción o adoptar, según corresponda, las normas, métodos recomendados y procedimientos internacionales aprobados por la Organización de Aviación Civil Internacional y por la Organización Meteorológica Mundial. z) En general, fiscalizar el cumplimiento de las disposiciones legales y reglamentarias relativas a la aeronavegación.",
+            "applicability_rationale": "Legacy paraphrase corrected 2026-09-17. The relevant subsections are j) (fiscalización de la aviación civil), r) (investigación de infracciones) and z) (fiscalización general de la aeronavegación). All three are cited by the DGAC-inaction theory; letras r) and z) were previously invoked without verbatim anchor — that gap is now closed.",
             "duty_bearer": "regulator",
             "norm_type": "definition",
             "applicability": "supporting",
@@ -77,17 +66,6 @@
               "r",
               "z"
             ],
-            "status": "established"
-          },
-          {
-            "article_id": "CL.LEY16752.Art.1",
-            "article_name": "La Dirección General de Aeronáutica Civil es el organismo del Estado encargado d",
-            "article_text": "Artículo 1° La Dirección General de Aeronáutica Civil será un servicio dependiente de la Comandancia en Jefe de la Fuerza Aérea de Chile, cuyas funciones se le asignan en la presente ley y que, para los efectos de lo establecido en el Título III, del decreto con fuerza de ley 47, de 4 de diciembre de 1959, deberá considerarse como un servicio funcionalmente descentralizado.",
-            "applicability_rationale": "legacy paraphrase: La Dirección General de Aeronáutica Civil es el organismo del Estado encargado de la administración, fiscalización y control de la aeronavegación civil.",
-            "duty_bearer": "regulator",
-            "norm_type": "definition",
-            "applicability": "supporting",
-            "subsections_invoked": [],
             "status": "established"
           }
         ]
@@ -98,21 +76,10 @@
         "framework_file": "CL/L20285_Transparencia.md",
         "articles": [
           {
-            "article_id": "CL.LEY20285.Art.3",
-            "article_name": "Toda persona tiene derecho a solicitar y recibir información de cualquier órgano",
+            "article_id": "CL.L20285.T1.C1.Art.3",
+            "article_name": "Principio de Transparencia de la función pública",
             "article_text": "Artículo 3° - Principio de Transparencia. La función pública se ejerce con transparencia, de modo que permita y promueva el conocimiento de los procedimientos, contenidos y decisiones que se adopten en ejercicio de ella.",
-            "applicability_rationale": "legacy paraphrase: Toda persona tiene derecho a solicitar y recibir información de cualquier órgano de la Administración del Estado, en la forma y condiciones que establece esta ley.",
-            "duty_bearer": "state",
-            "norm_type": "definition",
-            "applicability": "supporting",
-            "subsections_invoked": [],
-            "status": "established"
-          },
-          {
-            "article_id": "CL.LEY20285.Art.14",
-            "article_name": "La autoridad o jefatura del organismo requerido deberá proporcionar la informaci",
-            "article_text": "El Consejo estará integrado por cuatro consejeros, designados por el Presidente de la República con acuerdo del Senado.",
-            "applicability_rationale": "legacy paraphrase: La autoridad o jefatura del organismo requerido deberá proporcionar la información solicitada dentro del plazo de veinte días hábiles.",
+            "applicability_rationale": "Legacy paraphrase corrected 2026-09-17. The prior article_name ('Toda persona tiene derecho a solicitar y recibir información…') was the wording of the current law's Art. 3 (CL.L20285.T1.Art.3, derecho de acceso a la información), not of Art. 10 — Art. 10 is 'Forma de entrega de la información'. The excerpt quoted here is instead the earlier edition's Art. 3, declared in the cache as CL.L20285.T1.C1.Art.3, which establishes the Principio de Transparencia. The citation now carries that declared id so it names the edition the text comes from. Its operational effect depends on Arts. 5 (publicity) and 9 (response deadline), which are candidates for future expansion.",
             "duty_bearer": "state",
             "norm_type": "definition",
             "applicability": "supporting",
@@ -130,7 +97,7 @@
             "article_id": "CL.LPDC.Art.3.b",
             "article_name": "Son derechos y deberes basicos del consumidor: b) El derecho a una informacion v",
             "article_text": "b) El derecho a una información veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratación y otras características relevantes de los mismos, y el deber de informarse responsablemente de ellos.",
-            "applicability_rationale": "legacy paraphrase: Son derechos y deberes basicos del consumidor: b) El derecho a una informacion veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratacion y otras caracteristicas relevantes de los mismos.",
+            "applicability_rationale": "Legacy paraphrase: Son derechos y deberes basicos del consumidor: b) El derecho a una informacion veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratacion y otras caracteristicas relevantes de los mismos.",
             "duty_bearer": "air_operator",
             "norm_type": "right",
             "applicability": "supporting",
@@ -143,7 +110,7 @@
             "article_id": "CL.LPDC.Art.23",
             "article_name": "El proveedor de un servicio sera responsable de los danos y perjuicios que cause",
             "article_text": "Artículo 23.- Comete infracción a las disposiciones de la presente ley el proveedor que, en la venta de un bien o en la prestación de un servicio, **actuando con negligencia**, causa menoscabo al consumidor debido a fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio.",
-            "applicability_rationale": "legacy paraphrase: El proveedor de un servicio sera responsable de los danos y perjuicios que cause al consumidor por la prestacion de un servicio defectuoso, incluyendo la falta de veracidad en la informacion proporcionada y el incumplimiento de las condiciones de contratacion.",
+            "applicability_rationale": "Legacy paraphrase: El proveedor de un servicio sera responsable de los danos y perjuicios que cause al consumidor por la prestacion de un servicio defectuoso, incluyendo la falta de veracidad en la informacion proporcionada y el incumplimiento de las condiciones de contratacion.",
             "duty_bearer": "air_operator",
             "norm_type": "liability",
             "applicability": "supporting",
@@ -156,102 +123,69 @@
   },
   "candidate_articles": [
     {
-      "candidate_article_id": "CL.LEY19880.Art.4",
-      "candidate_name": "CL.LEY19880.Art.4",
-      "framework_cache_status": "not_in_bundle",
-      "verification_required": [
-        "Fetch verbatim text for CL.LEY19880.Art.4 and confirm excerpt"
-      ],
-      "preliminary_view": "El procedimiento administrativo estará informado por los principios de celeridad, conclusivo, economía procedimental, contradictoriedad, imparcialidad, impugnabilidad, no formalización, publicidad y transparencia.",
-      "history_note": "legacy import"
-    },
-    {
       "candidate_article_id": "CL.LPDC.Art.3.a",
       "candidate_name": "Derecho a la libre elección de bienes y servicios",
       "framework_cache_status": "not_in_bundle",
       "verification_required": [
-        "Fetch verbatim text for CL.LPDC.Art.3.a from bcn.cl/leychile",
+        "Confirm verbatim text of LPDC Art. 3 letra a) from the LPDC cache",
         "Confirm whether the contingency-letter adjustment described in segment I-002_17_NAR-21_STG_29.seg-24 constitutes an alteration of contracted service conditions"
       ],
-      "preliminary_view": "Plausible because segment I-002_17_NAR-21_STG_29.seg-24 records an airline supervisor proposing to adjust the contingency letter ('podrá adecuar como para lo que digo yo?'), which may implicate the consumer's right to free election of service conditions under the same LPDC framework already invoked by CL.LPDC.Art.3.b.",
-      "history_note": "Not previously cited; derived from the LPDC framework already present in established_articles and the contingency-letter fact in seg-24."
-    },
-    {
-      "candidate_article_id": "CL.LPDC.Art.3.e",
-      "candidate_name": "Derecho a la reparación e indemnización adecuada y oportuna",
-      "framework_cache_status": "not_in_bundle",
-      "verification_required": [
-        "Fetch verbatim text for CL.LPDC.Art.3.e from bcn.cl/leychile",
-        "Confirm whether the passenger's missed flight and humiliation in segment I-002_05_NAR-07_STG_7_post_removal_investigation.seg-11 were addressed by any reparation offer"
-      ],
-      "preliminary_view": "Plausible because segment I-002_05_NAR-07_STG_7_post_removal_investigation.seg-11 states the passenger missed his flight and was humiliated, and the LPDC framework already in the bundle (CL.LPDC.Art.3.b, CL.LPDC.Art.23) makes the reparation right a natural companion provision.",
-      "history_note": "Not previously cited; anchored to the passenger-harm segment and the existing LPDC articles."
-    },
-    {
-      "candidate_article_id": "CL.LPDC.Art.3.d",
-      "candidate_name": "Derecho a la seguridad en el consumo de bienes y servicios",
-      "framework_cache_status": "not_in_bundle",
-      "verification_required": [
-        "Fetch verbatim text for CL.LPDC.Art.3.d from bcn.cl/leychile",
-        "Confirm whether the removal and accusation events described in segment I-002_17_NAR-21_STG_29.seg-59 involved a safety-relevant service failure"
-      ],
-      "preliminary_view": "Plausible because segment I-002_17_NAR-21_STG_29.seg-59 describes the passenger being accused of aggression and of passing alone through the boarding gate, events occurring in the boarding-gate safety perimeter, which may engage the consumer safety right under the LPDC framework already invoked.",
-      "history_note": "Not previously cited; derived from the boarding-gate facts in seg-59 and the LPDC framework in established_articles."
+      "preliminary_view": "Plausible but evidentially thin. Segment seg-24 records the LATAM supervisor proposing to adjust the contingency letter ('podrá adecuar como para lo que digo yo?'), which may bear on the consumer's right to have contracted conditions honoured. The evidentiary link to a specific contracted condition is not yet established.",
+      "history_note": "Retained from prior review; scope narrowed 2026-09-17 (candidate review)."
     },
     {
       "candidate_article_id": "CL.LPDC.Art.3.c",
       "candidate_name": "Derecho a no ser discriminado arbitrariamente por parte de proveedores",
       "framework_cache_status": "not_in_bundle",
       "verification_required": [
-        "Fetch verbatim text for CL.LPDC.Art.3.c from bcn.cl/leychile",
-        "Confirm whether the removal and accusation described in segment I-002_17_NAR-21_STG_29.seg-59 involved arbitrary differential treatment"
+        "Confirm verbatim text of LPDC Art. 3 letra c) from the LPDC cache",
+        "Confirm whether the removal and accusation described in segment I-002_17_NAR-21_STG_29.seg-59 involved arbitrary differential treatment; the passenger raises race/national-origin in a parallel segment cited under CL-001",
+        "Determine whether the removal decision was based on the passenger's protected characteristics, or on the (disproven) aggression allegation"
       ],
-      "preliminary_view": "Plausible because segment I-002_17_NAR-21_STG_29.seg-59 records the passenger asserting he was falsely accused of aggression and of passing alone through the boarding gate, which may support an arbitrary-discrimination claim under the LPDC framework already present.",
-      "history_note": "Not previously cited; anchored to the false-accusation facts in seg-59 and the LPDC framework."
+      "preliminary_view": "Plausible because segment seg-59 records the passenger asserting he was falsely accused of aggression and of passing alone through the boarding gate. If the false accusation was a proxy for differential treatment, this article may apply. The evidentiary link is not yet established.",
+      "history_note": "Retained from prior review; scope narrowed 2026-09-17."
     },
     {
-      "candidate_article_id": "CL.LPDC.Art.3.f",
-      "candidate_name": "Derecho a la educación para un consumo responsable",
+      "candidate_article_id": "CL.LPDC.Art.3.d",
+      "candidate_name": "Derecho a la seguridad en el consumo de bienes y servicios",
       "framework_cache_status": "not_in_bundle",
       "verification_required": [
-        "Fetch verbatim text for CL.LPDC.Art.3.f from bcn.cl/leychile",
-        "Confirm whether the DGAC official's statement in segment I-002_05_NAR-07_STG_7_post_removal_investigation.seg-36 reflects a failure to inform the consumer of procedures"
+        "Confirm verbatim text of LPDC Art. 3 letra d) from the LPDC cache",
+        "Confirm whether the removal and accusation events described in segment I-002_17_NAR-21_STG_29.seg-59 involved a safety-relevant service failure within the meaning of the article"
       ],
-      "preliminary_view": "Plausible because segment I-002_05_NAR-07_STG_7_post_removal_investigation.seg-36 shows the DGAC official telling the passenger 'deve saber como son los procedimentos', which may evidence a failure of consumer education or information under the LPDC framework already invoked.",
-      "history_note": "Not previously cited; derived from the DGAC procedural-dismissal segment and the LPDC framework."
+      "preliminary_view": "Plausible because segment seg-59 describes the passenger being accused of aggression and of passing alone through the boarding gate, events occurring within the boarding-gate safety perimeter. Whether those events constitute a service-safety failure (as opposed to a security-protocol dispute) is contested.",
+      "history_note": "Retained from prior review; scope narrowed 2026-09-17."
     },
     {
-      "candidate_article_id": "CL.LPDC.Art.3.g",
-      "candidate_name": "Derecho a la información veraz y oportuna sobre los servicios ofrecidos",
-      "framework_cache_status": "not_in_bundle",
-      "verification_required": [
-        "Fetch verbatim text for CL.LPDC.Art.3.g from bcn.cl/leychile",
-        "Confirm whether the contingency-letter adjustment in segment I-002_17_NAR-21_STG_29.seg-24 affected the veracity or timeliness of service information"
-      ],
-      "preliminary_view": "Plausible because segment I-002_17_NAR-21_STG_29.seg-24 records the airline supervisor proposing to adjust the contingency letter, which may bear on the veracity and timeliness of information about service conditions under the LPDC framework already invoked by CL.LPDC.Art.3.b.",
-      "history_note": "Not previously cited; anchored to the contingency-letter fact in seg-24 and the LPDC framework."
-    },
-    {
-      "candidate_article_id": "CL.LPDC.Art.3.h",
+      "candidate_article_id": "CL.LPDC.Art.3.e",
       "candidate_name": "Derecho a la reparación e indemnización adecuada y oportuna",
       "framework_cache_status": "not_in_bundle",
       "verification_required": [
-        "Fetch verbatim text for CL.LPDC.Art.3.h from bcn.cl/leychile",
-        "Confirm whether the passenger's missed flight and humiliation in segment I-002_05_NAR-07_STG_7_post_removal_investigation.seg-11 triggered any reparation obligation"
+        "Confirm verbatim text of LPDC Art. 3 letra e) from the LPDC cache",
+        "Confirm whether the passenger's missed flight and humiliation in segment I-002_05_NAR-07_STG_7_post_removal_investigation.seg-11 were addressed by any reparation offer; the pack does not yet evidence a refusal"
       ],
-      "preliminary_view": "Plausible because segment I-002_05_NAR-07_STG_7_post_removal_investigation.seg-11 states the passenger missed his flight and was humiliated, and the LPDC framework already in the bundle makes the reparation right a natural companion provision.",
-      "history_note": "Not previously cited; anchored to the passenger-harm segment and the existing LPDC articles."
+      "preliminary_view": "Plausible because segment seg-11 states the passenger missed his flight and was humiliated. Article 3.e makes the reparation right a natural companion provision to Art. 3.b and Art. 23, both already established. The missing element is proof of a refusal to compensate, which is one of the open questions.",
+      "history_note": "Retained from prior review; scope narrowed 2026-09-17."
     },
     {
-      "candidate_article_id": "CL.LPDC.Art.3.i",
-      "candidate_name": "Derecho a la reparación e indemnización adecuada y oportuna",
+      "candidate_article_id": "CL.LEY16752.Art.1",
+      "candidate_name": "La Dirección General de Aeronáutica Civil es el organismo del Estado encargado d",
       "framework_cache_status": "not_in_bundle",
       "verification_required": [
-        "Fetch verbatim text for CL.LPDC.Art.3.i from bcn.cl/leychile",
-        "Confirm whether the passenger's missed flight and humiliation in segment I-002_05_NAR-07_STG_7_post_removal_investigation.seg-11 triggered any reparation obligation"
+        "All four elements `not_developed` with empty evidence. Score 0.0 in V14. Nothing in the record turns on the DGAC's organic character. Retained here for record-keeping; not scored."
       ],
-      "preliminary_view": "Plausible because segment I-002_05_NAR-07_STG_7_post_removal_investigation.seg-11 states the passenger missed his flight and was humiliated, and the LPDC framework already in the bundle makes the reparation right a natural companion provision.",
-      "history_note": "Not previously cited; anchored to the passenger-harm segment and the existing LPDC articles."
+      "preliminary_view": null,
+      "history_note": "Demoted from established_articles on 2026-09-17: every element scored 0 and V14 flagged it as dead weight. Kept as a candidate so the theory is not silently re-promoted."
+    },
+    {
+      "candidate_article_id": "CL.LEY20285.Art.14",
+      "candidate_name": "El Consejo estará integrado por cuatro consejeros, designados por el Presidente de la República con acuerdo del Senado",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "All three elements `missing`. Score 0.0 in V14. Concerns the composition of the Consejo para la Transparencia, which has no connection to LA8159. Recommend eventual removal."
+      ],
+      "preliminary_view": null,
+      "history_note": "Demoted from established_articles on 2026-09-17: every element scored 0 and V14 flagged it as dead weight. Kept as a candidate so the theory is not silently re-promoted."
     }
   ],
   "cross_references": [
@@ -378,6 +312,12 @@
   ],
   "open_questions": [
     {
+      "id": "OQ-029-EVIDENCE-PERIOD-ELECTION",
+      "question": "¿El presente análisis debe limitarse a la conducta del 5 de julio de 2024 (que es lo que los segmentos evidencian) o debe extenderse a la tramitación del reclamo administrativo de noviembre (que es lo que el título y el resumen alegan)?",
+      "blocks_element": "",
+      "priority": "critical"
+    },
+    {
       "id": "OQ-029-DGAC-FISCALIZACION-INSTRUCCION",
       "question": "¿Existió una instrucción de general aplicación dictada por la DGAC conforme al Art. 3 letra j de la Ley 16.752, y la DGAC inició un procedimiento de fiscalización por los hechos narrados en el caso LA8159?",
       "blocks_element": "CL.LEY16752.Art.3.j.elem.fiscalizacion_efectiva",
@@ -390,16 +330,16 @@
       "priority": "medium"
     },
     {
-      "id": "OQ-029-DGAC-TEXTO-LETRA-R",
-      "question": "¿Cuál es el contenido normativo exacto de la letra r del Art. 3 de la Ley 16.752 y qué atribución específica de esa letra se activó en la actuación del funcionario de la DGAC?",
-      "blocks_element": "CL.LEY16752.Art.3.r.elem.actuacion_reglada",
+      "id": "OQ-029-DGAC-INVESTIGACION-LETRA-R",
+      "question": "¿La DGAC inició una investigación conforme a la letra r del Art. 3 de la Ley 16.752 por los hechos del caso LA8159 (falsa acusación, retiro del pasajero, posible incumplimiento de protocolos)?",
+      "blocks_element": "CL.LEY16752.Art.3.r.elem.investigacion_efectiva",
       "priority": "high"
     },
     {
-      "id": "OQ-029-DGAC-TEXTO-LETRA-Z",
-      "question": "¿Cuál es el contenido normativo exacto de la letra z del Art. 3 de la Ley 16.752 y qué atribución de esa letra resulta aplicable a los hechos del caso LA8159?",
-      "blocks_element": "CL.LEY16752.Art.3.z.elem.actuacion_reglada",
-      "priority": "high"
+      "id": "OQ-029-DGAC-FISCALIZACION-LETRA-Z",
+      "question": "¿Cuál es el estándar de fiscalización exigible a la DGAC conforme a la letra z del Art. 3 de la Ley 16.752 en un caso de reclamo de pasajero?",
+      "blocks_element": "CL.LEY16752.Art.3.z.elem.fiscalizacion_residual",
+      "priority": "medium"
     },
     {
       "id": "OQ-029-DGAC-COMPETENCIA-FUNCIONARIO",
@@ -420,39 +360,21 @@
       "priority": "high"
     },
     {
-      "id": "OQ-029-DGAC-NATURALEZA-ORGANICA",
-      "question": "¿Se aportará documentación normativa o jurisprudencial que acredite la naturaleza de servicio público de la DGAC, su dependencia de la Comandancia en Jefe de la FACH y su calificación como servicio funcionalmente descentralizado (DFL 47, 1959, Título III)?",
-      "blocks_element": "CL.LEY16752.Art.1.elem.naturaleza_servicio_publico",
-      "priority": "medium"
-    },
-    {
-      "id": "OQ-029-DGAC-FUNCIONES-LEGALES",
-      "question": "¿Se individualizarán las funciones específicas que la Ley 16.752 asigna a la DGAC y que resultan relevantes para el caso LA8159?",
-      "blocks_element": "CL.LEY16752.Art.1.elem.asignacion_funciones_legales",
-      "priority": "medium"
-    },
-    {
       "id": "OQ-029-TRANSP-PUBLICACION-PROCEDIMIENTOS",
       "question": "¿Existen registros de publicación o acceso a los procedimientos y decisiones de la DGAC en el caso LA8159, y la DGAC publicó o comunicó formalmente los procedimientos aplicables al reclamo?",
-      "blocks_element": "CL.LEY20285.Art.3.elem.conocimiento_procedimientos",
+      "blocks_element": "CL.L20285.T1.C1.Art.3.elem.conocimiento_procedimientos",
       "priority": "high"
     },
     {
       "id": "OQ-029-TRANSP-DECISION-FORMAL",
       "question": "¿Existe una decisión formal de la DGAC en el procedimiento LA8159 y fue comunicada o notificada al pasajero?",
-      "blocks_element": "CL.LEY20285.Art.3.elem.conocimiento_decisiones",
+      "blocks_element": "CL.L20285.T1.C1.Art.3.elem.conocimiento_decisiones",
       "priority": "high"
-    },
-    {
-      "id": "OQ-029-TRANSP-CARTA-CONTINGENCIA",
-      "question": "¿La carta de contingencia de la aerolínea fue incorporada o conocida por la DGAC en el procedimiento LA8159?",
-      "blocks_element": "CL.LEY20285.Art.3.elem.conocimiento_contenidos",
-      "priority": "medium"
     },
     {
       "id": "OQ-029-TRANSP-UNIDAD-FUNCIONARIO",
       "question": "¿Qué unidad o funcionario específico de la DGAC ejerció la función pública en el caso LA8159 y bajo qué acto administrativo?",
-      "blocks_element": "CL.LEY20285.Art.3.elem.ejercicio_funcion_publica",
+      "blocks_element": "CL.L20285.T1.C1.Art.3.elem.ejercicio_funcion_publica",
       "priority": "medium"
     },
     {
@@ -504,10 +426,16 @@
       "priority": "medium"
     },
     {
-      "id": "OQ-029-CONSEJO-INTEGRACION",
-      "question": "¿Existe algún segmento no incluido en la lista que aborde la integración del Consejo para la Transparencia, la designación presidencial de sus consejeros y el acuerdo del Senado?",
-      "blocks_element": "CL.LEY20285.Art.14.elem.integracion_consejo",
-      "priority": "low"
+      "id": "OQ-029-LPDC-DISCRIMINACION",
+      "question": "¿El retiro y la acusación descritos en seg-59 involucraron un trato diferencial arbitrario basado en características protegidas del pasajero?",
+      "blocks_element": "CL.LPDC.Art.3.c",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-029-LPDC-REPARACION",
+      "question": "¿Existió oferta o negativa de reparación al pasajero tras la pérdida del vuelo?",
+      "blocks_element": "CL.LPDC.Art.3.e",
+      "priority": "medium"
     }
   ],
   "related_violations": [],
@@ -524,10 +452,8 @@
     "converted_by": "examples/vault_to_bundle.py"
   },
   "established_article_ids": [
-    "CL.LEY16752.Art.1",
+    "CL.L20285.T1.C1.Art.3",
     "CL.LEY16752.Art.3",
-    "CL.LEY20285.Art.14",
-    "CL.LEY20285.Art.3",
     "CL.LPDC.Art.23",
     "CL.LPDC.Art.3.b"
   ]
