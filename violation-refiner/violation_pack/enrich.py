@@ -52,7 +52,6 @@ from .models import (
 )
 from .sources import FrameworkSource, TranscriptSource
 
-
 # ---------------------------------------------------------------------------
 # Shared helpers
 # ---------------------------------------------------------------------------
@@ -85,6 +84,101 @@ Output rules (load-bearing):
   decision_date, author, work, pages, instrument, holding_summary, or
   verified=true. Output only research_query and proposition_to_verify.
 """
+
+def _canonicalize_nexus_element(
+    llm_element_id: str, grid_element_ids: set[str]
+) -> str | None:
+    """Map an LLM-supplied nexus element_id to the grid's actual element_id.
+
+    The nexus prompt tells the model to copy element_ids verbatim from the
+    grid. It obeys most rows and abbreviates the rest, and it abbreviates on
+    two dimensions at once: the article prefix loses its hierarchy segments
+    (``CL.CHIPENCOD.T4.C3.Art.193`` → ``CL.CHIPENCOD.Art.193``) and the
+    element key loses its qualifier (``sujeto_activo_empleado_publico`` →
+    ``sujeto_activo``). Either alone would be trivial to repair; the two
+    together mean a strict membership test rejects rows whose substance is
+    correct.
+
+    Resolution order: exact match → exact element-key match (article prefix
+    ignored) → unique strict-prefix relationship between the LLM's key and a
+    grid key. ``None`` when no unambiguous match exists; the caller drops the
+    row rather than guess.
+    """
+    if llm_element_id in grid_element_ids:
+        return llm_element_id
+
+    from .element_templates import parse_element_id
+
+    parsed = parse_element_id(llm_element_id)
+    if parsed is None:
+        return None
+    llm_key = parsed[2]
+
+    exact = [
+        gid for gid in grid_element_ids
+        if (parse_element_id(gid) or (None, None, None))[2] == llm_key
+    ]
+    if len(exact) == 1:
+        return exact[0]
+
+    candidates: list[str] = []
+    for grid_eid in grid_element_ids:
+        grid_parsed = parse_element_id(grid_eid)
+        if grid_parsed is None:
+            continue
+        grid_key = grid_parsed[2]
+        if grid_key.startswith(llm_key + "_") or llm_key.startswith(grid_key + "_"):
+            candidates.append(grid_eid)
+    return candidates[0] if len(candidates) == 1 else None
+
+def _all_grid_element_ids(violation) -> set[str]:
+    """Union of every element_id across every grid on the violation."""
+    ids: set[str] = set()
+    for grid in violation.element_grids or []:
+        for elem in grid.elements or []:
+            ids.add(elem.element_id)
+    return ids
+
+
+def canonicalize_open_question_blocks_elements(violation):
+    """Rewrite every open_questions[].blocks_element that uses an abbreviated
+    element_id to the grid's canonical id.
+
+    V11 (enrichment_integrity) checks that each blocks_element resolves to a
+    declared grid element. The enrichment LLM emits the same two-dimensional
+    abbreviation here that it does in the nexus matrix — the article prefix
+    loses its hierarchy segments and the element key loses its qualifier
+    (``objeto_material`` for ``objeto_material_documento_oficial``). Reuse
+    _canonicalize_nexus_element over the union of all grids so a reference
+    from any article can resolve.
+
+    A ``None`` return is left in place rather than blanked: an unresolved
+    reference is a real data-integrity signal, and V11 should keep surfacing
+    it until a human looks. Silently rewriting it to "" would hide the defect.
+    """
+    grid_element_ids = _all_grid_element_ids(violation)
+    if not grid_element_ids:
+        return violation
+
+    new_questions = []
+    changed = False
+    for oq in violation.open_questions or []:
+        blocks = getattr(oq, "blocks_element", None)
+        if not blocks:
+            new_questions.append(oq)
+            continue
+
+        canonical = _canonicalize_nexus_element(blocks, grid_element_ids)
+        if canonical is None or canonical == blocks:
+            new_questions.append(oq)
+            continue
+
+        new_questions.append(oq.model_copy(update={"blocks_element": canonical}))
+        changed = True
+
+    if not changed:
+        return violation
+    return violation.model_copy(update={"open_questions": new_questions})
 
 
 def _violation_snapshot(v: Violation) -> dict[str, Any]:
@@ -565,6 +659,10 @@ def propose_nexus(
         ],
     }
     resp = _call(client, _NEXUS_PROMPT, payload, stage="nexus")
+    grid_element_ids_by_article: dict[str, set[str]] = {
+        g.article_id: {e.element_id for e in g.elements}
+        for g in violation.element_grids
+    }
     valid_segs = {s.segment_id for s in violation.segments}
     valid_pairs: set[tuple[str, str]] = set()
     for g in violation.element_grids:
@@ -582,8 +680,21 @@ def propose_nexus(
                 continue
             if fid not in valid_segs:
                 continue
+
+            # Canonicalize the LLM's element_id against the grid before
+            # validating the pair. The model abbreviates on both the article
+            # prefix and the element key, so a strict membership test here
+            # rejects rows whose substance is correct.
+            if (nid, eid) not in valid_pairs:
+                candidates = grid_element_ids_by_article.get(nid, set())
+                canonical = _canonicalize_nexus_element(eid, candidates)
+                if canonical is None:
+                    continue
+                eid = canonical
+
             if (nid, eid) not in valid_pairs:
                 continue
+
             try:
                 out.append(NexusEntry(
                     fact_id=fid, norm_id=nid, element_id=eid,
@@ -1233,4 +1344,9 @@ def enrich_violation(
 
     # Re-attach confidence so it reflects the new element grids.
     v = attach_confidence(v)
+
+    # Canonicalize open-question element references against the grid the
+    # enrichment just produced. Runs after element_grids are final so every
+    # grid element_id is a candidate. See canonicalize_open_question_blocks_elements.
+    v = canonicalize_open_question_blocks_elements(v)
     return v

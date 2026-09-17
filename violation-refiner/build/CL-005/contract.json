@@ -1,0 +1,965 @@
+{
+  "schema_version": "4.0",
+  "violation_id": "CL-005",
+  "violation_number": "CL-005",
+  "title": "CCTV Exoneration — PDI Confirms No Aggression, Then Conceals Finding",
+  "case": {
+    "id": "I-002",
+    "name": "I-002-Chile-Santiago"
+  },
+  "jurisdiction": "CL",
+  "framework": {
+    "codes": [
+      "CHIPENCOD"
+    ],
+    "files": {
+      "CHIPENCOD": "CL/CHIPENCOD_CP.md"
+    }
+  },
+  "category": "CCTV Exoneration / Concealment",
+  "severity": "CRITICAL",
+  "confidence": {
+    "value": 0.5,
+    "components": {
+      "CL.CHIPENCOD.T4.C3.Art.193": 0.586
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-09-17T01:22:11.510236Z",
+    "history": [
+      "2026-09-17T01:21:01.306265+00:00: value=0.67",
+      "2026-09-17T01:21:06.238580+00:00: value=0.67",
+      "2026-09-17T01:21:07.810115+00:00: value=0.67",
+      "2026-09-17T01:21:31.769950+00:00: value=0.5",
+      "2026-09-17T01:21:36.075913+00:00: value=0.5",
+      "2026-09-17T01:21:46.581240+00:00: value=0.5",
+      "2026-09-17T01:21:54.606141+00:00: value=0.5",
+      "2026-09-17T01:22:02.798866+00:00: value=0.5"
+    ]
+  },
+  "incident": {
+    "date": "2024-07-05",
+    "location": "Santiago Airport (SCL/STG), Chile",
+    "flight": "LA8159",
+    "operator": "LATAM Airlines Brazil (TAM Linhas Aéreas)",
+    "clock_time_estimate": "~15:16 CLT",
+    "clock_time_confidence": "unknown"
+  },
+  "incident_timestamp": "2024-07-05T11:00:00-04:00",
+  "incident_timestamp_display": "2024-07-05 — Voo LA8159 — Aeroporto SCL",
+  "allegation_summary": "PDI officers reviewed CCTV footage of the boarding area and conclusively determined that no aggression occurred (STG-7.seg-55: 'una agresión a una persona... no hay'). Despite this finding, PDI failed to record the exoneration in the official police report (parte). Instead, officers: (a) instructed LATAM's boss 'Vas a ser como tu persona... NO COMO LATAM' (STG-7.seg-45), redirecting liability; (b) acknowledged 'lesiones no hay' (STG-7.seg-47) but did not document this; and (c) permitted a DGAC report that attributed the removal to process non-compliance while concealing the CCTV finding. The conduct constitutes falsedad ideológica under Art. 193 N°8 CP (ocultación de documento oficial) and is a predicate fact for Art. 211 CP (denuncia calumniosa).",
+  "legal_basis": {
+    "frameworks": [
+      {
+        "framework_code": "CHIPENCOD",
+        "framework_name": "CHIPENCOD",
+        "framework_file": "CL/CHIPENCOD_CP.md",
+        "articles": [
+          {
+            "article_id": "CL.CHIPENCOD.T4.C3.Art.193",
+            "article_name": "Código Penal, Art. 193 — Falsedad cometida por empleado público",
+            "article_text": "8.° Ocultando en perjuicio del Estado o de un particular cualquier documento oficial.",
+            "applicability_rationale": "PDI officers had a duty to memorialise the CCTV-review finding in an official parte. The verbal finding at seg-55, made in execution of their office, was an act of the office; its non-inclusion in the parte mentioned at seg-75, combined with the immediately preceding coaching at seg-45/seg-62, supports the modality of ocultación under numeral 8.",
+            "duty_bearer": "state",
+            "norm_type": "penalty",
+            "applicability": "direct",
+            "subsections_invoked": [
+              "8"
+            ],
+            "status": "established"
+          },
+          {
+            "article_id": "CL.CHIPENCOD.T4.C6.Art.211",
+            "article_name": "Código Penal, Art. 211 — Acusación o denuncia calumniosa",
+            "article_text": "El que imputare falsamente a alguna persona haber cometido un crimen o simple delito, siendo sabedor de la falsedad de la imputación, o el que la hiciere de malicia, incurrirá en las penas de reclusión menor en sus grados mínimo a medio y multa de once a quince unidades tributarias mensuales.",
+            "applicability_rationale": "Invoked not against PDI but as the predicate offence whose falsity was established by PDI's own CCTV review (seg-55). Anchors materiality of the Art. 193(8) concealment.",
+            "duty_bearer": "state",
+            "norm_type": "penalty",
+            "applicability": "indirect_predicate",
+            "subsections_invoked": [],
+            "status": "established"
+          }
+        ]
+      }
+    ]
+  },
+  "candidate_articles": [
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T4.C3.Art.194",
+      "candidate_name": "Falsedad cometida por funcionario público en el ejercicio de sus funciones (documento público — modalidades residuales)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.194 from bcn.cl/leychile to confirm it covers falsedad in partes or informes oficiales by public officials acting in their functions",
+        "Confirm whether Art.194 operates as a residual or alternative to Art.193 when the falsedad consists of omitting material facts rather than altering existing text"
+      ],
+      "preliminary_view": "Art.194 penalises the same agent class (empleado público) but for falsedades committed in documents other than those enumerated in Art.193. If the DGAC parte at seg-75 is classified as an 'informe' rather than a 'documento público' stricto sensu, Art.194 may be the more precise provision. The PDI officer's omission of the exoneration finding from the parte could fall here if Art.193(8) is held inapplicable on documentary-type grounds.",
+      "history_note": "Proposed as alternative framing to established Art.193(8); not previously analysed."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T4.C3.Art.196",
+      "candidate_name": "Uso malicioso de documento público falso",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.196 from bcn.cl/leychile",
+        "Determine whether the parte issued at seg-75 — which omits the CCTV exoneration — qualifies as a 'documento público falso' whose subsequent use (e.g. filing with DGAC or airline records) triggers Art.196 liability for the issuing officer or for LATAM if it later relied on the parte"
+      ],
+      "preliminary_view": "If the parte was subsequently used by LATAM or DGAC to justify the deplaning or to maintain a 'disruptive passenger' record, the person who knowingly used the incomplete parte could face Art.196 liability. Requires verification of the parte's downstream use.",
+      "history_note": "New candidate; complements Art.193(8) on the 'use' side of the falsedad chain."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T3.C4.Art.148",
+      "candidate_name": "Detención ilegal por funcionario público",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.148 from bcn.cl/leychile",
+        "Assess whether the passenger's continued detention at the airport after PDI confirmed no aggression (seg-55) and no disruptive-passenger classification (seg-61) constitutes an unlawful deprivation of liberty by a public official"
+      ],
+      "preliminary_view": "After PDI verbally cleared the passenger (seg-55, seg-61, seg-177), any continued restriction on his movement by state agents (PDI/DGAC) without lawful basis could engage Art.148. Requires factual confirmation of whether the passenger was physically prevented from leaving or re-boarding after the exoneration.",
+      "history_note": "New candidate; addresses the liberty dimension post-exoneration."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T3.C5.Art.155",
+      "candidate_name": "Abusos contra particulares cometidos por funcionarios públicos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.155 from bcn.cl/leychile",
+        "Determine whether the PDI officer's coaching of LATAM personnel (seg-45, seg-62) to file a personal rather than corporate complaint — after confirming no aggression — constitutes an 'apremio ilegítimo' or 'vejación injusta' against the passenger"
+      ],
+      "preliminary_view": "The coaching sequence (seg-45/seg-62) appears designed to preserve a complaint pathway against the passenger despite the exoneration finding. If this coaching prolonged the passenger's ordeal or facilitated a baseless accusation, it may constitute an abuse of authority under Art.155. Agent-fit is correct: duty bearer is a public official (PDI).",
+      "history_note": "New candidate; targets the coaching conduct specifically."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T6.C3.Art.269bis",
+      "candidate_name": "Obstrucción a la investigación",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.269bis from bcn.cl/leychile",
+        "Assess whether the non-memorialisation of the CCTV exoneration finding constitutes obstruction of a potential investigation into the passenger's wrongful deplaning or into the false accusation"
+      ],
+      "preliminary_view": "By failing to record the exoneration in the official parte, the PDI officer may have obstructed any subsequent investigation — whether by the passenger seeking redress or by the Ministerio Público reviewing the incident. Requires confirmation that Art.269bis covers omissions by the investigating officer themselves, not only third-party obstruction.",
+      "history_note": "New candidate; addresses the investigative-integrity dimension."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T6.C4.Art.269ter",
+      "candidate_name": "Obstrucción a la justicia — destrucción u ocultación de evidencia",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.269ter from bcn.cl/leychile (if it exists as a separate provision)",
+        "Determine whether the CCTV footage reviewed by PDI was preserved or whether its non-preservation could constitute a separate offence"
+      ],
+      "preliminary_view": "If the CCTV footage that PDI reviewed (seg-44) was not preserved or its existence was not documented in the parte, this could constitute concealment or destruction of evidence. Requires verification that Art.269ter exists as a distinct provision and covers this conduct.",
+      "history_note": "New candidate; speculative — existence of this specific article number needs confirmation."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T5.C3.Art.228",
+      "candidate_name": "Prevaricación — funcionario público que a sabiendas dicta resolución injusta",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.228 from bcn.cl/leychile",
+        "Assess whether the issuance of the DGAC parte (seg-75) without the exoneration finding constitutes a 'resolución manifiestamente injusta' or whether Art.228 is limited to judicial officers"
+      ],
+      "preliminary_view": "Art.228 may be limited to judges and judicial officers, in which case agent-fit would fail for PDI/DGAC officials. However, some Chilean doctrine extends prevaricación administrativa to non-judicial public officials who knowingly issue unjust administrative acts. Requires careful verification of the article's subjective scope.",
+      "history_note": "New candidate; agent-fit is uncertain and must be verified."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T5.C4.Art.229",
+      "candidate_name": "Prevaricación por negligencia o ignorancia inexcusable",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.229 from bcn.cl/leychile",
+        "Determine whether the negligent failure to include the exoneration in the parte could fall under Art.229 as an alternative to the dolus-based Art.228"
+      ],
+      "preliminary_view": "Same agent-fit concern as Art.228. If prevaricación administrativa applies to DGAC/PDI, the negligence variant could serve as a fallback if intent to conceal cannot be proven. The coaching at seg-45/seg-62 strongly suggests intent, making Art.229 a secondary option.",
+      "history_note": "New candidate; fallback to Art.228."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T4.C4.Art.206",
+      "candidate_name": "Falso testimonio en causa civil o administrativa",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.206 from bcn.cl/leychile",
+        "Assess whether any subsequent written statement by LATAM personnel (filed as a personal complaint per seg-45/seg-62 coaching) could constitute false testimony if it contradicted the CCTV findings"
+      ],
+      "preliminary_view": "If the LATAM employee, coached by PDI to file a personal complaint, made statements contradicting the CCTV-confirmed absence of aggression, those statements could constitute falso testimonio. Requires confirmation that a denuncia or declaración in an administrative proceeding triggers Art.206.",
+      "history_note": "New candidate; downstream consequence of the coaching conduct."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2314",
+      "candidate_name": "Responsabilidad extracontractual — el que ha cometido un delito o cuasidelito que ha inferido daño a otro",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2314 from bcn.cl/leychile",
+        "Confirm applicability of extracontractual liability against both the state (via Art.2314 + Art.2320 or Ley 18.575) and LATAM for the damages flowing from the concealment of the exoneration"
+      ],
+      "preliminary_view": "Art.2314 CC is the general tort provision. The passenger suffered concrete harm (missed flight, reputational damage from being treated as a disruptive passenger, emotional distress) caused by the wrongful acts of PDI officers and LATAM personnel. This is the civil-law anchor for a damages claim parallel to the criminal provisions.",
+      "history_note": "New candidate; civil liability dimension not yet addressed in established articles."
+    },
+    {
+      "candidate_article_id": "CL.CC.Art.2320",
+      "candidate_name": "Responsabilidad por el hecho ajeno — responsabilidad del empleador",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CC.Art.2320 from bcn.cl/leychile",
+        "Assess whether LATAM as employer is vicariously liable for the acts of its employee who participated in the coaching sequence and filed or facilitated a complaint contradicting the CCTV findings"
+      ],
+      "preliminary_view": "Art.2320 establishes vicarious liability for employers. LATAM would be liable for the acts of its personnel (the 'LATAM BOSS' at seg-45) who participated in the scheme to reframe the complaint as personal. The State (Fisco) would similarly be liable for PDI officers under Ley 18.575 Art.42.",
+      "history_note": "New candidate; vicarious liability chain."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.3",
+      "candidate_name": "Derechos del consumidor — derecho a información veraz y oportuna",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.3 (Ley 19.496) from bcn.cl/leychile",
+        "Determine whether the passenger's relationship with LATAM as a ticket-holder triggers consumer protection rights, specifically the right to truthful information about the reasons for deplaning"
+      ],
+      "preliminary_view": "As a ticket-holding passenger, the complainant is a consumer under Ley 19.496. Art.3 letra b) guarantees the right to truthful and sufficient information. LATAM's failure to disclose the CCTV exoneration finding — and the issuance of a parte that omitted it — violated the passenger's right to know the true basis (or lack thereof) for his deplaning.",
+      "history_note": "New candidate; consumer protection dimension."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.12",
+      "candidate_name": "Incumplimiento de las condiciones ofrecidas o convenidas — deber de cumplir lo pactado",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.12 (Ley 19.496) from bcn.cl/leychile",
+        "Assess whether LATAM's deplaning of the passenger — after PDI confirmed no aggression and no disruptive-passenger classification — constitutes a breach of the transport contract without lawful cause"
+      ],
+      "preliminary_view": "LATAM sold a ticket for flight LA8159 and was obligated to transport the passenger. The deplaning, unsupported by any valid ground after PDI's exoneration, constitutes a unilateral breach of the service contract. Art.12 LPDC prohibits providers from failing to honour agreed conditions.",
+      "history_note": "New candidate; contractual breach under consumer law."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.23",
+      "candidate_name": "Infracción que afecta al consumidor en su dignidad",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.23 (Ley 19.496) from bcn.cl/leychile",
+        "Confirm whether the public deplaning and subsequent treatment of the passenger as a 'disruptive passenger' — contradicted by CCTV — constitutes an infraction affecting consumer dignity under Art.23"
+      ],
+      "preliminary_view": "Being publicly removed from an aircraft, treated as a disruptive passenger by security, and then having the exoneration concealed constitutes a severe affront to dignity. Art.23 LPDC provides for enhanced sanctions when infractions affect consumer dignity.",
+      "history_note": "New candidate; dignity dimension of consumer protection."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.100",
+      "candidate_name": "Código Aeronáutico — obligaciones del transportador aéreo respecto del pasajero",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.100 (DFL 221 de 1931 / Ley 18.916 Código Aeronáutico) from bcn.cl/leychile",
+        "Identify the specific article(s) in the Código Aeronáutico that govern the carrier's obligation to transport a ticketed passenger and the conditions under which deplaning is lawful"
+      ],
+      "preliminary_view": "The Código Aeronáutico regulates the air transport contract. The specific article number needs verification — it may be Art.100 or nearby provisions. The carrier's right to refuse transport is limited to specific grounds (safety, security); PDI's finding of no aggression and no disruptive-passenger status undermines any such justification.",
+      "history_note": "New candidate; article number is approximate and requires verification against the actual Código Aeronáutico text."
+    },
+    {
+      "candidate_article_id": "CL.CACH.Art.145",
+      "candidate_name": "Código Aeronáutico — responsabilidad del transportador por incumplimiento",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CACH.Art.145 from bcn.cl/leychile",
+        "Confirm whether Art.145 (or the correct article) establishes carrier liability for damages when transport is refused without lawful cause"
+      ],
+      "preliminary_view": "If the carrier refused transport without valid grounds (as PDI's exoneration suggests), the Código Aeronáutico's liability provisions would apply. The exact article number requires verification.",
+      "history_note": "New candidate; article number approximate — needs verification."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.3",
+      "candidate_name": "Constitución Política — igual protección de la ley en el ejercicio de los derechos (debido proceso)",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19 numeral 3 from bcn.cl/leychile",
+        "Assess whether the concealment of the exoneration finding and the issuance of a parte without it violated the passenger's right to due process"
+      ],
+      "preliminary_view": "The DGAC officer at seg-22 explicitly promised that PDI would 'corroborate the truth and give the appropriate resolution' and that if the passenger was right, he would 'not be affected.' PDI did corroborate the truth (seg-55, seg-61) but then concealed it. This violated the passenger's constitutional right to due process and equal protection of the law.",
+      "history_note": "New candidate; constitutional dimension."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.7",
+      "candidate_name": "Constitución Política — libertad personal y seguridad individual",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19 numeral 7 from bcn.cl/leychile",
+        "Determine whether the passenger's continued detention or restriction after PDI's exoneration constitutes a violation of personal liberty guarantees"
+      ],
+      "preliminary_view": "If the passenger was held at the airport after PDI confirmed no aggression and no disruptive-passenger classification, his personal liberty was restricted without lawful basis, engaging Art.19 No.7 CPR. Factual confirmation of the duration and nature of the restriction is needed.",
+      "history_note": "New candidate; constitutional liberty guarantee."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.4",
+      "candidate_name": "Constitución Política — respeto y protección a la honra de la persona y su familia",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19 numeral 4 from bcn.cl/leychile",
+        "Assess whether the public deplaning and labelling as 'disruptive passenger' — contradicted by CCTV — constitutes a violation of the passenger's honour"
+      ],
+      "preliminary_view": "Being publicly removed from an aircraft and treated as a disruptive/aggressive passenger in front of other passengers and airport personnel, when CCTV confirmed no aggression occurred, constitutes a direct affront to the passenger's honour protected by Art.19 No.4 CPR.",
+      "history_note": "New candidate; constitutional honour protection."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T8.C1.Art.390bis",
+      "candidate_name": "N/A — placeholder check for coercion/intimidation provisions",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "This is a placeholder — verify the correct article number in the Código Penal for 'coacción' or 'amenazas' (likely Art.296-298)",
+        "Fetch verbatim text for CL.CHIPENCOD.Art.296, Art.297, Art.298 from bcn.cl/leychile"
+      ],
+      "preliminary_view": "WITHDRAWN — this entry is replaced by the entry below for Art.296-298. The article number 390bis is incorrect for this purpose.",
+      "history_note": "Placeholder only; see corrected entry below."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T3.C2.Art.143",
+      "candidate_name": "Violación de domicilio / lugar cerrado — detención arbitraria en lugar no habilitado",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.143 from bcn.cl/leychile",
+        "Assess whether the passenger was held in a specific room or area of the airport that could constitute an unlawful confinement"
+      ],
+      "preliminary_view": "This is a stretch candidate. If the passenger was confined to a specific room at the airport after PDI's exoneration, Art.143 could theoretically apply. However, the facts as presented do not clearly establish physical confinement in a closed space. Low probability of applicability.",
+      "history_note": "New candidate; low-confidence — included for completeness."
+    },
+    {
+      "candidate_article_id": "CL.L18575.Art.42",
+      "candidate_name": "Ley 18.575 Orgánica Constitucional de Bases Generales de la Administración del Estado — responsabilidad del Estado por falta de servicio",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Ley 18.575 Art.42 from bcn.cl/leychile",
+        "Confirm that PDI and DGAC are organs of the State administration subject to falta de servicio liability",
+        "Assess whether the concealment of the exoneration finding constitutes a 'falta de servicio' giving rise to State patrimonial liability"
+      ],
+      "preliminary_view": "Art.42 of Ley 18.575 establishes that State organs are liable for damages caused by 'falta de servicio.' PDI's failure to memorialise the exoneration and DGAC's issuance of a parte omitting it constitute a deficient provision of the public security/aviation safety service, engaging State liability for the passenger's damages.",
+      "history_note": "New candidate; State liability framework."
+    },
+    {
+      "candidate_article_id": "CL.LPDP.Art.2",
+      "candidate_name": "Ley 19.628 — definiciones y principios de tratamiento de datos personales",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for Ley 19.628 Art.2 and Art.9 from bcn.cl/leychile",
+        "Determine whether LATAM or DGAC maintaining a record of the passenger as 'disruptive' — contradicted by PDI's CCTV finding — constitutes unlawful processing of personal data"
+      ],
+      "preliminary_view": "If LATAM or DGAC databases record the passenger as 'disruptive' or as having been deplaned for cause, when PDI confirmed no aggression and declined to classify him as disruptive (seg-61), maintaining such records would involve inaccurate personal data. Ley 19.628 Art.6 (right to rectification) and Art.9 (data must be accurate) could be engaged. Exact article numbers require verification.",
+      "history_note": "New candidate; data protection dimension — article numbers within Ley 19.628 need precise verification."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T6.C2.Art.256",
+      "candidate_name": "Negación de auxilio — funcionario público que rehúsa hacer lo que la ley le ordena",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.256 from bcn.cl/leychile",
+        "Assess whether PDI's failure to formally record the exoneration and to take protective action for the passenger constitutes a refusal to perform a legally mandated duty"
+      ],
+      "preliminary_view": "After confirming no aggression and no disruptive-passenger classification, PDI had a duty to act on that finding — at minimum by recording it and potentially by preventing the issuance of a misleading parte. The failure to do so, combined with the coaching to reframe the complaint, could constitute a refusal to perform official duties under Art.256.",
+      "history_note": "New candidate; dereliction of duty dimension."
+    },
+    {
+      "candidate_article_id": "CL.CHIPENCOD.T10.C5.Art.412",
+      "candidate_name": "Injurias graves",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CHIPENCOD.Art.412 and Art.416 from bcn.cl/leychile",
+        "Assess whether the false characterisation of the passenger as aggressive/disruptive — contradicted by CCTV — constitutes injuria grave"
+      ],
+      "preliminary_view": "The public treatment of the passenger as aggressive and disruptive, when CCTV showed otherwise, could constitute an injuria grave (serious insult to honour). However, injurias in Chilean law typically require a specific intent to dishonour, and the primary actors here may have been acting under a mistaken belief initially. The concealment after the CCTV review strengthens the case. Article numbers for injurias need precise verification (may be Art.416-418).",
+      "history_note": "New candidate; honour-crime dimension — article number approximate."
+    }
+  ],
+  "cross_references": [
+    {
+      "ref": "CL-003",
+      "relation": "pdi_finding_contradicts_this_collusion_narrative"
+    },
+    {
+      "ref": "CL-004",
+      "relation": "this_finding_is_the_evidence_concealed_by_this_cover_up"
+    },
+    {
+      "ref": "CL-001",
+      "relation": "cctv_finding_disproves_this_false_accusation"
+    },
+    {
+      "ref": "CL-007",
+      "relation": "no_corrective_action_despite_this_exoneration_finding"
+    },
+    {
+      "ref": "CL-011",
+      "relation": "due_process_denial_despite_this_exonerating_finding"
+    },
+    {
+      "ref": "CL-016",
+      "relation": "disembarkation_letter_repeated_disproved_accusation_despite_this_finding"
+    },
+    {
+      "ref": "CL-017",
+      "relation": "disproven_accusations_repeated_despite_this_finding"
+    },
+    {
+      "ref": "CL-001__opus46",
+      "relation": "predicate_calumnia_disproved_by_this_finding"
+    },
+    {
+      "ref": "CL-001__opus46v1",
+      "relation": "predicate_calumnia_disproved_by_this_finding"
+    },
+    {
+      "ref": "CL-002",
+      "relation": "exoneration_finding_undermines_basis_for_this_removal"
+    },
+    {
+      "ref": "CL-002__opus46",
+      "relation": "removal_decision_never_corrected_after"
+    },
+    {
+      "ref": "CL-003__opus46",
+      "relation": "exoneration_concealed_to_protect_collusion"
+    },
+    {
+      "ref": "CL-004__opus46",
+      "relation": "same_cctv_exoneration_evidence_concealed"
+    },
+    {
+      "ref": "CL-005__deepseek",
+      "relation": "alternate_draft_same_violation"
+    },
+    {
+      "ref": "CL-005__opus46",
+      "relation": "alternate_draft_same_violation"
+    },
+    {
+      "ref": "CL-006",
+      "relation": "exoneration_finding_invalidates_basis_for_this_boarding_denial"
+    },
+    {
+      "ref": "CL-006__opus46",
+      "relation": "boarding_denial_persisted_despite_exoneration"
+    },
+    {
+      "ref": "CL-007__opus46",
+      "relation": "no_corrective_action_despite_confirmed_no_aggression"
+    },
+    {
+      "ref": "CL-008",
+      "relation": "dgac_abdication_despite_pdi_exoneration_finding"
+    },
+    {
+      "ref": "CL-008__opus46",
+      "relation": "dgac_issued_parte_without_noting_exoneration"
+    },
+    {
+      "ref": "CL-009",
+      "relation": "icao_facilitation_breach_compounded_by_concealment_of_this_finding"
+    },
+    {
+      "ref": "CL-009__opus46",
+      "relation": "disruptive_passenger_classification_rejected_by_pdi"
+    },
+    {
+      "ref": "CL-010",
+      "relation": "rights_violation_aggravated_by_concealment_of_this_finding"
+    },
+    {
+      "ref": "CL-010__opus46",
+      "relation": "passenger_never_informed_of_this_finding"
+    },
+    {
+      "ref": "CL-011__opus46",
+      "relation": "exoneration_proves_removal_lacked_evidentiary_basis"
+    },
+    {
+      "ref": "CL-012",
+      "relation": "coaching_occurred_alongside_concealment_of_this_finding"
+    },
+    {
+      "ref": "CL-012__opus46",
+      "relation": "coaching_personal_complaint_to_conceal_exoneration"
+    },
+    {
+      "ref": "CL-013",
+      "relation": "escalating_false_accusations_contradicted_by_this_finding"
+    },
+    {
+      "ref": "CL-013__opus46",
+      "relation": "cctv_disproves_all_escalating_accusation_variants"
+    },
+    {
+      "ref": "CL-014",
+      "relation": "retaliation_trigger_occurred_despite_this_exoneration_finding"
+    },
+    {
+      "ref": "CL-014__opus46",
+      "relation": "exoneration_confirms_no_disruption_occurred"
+    },
+    {
+      "ref": "CL-015",
+      "relation": "falsified_document_production_continued_despite_this_finding"
+    },
+    {
+      "ref": "CL-015__opus46",
+      "relation": "exoneration_not_reflected_in_falsified_documents"
+    },
+    {
+      "ref": "CL-016__opus46",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__opus47",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__opus47version2",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__sonnet4",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__sonnet4.6",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__sonnetlatest",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__gemini3flash",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__grok41fast",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__haikulatest",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-016__hy3",
+      "relation": "disembarkation_letter_repeated_disproved_accusation"
+    },
+    {
+      "ref": "CL-017__opus46",
+      "relation": "narrative_continued_despite_this_finding"
+    },
+    {
+      "ref": "CL-018",
+      "relation": "institutionalized_evasion_evidenced_by_concealment_of_this_finding"
+    },
+    {
+      "ref": "CL-018__opus46",
+      "relation": "exoneration_suppression_demonstrates_systemic_evasion"
+    },
+    {
+      "ref": "CL-019",
+      "relation": "intimidation_occurred_despite_this_exoneration_finding"
+    },
+    {
+      "ref": "CL-020",
+      "relation": "shifting_narrative_contradicted_by_this_finding"
+    },
+    {
+      "ref": "CL-021",
+      "relation": "retaliation_for_pilot_question_despite_this_finding"
+    },
+    {
+      "ref": "CL-022",
+      "relation": "dgac_abdication_despite_this_exoneration_finding"
+    },
+    {
+      "ref": "CL-023",
+      "relation": "false_narrative_persisted_despite_this_finding"
+    },
+    {
+      "ref": "CL-024",
+      "relation": "police_report_documents_this_exoneration_finding"
+    },
+    {
+      "ref": "CL-025",
+      "relation": "gaslighting_continued_despite_this_finding"
+    },
+    {
+      "ref": "CL-026",
+      "relation": "ticket_splitting_fragmented_paper_trail_of_this_finding"
+    },
+    {
+      "ref": "CL-027",
+      "relation": "obstruction_of_redress_including_this_finding"
+    },
+    {
+      "ref": "CL-028",
+      "relation": "staff_misconduct_continued_despite_this_finding"
+    },
+    {
+      "ref": "CL-029",
+      "relation": "dgac_organic_law_violations_include_concealment_of_this_finding"
+    },
+    {
+      "ref": "CL-030",
+      "relation": "official_obstruction_includes_concealment_of_this_finding"
+    },
+    {
+      "ref": "CL-031",
+      "relation": "compliance_non_response_despite_this_finding"
+    },
+    {
+      "ref": "CL-032",
+      "relation": "non_response_to_complaints_despite_this_finding"
+    },
+    {
+      "ref": "CL-033",
+      "relation": "document_fabrication_continued_despite_this_finding"
+    },
+    {
+      "ref": "CL-034",
+      "relation": "off_book_document_production_continued_despite_this_finding"
+    },
+    {
+      "ref": "CL-035",
+      "relation": "sworn_admission_of_no_witnesses_contradicted_by_this_finding"
+    },
+    {
+      "ref": "CL-036",
+      "relation": "knowing_false_imputation_after_this_pdi_exoneration"
+    },
+    {
+      "ref": "CL-037",
+      "relation": "coercion_continued_despite_this_finding"
+    },
+    {
+      "ref": "CL-038",
+      "relation": "failure_to_notice_compounded_by_concealment_of_this_finding"
+    },
+    {
+      "ref": "CL-039",
+      "relation": "failure_to_compensate_despite_this_finding"
+    },
+    {
+      "ref": "CL-040",
+      "relation": "accessory_liability_for_delivery_of_false_document_despite_this_finding"
+    },
+    {
+      "ref": "CL-041",
+      "relation": "travel_ban_imposed_despite_this_exoneration_finding"
+    },
+    {
+      "ref": "BR-001",
+      "relation": "staff_misconduct_continued_despite_this_finding"
+    },
+    {
+      "ref": "BR-002",
+      "relation": "jurisdictional_framework_applies_to_concealment_of_this_finding"
+    },
+    {
+      "ref": "BR-003",
+      "relation": "pretericao_connected_to_concealment_of_this_finding"
+    },
+    {
+      "ref": "BR-004",
+      "relation": "denial_of_information_includes_concealment_of_this_finding"
+    },
+    {
+      "ref": "BR-005",
+      "relation": "abusive_practices_include_concealment_of_this_finding"
+    },
+    {
+      "ref": "BR-006",
+      "relation": "exposure_to_constraint_continued_despite_this_finding"
+    },
+    {
+      "ref": "BR-007",
+      "relation": "anac_notice_failures_include_concealment_of_this_finding"
+    },
+    {
+      "ref": "BR-008",
+      "relation": "failure_of_material_assistance_despite_this_finding"
+    },
+    {
+      "ref": "BR-009",
+      "relation": "strict_liability_extends_to_concealment_of_this_finding"
+    },
+    {
+      "ref": "BR-010",
+      "relation": "lifetime_ban_imposed_despite_this_finding"
+    },
+    {
+      "ref": "BR-011",
+      "relation": "retaliation_continued_despite_this_finding"
+    },
+    {
+      "ref": "BR-012",
+      "relation": "abandonment_continued_despite_this_finding"
+    },
+    {
+      "ref": "BR-013",
+      "relation": "anac_jurisdictional_avoidance_includes_concealment_of_this_finding"
+    },
+    {
+      "ref": "BR-014",
+      "relation": "regulatory_capture_enabled_concealment_of_this_finding"
+    },
+    {
+      "ref": "BR-015",
+      "relation": "diplomatic_agreement_breach_includes_concealment_of_this_finding"
+    },
+    {
+      "ref": "BR-016",
+      "relation": "criminal_code_violations_continued_despite_this_finding"
+    },
+    {
+      "ref": "BR-017",
+      "relation": "evidence_hierarchy_reversal_evidenced_by_concealment_of_this_finding"
+    },
+    {
+      "ref": "BR-018",
+      "relation": "kpi_manipulation_includes_concealment_of_this_finding"
+    },
+    {
+      "ref": "BR-019",
+      "relation": "precedent_inconsistency_evidenced_by_concealment_of_this_finding"
+    },
+    {
+      "ref": "BR-020",
+      "relation": "abear_code_breach_includes_concealment_of_this_finding"
+    },
+    {
+      "ref": "INT-001",
+      "relation": "icao_removal_procedure_breach_compounded_by_concealment_of_this_finding"
+    },
+    {
+      "ref": "INT-002",
+      "relation": "icao_assistance_breach_compounded_by_concealment_of_this_finding"
+    },
+    {
+      "ref": "INT-003",
+      "relation": "icao_written_reasons_breach_compounded_by_concealment_of_this_finding"
+    },
+    {
+      "ref": "INT-004",
+      "relation": "montreal_liability_extends_to_concealment_of_this_finding"
+    },
+    {
+      "ref": "INT-005",
+      "relation": "montreal_delay_liability_extends_to_concealment_of_this_finding"
+    },
+    {
+      "ref": "INT-006",
+      "relation": "montreal_assistance_breach_compounded_by_concealment_of_this_finding"
+    },
+    {
+      "ref": "INT-007",
+      "relation": "jurisdictional_bases_apply_to_concealment_of_this_finding"
+    },
+    {
+      "ref": "INT-008",
+      "relation": "humane_treatment_breach_compounded_by_concealment_of_this_finding"
+    },
+    {
+      "ref": "INT-009",
+      "relation": "arbitrary_detention_continued_despite_this_finding"
+    },
+    {
+      "ref": "INT-010",
+      "relation": "due_process_breach_compounded_by_concealment_of_this_finding"
+    },
+    {
+      "ref": "INT-011",
+      "relation": "iata_carriage_breach_compounded_by_concealment_of_this_finding"
+    },
+    {
+      "ref": "INT-012",
+      "relation": "security_procedure_misuse_continued_despite_this_finding"
+    },
+    {
+      "ref": "INT-013",
+      "relation": "invalid_sanction_enforcement_continued_despite_this_finding"
+    },
+    {
+      "ref": "INT-014",
+      "relation": "state_obligation_breach_compounded_by_concealment_of_this_finding"
+    },
+    {
+      "ref": "INT-015",
+      "relation": "disproportionate_ban_imposed_despite_this_finding"
+    },
+    {
+      "ref": "INT-016",
+      "relation": "family_rights_violations_continued_despite_this_finding"
+    },
+    {
+      "ref": "INT-017",
+      "relation": "consular_notification_failure_compounded_by_concealment_of_this_finding"
+    },
+    {
+      "ref": "INT-018",
+      "relation": "bilateral_declaration_breach_includes_concealment_of_this_finding"
+    },
+    {
+      "ref": "INT-019",
+      "relation": "icao_operational_irregularities_include_concealment_of_this_finding"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-005-PARTE-INTEGRO",
+      "question": "¿Cuál es el texto íntegro del parte policial? ¿Menciona, silencia o contradice la exoneración CCTV?",
+      "blocks_element": "",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-005-EMISOR-PARTE",
+      "question": "¿Quién emitió materialmente el parte: PDI, DGAC o ambas?",
+      "blocks_element": "",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-005-IDENTIDAD-FUNCIONARIOS",
+      "question": "Nombres, grados y unidades de los agentes PDI intervinientes",
+      "blocks_element": "",
+      "priority": "critical"
+    },
+    {
+      "id": "+ 5 additional",
+      "question": "",
+      "blocks_element": "",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL005-ORDEN-SERVICIO",
+      "question": "¿Existe constancia documental de la orden de servicio u otra designación formal que asignó al oficial PDI a la diligencia aeroportuaria del día de los hechos?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.abuso_del_oficio",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL005-PARTE-CONTENIDO",
+      "question": "¿Cuál es el contenido textual íntegro del parte DGAC/PDI emitido durante la diligencia (referido en seg-75), y en particular, incluye o excluye mención alguna al resultado de la revisión de cámaras CCTV?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.acto_del_oficio",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL005-PROTOCOLO-CCTV",
+      "question": "¿El protocolo de actuación de la PDI o la normativa interna DGAC exige documentar por escrito el resultado de una revisión de cámaras CCTV realizada en el marco de una diligencia aeroportuaria?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.objeto_material_documento_oficial",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL005-GRABACIONES-CCTV",
+      "question": "¿Se conservan las grabaciones CCTV del aeropuerto correspondientes a la fecha, hora y ubicación de los hechos, y pueden obtenerse como evidencia independiente?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.objeto_material_documento_oficial",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-CL005-JURISP-OMISION-N8",
+      "question": "¿Existe jurisprudencia chilena que equipare la omisión deliberada de consignar un hallazgo exculpatorio en un parte policial con la 'ocultación' de documento oficial del Art. 193 N° 8 del Código Penal?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.modalidad_ocultacion",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL005-PERJUICIO-CUANTIF",
+      "question": "¿Se puede cuantificar el perjuicio patrimonial (costo del vuelo perdido, gastos adicionales) y extrapatrimonial (daño moral, afectación de registros) derivado específicamente de la omisión de consignar el hallazgo exculpatorio en el parte oficial?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.resultado_perjuicio",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-CL005-COMMS-INTERNAS-PDI",
+      "question": "¿Existen comunicaciones internas de la PDI (correos electrónicos, minutas, anotaciones en libro de novedades) posteriores a la diligencia que confirmen o revelen la intencionalidad de omitir el hallazgo exculpatorio del parte oficial?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.tipicidad_subjetiva_dolo",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-CL005-HALLAZGO-DOC-OFICIAL",
+      "question": "¿La conclusión verbal del oficial PDI sobre la inexistencia de agresión (seg-55, seg-61) constituye, conforme a la normativa administrativa y penal chilena, un hallazgo que debía materializarse como documento oficial autónomo, o bastaba con su inclusión en el parte general?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.objeto_material_documento_oficial",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-005-EMPLEADO-PUBLICO-ACREDITACION",
+      "question": "¿Se acreditará documentalmente la calidad de empleado público de los funcionarios PDI y DGAC intervinientes?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.sujeto_activo_empleado_publico",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-005-DEBER-CONSTANCIA-CCTV",
+      "question": "¿Existía un deber funcional específico de dejar constancia escrita del resultado de la revisión del CCTV?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.abuso_del_oficio",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-005-PARTE-DGAC-UNICO",
+      "question": "¿El parte de la DGAC (seg-71) fue el único documento oficial emitido o hubo otros?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.abuso_del_oficio",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-005-CONTENIDO-PARTE-DGAC",
+      "question": "¿Cuál es el contenido exacto del parte emitido en seg-71 y si en él se omitió la constancia del hallazgo del CCTV?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.acto_del_oficio",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-005-PARTE-CONTENIDO-OMISION",
+      "question": "¿El parte de la DGAC (seg-71) contenía o no la constancia de la revisión del CCTV y del hallazgo de no agresión?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.modalidad_ocultacion",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-005-PROTOCOLO-CONSTANCIA-PDI",
+      "question": "¿Existe algún protocolo que obligara a los funcionarios PDI a dejar constancia escrita de su hallazgo verbal?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.modalidad_ocultacion",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-005-DOCUMENTO-OFICIAL-CONCRETO",
+      "question": "¿Cuál es el documento oficial concreto sobre el que recae la ocultación?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.objeto_material_documento_oficial",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-005-INFORME-PDI-ACTA-DISTINTO",
+      "question": "¿Existe un informe PDI o acta de constatación distinto del parte de la DGAC?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.objeto_material_documento_oficial",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-005-PERJUICIO-MATERIAL-PARTICULAR",
+      "question": "¿Se acreditará el perjuicio material sufrido por el particular (pérdida de vuelo, gastos, etc.)?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.resultado_perjuicio",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-005-PERJUICIO-CONCRETO-ESTADO",
+      "question": "¿Existe un perjuicio concreto al Estado distinto de la mera infracción del deber funcional?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.resultado_perjuicio",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-005-COMUNICACIONES-INTERNAS-DELIBERACION",
+      "question": "¿Existen comunicaciones internas o instrucciones que demuestren la deliberación de omitir la constancia?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.tipicidad_subjetiva_dolo",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-005-CONOCIMIENTO-FUNCIONARIO-PARTE",
+      "question": "¿El funcionario que emitió el parte tenía conocimiento del hallazgo verbal del CCTV?",
+      "blocks_element": "CL.CHIPENCOD.T4.C3.Art.193.8.elem.tipicidad_subjetiva_dolo",
+      "priority": "critical"
+    }
+  ],
+  "related_violations": [
+    "CL-001",
+    "CL-003",
+    "CL-004"
+  ],
+  "tags": [
+    "violation",
+    "severity/critical",
+    "jurisdiction/CL",
+    "incident/I-002",
+    "status/open"
+  ],
+  "_provenance": {
+    "source": "/Users/leandrodisconzi/repos/olivia/_shared/cases/la8159/01-violations/_json/EN/CL-005.json",
+    "vault_operations": 10,
+    "converted_by": "examples/vault_to_bundle.py"
+  },
+  "established_article_ids": [
+    "CL.CHIPENCOD.T4.C3.Art.193",
+    "CL.CHIPENCOD.T4.C6.Art.211"
+  ]
+}

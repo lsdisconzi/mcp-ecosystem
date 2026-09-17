@@ -508,7 +508,9 @@ def _write_validation_markdown(bundle_dir: Path, violation_id: str, checks: list
 # Per-bundle processing
 # ---------------------------------------------------------------------------
 
-def _reconcile_contract_after_enrichment(bundle_dir: Path, violation: Violation) -> None:
+def _reconcile_contract_after_enrichment(
+    bundle_dir: Path, violation: Violation, contract: dict
+) -> dict:
     """Rewrite the contract fields enrichment is allowed to change.
 
     ``vault_to_bundle`` writes the contract at bundle-creation time, from the
@@ -536,19 +538,12 @@ def _reconcile_contract_after_enrichment(bundle_dir: Path, violation: Violation)
     hand should not fail the pipeline here. The reconciler is a fixup, not a
     gate.
     """
-    contract_path = bundle_dir / "contract.json"
-    if not contract_path.exists():
-        return
-    try:
-        contract = json.loads(contract_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return
-
+    # Update the in-memory contract (passed by caller) with the fields
+    # enrichment is allowed to change, then persist to disk.
     if violation.confidence is not None:
         contract["confidence"] = json.loads(violation.confidence.model_dump_json())
     else:
         contract.pop("confidence", None)
-
     contract["established_article_ids"] = sorted(
         a.article_id for a in violation.established_articles
     )
@@ -564,11 +559,16 @@ def _reconcile_contract_after_enrichment(bundle_dir: Path, violation: Violation)
         }
         for q in violation.open_questions
     ]
+    contract_path = bundle_dir / "contract.json"
+    if contract_path.exists():
+        try:
+            contract_path.write_text(
+                json.dumps(contract, indent=2, ensure_ascii=False), encoding="utf-8"
+            )
+        except (OSError, TypeError):
+            pass
+    return contract
 
-    contract_path.write_text(
-        json.dumps(contract, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
-    
 
 def _process_one(
     bundle_dir: Path,
@@ -594,6 +594,17 @@ def _process_one(
 
     contract = _read_json(bundle_dir / "contract.json")
     v = attach_confidence(v)
+    # Enrichment owns the nexus matrix. A bundle carries nexus rows from the
+    # previous enrichment run (they are written into <VID>.json), and those
+    # rows reference element_ids composed before the templates were wired in.
+    # Upserting new rows alongside them leaves both, and V11/V21 correctly
+    # reject the survivors. Clear the matrix here so the nexus stage
+    # regenerates it from scratch. The vault's own nexus rows (if any) are
+    # cleared too — enrichment is about to propose the same theory with
+    # conformant element_ids, and keeping both would be a merge of two
+    # proposals rather than a single coherent record.
+    if enrich:
+        v = v.model_copy(update={"nexus_matrix": []})
 
     enrich_info: dict | None = None
     if enrich:
@@ -634,9 +645,11 @@ def _process_one(
             notes.append(f"enrichment_failed: {exc}")
             enrich_info = {"ok": False, "error": str(exc)}
 
-    # NEW: reconcile the contract with the enriched violation, so V08 and V17
-    # see consistent views. See _reconcile_contract_after_enrichment.
-    _reconcile_contract_after_enrichment(bundle_dir, v)
+    # Reconcile the contract with the enriched violation BEFORE the pipeline
+    # runs, so V08 and V17 evaluate the reconciled state. The reconciler
+    # returns the updated dict; the pipeline must receive *that*, not the
+    # pre-enrichment copy read at the top of this function.
+    contract = _reconcile_contract_after_enrichment(bundle_dir, v, contract or {})
 
     report = run_pipeline(
         v,
