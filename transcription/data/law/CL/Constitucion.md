@@ -5,7 +5,7 @@
 - **Source:** https://www.constituteproject.org/constitution/Chile_2021
 - **Fetched:** 2026-04-27
 - **Sha256:** 26b530c199a5505c31d320758d810f9d28b4e8bdf6c92e8eda78d06c1583e302
-- **Articles:** 1, 19.1, 19.3, 19.7, 5, 6
+- **Articles:** 1, 19.1, 19.2, 19.3, 19.7, 5, 6
 - **Notes:** ✅ verified from constituteproject.org translation by Rodrigo Delaveau Swett
 
 ---
@@ -29,6 +29,16 @@ Persons are born free and equal, in dignity and rights. Family is the fundamenta
 **Tags:** norm_type: penalty · scope: constitutional · sanctions: financial_penalty, criminal_liability  
 
 The right to life and to the physical and mental integrity of the person. The law protects the life of the one about to be born. The death penalty may only be instituted for a crime established in a law approved by a qualified quorum. The application of any illegitimate constrain is forbidden;
+
+---
+
+### Art. 19.2 — Constitución Política de Chile, Capítulo III, Artículo 19, N°2
+
+**Theme:** Constitutional Law  
+**ELI ID:** `CL.CONST.T1.C3.P2.Art.19.2`  
+**Tags:** norm_type: right · scope: constitutional  
+
+Equality before the law. In Chile there are neither privilege persons nor groups. In Chile there are no slaves, and anyone that sets foot on its territory will become free. Men and women are equal before the law. Neither the law nor any authority whatsoever may establish arbitrary differences;
 
 ---
 

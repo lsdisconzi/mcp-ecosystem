@@ -314,8 +314,22 @@ class MarkdownFrameworkSource:
         2. a spelling-insensitive match, which is what lets a canonical ELI id
            ('Art.269_ter', 'Art.23bis') find a header that keeps the spaces
            ('269 ter', '23 bis');
-        3. a prefix match, so a bare number finds its sub-tokened article
-           ('133' -> '133 A') *after* an exact '133' has been ruled out.
+        3. a space-separated prefix match, so a bare number finds its
+           sub-tokened article ('133' -> '133 A') *after* an exact '133' has
+           been ruled out.
+
+        Attempt 3 deliberately does **not** match on a dot. A dot is not a
+        sub-token boundary in these caches, it is the next component of a
+        numbering path, so '19' -> '19.1' answers a citation of Article 19 with
+        Article 19 N°1, and '2' -> '2.5.1' answers one of Artigo 2 with
+        Artigo 5 ('CL/Constitucion.md', 'INT/*/ACHR_1969.md'). Measured over the
+        whole corpus, 403 references reach this branch: all 22 space-separated
+        ones end in a non-digit ('133 A', '3 letra b)', '269 ter', '24 a 28',
+        '5º caput' — the same article at finer granularity), and all 381 dotted
+        ones end in a digit. Matching on the space alone is therefore the whole
+        of the sub-token rule; accepting the dot as well could only ever guess,
+        and did — six bundles validated Art. 19 N°4 against N°1's text while
+        V03 passed, because the excerpt had been pasted from N°1 too.
 
         Every accessor goes through this, so a body, its declared ELI id and
         its title can never resolve to different articles.
@@ -331,9 +345,8 @@ class MarkdownFrameworkSource:
             if _normalize_article_key(key) == wanted:
                 return key
         prefix = f"{article_number} "
-        prefix_dot = f"{article_number}."
         for key in self._articles:
-            if key.startswith(prefix) or key.startswith(prefix_dot):
+            if key.startswith(prefix):
                 return key
         return None
 
@@ -374,9 +387,9 @@ class MarkdownFrameworkSource:
 
         Accepts the exact header identifier ('19.1', '133 A', '3 letra b)'),
         a bare numeric form (if no exact match, returns the body of the cached
-        article whose identifier starts with ``article_id`` followed by a
-        non-digit boundary, so '133' matches '133 A' only if '133' itself is
-        not cached), and a canonical ELI id.
+        article whose identifier begins with ``article_id`` plus a space, so
+        '133' matches '133 A' only if '133' itself is not cached), and a
+        canonical ELI id.
 
         The canonical ELI id is matched against the id each article *declares*
         before the identifier is consulted, and it is the only form that can

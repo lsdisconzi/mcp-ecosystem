@@ -1,6 +1,6 @@
 {
   "pipeline_version": "1.0",
-  "ran_at": "2026-09-13T15:40:47.718993Z",
+  "ran_at": "2026-09-17T17:13:35.706428Z",
   "violation_id": "CL-032",
   "checks": [
     {
@@ -18,8 +18,8 @@
     {
       "check_id": "V03",
       "name": "article_text_hash",
-      "status": "warn",
-      "details": "WARN: framework CONST self-reported SHA in metadata header (26b530c1…) does not match actual content SHA (a42140a7…)."
+      "status": "pass",
+      "details": "All article-text hashes and excerpts match the framework cache. INFO: framework CONST declares source SHA 26b530c1… (cache bytes: b07956bc…)."
     },
     {
       "check_id": "V04",
@@ -68,6 +68,48 @@
       "name": "enrichment_integrity",
       "status": "pass",
       "details": "Enrichment integrity verified (segments, excerpts, nexus, authorities)."
+    },
+    {
+      "check_id": "V12",
+      "name": "speaker_attribution",
+      "status": "pass",
+      "details": "4 cited segment(s) had a declarable source; 0 with an undeclared speaker."
+    },
+    {
+      "check_id": "V13",
+      "name": "evidence_nexus_coherence",
+      "status": "warn",
+      "details": "20 nexus row(s) checked; 7 cite a segment their element does not list as evidence. ['CL.LPDC.Art.3.b.elem.proveedor_servicios <- I-002_05_NAR-07_STG_7_post_removal_investigation.seg-36', 'CL.LPDC.Art.3.b.elem.relacion_consumo <- I-002_18_NAR_LATAM_STG_2.seg-1', 'CL.LPDC.Art.3.b.elem.deber_informacion <- I-002_18_NAR_LATAM_STG_2.seg-24', 'CL.LPDC.Art.23.elem.proveedor <- I-002_18_NAR_LATAM_STG_2.seg-24', 'CL.LPDC.Art.23.elem.contexto_venta_servicio <- I-002_18_NAR_LATAM_STG_2.seg-1', 'CL.LPDC.Art.23.elem.fallas_deficiencias <- I-002_18_NAR_LATAM_STG_2.seg-24', 'CL.LPDC.Art.23.elem.relacion_causal <- I-002_18_NAR_LATAM_STG_2.seg-24']"
+    },
+    {
+      "check_id": "V14",
+      "name": "dead_weight_articles",
+      "status": "pass",
+      "details": "No established article scores 0 over 2 grid(s)."
+    },
+    {
+      "check_id": "V15",
+      "name": "verbatim_hash_integrity",
+      "status": "pass",
+      "details": "4 verbatim hash(es) recomputed; 0 mismatch."
+    },
+    {
+      "check_id": "V16",
+      "name": "authority_verification_coherence",
+      "status": "pass",
+      "details": "0 authorit(ies) coherent with the stored verification factor; every unverified stub states what would settle it and every verified authority names its protocol."
+    },
+    {
+      "check_id": "V17",
+      "name": "cross_view_consistency",
+      "status": "pass",
+      "details": "Bundle and contract agree on 10 open question(s) and 13 cross-reference(s) (23 item(s) compared). Contract-only related_violations: 0 (not asserted against cross_references; reciprocity is a graph-level audit)."
+    },
+    {
+      "check_id": "V21",
+      "name": "element_id_closure",
+      "status": "fail",
+      "details": "1 issue(s): CL.LPDC.Art.23: template requires element(s) ['falla_calidad', 'venta_o_prestacion'] not present in the grid | warnings: CL.LPDC.Art.3.b.elem.calidad_de_consumidor: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.proveedor_servicios: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.relacion_consumo: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.deber_informacion: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.solicitud_informacion: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.infraccion_informacion: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.perjuicio: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.23: grid has element(s) ['contexto_venta_servicio', 'fallas_deficiencias', 'relacion_causal'] outside its template"
     }
   ]
 }

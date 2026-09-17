@@ -9,7 +9,7 @@ Fail: 1
 
 - **V01 segment_resolution**: pass - 5 segment(s) checked; 0 unresolved.
 - **V02 verbatim_quote_match**: pass - All 5 quote(s) checked against their cited segment.
-- **V03 article_text_hash**: pass - All article-text hashes and excerpts match the framework cache. INFO: framework CONST declares source SHA 26b530c1… (cache bytes: a42140a7…). INFO: framework L20285 declares source SHA b96e4db1… (cache bytes: 4e6f01df…).
+- **V03 article_text_hash**: pass - All article-text hashes and excerpts match the framework cache. INFO: framework CONST declares source SHA 26b530c1… (cache bytes: b07956bc…). INFO: framework L20285 declares source SHA b96e4db1… (cache bytes: 4e6f01df…).
 - **V04 article_exists_in_framework_cache**: pass - All 5 established articles present in cache.
 - **V05 cross_references_resolve**: pass - All 11 cross-references resolve.
 - **V06 element_coverage**: warn - 5 uncovered: ['CL.CONST.T1.C1.Art.1.5.elem.igualdad_oportunidades: status=strong but no nexus_matrix entry', 'CL.CONST.T1.C1.Art.1.4.elem.condiciones_sociales_realizacion: status=contested but no nexus_matrix entry', 'CL.CONST.Art.19.1.elem.denegacion_sistematica_derechos: status=strong but no nexus_matrix entry', 'CL.L20285.T1.C1.Art.3.elem.deber_de_conocimiento: status=strong but no nexus_matrix entry', 'CL.LPDC.Art.3.b.elem.veracidad: status=strong but no nexus_matrix entry']

@@ -1,6 +1,6 @@
 {
   "pipeline_version": "1.0",
-  "ran_at": "2026-09-13T15:40:47.812567Z",
+  "ran_at": "2026-09-17T17:13:36.773170Z",
   "violation_id": "INT-010",
   "checks": [
     {
@@ -18,14 +18,14 @@
     {
       "check_id": "V03",
       "name": "article_text_hash",
-      "status": "warn",
-      "details": "WARN: framework ACHR self-reported SHA in metadata header (5e4270a2…) does not match actual content SHA (0208ba5c…)."
+      "status": "fail",
+      "details": "FAIL: INT.ACHR.Art.1.1 excerpt not present in framework cache as quoted."
     },
     {
       "check_id": "V04",
       "name": "article_exists_in_framework_cache",
-      "status": "pass",
-      "details": "All 1 established articles present in cache."
+      "status": "fail",
+      "details": "['INT.ACHR.Art.1.1: not present in framework cache']"
     },
     {
       "check_id": "V05",
@@ -66,8 +66,50 @@
     {
       "check_id": "V11",
       "name": "enrichment_integrity",
+      "status": "fail",
+      "details": "1 error(s), 0 warning(s). E_ARTICLE_BODY_MISSING@INT.ACHR.Art.1.1: framework ACHR returned no body for 'INT.ACHR.Art.1.1'"
+    },
+    {
+      "check_id": "V12",
+      "name": "speaker_attribution",
+      "status": "warn",
+      "details": "428 cited segment(s) had a declarable source; 21 with an undeclared speaker. [\"I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-284: speaker 'multi_party_audio' is not declared by 'I-002_04_NAR-06_STG_6_jetbridge_standoff'\", \"I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-285: speaker 'multi_party_audio' is not declared by 'I-002_04_NAR-06_STG_6_jetbridge_standoff'\", \"I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-292: speaker 'multi_party_audio' is not declared by 'I-002_04_NAR-06_STG_6_jetbridge_standoff'\", \"I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-294: speaker 'multi_party_audio' is not declared by 'I-002_04_NAR-06_STG_6_jetbridge_standoff'\", \"I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-297: speaker 'multi_party_audio' is not declared by 'I-002_04_NAR-06_STG_6_jetbridge_standoff'\", \"I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-302: speaker 'multi_party_audio' is not declared by 'I-002_04_NAR-06_STG_6_jetbridge_standoff'\", \"I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-313: speaker 'multi_party_audio' is not declared by 'I-002_04_NAR-06_STG_6_jetbridge_standoff'\", \"I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-328: speaker 'multi_party_audio' is not declared by 'I-002_04_NAR-06_STG_6_jetbridge_standoff'\", \"I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-344: speaker 'multi_party_audio' is not declared by 'I-002_04_NAR-06_STG_6_jetbridge_standoff'\", \"I-002_05_NAR-07_STG_7_post_removal_investigation.seg-41: speaker 'multi_party_audio' is not declared by 'I-002_05_NAR-07_STG_7_post_removal_investigation'\", \"I-002_05_NAR-07_STG_7_post_removal_investigation.seg-43: speaker 'multi_party_audio' is not declared by 'I-002_05_NAR-07_STG_7_post_removal_investigation'\", \"I-002_05_NAR-07_STG_7_post_removal_investigation.seg-44: speaker 'multi_party_audio' is not declared by 'I-002_05_NAR-07_STG_7_post_removal_investigation'\", \"I-002_05_NAR-07_STG_7_post_removal_investigation.seg-46: speaker 'multi_party_audio' is not declared by 'I-002_05_NAR-07_STG_7_post_removal_investigation'\", \"I-002_05_NAR-07_STG_7_post_removal_investigation.seg-47: speaker 'multi_party_audio' is not declared by 'I-002_05_NAR-07_STG_7_post_removal_investigation'\", \"I-002_05_NAR-07_STG_7_post_removal_investigation.seg-48: speaker 'multi_party_audio' is not declared by 'I-002_05_NAR-07_STG_7_post_removal_investigation'\", \"I-002_05_NAR-07_STG_7_post_removal_investigation.seg-49: speaker 'multi_party_audio' is not declared by 'I-002_05_NAR-07_STG_7_post_removal_investigation'\", \"I-002_05_NAR-07_STG_7_post_removal_investigation.seg-50: speaker 'multi_party_audio' is not declared by 'I-002_05_NAR-07_STG_7_post_removal_investigation'\", \"I-002_05_NAR-07_STG_7_post_removal_investigation.seg-67: speaker 'multi_party_audio' is not declared by 'I-002_05_NAR-07_STG_7_post_removal_investigation'\", \"I-002_05_NAR-07_STG_7_post_removal_investigation.seg-84: speaker 'multi_party_audio' is not declared by 'I-002_05_NAR-07_STG_7_post_removal_investigation'\", \"I-002_05_NAR-07_STG_7_post_removal_investigation.seg-93: speaker 'multi_party_audio' is not declared by 'I-002_05_NAR-07_STG_7_post_removal_investigation'\", \"I-002_05_NAR-07_STG_7_post_removal_investigation.seg-114: speaker 'multi_party_audio' is not declared by 'I-002_05_NAR-07_STG_7_post_removal_investigation'\"]"
+    },
+    {
+      "check_id": "V13",
+      "name": "evidence_nexus_coherence",
       "status": "pass",
-      "details": "Enrichment integrity verified (segments, excerpts, nexus, authorities)."
+      "details": "0 nexus row(s) checked; 0 cite a segment their element does not list as evidence."
+    },
+    {
+      "check_id": "V14",
+      "name": "dead_weight_articles",
+      "status": "pass",
+      "details": "No established article scores 0 over 0 grid(s)."
+    },
+    {
+      "check_id": "V15",
+      "name": "verbatim_hash_integrity",
+      "status": "pass",
+      "details": "428 verbatim hash(es) recomputed; 0 mismatch."
+    },
+    {
+      "check_id": "V16",
+      "name": "authority_verification_coherence",
+      "status": "pass",
+      "details": "0 authorit(ies) coherent with the stored verification factor; every unverified stub states what would settle it and every verified authority names its protocol."
+    },
+    {
+      "check_id": "V17",
+      "name": "cross_view_consistency",
+      "status": "pass",
+      "details": "Bundle and contract agree on 3 open question(s) and 9 cross-reference(s) (12 item(s) compared). Contract-only related_violations: 0 (not asserted against cross_references; reciprocity is a graph-level audit)."
+    },
+    {
+      "check_id": "V21",
+      "name": "element_id_closure",
+      "status": "pass",
+      "details": "0 element(s) shaped and closed; 0 nexus row(s) reference a declared pair; templates conform where present."
     }
   ]
 }

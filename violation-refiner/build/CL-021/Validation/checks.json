@@ -1,6 +1,6 @@
 {
   "pipeline_version": "1.0",
-  "ran_at": "2026-09-13T15:40:47.658538Z",
+  "ran_at": "2026-09-17T17:13:34.281588Z",
   "violation_id": "CL-021",
   "checks": [
     {
@@ -18,14 +18,14 @@
     {
       "check_id": "V03",
       "name": "article_text_hash",
-      "status": "warn",
-      "details": "WARN: framework CHIPENCOD self-reported SHA in metadata header (509efbf4…) does not match actual content SHA (5e189a4a…). | WARN: framework CONST self-reported SHA in metadata header (26b530c1…) does not match actual content SHA (a42140a7…)."
+      "status": "fail",
+      "details": "FAIL: CL.CONST.T1.C3.P3.Art.19.4 excerpt not present in framework cache as quoted."
     },
     {
       "check_id": "V04",
       "name": "article_exists_in_framework_cache",
-      "status": "pass",
-      "details": "All 5 established articles present in cache."
+      "status": "fail",
+      "details": "['CL.CONST.T1.C3.P3.Art.19.4: not present in framework cache']"
     },
     {
       "check_id": "V05",
@@ -66,8 +66,50 @@
     {
       "check_id": "V11",
       "name": "enrichment_integrity",
+      "status": "fail",
+      "details": "1 error(s), 24 warning(s). E_ARTICLE_BODY_MISSING@CL.CONST.T1.C3.P3.Art.19.4: framework CONST returned no body for 'CL.CONST.T1.C3.P3.Art.19.4'"
+    },
+    {
+      "check_id": "V12",
+      "name": "speaker_attribution",
+      "status": "pass",
+      "details": "3 cited segment(s) had a declarable source; 0 with an undeclared speaker."
+    },
+    {
+      "check_id": "V13",
+      "name": "evidence_nexus_coherence",
       "status": "warn",
-      "details": "0 errors, 24 warning(s). W_OQ_BLOCKS_UNKNOWN@OQ-CL021-AUTOR-IMPUTACION: blocks_element 'Art. 211 sujeto activo' is not a known element_id; W_OQ_BLOCKS_UNKNOWN@OQ-CL021-PARTE-FORMAL: blocks_element 'Art. 212 objeto material (parte/denuncia)' is not a known element_id; W_OQ_BLOCKS_UNKNOWN@OQ-CL021-CONTENIDO-COMUNICACION-SEGURIDAD: blocks_element 'Art. 211 acto imputación' is not a known element_id; W_OQ_BLOCKS_UNKNOWN@OQ-CL021-TIPO-PENAL-INVOCADO: blocks_element 'Art. 211 objeto material' is not a known element_id; W_OQ_BLOCKS_UNKNOWN@OQ-CL021-IDENTIDAD-PASAJERO: blocks_element 'Art. 211 sujeto pasivo' is not a known element_id; W_OQ_BLOCKS_UNKNOWN@OQ-CL021-PREGUNTA-PASAJERO: blocks_element 'Art. 19.4 acto desencadenante' is not a known element_id; W_OQ_BLOCKS_UNKNOWN@OQ-CL021-SEGMENTOS-NO-RECUPERADOS: blocks_element 'Art. 19.4 nexo causal' is not a known element_id; W_OQ_BLOCKS_UNKNOWN@OQ-CL021-INSTRUCCION-PILOTO: blocks_element 'Art. 19.4 sujeto activo' is not a known element_id; W_OQ_BLOCKS_UNKNOWN@OQ-CL021-COMUNICACIONES-INTERNAS-TRIPULACION: blocks_element 'Art. 211 dolo' is not a known element_id; W_OQ_BLOCKS_UNKNOWN@OQ-CL021-HABILITACION-REGLAMENTARIA: blocks_element 'Art. 19.4 ilegitimidad' is not a "
+      "details": "47 nexus row(s) checked; 5 cite a segment their element does not list as evidence. ['CL.CHIPENCOD.Art.211.1.elem.sujeto_activo <- I-002_01_NAR-01_STG_1_pre_boarding.seg-1', 'CL.CHIPENCOD.Art.211.1.elem.sujeto_pasivo <- I-002_01_NAR-01_STG_1_pre_boarding.seg-1', 'CL.CHIPENCOD.Art.211.1.elem.modalidad_tipica <- I-002_03_NAR-05_STG_5_aircraft_removal.seg-1', 'CL.CONST.Art.19.4.elem.titularidad_derecho <- I-002_01_NAR-01_STG_1_pre_boarding.seg-1', 'CL.LPDC.Art.3.b.elem.informacion_veraz <- I-002_01_NAR-01_STG_1_pre_boarding.seg-1']"
+    },
+    {
+      "check_id": "V14",
+      "name": "dead_weight_articles",
+      "status": "pass",
+      "details": "No established article scores 0 over 5 grid(s)."
+    },
+    {
+      "check_id": "V15",
+      "name": "verbatim_hash_integrity",
+      "status": "pass",
+      "details": "3 verbatim hash(es) recomputed; 0 mismatch."
+    },
+    {
+      "check_id": "V16",
+      "name": "authority_verification_coherence",
+      "status": "pass",
+      "details": "0 authorit(ies) coherent with the stored verification factor; every unverified stub states what would settle it and every verified authority names its protocol."
+    },
+    {
+      "check_id": "V17",
+      "name": "cross_view_consistency",
+      "status": "pass",
+      "details": "Bundle and contract agree on 42 open question(s) and 20 cross-reference(s) (62 item(s) compared). Contract-only related_violations: 6 (not asserted against cross_references; reciprocity is a graph-level audit)."
+    },
+    {
+      "check_id": "V21",
+      "name": "element_id_closure",
+      "status": "fail",
+      "details": "2 issue(s): CL.CHIPENCOD.T4.C6.Art.211: template requires element(s) ['elemento_subjetivo_falsedad', 'hecha_ante_autoridad', 'imputacion_falsa_crimen'] not present in the grid; CL.LPDC.Art.23: template requires element(s) ['falla_calidad', 'menoscabo', 'proveedor', 'venta_o_prestacion'] not present in the grid | warnings: CL.CHIPENCOD.Art.211.1.elem.sujeto_activo: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.211; migrate when convenient; CL.CHIPENCOD.Art.211.1.elem.sujeto_pasivo: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.211; migrate when convenient; CL.CHIPENCOD.Art.211.1.elem.imputacion_falsa: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.211; migrate when convenient; CL.CHIPENCOD.Art.211.1.elem.falsedad_objetiva: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.211; migrate when convenient; CL.CHIPENCOD.Art.211.1.elem.objeto_material: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.211; migrate when convenient; CL.CHIPENCOD.Art.211.1.elem.resultado_perjuicio: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.211; migrate when convenient; CL.CHIPENCOD.Art.211.1.elem.dolo_conocimiento_falsedad: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.211; migrate when convenient; CL.CHIPENCOD.Art.211.1.elem.modalidad_tipica: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.211; migrate when convenient; CL.CHIPENCOD.T4.C6.Art.211: grid has element(s) ['dolo_conocimiento_falsedad', 'falsedad_objetiva', 'imputacion_falsa', 'modalidad_tipica', 'objeto_material', 'resultado_perjuicio', 'sujeto_activo', 'sujeto_pasivo'] outside its template; CL.CHIPENCOD.Art.212.1.elem.sujeto_activo: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.212; migrate when convenient; CL.CHIPENCOD.Art.212.1.elem.sujeto_pasivo: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.212; migrate when convenient; CL.CHIPENCOD.Art.212.1.elem.modalidad_tipica_simulacion: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.212; migrate when convenient; CL.CHIPENCOD.Art.212.1.elem.objeto_material_parte_denuncia: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.212; migrate when convenient; CL.CHIPENCOD.Art.212.1.elem.falsedad_circunstancias: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.212; migrate when convenient; CL.CHIPENCOD.Art.212.1.elem.resultado_induccion_error: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.212; migrate when convenient; CL.CHIPENCOD.Art.212.1.elem.tipicidad_subjetiva_dolo: article prefix drops hierarchy segments of CL.CHIPENCOD.T4.C6.Art.212; migrate when convenient; CL.CONST.Art.19.4.elem.titularidad_derecho: article prefix drops hierarchy segments of CL.CONST.T1.C3.P3.Art.19.4; migrate when convenient; CL.CONST.Art.19.4.elem.conducta_lesiva_honra: article prefix drops hierarchy segments of CL.CONST.T1.C3.P3.Art.19.4; migrate when convenient; CL.CONST.Art.19.4.elem.nexo_causal_represalia: article prefix drops hierarchy segments of CL.CONST.T1.C3.P3.Art.19.4; migrate when convenient; CL.CONST.Art.19.4.elem.publicidad_afectacion: article prefix drops hierarchy segments of CL.CONST.T1.C3.P3.Art.19.4; migrate when convenient; CL.CONST.Art.19.4.elem.ausencia_justificacion: article prefix drops hierarchy segments of CL.CONST.T1.C3.P3.Art.19.4; migrate when convenient; CL.CONST.Art.19.4.elem.dano_moral_reputacional: article prefix drops hierarchy segments of CL.CONST.T1.C3.P3.Art.19.4; migrate when convenient; CL.CONST.Art.19.4.elem.imputabilidad_agente: article prefix drops hierarchy segments of CL.CONST.T1.C3.P3.Art.19.4; migrate when convenient; CL.LPDC.Art.3.b.elem.relacion_de_consumo: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.informacion_veraz: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.informacion_oportuna: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.condiciones_contratacion: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.deber_informarse_consumidor: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.nexo_causal_represalia: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.3.b.elem.perjuicio_consumidor: article prefix drops hierarchy segments of CL.LPDC.Art.3.b; migrate when convenient; CL.LPDC.Art.23: grid has element(s) ['contexto_venta_o_prestacion', 'falla_o_deficiencia_servicio', 'menoscabo_consumidor', 'nexo_causal', 'sujeto_activo_proveedor', 'sujeto_pasivo_consumidor'] outside its template"
     }
   ]
 }

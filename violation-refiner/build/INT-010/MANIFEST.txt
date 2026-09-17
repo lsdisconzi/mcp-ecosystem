@@ -1,9 +1,14 @@
 Violation pack: INT-010
-Generated: 2026-09-13T15:40:47.815605+00:00
+Generated: 2026-09-17T17:19:36.490413+00:00
 Schema version: 3.0
 Files included: 12
 
 format: relative_path | bytes | sha256
+note: `bytes` is the UTF-8 *byte* length (len(p.read_bytes())), not a character count.
+      The two differ for any non-ASCII text:
+      'Authority sources/CL.CPR.Art.19.N3__DTO-100_03-MAY-2023.text.txt' is 28326 bytes and
+      27763 characters, and its sidecar's text_chars field records the 27763. Verify a file
+      against `bytes`; compare a character count against `text_chars`.
 ────────────────────────────────────────────────────────────────────────────────────────────────────
 INT-010/INT-010.json
     bytes:  369455
@@ -18,28 +23,28 @@ INT-010/Transcripts/I-002_03_NAR-05_STG_5_aircraft_removal.json
     sha256: 30575222bf74886153d117b37241e57a9f269fafd0d8dbd3d2d65698583a0074
 
 INT-010/Transcripts/I-002_04_NAR-06_STG_6_jetbridge_standoff.json
-    bytes:  151048
-    sha256: e2cb197f855592343c18d83b9d517b2742aa679954f079dbeefa2c3cd977cfae
+    bytes:  150747
+    sha256: 1b48605a44bc9206521213061fe71d543cd6343c27a403728fbb3829b7a2dfb2
 
 INT-010/Transcripts/I-002_05_NAR-07_STG_7_post_removal_investigation.json
-    bytes:  77144
-    sha256: 0378b03a9a4d9b25a504bd7c76d0981f441ecde337cb1ae2eb9278506fa64386
+    bytes:  81336
+    sha256: 25de4ec8348b5690486d52fc635fdd77a1c7189f2e9685b43fa754168e4a88f9
 
 INT-010/Transcripts/I-002_18_NAR_LATAM_STG_2.json
     bytes:  13314
     sha256: 11323b6ffdb0ea16eb89003f3732858fd1c12763dc19c90cc69774c7a622f4c5
 
 INT-010/Validation/checks.json
-    bytes:  2075
-    sha256: 81096a4f79394c9574242b11a6f9330168d26b984cb4cf71ae444df09e17651e
+    bytes:  6893
+    sha256: b71af243a956cfade7e9a28df9e376cee6022c1f9f76a409da63755a73da517d
 
 INT-010/Validation/validation_report.md
-    bytes:  1155
-    sha256: dd1acf8f96cc860b0f3aeecaade8301b2702f597e4f0454961882e605cd96730
+    bytes:  5372
+    sha256: c44ded9a21c02758312f5623ae5b706a120565bc14e8f945c92d3cae0850eea8
 
 INT-010/contract.json
-    bytes:  9146
-    sha256: d375d328c927b1c5ce731d09a833ccdf5eafc61edc6d327c9aeb8efe0735ee32
+    bytes:  7815
+    sha256: 6675b619d3aa49599f7b1d1eab910e51469b06e0c9ca0e45cd12929f5276ccd5
 
 INT-010/conversion_warnings.json
     bytes:  12442
@@ -50,5 +55,5 @@ INT-010/segments_manifest.json
     sha256: 4d359eef70ef04e13212d6ca520ca74b11300ceeb5418fbad02247a9ae9bcd19
 
 INT-010/speaker_index.json
-    bytes:  77502
-    sha256: 75b8c36a24595f3a896c09937288d5db265f99335ecdf20d8c6b2552ea37f66c
+    bytes:  78854
+    sha256: f1f79aba6e8f4fc86cfaf7acc860e57d830ab5163db7b16b355aef9889df2c50

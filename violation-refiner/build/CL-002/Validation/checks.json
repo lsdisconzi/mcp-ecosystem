@@ -1,6 +1,6 @@
 {
   "pipeline_version": "1.0",
-  "ran_at": "2026-09-13T15:40:47.554016Z",
+  "ran_at": "2026-09-17T17:13:30.540445Z",
   "violation_id": "CL-002",
   "checks": [
     {
@@ -18,8 +18,8 @@
     {
       "check_id": "V03",
       "name": "article_text_hash",
-      "status": "warn",
-      "details": "WARN: framework CONST self-reported SHA in metadata header (26b530c1…) does not match actual content SHA (a42140a7…)."
+      "status": "pass",
+      "details": "All article-text hashes and excerpts match the framework cache. INFO: framework CONST declares source SHA 26b530c1… (cache bytes: b07956bc…)."
     },
     {
       "check_id": "V04",
@@ -68,6 +68,48 @@
       "name": "enrichment_integrity",
       "status": "pass",
       "details": "Enrichment integrity verified (segments, excerpts, nexus, authorities)."
+    },
+    {
+      "check_id": "V12",
+      "name": "speaker_attribution",
+      "status": "pass",
+      "details": "5 cited segment(s) had a declarable source; 0 with an undeclared speaker."
+    },
+    {
+      "check_id": "V13",
+      "name": "evidence_nexus_coherence",
+      "status": "pass",
+      "details": "0 nexus row(s) checked; 0 cite a segment their element does not list as evidence."
+    },
+    {
+      "check_id": "V14",
+      "name": "dead_weight_articles",
+      "status": "pass",
+      "details": "No established article scores 0 over 0 grid(s)."
+    },
+    {
+      "check_id": "V15",
+      "name": "verbatim_hash_integrity",
+      "status": "pass",
+      "details": "5 verbatim hash(es) recomputed; 0 mismatch."
+    },
+    {
+      "check_id": "V16",
+      "name": "authority_verification_coherence",
+      "status": "pass",
+      "details": "0 authorit(ies) coherent with the stored verification factor; every unverified stub states what would settle it and every verified authority names its protocol."
+    },
+    {
+      "check_id": "V17",
+      "name": "cross_view_consistency",
+      "status": "pass",
+      "details": "Bundle and contract agree on 0 open question(s) and 25 cross-reference(s) (25 item(s) compared). Contract-only related_violations: 8 (not asserted against cross_references; reciprocity is a graph-level audit)."
+    },
+    {
+      "check_id": "V21",
+      "name": "element_id_closure",
+      "status": "pass",
+      "details": "0 element(s) shaped and closed; 0 nexus row(s) reference a declared pair; templates conform where present."
     }
   ]
 }

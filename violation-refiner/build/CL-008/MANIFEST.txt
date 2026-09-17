@@ -1,17 +1,22 @@
 Violation pack: CL-008
-Generated: 2026-09-13T15:40:47.590308+00:00
+Generated: 2026-09-17T17:19:36.454279+00:00
 Schema version: 3.0
 Files included: 13
 
 format: relative_path | bytes | sha256
+note: `bytes` is the UTF-8 *byte* length (len(p.read_bytes())), not a character count.
+      The two differ for any non-ASCII text:
+      'Authority sources/CL.CPR.Art.19.N3__DTO-100_03-MAY-2023.text.txt' is 28326 bytes and
+      27763 characters, and its sidecar's text_chars field records the 27763. Verify a file
+      against `bytes`; compare a character count against `text_chars`.
 ────────────────────────────────────────────────────────────────────────────────────────────────────
 CL-008/CL-008.json
-    bytes:  120908
-    sha256: 6f1860396f8f66cf3bb9ea9d52879d6e0029f85ec4cb0645ef201dc34bf5c444
+    bytes:  120924
+    sha256: a787e6d8cc396e32d9f274e9b6a38bbf00a9eb35525844e2b65da23ea922eaf1
 
 CL-008/Legal framework/CONST.md
-    bytes:  9822
-    sha256: a42140a74935d28b0fef0a348c03c37153a98f774b70ebc4a13b3fdf1e0bfca8
+    bytes:  10346
+    sha256: b07956bc1e8eb3decb57048c6d3d3f08214643cd68c038e476d5f0381bb3b740
 
 CL-008/Legal framework/L16752.md
     bytes:  19013
@@ -34,16 +39,16 @@ CL-008/Transcripts/I-002_24_NAR-19_STG_12.json
     sha256: faa1d4cf8d70c2fa7b5463f0a1ebf0c9844cb493d2d6f24b10122128d4e651e4
 
 CL-008/Validation/checks.json
-    bytes:  2700
-    sha256: ca9483f55120c2905b68e9a8e36113e5df6dd76d714b133883ca2c766cb88693
+    bytes:  5934
+    sha256: 332e8e98cf785caace68f1007aa4cf0e1deed5094a819cb72e84abacdb09bd78
 
 CL-008/Validation/validation_report.md
-    bytes:  1780
-    sha256: c5f0fd953f80e4894bd2c79d2e1f6ef8ff7e9296a3268acdbc6435a6ea2c6508
+    bytes:  4455
+    sha256: 0e41bad4881dda74ba94a1acdc2e262709fc50ed7f5a17f1cd1f3cb9b7798a10
 
 CL-008/contract.json
-    bytes:  32080
-    sha256: 68c9dc96673c5f376ecfa3c3a0e8f0405fbdfc56d4a129c40c87223a90e513fe
+    bytes:  31711
+    sha256: 878ed24c4fb83c9dd8c39095dcdb17580255b6cb6bffa7613d2de6c105612ce9
 
 CL-008/conversion_warnings.json
     bytes:  3058
@@ -54,5 +59,5 @@ CL-008/segments_manifest.json
     sha256: f08f477436a49e32eb050ef5eed814447877fe02b4e639948d22d6737b90bf63
 
 CL-008/speaker_index.json
-    bytes:  77502
-    sha256: 75b8c36a24595f3a896c09937288d5db265f99335ecdf20d8c6b2552ea37f66c
+    bytes:  78854
+    sha256: f1f79aba6e8f4fc86cfaf7acc860e57d830ab5163db7b16b355aef9889df2c50
