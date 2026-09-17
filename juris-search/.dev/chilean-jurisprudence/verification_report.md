@@ -168,6 +168,13 @@ verdict: red — 1 blocking defect (pagination) fixed, awaiting live verificatio
 
     **Phase C must therefore record two things for the search itself**, not only for the paginations: page 1's `wait_ok` **and** `#span_cantidad_resultados` before vs after that wait. The current code logs **neither**, so the pass criteria in playbook 03 §Phase C are insufficient for this issue as written. The count comparison is not optional — it is the only signal that separates Path 2 above from a genuine search, because `wait_ok` is `True` on both. Both are now wired into §Phase C's instrumentation (criteria 6 and 7).
 
+    **The eventual fix is two independent changes, not one.** An earlier draft of this entry proposed adding "a third parameter" to `_wait_for_results`; that is a workaround for a *baseline that is empty by construction*, and the cleaner root cause is that `_navigate_to_category` returns before the landing listing exists. But **land-ready alone does not close this issue**, which is the trap worth pinning while it is fresh:
+
+    1. **Land-ready in `_navigate_to_category`** — return only once the landing listing has settled (bounded, with "landing genuinely empty" as a distinct outcome). This closes **Path 2**: `pre_search_ids` becomes the landing's own 10 ids, the change predicate stops degenerating to existence mode, and the landing listing can no longer satisfy the search wait.
+    2. **Consult `wait_ok` in `get_inteiro_links`** — raise or retry once when it is `False`. This closes **Path 1**.
+
+    **(1) alone converts Path 2 from a silent false success into Path 1's loud timeout — it does not remove the failure.** With land-ready in place and the search XHR F5-rejected (Case A3), or the query legitimately returning nothing: `previous_ids` = the landing's 10 ids (non-empty), the predicate correctly waits for a *different* set, no different set arrives, the predicate times out, `wait_ok is False` — **and the caller still ignores it, parsing landing rows as results.** The predicate is then correct and the caller is still wrong. So shipping (1) and declaring issue 12 resolved would leave Case A3 silently ingesting landing data again, via a path that now merely logs a timeout nobody reads. Both changes ship together, or neither closes the issue.
+
 ## Evidence
 
 - **blocked page excerpt** (step 8, navigation GET): raw body was not captured — the challenge cleared before a snapshot could be taken (probe 9 read `blocked: false`). What is on record is the detector firing inside `_navigate_to_category`: `RuntimeError: Chile: F5 block detected while loading penales. support_id=n/a. Manual CAPTCHA solve in a real browser may be required.` `support_id=n/a` with a positive body match is the live confirmation of open issue 3.

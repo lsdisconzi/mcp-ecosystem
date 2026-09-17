@@ -570,8 +570,9 @@ Fresh profile. One navigation, one search, three pager clicks.
 > seen = []
 > def traced(self, timeout=None, previous_ids=None):
 >     ok = orig(self, timeout, previous_ids)
->     seen.append((ok, previous_ids is not None,
->                  len(previous_ids or ()), count_text(self)))
+>     # len() of the baseline frozenset itself (distinct ids), NOT a text length
+>     n = None if previous_ids is None else len(previous_ids)
+>     seen.append((ok, previous_ids is not None, n, count_text(self)))
 >     return ok
 > chile_scraper.ChileJurisprudenciaScraper._wait_for_results = traced
 > ```
@@ -579,7 +580,7 @@ Fresh profile. One navigation, one search, three pager clicks.
 > `seen[0]` is the **search** wait (the only call with a baseline taken *before* it; `reused` shows the baseline was supplied). Read four things off it:
 >
 > - `seen[0][0]` — did the wait reach readiness? **False** is the *timeout* path of issue 12.
-> - `seen[0][2]` — how many ids were in the baseline. **`0` is itself a finding**: `_wait_for_results(previous_ids=frozenset())` returns `current != previous_ids`, which is `True` for *any* non-empty set, so the predicate has degenerated to **existence mode** and can no longer tell the landing listing from the search result.
+> - `seen[0][2]` — `len()` of the baseline **frozenset** itself: the number of distinct `data-idsentencia` values passed in, not the length of any text and not a derived count. `None` means legacy/existence mode (no baseline supplied); `0` means a baseline was supplied but was **empty**. **`0` is itself a finding**: `_wait_for_results(previous_ids=frozenset())` returns `current != previous_ids`, which is `True` for *any* non-empty set, so the predicate has degenerated to **existence mode** and can no longer tell the landing listing from the search result.
 > - `seen[0][3]` vs `landing[0]` — the count text after the wait, against the landing default. If it is **still the landing value** (`Se ha(n) encontrado 855.792 resultados.` on unfiltered Civiles) or still `""`, the search did not take effect and the page-1 rows are the default listing.
 > - `landing[0]` — record it even when empty. D4b measured `""` immediately after `_navigate_to_category`; the default listing renders ~1.1 s later, so an empty landing snapshot is expected, not an error.
 >
