@@ -12,7 +12,7 @@ Playbook: `.dev/chilean-jurisprudence/02-chile_scraper-playbook.md` @ sha256:`f8
 verdict: red — 1 blocking defect (pagination), 10 secondary issues
 ```
 
-> **Blocking:** open issue 9 (pagination), pending disambiguation from issue 11.
+> **Blocking:** open issue 9 (pagination). **Phase A resolved the disambiguation: issue 11 is a red herring for this symptom (mechanism `B-2`), the selector-scoping fix B-1 is a no-op, and the freshness predicate is probably *not* the defect. Step 6 must be re-run with `max_results` recorded before any fix is designed** — see *Phase A probe* under Evidence.
 > **Secondary:** page-size control, filter surface, Spanish-only support-ID, body-only F5 detector, `imprimir` unprobed, `Compendio` id, LJ mode, Case A3, pager markup docs, node-per-result scoping.
 > **Blocked by the blocking defect:** step 7 (`_open_detail` untested), step 8 search half (`penales` search untested).
 
@@ -73,23 +73,60 @@ verdict: red — 1 blocking defect (pagination), 10 secondary issues
 6. `Compendio_Extranjería` `id_buscador` is **still unverified**.
 7. `Lineas_Jurisprudenciales` special mode is **not implemented** — `window.es_lj` is confirmed `true` live, but `get_inteiro_links` never branches on `es_lj`. A `NotImplementedError` guard is still recommended.
 8. **F5 rejections delivered inside an XHR body are undetectable** (Case A3). *Not observed in this pass* — the search POSTs returned real JSON — but the route is documented as the most aggressively filtered one (`docs/pjud-source.md` §5.3), and when it triggers, `_assert_not_blocked` cannot see it and `get_inteiro_links` returns stale landing data as results.
-9. **No freshness check anywhere in the search loop — CONFIRMED LIVE as the cause of step 6's failure.** Outcome is solid: `pages == [1]`, `total == 10`, `new_on_page == 0` on the second iteration, loop breaks. **The precise mechanism is not yet established, and two observations are in tension:**
+9. **The search loop has no freshness check — but the recorded mechanism is wrong, and work-order Phase A resolves it *against* the predicate.** *This supersedes the "CONFIRMED LIVE as the cause" framing introduced by patch 2, which the report's own step-6 evidence already contradicted.*
 >
-> 1. The step-6 timing probe (direct click on `#btnPaginador_pagina_adelante`) shows rows are **cleared immediately** (`first=null`, `n=0`) and the true count arrives at **~1.8 s**.
-> 2. If rows are cleared on click, then `_wait_for_results` — an *existence* predicate — cannot be "satisfied by the pre-click row set." Something else keeps the predicate true.
+> **Outcome (unchanged):** `pages == [1]`, `total == 10`.
 >
-> The most likely reconciliation is **open issue 11**: `[data-idsentencia]` matches ~70 nodes for 10 unique ids, so non-result elements carrying the attribute (hidden templates, cached rows, sidebar copies) survive pagination and satisfy `_wait_for_results` while the real result set is empty. **If so, the fix is not "add a sleep" — it is to scope the selector and redefine readiness as a row-set *change*.** If instead issue 11 is a red herring and the row clearing seen in the probe does not occur on `_click_next_page`'s code path (which uses `execute_script` rather than a real click), the fix is a longer wait. **Resolving 9 requires resolving 11 first.** Do not apply a predicate-change fix until the two are disambiguated.
+> **What the probes measured** (work-order Phase A, 2026-09-17, two independent fresh sessions, 0.1 s sampling; see *Phase A probe* under Evidence):
 >
-> **Third reading, from the code (not in the original patch text).** `get_inteiro_links` calls `_wait_for_results()` *after* `_click_next_page()`, with `wait_time=30` and WebDriverWait's default 0.5 s poll. If the click's row-clear is deferred (the handler clears the DOM only once the XHR callback runs) then the **first poll at t≈0 still sees the old rows**, the existence predicate returns `True` immediately, and `_parse_search_results` re-reads page 1. This reading reconciles both observations without invoking issue 11, and it is a *race*, which explains why the failure is reproducible-but-timing-sensitive. It also means the row-set-*change* predicate is the correct fix in **all three** readings — see the tension with work-order §B-2 noted in `03-chile_scraper-playbook.md`.
+> | Reading | Measured |
+> |---|---|
+> | First sample after `_click_next_page()` | `n_all=0`, all 70 nodes gone — **t=0.022 s** (probe 2) / **t=0.027 s** (probe 1) |
+> | Empty window | ≈ **[0.02 s, 2.09 s]** — 20 consecutive empty samples at 0.1 s |
+> | Repopulated with the **next** page | **t=2.425 s**: 70 nodes, 10 unique, **all 10 ids replaced** (`delta=20`) |
+> | Scoped vs unscoped selector | **70 vs 70 nodes** — scoping removes nothing |
 >
-> **Not fixed in this pass — reason is verification exhaustion, not scope.** `_wait_for_results` is **not** on the do-not-refactor list (`_parse_chile_text_result`, `_navigate_to_category`, `_click_next_page`, `_open_detail`), and step 6 produced a concrete reproducible failure attributable to it — so the escape clause applies and a fix would have been in scope. It was not attempted for two reasons: (a) the session became F5-blocked immediately after step 6 (`RuntimeError: F5 block detected while loading penales`), so any fix would have been **unverifiable** in this pass; and (b) the correct fix is blocked on disambiguating issues 9 and 11 (see above). **This is the top follow-up: the scraper cannot paginate at all, so `max_results > 10` is unreachable and every query silently returns at most one page.** The next pass should resolve 11 first, then fix 9, then re-run steps 5–8 in a fresh session.
+> **Conclusion — the "stale rows satisfy the predicate" mechanism is refuted.** Rows are gone within ~22 ms, so the *existence* predicate cannot be satisfied by the pre-click row set; and the "first poll still sees the old rows" race reading is refuted too, because the first poll (WebDriverWait's 0.5 s cadence) observes **zero** nodes, not stale ones. Against the work order's own A.2 decision table this is unambiguously branch **B-2** — *"Rows are cleared … issue 11 is a red herring for this symptom."* **Issue 11 is not the cause of issue 9, and work-order B-1 (scope the selector) must not be applied as a pagination fix** — it is a no-op (see issue 11 above).
+>
+> **So the predicate is probably not the defect, and the FAIL is not yet attributable to it.** With the clear measured at ~22 ms and repopulation at ~2.4 s, an existence predicate polls until ~2.4 s, then returns `True` with the **next** page loaded, after which `_parse_search_results` reads 10 **new** rows and the loop should advance. That is the opposite of what step 6 recorded. **Three candidate causes remain and the record cannot currently distinguish them:**
+>
+> 1. **A transient empty parse aborts the loop permanently.** `new_on_page == 0` is treated as terminal (`"no new results — stopping"`), but with a measured ~2.0 s empty window, any parse landing inside it is indistinguishable from pager exhaustion. This conflation is a **real defect regardless** of the above, and it is the only candidate that reproduces `pages == [1]` / `total == 10` while still allowing a **positive** `new_on_page` on page 1.
+> 2. **The `max_results` cap, not pagination, ended the loop.** `max_pages = max(1, (max_results // per_page) + 2)` and the inner `for` breaks as soon as `len(entries) >= max_results`. If step 6 ran with `max_results=10` — matching the 10-row default that amendment D3 recalibrated the playbook to — page 1 alone satisfies the request and both observations follow **with no pagination defect at all**. That would make step 6 a **mis-specified test**, not a scraper failure. (It predicts `new_on_page == 10`, so it conflicts with the recorded `new_on_page == 0`; that recording is second-hand and is corroborated by neither probe.)
+> 3. **A genuinely early predicate return** on a path neither probe reproduced. Both probes used `_click_next_page()`'s own `execute_script` click, so the click dispatch is not the difference — but TSPD was demonstrably active during the search (`buscar_sentencias?onComplete=…&ajaxAction=0501010200` injections), so handler timing is not guaranteed stable across sessions.
+>
+> **Required next step — re-run step 6 before designing any fix.** Work-order Phase C presupposes a confirmed predicate defect; Phase A does not confirm one. Re-run step 6 unchanged with `max_results` recorded explicitly and `max_pages` / `len(entries)` / `new_on_page` logged per iteration. Only if candidate 1 is confirmed should the `new_on_page == 0` break be made non-terminal (one retry behind a change-predicate wait) — and that is a fix to the **break condition**, not to `_wait_for_results`'s predicate.
+>
+> **Not fixed in this pass — reason is verification exhaustion, not scope.** `_wait_for_results` is **not** on the do-not-refactor list (`_parse_chile_text_result`, `_navigate_to_category`, `_click_next_page`, `_open_detail`), and step 6 produced a concrete reproducible failure — so the escape clause applies and a fix would have been in scope. It was not attempted for two reasons: (a) the session became F5-blocked immediately after step 6 (`RuntimeError: F5 block detected while loading penales`), so any fix would have been **unverifiable** in this pass; and (b) the fix cannot be designed until step 6 is re-run with `max_results` recorded — Phase A removed the mechanism that was supposed to justify a predicate change (see above). **This remains the top follow-up: while the loop's page-1 exit is unexplained, `max_results > 10` is unreachable in practice and a query silently returns one page.** The next pass should re-run step 6 as specified above, then fix whichever candidate it confirms, then re-run steps 5–8 in a fresh session.
 10. **The pager markup is undocumented** in `docs/pjud-source.md` §7.1, which covers result rows only. The verified markup is recorded in playbook §6 sub-step 6a; it should be folded into the source notes.
-11. **`[data-idsentencia]` is not one-node-per-result** — it matched ~70 nodes for 10 unique ids on every observed page (the first three matches carried the *same* id). `_parse_search_results` therefore runs its full regex set ~7× more often than needed, and `_open_detail`'s row loop iterates nested duplicates. Correct today only because of `seen_ids` dedupe and `_open_detail`'s early `id` mismatch `continue`. Tighten once the markup is confirmed in the source notes.
+11. **`[data-idsentencia]` is not one-node-per-result — but the composition is not what playbook 03 §4a reconstructs.** Measured live (work-order Phase A, 2026-09-17, fresh headful Chrome 152; see *Phase A probe* under Evidence): **70 nodes = 10 results × 7 nodes, all visible.** The ratio is exactly 7 and it is structural — measured anatomy of a single result:
+>
+> ```html
+> <!-- one result's 7 nodes, in DOM order; all seven carry the SAME data-idsentencia -->
+> <div    class="card border-info capa_elemento_lista_resultado_busqueda" data-idsentencia="200917190">
+> <span   class="estilo_resultado_titulo" data-idsentencia="200917190">ROL: C-3662-2026</span>
+> <span   class="estilo_resultado_titulo" data-idsentencia="200917190">Caratulado: BANCO DE CHILE/ORELLANA</span>
+> <span   class="estilo_resultado_titulo" data-idsentencia="200917190">Fecha: 16-09-2026</span>
+> <span   class="estilo_resultado_titulo" data-idsentencia="200917190">Tribunal: 1º Juzgado Civil de Puente Alto</span>
+> <button class="btn btn-primary font-weight-bold" data-idsentencia="200917190">Ver sentencia</button>
+> <form   class="" data-idsentencia="200917190"></form>
+> ```
+>
+> The `div.card` **wraps** the other six (`childIds=['SPAN','SPAN','SPAN','SPAN','BUTTON','FORM']`), so the count is `1 + 6` per result. Measured histogram over all 70 nodes: `40× span.estilo_resultado_titulo`, `10× div.card.border-info.capa_elemento_lista_resultado_busqueda`, `10× button.btn.btn-primary.font-weight-bold`, `10× form`. **`is_displayed()` was `True` for all 70 — there are no hidden stubs.** (Classes are from the probe's anatomy dump; the `data-idsentencia` value shown, `200917190`, is the step-6 pre-click first id, which probe 1 independently reproduced as its first match.)
+>
+> **Correction to playbook 03 §4a.** The classes it supplies — `fila_resultado_busqueda_sentencias`, `contenedor_carga_resultado`, `celda_detalle_sentencia` — **do not exist in the live DOM**, and its claim that the attribute sits on "a visible row container, a hidden load stub, and per-cell wrappers" is not supported: the live set is one visible card plus its own visible descendants. The `hidden` stub is a reconstruction and must not be folded into the source notes.
+>
+> **Scoping is a no-op for this symptom — do not apply work-order B-1 as a pagination fix.** `#capa_resultados_busqueda_sentencias [data-idsentencia]` returned **70 nodes / 10 unique — identical to the unscoped selector.** The container holds all the cards and nothing else carrying the attribute, so scoping removes zero nodes.
+>
+> What survives is the original **efficiency** point: `_parse_search_results` runs its full regex set **7× per result** and `_open_detail`'s row loop iterates nested duplicates. That is a tidy-up (collapse to the `div.card` nodes, or dedupe on element identity), not a correctness fix — correct today only because of `seen_ids` dedupe and `_open_detail`'s early `id` mismatch `continue`. Fold the measured markup into `docs/pjud-source.md` §7.1.
 
 ## Evidence
 
 - **blocked page excerpt** (step 8, navigation GET): raw body was not captured — the challenge cleared before a snapshot could be taken (probe 9 read `blocked: false`). What is on record is the detector firing inside `_navigate_to_category`: `RuntimeError: Chile: F5 block detected while loading penales. support_id=n/a. Manual CAPTCHA solve in a real browser may be required.` `support_id=n/a` with a positive body match is the live confirmation of open issue 3.
-- **search XHR verdict**: `through`. `POST https://juris.pjud.cl/busqueda/busqueda_por_texto_autocompletable` → HTTP `200`, body head `0\t{"ministros":[],"descriptores":[],"lugares":[],"normas":[],"sugerencias":[]}`; 4 search POSTs total, **none** with an F5 body. `_is_f5_block(response_body)` was `False` on every one. Case A3 did **not** reproduce in this fresh session, so the earlier session's Case A3 observation stands as an environment-dependent condition, not a permanent one.
+- **search XHR verdict**: `through` — with one correction and one explicit gap. The autocomplete body stands as recorded: `POST https://juris.pjud.cl/busqueda/busqueda_por_texto_autocompletable` → HTTP `200`, body head `0\t{"ministros":[],"descriptores":[],"lugares":[],"normas":[],"sugerencias":[]}`.
+  - **The primary search endpoint POSTs a real multipart body.** Captured live via CDP `Network.requestWillBeSent` (Phase A): `POST https://juris.pjud.cl/busqueda/buscar_sentencias`, `type=XHR`, `postData` head `------WebKitFormBoundaryCqwDieLbFhpKVZBY\r\nContent-Disposition: form-data; name="_token"\r\n\r\nQBf5octe7u9gmYmhK3RwnbusLU8eSH5BF1bzWxyH…`. So the primary search is **not** a JSON POST — it is `multipart/form-data` carrying a Laravel `_token`. This supersedes playbook 03 §4b's illustrative JSON body, which is a reconstruction.
+  - **The response body was NOT captured, and the report will not pretend otherwise.** `Network.getResponseBody` for that `requestId` failed with `No data found for resource with given identifier` (body already evicted), and a document-level `XMLHttpRequest.prototype.send` hook that *did* capture the autocomplete XHR never saw the `buscar_sentencias` XHR — consistent with it being issued outside the hooked document. Playbook 03 §4b's `0\t{"resultados":[…],"total":14733}` head is therefore **not reproducible and has not been substituted**.
+  - **Stronger evidence than a body head, and first-hand:** the search then **rendered 70 result nodes / 10 unique ids**, and `_is_f5_block(page_source)` was `False`. An F5-rejected body cannot produce result cards, so **Case A3 did not reproduce in this session either** — and that argument does not depend on reading the response body.
+  - **The F5 layer is separately visible on this exact path.** CDP logged three further `buscar_sentencias` requests of `type=Document` shaped `buscar_sentencias?onComplete=<nonce>&ajaxAction=0501010200&time=…`, all HTTP `200`, whose retrieved bodies are `<meta http-equiv="Pragma" content="no-cache"/><meta http-equiv="Expires" content="-1"/>…` — TSPD script re-injection, not portal payload. This is the concrete form `x-security-action: 0800000200` takes here: **the "4 search POSTs" recorded earlier are 1 real XHR POST + 3 F5 challenge/injection Documents, not 4 portal calls.** Worth folding into `docs/pjud-source.md`.
 - **landing vs after snapshot** (step 5, D4): landing `first=null` (`n=0`, `cantidad=""`) → after `first=200791923` (`n=70`, `cantidad="Se ha(n) encontrado 14.733 resultados."`). P1 satisfied via the `landing["n"] == 0` branch; the measured late render is why the `time.sleep(15)` settle is load-bearing (D4b).
 - **pagination timing** (step 6): pre-click `first=200917190`, `cursor=0`; immediately after the click `first=null`, `n=0`, `cursor=1` (rows cleared, count still stale); at **1.8 s** `first=200791920`, `n=70`, `cantidad="Se ha(n) encontrado 15.803 resultados."`. `_click_next_page()` returned `True` on every attempt.
 - **one sample result dict** (step 5):
@@ -109,3 +146,29 @@ verdict: red — 1 blocking defect (pagination), 10 secondary issues
 - **one downloaded file's first 500 chars**: none — step 7 was NOT RUN (see Summary). The recipe's `results[-1]` fallback would have produced a page-1 row, which does not exercise the page-targeting logic under test. `/tmp/cl_test` received no new `sentencia_*.html`; this is expected given the step did not execute, and is **not** evidence about `_open_detail`'s correctness.
 - **section map** (step 4): `civiles {expected: 328, live: 328, f5: false}`, `penales {268, 268, false}`, `corte_suprema {528, 528, false}`.
 - **step 9 live**: `navigate_returned=628`, `window.es_lj=true`, `window.id_buscador_activo=628`, `is_f5_block=false`.
+
+### Phase A probe — issues 9 and 11 disambiguated
+
+Work-order Phase A, run 2026-09-17 after the report patches. Read-only: one navigation to `?Civiles`, one `daño moral` search, one pager click; no downloads. `.venv/bin/python` (selenium 4.48.0) + Chrome 152 via Selenium Manager, headful, fresh profile per run; `chile_scraper.py` at the pinned blob `53a163d5…`. Two runs, same conclusions; raw captures in `/tmp/cl_phase_a_out.json` and `/tmp/cl_phase_a_out2.json`. No CAPTCHA was served on either run (`id_buscador_activo=328` on landing).
+
+**A.1.1 — container.** `#capa_resultados_busqueda_sentencias` → 1 match, `#panel_resultados_busqueda_sentencias` → 1 match, `[id*='resultados']` → 5. A result card's ancestor chain is `div.card` → `div` → `div#capa_resultados_busqueda_sentencias` → `div#panel_resultados_busqueda_sentencias` → `div.col-md-12` → `div.row`. `document.querySelectorAll("#capa_resultados_busqueda_sentencias").length == 1` in the top document — the results are **not** inside an iframe (the only iframes are `TS_Injection`, the invisible reCAPTCHA anchor `k=6Lf5adcZ…`, and one empty frame), which is why `driver.find_elements` sees all 70.
+
+**A.1.2 — node count vs unique.** `nodes=70 unique=10` on every observed page, **unscoped and scoped identically**. Node-per-result is exactly 7 and structural — see open issue 11 for the real markup. All 70 `is_displayed() == True`.
+
+**A.2 — timing table** (probe 2, 0.1 s sampling; `n_all` = `[data-idsentencia]` count):
+
+| t (s) | `n_all` | unique | cursor |
+|---|---|---|---|
+| pre-click | 70 | 10 | 0 |
+| **0.022** | **0** | 0 | 1 |
+| 0.133 … **2.087** | **0** | 0 | 1 |
+| **2.425** | 70 | 10 | 1 |
+| 2.528 … 4.940 | 70 | 10 | 1 |
+
+20 consecutive empty samples; first sample whose id set differs from the pre-click set is at 2.425 s with `delta = 20` (all 10 ids replaced). Probe 1, sampling with a slower per-sample snapshot, bracketed the same window independently: first empty `t=0.027 s`, still empty at `t=2.011 s`, repopulated by `t=2.964 s`.
+
+**Mechanism line — `issue 9 mechanism: B-2`.** Established by rows reaching `n_all=0` within 22 ms of the click and remaining empty for ~2.0 s, i.e. the *existence* predicate is **not** satisfied by the pre-click row set. Issue 11 is a red herring for this symptom, and work-order **B-1 is a no-op** and must not be applied as a pagination fix.
+
+**Transport, from the same run.** The search POST is `multipart/form-data` carrying a Laravel `_token` (see the *search XHR verdict* bullet above). The page also carries `form#form_busqueda_avanzada` with no `action` and no `method`. Three `buscar_sentencias?onComplete=…&ajaxAction=0501010200&time=…` **Document** requests (all 200, TSPD re-injection bodies) accompany the single real XHR POST.
+
+**Phase A verdict on the work order:** A.1/A.2 are conclusive, so the B-1 branch does not apply and **B-2's stated rationale (stale nodes satisfying the predicate) is refuted by measurement**. Do not start work-order Phase B on the strength of the current step-6 record — Phase C must first re-run step 6 unchanged with `max_results` recorded (open issue 9).
