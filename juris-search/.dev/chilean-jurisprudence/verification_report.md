@@ -13,8 +13,10 @@ verdict: red — 1 blocking defect (pagination) fixed, awaiting live verificatio
 ```
 
 > **Blocking:** open issue 9 (pagination). **Phase A resolved the disambiguation: issue 11 is not the mechanism for this symptom, the selector-scoping fix B-1 is a measured no-op, and the defect is a race between the click's DOM clear (~22 ms) and the readiness predicate's first evaluation (immediate).** Phase B has since been **applied** (change-predicate + a separate content-gated detail wait, see *Changes made*), so the outstanding work is **Phase C: re-run step 6 against the new code path**. The verdict stays red until that run passes — a fix that has never executed live is not a green.
-> **Secondary:** page-size control, filter surface, Spanish-only support-ID, body-only F5 detector, `imprimir` unprobed, `Compendio` id, LJ mode, Case A3, pager markup docs, node-per-result efficiency.
+> **Secondary:** page-size control, filter surface, Spanish-only support-ID, body-only F5 detector, `imprimir` unprobed, `Compendio` id, LJ mode, Case A3, pager markup docs, node-per-result efficiency, **page-1 stale-listing path (issue 12, new — code-reading only)**.
 > **Blocked by the blocking defect:** step 7 (`_open_detail` untested), step 8 search half (`penales` search untested).
+>
+> **Issue 12 was found after Phase B was committed** (by tracing the retry logic in review) and is deliberately **not** fixed in `2f4a2cd`: it changes page-1 control flow, which is outside the approved hunks, and its correct remedy depends on a measurement Phase C has not taken yet. See *Open issue 12*.
 
 ## Amendments applied (this playbook revision)
 
@@ -40,7 +42,7 @@ verdict: red — 1 blocking defect (pagination) fixed, awaiting live verificatio
 
 | Step | Result | Notes |
 |------|--------|-------|
-| 0.1 Freshness gate | **PASS** | `freshness OK`; observed == declared == `53a163d5…` |
+| 0.1 Freshness gate | **PASS** | `freshness OK` on the blob under test, `53a163d5…` at the time of the live run. **The pin has since moved twice** — see the header; the frozen row is retained as the record of that run, not of the current tree. |
 | 0.3 Driver smoke | **PASS** | `Example Domain` on a throwaway profile |
 | 0.5 Workspace | **PASS** | `workspace/CL_jurisprudencia` created; 0 pre-existing entries |
 | 1 Static | **PASS** | 1a–1e (13/13 offline assertions green) |
@@ -48,7 +50,7 @@ verdict: red — 1 blocking defect (pagination) fixed, awaiting live verificatio
 | 3 F5 live | **Case B (through)** | `_is_f5_block=False`, `support_id=None`, `title="Buscador Unificado de Fallos del Poder Judicial"`, `window.id_buscador_activo=328`. **Case A3 did not reproduce in the fresh session** — see *Evidence* |
 | 4 Section map | **PASS** | `civiles 328/328`, `penales 268/268`, `corte_suprema 528/528`; all `live == expected`, no F5 |
 | 5 Search | **PASS** | **P1/P2 first**: landing `n=0`, `cantidad=""` → after `n=70` DOM nodes (**10 unique ids**), `Se ha(n) encontrado 14.733 resultados.`, first id `200791923`, omnibox holds the query. Then `n=10`, `id_buscador=328` on every row, `instancia="civil"`, `categoria="civiles"`, `page=1`, `empty_rols=0`, ROLs well-formed (`C-5810-2025`, `C-12950-2025`, `C-953-2026`, …) |
-| 5.5 Filter surface | **OBSERVED** | **Filter NOT sent** — omnibox only, no `tribunal` key. **XHR verdict: `through`** (4 search POSTs, all HTTP 200 with real JSON, no F5 body) |
+| 5.5 Filter surface | **OBSERVED** | **Filter NOT sent** — omnibox only, no `tribunal` key. **XHR verdict: `through`** (1 real XHR `multipart/form-data` POST + 3 F5 TSPD `Document` re-injections, all HTTP 200, no F5 *body* — corrected from the original "4 search POSTs / real JSON", see *Evidence*) |
 | 6 Pagination | **FAIL** | `pages == [1]`, `total == 10` against ~15,800 matches. The **selector fix itself is confirmed working** (`_click_next_page() -> True`, cursor `0 -> 1`, first row changed); the loop still stops after page 1 — see *Open issue 9* |
 | 7 Detail + download | **NOT RUN** | Step 6 failed, so no result had `page >= 2`. The step's recipe falls back to `results[-1]`, which was a page-1 row; running against it would exercise `download_inteiro_teor_url` but **not** the page-targeting fix that was the point of this step — a page-1 target cannot distinguish a correct `_open_detail` from one that always lands on page 1. Reported NOT RUN rather than PASS/FAIL to avoid recording a vacuous green. `_open_detail`'s page-targeting behaviour remains untested. No file was written to `/tmp/cl_test`, which is consistent with `download_inteiro_teor_url` not being called, not with a download failure. |
 | 8 Second section | **BLOCKED** | `RuntimeError: F5 block detected while loading penales` / `… salud_cs` — F5 on **navigation** (Case A2), caught correctly by `_is_f5_block` |
@@ -73,7 +75,11 @@ verdict: red — 1 blocking defect (pagination) fixed, awaiting live verificatio
 
   `new_on_page == 0` remains **terminal**, but a zero-yield page now triggers a **single click retry when the preceding wait timed out**, and logs `readiness_reached=` / `ids_on_page=`, so a truncated result set cannot be silent. Work-order **B-1 was not applied** (scoping is a measured no-op).
 
-  Offline coverage: **`test_chile_readiness.py`**, 18 assertions / 18 passing, `.venv/bin/python test_chile_readiness.py`, no network and no Chrome — including one assertion that re-implements the *old* existence predicate and asserts it **passes** on an unchanged 10-node page, so the suite can be shown to fail.
+  Offline coverage: **`test_chile_readiness.py`**, 18 assertions / 18 passing, `.venv/bin/python test_chile_readiness.py`, no network and no Chrome.
+
+  **What those 18 assertions actually target, since it was asked and it matters:** sections 1, 2, 4 and 5 call the **real shipped methods** (`_current_result_ids`, `_wait_for_results`, `_wait_for_detail`) on an instance built with `__new__` + a hand-set `wait_time` — no `__init__`, no browser. The only stub is at the **WebDriver boundary** (`execute_script` returns a scripted value per poll, `page_source` is a fixed string), so the JS text, the F5 short-circuit, the `previous_ids` comparison, the `WebDriverWait` retry cadence and the `bool` return are all the shipped code under test. Section 3 **does** re-implement a predicate, deliberately and unavoidably — the old existence predicate no longer exists in the source to call — and its value is *negative*: it shows that predicate accepts an unchanged 10-node page, so section 2's assertion is not vacuous. Section 6 is source-**text** inspection, not behaviour.
+
+  **Known coverage gaps, stated plainly.** (a) Nothing drives `get_inteiro_links` as a whole, so the **B-2b retry path has zero coverage** — it is only load-bearing in the failure mode it was written for, and will not fire in Phase C if pagination simply works. (b) Section 6's `count("_wait_for_results(") == count("previous_ids=")` is a **structural proxy**: it can show that every call passes *some* baseline, but not that each passes the *right* one. (c) The page-1 path is not covered at all — which is how issue 12 survived the pass.
 
   **Not yet visited live.** Everything above is offline-verified only; Phase C is what establishes the pin.
 
@@ -117,7 +123,9 @@ verdict: red — 1 blocking defect (pagination) fixed, awaiting live verificatio
 >
 > **`_open_detail` inherits the same defect, and is fixed in the same pass.** Doc 04 raised it and the *Detail-swap* probe confirmed the shape: clicking `Ver sentencia` **hides** `#capa_resultados_busqueda_sentencias` without removing its 70 nodes, so `_open_detail`'s post-click `_wait_for_results(timeout=self.wait_time)` was satisfied by **invisible** result nodes and returned immediately — the identical "existence is not readiness" error, one layer down. Its pre-click page-advance loop had the same problem via a bare `_wait_for_results()`. Both now pass explicit `previous_ids`, and the post-click wait is `_wait_for_detail`.
 >
-> **Not fixed in this pass — reason is verification exhaustion, not scope.** `_wait_for_results` is **not** on the do-not-refactor list (`_parse_chile_text_result`, `_navigate_to_category`, `_click_next_page`, `_open_detail`), and step 6 produced a concrete reproducible failure — so the escape clause applies and a fix would have been in scope. It was not attempted for two reasons: (a) the session became F5-blocked immediately after step 6 (`RuntimeError: F5 block detected while loading penales`), so any fix would have been **unverifiable** in this pass; and (b) Phase A narrowed the mechanism to a sub-25 ms race between the click's DOM clear and the predicate's first poll, which is only observable with the instrumentation described above — so the fix, while clearly in scope, cannot be *shown* to close the observed failure until step 6 is re-run. **This remains the top follow-up: while the loop's page-1 exit stands, `max_results > 10` is unreachable in practice and a query silently returns one page.** The next pass should re-run step 6 with that instrumentation, then apply B-2 together with the non-terminal break, then re-run steps 5–8 in a fresh session.
+> **Applied (2026-09-17, commit `2f4a2cd`).** `_wait_for_results` is now a *change* predicate returning a bool, with the non-terminal `new_on_page == 0` handler this issue asked for. The original "not fixed in this pass" reasoning is retained below because it explains *why* the gate was later skipped rather than met.
+>
+> **Original "not fixed in this pass" record — reason was verification exhaustion, not scope.** `_wait_for_results` is **not** on the do-not-refactor list (`_parse_chile_text_result`, `_navigate_to_category`, `_click_next_page`, `_open_detail`), and step 6 produced a concrete reproducible failure — so the escape clause applied and a fix was in scope. It was not attempted at the time for two reasons: (a) the session became F5-blocked immediately after step 6 (`RuntimeError: F5 block detected while loading penales`), so any fix would have been **unverifiable** in that pass; and (b) Phase A narrowed the mechanism to a sub-25 ms race between the click's DOM clear and the predicate's first poll. Doc 04 then argued the gate was over-cautious — a change predicate is correct under *both* orderings — and Phase B proceeded without it. **The per-iteration instrumentation is still owed, now against the new code path (Phase C).**
 10. **The pager markup is undocumented** in `docs/pjud-source.md` §7.1, which covers result rows only. The verified markup is recorded in playbook §6 sub-step 6a; it should be folded into the source notes.
 11. **`[data-idsentencia]` is not one-node-per-result — but the composition is not what playbook 03 §4a reconstructs.** Measured live (work-order Phase A, 2026-09-17, fresh headful Chrome 152; see *Phase A probe* under Evidence): **70 nodes = 10 results × 7 nodes, all visible.** The ratio is exactly 7 and it is structural — measured anatomy of a single result:
 >
@@ -139,6 +147,20 @@ verdict: red — 1 blocking defect (pagination) fixed, awaiting live verificatio
 > **Scoping is a no-op for this symptom — do not apply work-order B-1 as a pagination fix.** `#capa_resultados_busqueda_sentencias [data-idsentencia]` returned **70 nodes / 10 unique — identical to the unscoped selector.** The container holds all the cards and nothing else carrying the attribute, so scoping removes zero nodes.
 >
 > What survives is the original **efficiency** point: `_parse_search_results` runs its full regex set **7× per result** and `_open_detail`'s row loop iterates nested duplicates. That is a tidy-up (collapse to the `div.card` nodes, or dedupe on element identity), not a correctness fix — correct today only because of `seen_ids` dedupe and `_open_detail`'s early `id` mismatch `continue`. Fold the measured markup into `docs/pjud-source.md` §7.1.
+
+12. **The page-1 stale-listing path is unguarded, and `new_on_page == 0` cannot detect it.** Found by tracing the Phase B retry logic (review of `2f4a2cd`), **not observed live — it is a code-reading finding and is honestly labelled as such.**
+
+    On page 1 the sequence is: `pre_search_ids = _current_result_ids()` → `_run_search_ui(query)` → `wait_ok = _wait_for_results(previous_ids=pre_search_ids)` → **parse unconditionally.** `wait_ok` is consulted in exactly one place, the `new_on_page == 0` branch. So when the search's readiness wait **times out** (`wait_ok is False`), the loop parses whatever the DOM holds at that moment.
+
+    On **page 1 that is not the search result**, and it is not empty either. The two candidate DOM states are (a) the landing page's **default listing**, which renders ~1.1 s late (D4b) and holds ~15.8k unrelated rows, or (b) the **previous query's** rows if the driver is reused. Either way `_parse_search_results` returns a full page of real-looking rows.
+
+    The guard does not fire, because on page 1 **`seen_ids` is empty**: every freshly parsed row is a *first* sighting, so `new_on_page == 10`, not `0`. The loop therefore appends the wrong rows, `len(entries)` reaches `max_results`, and it returns **explicitly wrong results under the queried term** — with `page: 1` and no warning. This is strictly worse than the truncation the retry was written to prevent: a truncated set is visibly short, whereas this is silently incorrect and indistinguishable downstream from a genuine match.
+
+    This is the same D4b trap the change predicate was built to close, surviving through a **different door**: the predicate correctly refuses to report ready, and the caller ignores the refusal rather than acting on it.
+
+    **Not fixed here on purpose.** The change is outside the approved Phase B hunks (it touches the page-1 control flow, and `_run_search_ui` sits adjacent to the do-not-refactor list), and more importantly it must not be fixed *before* Phase C measures whether page 1's wait ever times out in practice. The two candidate fixes, to be decided with that measurement in hand: on `wait_ok is False` for page 1, either (i) `raise` — an unreached search is not a result set — or (ii) retry `_run_search_ui` once and re-wait, mirroring B-2b's pagination retry. Option (i) is safe and cheap; option (ii) is symmetric with the pager and is preferable only if the timeout is observed to be transient rather than terminal.
+
+    **Phase C must therefore log `wait_ok` for the search itself**, not only for the paginations. The current code does **not** log page 1's `wait_ok`, so the pass criteria in playbook 03 §Phase C are insufficient for this issue as written; step 6's log should be extended to record it.
 
 ## Evidence
 

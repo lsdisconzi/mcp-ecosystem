@@ -543,6 +543,26 @@ a suite that only exercises the new predicate proves nothing about the defect it
 
 Fresh profile. One navigation, one search, three pager clicks.
 
+> **Extended after the review of `2f4a2cd`.** The original sample below could not distinguish three outcomes that matter, so it has been widened. Two things it now must capture:
+> - **Page 1's own `wait_ok`.** The loop logs `readiness_reached=` only inside the `new_on_page == 0` branch, which on page 1 **cannot fire** (with `seen_ids` empty, every parsed row is new). If the *search's* wait times out, the loop parses whatever the DOM holds — the landing page's default listing — and yields it as results for the query. That is open issue 12, it is a code-reading finding only, and **this run is the measurement that decides whether it is live.**
+> - **Whether B-2b's retry fires at all.** It only fires on a timed-out wait followed by a zero-yield page, so a run where pagination simply works leaves it **unexercised**. Say so in the report rather than counting the run as coverage.
+>
+> The cleanest way to get page 1's `wait_ok` without editing the scraper is to instrument the wait from outside, before the call:
+>
+> ```python
+> import chile_scraper, logging
+> logging.basicConfig(level=logging.INFO)   # surfaces the loop's own page/N-new lines
+>
+> orig = chile_scraper.ChileJurisprudenciaScraper._wait_for_results
+> seen = []
+> def traced(self, timeout=None, previous_ids=None):
+>     ok = orig(self, timeout, previous_ids)
+>     seen.append((ok, previous_ids is not None, len(previous_ids or ())))
+>     return ok
+> chile_scraper.ChileJurisprudenciaScraper._wait_for_results = traced
+> ```
+> `seen[0]` is the **search** wait (the only call with a baseline taken *before* it, and `reused` shows the baseline was supplied). If `seen[0][0] is False`, issue 12 is live and the run must be reported as **blocked on issue 12**, not merely red on issue 9 — a green `pages` count would be a false pass in that case, because the page-1 rows may be the default listing.
+
 ```python
 with ChileJurisprudenciaScraper(headless=False) as s:
     results = s.get_inteiro_links("daño moral", max_results=40,
@@ -560,6 +580,9 @@ with ChileJurisprudenciaScraper(headless=False) as s:
 3. `len({r["id_sentencia"] for r in results}) == len(results)` — no cross-page duplicates.
 4. No F5 raised during the run.
 5. Wall-clock per page ≤ 5 s (the old `time.sleep(15)` is gone; this catches a fix that works by accident of timing).
+6. **New — `seen[0][0] is True`**: the *search's* readiness wait reached readiness. False **invalidates** criteria 1–3 for this run (the page-1 rows may be the landing default listing) — see open issue 12.
+
+**Also record, without treating a negative as failure:** whether the B-2b retry fired (`retried_empty` is not exposed, but a `no new results on page N` warning combined with a subsequent successful page means it ran). If it never fires, write that down — the retry path remains untested code shipped with the fix, and a deliberate slow-path test (throttled connection, or a monkeypatched `wait_time` low enough to force a timeout) is the follow-up that would cover it.
 
 **Fail branches:**
 
