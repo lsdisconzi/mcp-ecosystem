@@ -21,15 +21,15 @@
   "category": "Created from seed (Lote F)",
   "severity": "CRITICAL",
   "confidence": {
-    "value": 0.57,
+    "value": 0.54,
     "components": {
-      "CL.CPCL.T4.Art.255": 0.68,
+      "CL.CPCL.T4.Art.255": 0.56,
       "CL.LPDC.Art.3.b": 0.65,
       "CL.LPDC.Art.23": 0.68
     },
     "authorities_verification_factor": 0.85,
     "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
-    "derived_at": "2026-09-17T07:47:22.392494Z",
+    "derived_at": "2026-09-17T15:30:43.209165Z",
     "history": [
       "2026-09-17T02:42:53.775657+00:00: value=0.38",
       "2026-09-17T02:42:56.104450+00:00: value=0.38",
@@ -39,7 +39,8 @@
       "2026-09-17T02:44:02.204637+00:00: value=0.31",
       "2026-09-17T02:44:12.122221+00:00: value=0.31",
       "2026-09-17T02:44:21.442540+00:00: value=0.31",
-      "2026-09-17T02:44:30.585157+00:00: value=0.31"
+      "2026-09-17T02:44:30.585157+00:00: value=0.31",
+      "2026-09-17T07:47:22.392494+00:00: value=0.57"
     ]
   },
   "incident": {
@@ -118,10 +119,11 @@
       "verification_required": [
         "Confirm the verbatim text of CL.CPCL.C1.Art.269_ter against the BCN official version (Código Penal, § II bis); it is cached in this bundle's 'Legal framework/CodigoPenal_269bis_269ter.md'",
         "Confirm the active subject named in the text is a PDI officer (funcionario policial), a prosecutor (fiscal del Ministerio Público) or an assistant prosecutor (abogado asistente del fiscal). That list is closed: a DGAC official is NOT within it, so the DGAC official's dismissal of the complaint (I-002_05_NAR-07_STG_7_post_removal_investigation.seg-36) cannot support this article",
-        "Identify a specific knowing act by the PDI officer — not the DGAC official — that concealed, altered or destroyed antecedentes, objetos or imágenes (e.g. omission of the exoneration finding from the official parte, or failure to preserve the EVID-001 CCTV record) before relying on this candidate"
+        "Identify a specific knowing act by the PDI officer — not the DGAC official — that concealed, altered or destroyed antecedentes, objetos or imágenes (e.g. omission of the exoneration finding from the official parte, or failure to preserve the EVID-001 CCTV record) before relying on this candidate",
+        "Resolve before relying on this candidate — the candidate review left it open: The active-subject list is closed (funcionario policial, fiscal del Ministerio Público, abogado asistente del fiscal). A DGAC official is outside it, so the DGAC official's dismissal of the complaint (seg-36) cannot suppo…"
       ],
       "preliminary_view": "Plausible ONLY against the PDI officer, never against the DGAC official. Art. 269 ter's active subjects are an exhaustive list: \"El funcionario policial, el fiscal del Ministerio Público, o el abogado asistente del fiscal\". A PDI officer (I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-263, seg-284, seg-285, seg-287) who knowingly omitted the exoneration finding from the official parte, or who failed to preserve the CCTV record, falls within it. Conduct by a DGAC official does not.",
-      "history_note": "Legacy import candidate; verified against the BCN official text cached in this bundle (2026-09-17).\nCandidate review: Applicable to PDI ONLY (DGAC excluded). The verbatim text reads: \"El funcionario policial, el fiscal del Ministerio Público, o el abogado asistente del fiscal… que a sabiendas ocultare, alterare o destruyere cualquier antecedente, objeto o documento, o imagen o sonido contenido en sistemas de registro y almacenamiento audiovisual…\". The active-subject list is closed: (i) funcionario policial (which covers PDI), (ii) fiscal del Ministerio Público, (iii) abogado asistente del fiscal. DGAC officials are not within this class. This article is viable only against a PDI officer who knowingly concealed, altered or destroyed exculpatory evidence; where the alleged omission was committed by a DGAC official the article does not apply and a different provision must be used (see the Art. 228 candidate: administrative prevaricación)."
+      "history_note": "Legacy import candidate; verified against the BCN official text cached in this bundle (2026-09-17).\nCandidate review: Applicable to PDI ONLY (DGAC excluded). The verbatim text reads: \"El funcionario policial, el fiscal del Ministerio Público, o el abogado asistente del fiscal… que a sabiendas ocultare, alterare o destruyere cualquier antecedente, objeto o documento, o imagen o sonido contenido en sistemas de registro y almacenamiento audiovisual…\". The active-subject list is closed: (i) funcionario policial (which covers PDI), (ii) fiscal del Ministerio Público, (iii) abogado asistente del fiscal. DGAC officials are not within this class. This article is viable only against a PDI officer who knowingly concealed, altered or destroyed exculpatory evidence; where the alleged omission was committed by a DGAC official the article does not apply and a different provision must be used (see the Art. 228 candidate: administrative prevaricación).\nCandidate review: Correct — as to a PDI officer only — The active-subject list is closed (funcionario policial, fiscal del Ministerio Público, abogado asistente del fiscal). A DGAC official is outside it, so the DGAC official's dismissal of the complaint (seg-36) cannot support this article. It stands only against a PDI officer shown to have knowingly concealed, altered or destroyed antecedentes, objetos or imágenes (e.g. omission of the exoneration finding from the official parte, or failure to preserve the CCTV record)."
     },
     {
       "candidate_article_id": "CL.CPCL.C1.Art.228",
@@ -131,10 +133,11 @@
         "Confirm the verbatim text of CL.CPCL.C1.Art.228 against the BCN official version (Código Penal, § IV Prevaricación): \"El que, desempeñando un empleo público no perteneciente al orden judicial, dictare a sabiendas providencia o resolución manifiestamente injusta en negocio contencioso-administrativo o meramente administrativo, incurrirá en las penas de suspensión del empleo en su grado medio y multa de once a quince unidades tributarias mensuales.\"",
         "Register the corpus cache that carries this article ('CL/CodigoPenal_Prevaricacion.md', Articles cached: 223–232) in this bundle's framework_caches — Art. 228 is NOT among the articles cached in the registered CPCL cache (17, 94, 255, 269 ter, 412, 416, 494 N 16), which is why framework_cache_status stays 'not_in_bundle'",
         "Determine whether any act in the bundle amounts to a 'providencia o resolución' in a 'negocio contencioso-administrativo o meramente administrativo' — in particular the DGAC official's treatment of the passenger's complaint (I-002_05_NAR-07_STG_7_post_removal_investigation.seg-36) and his statements I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-292 ('Los motivos los dio la compañía y es lo más importante') and seg-333 ('yo acredito en general')",
-        "Confirm the subjective element ('a sabiendas') and whether an oral administrative decision, with no written providencia or resolución, can satisfy the article"
+        "Confirm the subjective element ('a sabiendas') and whether an oral administrative decision, with no written providencia or resolución, can satisfy the article",
+        "Resolve before relying on this candidate — the candidate review left it open: The article's own text is not in the INPUT, so the wording cannot be confirmed here; it must be fetched from bcn.cl/leychile. Even taking the candidate's own quotation, the decisive open element is whether the DGAC offici…"
       ],
       "preliminary_view": "Plausible as the correct prevaricación article for non-judicial public employees. The candidate review confirmed that Arts. 223 and 224 are limited to \"Los miembros de los tribunales de justicia colegiados o unipersonales y los fiscales judiciales\", so they cannot reach DGAC or PDI staff. Art. 228 is the residual prevaricación provision for every other public employee and would cover an official who, knowing the facts, issued a manifestly unjust administrative decision.",
-      "history_note": "Added 2026-09-17 in response to the candidate review of CL-030; replaces the inapplicable Arts. 223 and 224 (judicial-only agent class). Open point: the type requires a 'providencia o resolución' — if the DGAC official's conduct was purely verbal and never crystallised into a formal administrative act, the article may still not fit."
+      "history_note": "Added 2026-09-17 in response to the candidate review of CL-030; replaces the inapplicable Arts. 223 and 224 (judicial-only agent class). Open point: the type requires a 'providencia o resolución' — if the DGAC official's conduct was purely verbal and never crystallised into a formal administrative act, the article may still not fit.\nCandidate review: Uncertain — The article's own text is not in the INPUT, so the wording cannot be confirmed here; it must be fetched from bcn.cl/leychile. Even taking the candidate's own quotation, the decisive open element is whether the DGAC official's conduct crystallised into a 'providencia o resolución' in a 'negocio contencioso-administrativo o meramente administrativo' — a purely oral exchange (seg-36, seg-292, seg-333) may not satisfy it. The subjective element 'a sabiendas' must also be established."
     },
     {
       "candidate_article_id": "CL.CPCL.Art.256",
@@ -143,10 +146,11 @@
       "verification_required": [
         "Fetch verbatim text for CL.CPCL.Art.256 from bcn.cl/leychile and confirm exact wording and subsections",
         "Confirm whether the DGAC official's refusal to verify information (segments I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-297, seg-294) and dismissal of the complaint (seg-36) fall within the conduct described by this article",
-        "Verify whether DGAC officials are considered 'empleados públicos' for purposes of this article"
+        "Verify whether DGAC officials are considered 'empleados públicos' for purposes of this article",
+        "Resolve before relying on this candidate — the candidate review left it open: The verbatim text of Art. 256 is not in the INPUT and must be fetched from bcn.cl/leychile before any fit can be judged. Two things then need checking: whether the conduct described (refusal to verify, seg-297 and seg-294…"
       ],
       "preliminary_view": "Plausible because segment I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-297 shows a DGAC official stating 'no lo podemos verificar en el avión' and seg-294 'Eso tú lo tienes que conversar con la compañia. Yo no lo se. Yo no lo se.', which may constitute a public official's failure to act on a duty to verify or provide assistance, and segment I-002_05_NAR-07_STG_7_post_removal_investigation.seg-36 shows dismissal of the passenger's complaint.",
-      "history_note": "Proposed as a companion to the established Art. 255 (vejaciones injustas) to cover the DGAC official's alleged inaction; not previously cited in the bundle."
+      "history_note": "Proposed as a companion to the established Art. 255 (vejaciones injustas) to cover the DGAC official's alleged inaction; not previously cited in the bundle.\nCandidate review: Uncertain — The verbatim text of Art. 256 is not in the INPUT and must be fetched from bcn.cl/leychile before any fit can be judged. Two things then need checking: whether the conduct described (refusal to verify, seg-297 and seg-294; dismissal of the complaint, seg-36) falls within the specific conduct the article names, and whether a DGAC official is an 'empleado público' for its purposes. The duty bearer class is the crux."
     },
     {
       "candidate_article_id": "CL.CPCL.Art.257",
@@ -155,10 +159,11 @@
       "verification_required": [
         "Fetch verbatim text for CL.CPCL.Art.257 from bcn.cl/leychile and confirm exact wording and subsections",
         "Determine whether the DGAC official's response in segment I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-336 ('Puedes colocar igual una denuncia al tiro, una denuncia') and seg-342 ('eso es lo que tú, tú se lo dices a la policía') constitutes a refusal to receive a complaint or a deflection of the duty to receive it",
-        "Confirm whether DGAC officials have a legal duty to receive complaints under this article"
+        "Confirm whether DGAC officials have a legal duty to receive complaints under this article",
+        "Resolve before relying on this candidate — the candidate review left it open: The verbatim text of Art. 257 is not in the INPUT and must be fetched from bcn.cl/leychile. The record shows the DGAC official directing the passenger to the police (seg-336, seg-342), which is a deflection, not on its fa…"
       ],
       "preliminary_view": "Plausible because segment I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-336 and seg-342 show a DGAC official directing the passenger to file a complaint with the police rather than receiving it himself, which may violate a duty to receive denuncias.",
-      "history_note": "Proposed based on the DGAC official's handling of the passenger's complaint; not previously cited."
+      "history_note": "Proposed based on the DGAC official's handling of the passenger's complaint; not previously cited.\nCandidate review: Uncertain — The verbatim text of Art. 257 is not in the INPUT and must be fetched from bcn.cl/leychile. The record shows the DGAC official directing the passenger to the police (seg-336, seg-342), which is a deflection, not on its face a refusal to receive a denuncia; whether a DGAC official has a legal duty to receive complaints under this article must be confirmed against its text."
     },
     {
       "candidate_article_id": "CL.CPCL.Art.258",
@@ -167,10 +172,11 @@
       "verification_required": [
         "Fetch verbatim text for CL.CPCL.Art.258 from bcn.cl/leychile and confirm exact wording and subsections",
         "Assess whether the DGAC official's failure to investigate the passenger's allegations (segments I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-294, seg-297, seg-315, seg-316) constitutes an omission of duties to pursue known offenses",
-        "Confirm whether DGAC officials have law enforcement or investigative duties under this article"
+        "Confirm whether DGAC officials have law enforcement or investigative duties under this article",
+        "Resolve before relying on this candidate — the candidate review left it open: The verbatim text of Art. 258 is not in the INPUT and must be fetched from bcn.cl/leychile. The article's scope must be checked against the conduct relied on (seg-294, seg-297, seg-315, seg-316), and in particular whether…"
       ],
       "preliminary_view": "Plausible because segment I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-315 ('Tu no hiciste nada') and seg-316 ('No puedo decir que hiciste algo') show a DGAC official acknowledging no wrongdoing by the passenger yet failing to act on the passenger's allegations of false accusation, which may constitute omission of duties.",
-      "history_note": "Proposed based on the DGAC official's inaction despite acknowledging the passenger did nothing wrong; not previously cited."
+      "history_note": "Proposed based on the DGAC official's inaction despite acknowledging the passenger did nothing wrong; not previously cited.\nCandidate review: Uncertain — The verbatim text of Art. 258 is not in the INPUT and must be fetched from bcn.cl/leychile. The article's scope must be checked against the conduct relied on (seg-294, seg-297, seg-315, seg-316), and in particular whether a DGAC official bears the law-enforcement or investigative duties the article presupposes. If the duty bearer class is limited to officials with prosecution functions, this article is Incorrect for a DGAC official."
     },
     {
       "candidate_article_id": "CL.CPCL.Art.193",
@@ -180,10 +186,11 @@
         "The corpus cache carrying this article is registered in this bundle as framework_caches 'CHIPENCOD' (Legal framework/CHIPENCOD.md, staged from data/law/CL/CHIPENCOD_CP.md). It is the only corpus file carrying Arts. 193-197 and it declares this article as ELI ID CL.CHIPENCOD.T4.C3.Art.193. The bundle's registered CPCL cache (Legal framework/CPCL.md) holds only Arts. 17, 94, 255, 269 ter, 412, 416 and 494 N 16, which is why the status remains not_in_bundle and V04 skips this row.",
         "Identify which of the eight numbered modes of art. 193 is engaged. Mode 4 (faltando a la verdad en la narración de hechos sustanciales) and mode 8 (ocultando en perjuicio del Estado o de un particular cualquier documento oficial) are the candidates; the verbatim text of all eight modes is cached in data/law/CL/CHIPENCOD_CP.md.",
         "Confirm the actor is an empleado público and that the falsedad was committed abusando de su oficio. The PDI officer is the candidate actor on the segments already relied on by the Art. 269 ter candidate (seg-263, seg-284, seg-285, seg-287). An airline security official is a particular, for whom art. 194 — not art. 193 — is the applicable provision.",
-        "Establish that a document within the meaning of art. 193 exists and was falsified, altered or suppressed. The official parte and the EVID-001 CCTV record are the two items identified by the Art. 269 ter candidate as omitted or altered."
+        "Establish that a document within the meaning of art. 193 exists and was falsified, altered or suppressed. The official parte and the EVID-001 CCTV record are the two items identified by the Art. 269 ter candidate as omitted or altered.",
+        "Resolve before relying on this candidate — the candidate review left it open: The article's text is not in the INPUT (the candidate says it sits in a corpus cache not registered in this bundle), so the eight modes cannot be verified here. If the text is as the candidate describes, the actor must be…"
       ],
       "preliminary_view": "Corrected against the verbatim BCN text cached in data/law/CL/CHIPENCOD_CP.md. Art. 193 is a falsedad documental provision — el empleado público que, abusando de su oficio, cometiere falsedad, in eight numbered modes. It is not 'falso testimonio o acusación falsa', as the legacy label claimed; the false-imputation offence is a different article (art. 211, cuya theme es false_accusation). Applicable in principle to a PDI or DGAC official who falsified, altered or suppressed a document while abusing his office, and it overlaps the Art. 269 ter candidate on the same alleged acts. The two are alternative characterisations of one course of conduct, not cumulative charges.",
-      "history_note": "Corrected 2026-09-17 as part of the candidate review of CL-030. The legacy label 'Falso testimonio o acusación falsa por funcionario público' is not the text of art. 193 and no article of that description sits here; the verbatim text cached in data/law/CL/CHIPENCOD_CP.md is the eight-mode falsedad documental provision. The verification_required step that formerly read 'Fetch verbatim text ... from bcn.cl/leychile' was replaced because the text is already in the corpus — the open item is registering that cache, not fetching the article."
+      "history_note": "Corrected 2026-09-17 as part of the candidate review of CL-030. The legacy label 'Falso testimonio o acusación falsa por funcionario público' is not the text of art. 193 and no article of that description sits here; the verbatim text cached in data/law/CL/CHIPENCOD_CP.md is the eight-mode falsedad documental provision. The verification_required step that formerly read 'Fetch verbatim text ... from bcn.cl/leychile' was replaced because the text is already in the corpus — the open item is registering that cache, not fetching the article.\nCandidate review: Uncertain — The article's text is not in the INPUT (the candidate says it sits in a corpus cache not registered in this bundle), so the eight modes cannot be verified here. If the text is as the candidate describes, the actor must be an empleado público acting abusando de su oficio — the PDI officer, not an airline security official (a particular, for whom art. 194 would be the counterpart). A document within the article's meaning (the official parte, the CCTV record) must be shown to have been falsified, altered or suppressed. This overlaps the Art. 269 ter candidate on the…"
     },
     {
       "candidate_article_id": "CL.CPCL.Art.194",
@@ -193,35 +200,11 @@
         "Register data/law/CL/CHIPENCOD_CP.md as a bundle framework cache to resolve this candidate; it declares this article as ELI ID CL.CHIPENCOD.T4.C3.Art.194 and caches its verbatim text.",
         "Confirm the actor is a particular. By its terms art. 194 reaches only a non-official who commits, in a public or authentic document, one of the falsedades designated in art. 193. It cannot reach the PDI or DGAC officials, for whom art. 193 is the applicable provision.",
         "Identify the public or authentic document said to be false. A false oral accusation is not a document and does not engage art. 194.",
-        "Decide whether this candidate belongs in CL-030 at all. The only particulares on these facts are the airline personnel, and the false-accusation conduct attributed to the LATAM stewardess is already the subject of CL-001. Art. 194 is confined to public or authentic documents, so an internal private instrument would fall under art. 197 instead."
+        "Decide whether this candidate belongs in CL-030 at all. The only particulares on these facts are the airline personnel, and the false-accusation conduct attributed to the LATAM stewardess is already the subject of CL-001. Art. 194 is confined to public or authentic documents, so an internal private instrument would fall under art. 197 instead.",
+        "Resolve before relying on this candidate — the candidate review left it open: The article's text is not in the INPUT. If it is the particular-actor counterpart of art. 193, it cannot reach the PDI or DGAC officials, and the DGAC statements relied on (seg-292, seg-333) are oral and cannot meet a doc…"
       ],
       "preliminary_view": "Corrected against the verbatim BCN text cached in data/law/CL/CHIPENCOD_CP.md. Art. 194 is the particular-actor counterpart of art. 193 (falsedad in a public or authentic document) — not 'prevaricación por dictamen o informe falso', as the legacy label claimed. Because the actor class is a particular, this article cannot reach the PDI or DGAC official, and the DGAC statements the legacy view relied on (seg-292, seg-333) are oral statements by an official, so they could not meet the document element in any event. The candidate is retained only on the possibility that the airline security official produced a false public or authentic document; absent that, it does not arise on this record.",
-      "history_note": "Corrected 2026-09-17 as part of the candidate review of CL-030. The legacy label 'Prevaricación por dictamen o informe falso' did not match the article: prevaricación is dealt with elsewhere in the code, and art. 194 by its own text is a falsedad provision aimed at a particular. The verbatim text cached in data/law/CL/CHIPENCOD_CP.md is what makes the actor class the decisive element here."
-    },
-    {
-      "candidate_article_id": "CL.CPCL.Art.195",
-      "candidate_name": "Falsedad documental por empleado de una oficina telegráfica (partes telegráficos)",
-      "framework_cache_status": "not_in_bundle",
-      "verification_required": [
-        "No verification is possible on this record and none is needed. The verbatim text cached in data/law/CL/CHIPENCOD_CP.md confines art. 195 to the encargado o empleado de una oficina telegráfica who forges or falsifies partes telegráficos.",
-        "Confirm there is no telegraph office, telegraph employee or telegraphic despatch anywhere in these facts. There is none: the actors are an airline security official, airline crew, a PDI officer and a DGAC official, and the documents are an official parte and an airport CCTV record.",
-        "Retire the candidate. It is recommended for withdrawal rather than correction, and is retained here only so the record shows what the legacy entry actually said."
-      ],
-      "preliminary_view": "Corrected against the verbatim BCN text cached in data/law/CL/CHIPENCOD_CP.md. Art. 195 punishes falsedad by the person in charge of, or employed at, a telegraph office who forges or falsifies telegraphic despatches. The legacy label 'Prevaricación por omisión de denuncia de delito' did not match this article, and the omission-of-a-duty-to-report conduct the legacy view described is not addressed by art. 195 at all. Neither the actor class nor the instrument exists on these facts, so the article is inapplicable and the candidate should be withdrawn.",
-      "history_note": "Corrected 2026-09-17 as part of the candidate review of CL-030. The legacy label 'Prevaricación por omisión de denuncia de delito' did not match the article. The real art. 195 is a telegraphic-falsification provision with no application to these facts; recommended for withdrawal."
-    },
-    {
-      "candidate_article_id": "CL.CPCL.Art.196",
-      "candidate_name": "Uso malicioso de instrumento o parte falso (equiparación al autor de la falsedad)",
-      "framework_cache_status": "not_in_bundle",
-      "verification_required": [
-        "Register data/law/CL/CHIPENCOD_CP.md as a bundle framework cache to resolve this candidate; it declares this article as ELI ID CL.CHIPENCOD.T4.C3.Art.196 and caches its verbatim text.",
-        "Sequence this candidate after art. 193 or art. 194. Art. 196 is derivative: it presupposes an instrumento or parte that is already false, and punishes its malicious use by treating the user as the author of the falsedad. It cannot be established before the underlying falsedad is.",
-        "Identify the accused's malicious use of the false instrument — knowledge of the falsity plus use. Identify which official is said to have used, rather than created, the false parte or record.",
-        "Confirm whether the same actor both created and used the false instrument. If so, art. 196 adds nothing and is absorbed by art. 193 or art. 194."
-      ],
-      "preliminary_view": "Corrected against the verbatim BCN text cached in data/law/CL/CHIPENCOD_CP.md. Art. 196 is the malicious-use offence — el que maliciosamente hiciere uso del instrumento o parte falso, será castigado como si fuere autor de la falsedad — not 'prevaricación por nombramiento ilegal o ejercicio de funciones sin título', as the legacy label claimed; art. 196 contains no provision about appointments or about the exercise of functions without title. The PDI officer's threatening language that the legacy view cited (seg-284, seg-287) is conduct toward the passenger, not the use of a false instrument, so it does not meet the elements of this article as written. The candidate survives only as a derivative of the falsedad candidates.",
-      "history_note": "Corrected 2026-09-17 as part of the candidate review of CL-030. The legacy label 'Prevaricación por nombramiento ilegal o ejercicio de funciones sin título' did not match the article: neither appointment nor the exercise of functions without title appears in art. 196, which is the malicious-use-of-a-false-instrument offence. The conduct the legacy preliminary_view described — a PDI officer's threat to push the passenger — is not the use of a false instrument."
+      "history_note": "Corrected 2026-09-17 as part of the candidate review of CL-030. The legacy label 'Prevaricación por dictamen o informe falso' did not match the article: prevaricación is dealt with elsewhere in the code, and art. 194 by its own text is a falsedad provision aimed at a particular. The verbatim text cached in data/law/CL/CHIPENCOD_CP.md is what makes the actor class the decisive element here.\nCandidate review: Uncertain — The article's text is not in the INPUT. If it is the particular-actor counterpart of art. 193, it cannot reach the PDI or DGAC officials, and the DGAC statements relied on (seg-292, seg-333) are oral and cannot meet a document element. It survives only on the possibility that an airline security official produced a false public or authentic document; absent that, it does not arise on this record."
     },
     {
       "candidate_article_id": "CL.CPCL.Art.197",
@@ -231,10 +214,108 @@
         "Register data/law/CL/CHIPENCOD_CP.md as a bundle framework cache to resolve this candidate; it declares this article as ELI ID CL.CHIPENCOD.T4.C3.Art.197 and caches its verbatim text.",
         "Determine whether the document said to be falsified is a private instrument. Art. 197 reaches falsedades committed in an instrumento privado; a public or authentic document falls under art. 194 instead. The two are mutually exclusive on the same document.",
         "Establish perjuicio de tercero, an element art. 197 requires expressly and that arts. 193 and 194 do not require as such (only mode 8 of art. 193 mentions perjuicio). The third party prejudiced must be identified and the prejudice shown.",
-        "Ascertain whether the instrument is a documento mercantil (letras de cambio u otra clase). Art. 197 imposes the aggravated penalty of presidio menor en su grado máximo for mercantile instruments, so the characterisation changes the exposure."
+        "Ascertain whether the instrument is a documento mercantil (letras de cambio u otra clase). Art. 197 imposes the aggravated penalty of presidio menor en su grado máximo for mercantile instruments, so the characterisation changes the exposure.",
+        "Resolve before relying on this candidate — the candidate review left it open: The article's text is not in the INPUT. If it is the private-instrument falsedad provision, the document must be private (a public or authentic document falls under art. 194 instead), perjuicio de tercero must be shown, a…"
       ],
       "preliminary_view": "Corrected against the verbatim BCN text cached in data/law/CL/CHIPENCOD_CP.md. Art. 197 punishes falsedad committed in a private instrument to the prejudice of a third party — not 'usurpación de funciones o atribuciones por funcionario público', as the legacy label claimed; that is a different offence entirely. Unlike arts. 193 and 194, the actor here is not class-restricted (el que), so the article can reach either an official or a private-party actor provided the instrument is private. The DGAC official's statements the legacy view cited (seg-333, yo acredito en general) are oral and are not an instrumento privado, so they do not engage this article.",
-      "history_note": "Corrected 2026-09-17 as part of the candidate review of CL-030. The legacy label 'Usurpación de funciones o atribuciones por funcionario público' did not match the article; art. 197 is a private-instrument falsedad provision and says nothing about the usurpation of functions. Retained as the private-instrument counterpart to the art. 193/194 candidates, conditional on a falsified private instrument existing."
+      "history_note": "Corrected 2026-09-17 as part of the candidate review of CL-030. The legacy label 'Usurpación de funciones o atribuciones por funcionario público' did not match the article; art. 197 is a private-instrument falsedad provision and says nothing about the usurpation of functions. Retained as the private-instrument counterpart to the art. 193/194 candidates, conditional on a falsified private instrument existing.\nCandidate review: Uncertain — The article's text is not in the INPUT. If it is the private-instrument falsedad provision, the document must be private (a public or authentic document falls under art. 194 instead), perjuicio de tercero must be shown, and the mercantile-instrument characterisation changes the penalty. The DGAC statements relied on (seg-333) are oral and are not an instrumento privado, so they do not engage it. It survives only conditional on a falsified private instrument existing."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.12",
+      "candidate_name": "Obligación de informar por escrito las condiciones de contratación y sus modificaciones",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.12 from bcn.cl/leychile and confirm exact wording and subsections",
+        "Confirm whether the boarding-time discrepancy (seg-2, seg-3, seg-4, seg-5, seg-17, seg-55, seg-59) and the airline staff's concession 'no esta correcto' (seg-59) engage the written-information duty this article imposes",
+        "Determine whether the article's written-information requirement applies to schedule/boarding-time information as a 'condición de contratación'"
+      ],
+      "preliminary_view": "Plausible because the passenger repeatedly asks for documentation of the boarding time (I-002_02_NAR-02_STG_2_boarding_gate.seg-23: '¿Hay alguna documentación explicándolo?') and the airline staff concedes the information is not correct (seg-59: 'Ah no po, no esta correcto.'), which is the factual core of a written-information duty distinct from the veracity duty already captured by CL.LPDC.Art.3.b.",
+      "history_note": "Proposed as the written-information counterpart to the established Art. 3.b (veracity) and Art. 23 (liability); not previously cited in the bundle."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.16",
+      "candidate_name": "Derecho a la reparación e indemnización por incumplimiento y por suspensión o cancelación del servicio",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.16 from bcn.cl/leychile and confirm exact wording and subsections",
+        "Confirm whether the passenger's loss of flight (I-002_05_NAR-07_STG_7_post_removal_investigation.seg-11: 'perdí mi vuelo, fui humillado') and the witnesses' missed-connection allegations (I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-175) fall within the suspension/cancellation or breach hypotheses of this article",
+        "Assess whether the removal from the aircraft constitutes a 'suspensión' of the service for the affected passenger"
+      ],
+      "preliminary_view": "Plausible because segment I-002_05_NAR-07_STG_7_post_removal_investigation.seg-11 records the passenger's loss of flight and segment I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-175 records witnesses raising missed connections, which are the concrete harms this article addresses beyond the generic damages provision in Art. 23.",
+      "history_note": "Proposed to cover the concrete service-loss harm; complements the established Art. 23 (generic damages) without duplicating it."
+    },
+    {
+      "candidate_article_id": "CL.LPDC.Art.56",
+      "candidate_name": "Procedimiento ante el Servicio Nacional del Consumidor y denuncia de infracciones",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.LPDC.Art.56 from bcn.cl/leychile and confirm exact wording and subsections",
+        "Confirm whether the DGAC official's direction to the passenger to file a complaint with the police (I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-336, seg-342) rather than with the consumer authority is relevant to the procedural route this article establishes",
+        "Determine whether this article is procedural only and therefore not a substantive violation candidate for CL-030"
+      ],
+      "preliminary_view": "Plausible only as a procedural-route candidate: the DGAC official deflects the passenger to the police (seg-336: 'Puedes colocar igual una denuncia al tiro, una denuncia.'; seg-342: 'eso es lo que tú, tú se lo dices a la policía.'), which raises the question of the correct consumer-complaint channel. Flag: this article is procedural and may not be a substantive violation; include only if the bundle treats procedural deflection as a violation.",
+      "history_note": "Proposed based on the DGAC official's deflection of the complaint; not previously cited. Included with an explicit procedural-only caveat."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.2",
+      "candidate_name": "Garantía de igualdad ante la ley y prohibición de discriminación arbitraria",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19.2 from bcn.cl/leychile and confirm exact wording",
+        "Confirm whether the passenger's allegation of retaliatory removal (I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-12: 'alguien que no le gusto de la pregunta que lo hice y esta intentando hacer eso') and seg-300 ('si picó con una pregunta Puede decidir De atrasar el vuelo') support an arbitrary-discrimination hypothesis",
+        "Determine whether the conduct is attributable to the State (DGAC/PDI) or only to the private airline, which affects the constitutional action route"
+      ],
+      "preliminary_view": "Plausible because the passenger alleges the removal was retaliatory for a question (I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-12 and seg-300), which is the factual core of an arbitrary-discrimination claim; the DGAC official's concession at seg-301 ('Probablemente que lo puede hacer.probablemente') and seg-302 ('y a lo mejor está bien o está mal pero lo hacen') reinforces the arbitrariness hypothesis.",
+      "history_note": "Proposed as the constitutional counterpart to the consumer-law candidates; not previously cited. Note the State-action question must be resolved before reliance."
+    },
+    {
+      "candidate_article_id": "CL.CPR.Art.19.3",
+      "candidate_name": "Igual protección de la ley en el ejercicio de los derechos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPR.Art.19.3 from bcn.cl/leychile and confirm exact wording",
+        "Confirm whether the DGAC official's exoneration of the passenger (I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-315: 'Tu no hiciste nada.'; seg-316: 'No puedo decir que hiciste algo') followed by no protective action supports an equal-protection hypothesis",
+        "Determine whether the PDI officer's threat of physical force (seg-284: 'si tu te paras ahí yo te voy a empujar') is relevant to equal protection of the law"
+      ],
+      "preliminary_view": "Plausible because the DGAC official expressly exonerates the passenger (seg-315, seg-316) yet takes no protective action, and the PDI officer threatens physical force (seg-284), which together raise the question whether the passenger received equal protection of the law in the exercise of his rights.",
+      "history_note": "Proposed as a companion to the Art. 19.2 candidate; not previously cited."
+    },
+    {
+      "candidate_article_id": "CL.CPCL.Art.211",
+      "candidate_name": "Calumnia – imputación falsa de un delito de acción pública",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPCL.Art.211 from bcn.cl/leychile and confirm exact wording and subsections",
+        "Confirm whether the accusation that the passenger 'pegó alguien' (I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-170) and the witnesses' statements about shifting versions (seg-168, seg-171, seg-173) support a false-imputation hypothesis",
+        "Determine the actor: the false accusation appears attributed to airline personnel (a particular), not to the PDI or DGAC officials, which affects the applicable provision",
+        "Assess whether the accusation was made knowing it was false, as the article requires"
+      ],
+      "preliminary_view": "Plausible because segment I-002_04_NAR-06_STG_6_jetbridge_standoff.seg-170 records the accusation 'que pegó alguien..' and seg-168 and seg-171 record witnesses noting shifting versions ('ahora vienen con otra versión', 'Ahora que pasó solo'), which is the factual core of a false imputation of a public-action offence. Flag: the actor appears to be airline personnel (a particular), not a public official, so the official-actor candidates (Art. 193, 269 ter) do not cover this conduct.",
+      "history_note": "Proposed to cover the false-accusation conduct that the corrected Art. 193 candidate expressly disclaimed ('the false-imputation offence is a different article (art. 211, cuya theme es false_accusation)'). This candidate fills that gap."
+    },
+    {
+      "candidate_article_id": "CL.CPCL.Art.212",
+      "candidate_name": "Injuria – imputación de un hecho deshonroso o que menoscabe la honra",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPCL.Art.212 from bcn.cl/leychile and confirm exact wording and subsections",
+        "Confirm whether the passenger's claim of humiliation (I-002_05_NAR-07_STG_7_post_removal_investigation.seg-11: 'fui humillado') and the public removal from the aircraft support an injury-to-honour hypothesis",
+        "Determine whether the conduct is attributable to airline personnel or to public officials, and whether the public nature of the removal aggravates the imputation"
+      ],
+      "preliminary_view": "Plausible because segment I-002_05_NAR-07_STG_7_post_removal_investigation.seg-11 records the passenger's express claim of humiliation ('fui humillado') in connection with a public removal from the aircraft, which is the factual core of an injury-to-honour offence distinct from the calumnia candidate.",
+      "history_note": "Proposed as the injury-to-honour counterpart to the Art. 211 calumnia candidate; not previously cited."
+    },
+    {
+      "candidate_article_id": "CL.CPCL.Art.224",
+      "candidate_name": "Prevaricación de fiscales judiciales – no será aplicable a funcionarios administrativos",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for CL.CPCL.Art.224 from bcn.cl/leychile and confirm exact wording",
+        "Confirm the candidate review's finding that Arts. 223 and 224 are limited to 'Los miembros de los tribunales de justicia colegiados o unipersonales y los fiscales judiciales', which excludes DGAC and PDI staff",
+        "Determine whether this article should be listed at all given the agent-class mismatch, or whether it is included only to document the exclusion"
+      ],
+      "preliminary_view": "Flag: agent-fit mismatch in the first sentence. Art. 224 is limited to judicial officers and fiscales judiciales, so it plainly does not match the DGAC or PDI officials in this bundle. It is listed only to document the exclusion that the Art. 228 candidate's history_note already records, and should be dropped if the bundle does not require negative candidates.",
+      "history_note": "Included solely to document the agent-class exclusion already noted in the Art. 228 candidate's history_note ('replaces the inapplicable Arts. 223 and 224 (judicial-only agent class)'). If negative candidates are not wanted, drop this row."
     }
   ],
   "cross_references": [
@@ -775,6 +856,144 @@
     {
       "id": "OQ-030-LPDC23-FALLA2",
       "question": "¿La remoción del pasajero se ajustó a los protocolos de seguridad o constituyó una deficiencia del servicio?",
+      "blocks_element": "CL.LPDC.Art.23.elem.falla_calidad",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-030-PDI-DGAC-EMPLOYEE-STATUS",
+      "question": "¿Los intervinientes PDI/DGAC tenían la calidad de empleados públicos al momento de los hechos?",
+      "blocks_element": "CL.CPCL.T4.Art.255.elem.sujeto_activo_empleado_publico",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-030-AIRLINE-CREW-PUBLIC-EMPLOYEE",
+      "question": "¿La tripulación de la aerolínea puede ser considerada empleado público para efectos del Art. 255?",
+      "blocks_element": "CL.CPCL.T4.Art.255.elem.sujeto_activo_empleado_publico",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-030-PDI-ORDER-SERVICE-ACT",
+      "question": "¿La orden de desembarque y el uso de fuerza por PDI se enmarcan en un acto del servicio?",
+      "blocks_element": "CL.CPCL.T4.Art.255.elem.acto_del_servicio",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-030-DGAC-ROLE-SERVICE-ACT",
+      "question": "¿La DGAC actuó en ejercicio de sus funciones o solo como observador?",
+      "blocks_element": "CL.CPCL.T4.Art.255.elem.acto_del_servicio",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-030-VEJACION-LEGAL-QUALIFICATION",
+      "question": "¿El trato recibido constituye vejación en el sentido del Art. 255?",
+      "blocks_element": "CL.CPCL.T4.Art.255.elem.vejacion_injusta",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-030-THREAT-ORDERS-VEJACION",
+      "question": "¿La amenaza de empujón y las órdenes imperativas configuran vejación injusta?",
+      "blocks_element": "CL.CPCL.T4.Art.255.elem.vejacion_injusta",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-030-DOLO-DIRECTO-EVENTUAL",
+      "question": "¿Los funcionarios actuaron con dolo directo o eventual respecto de la vejación?",
+      "blocks_element": "CL.CPCL.T4.Art.255.elem.dolo",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-030-DGAC-KNOWLEDGE-INJUSTICE",
+      "question": "¿La DGAC, al reconocer que el pasajero no hizo nada, evidencia conocimiento de la injusticia?",
+      "blocks_element": "CL.CPCL.T4.Art.255.elem.dolo",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-030-AIRLINE-PROVIDER-STATUS",
+      "question": "¿Se acreditó la calidad de proveedor del servicio de transporte aéreo respecto de la aerolínea involucrada?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.sujeto_activo_proveedor",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-030-PASSENGER-CONSUMER-STATUS",
+      "question": "¿Se acreditó la condición de consumidor final del pasajero respecto del servicio contratado?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.sujeto_pasivo_consumidor",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-030-INFO-OBJECT-CONTRACT-CONDITIONS",
+      "question": "¿La información sobre horarios de embarque y presentación califica como 'condiciones de contratación' u 'otras características relevantes' del servicio?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.objeto_material_informacion",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-030-OFFICIAL-VS-COMMUNICATED-INFO",
+      "question": "¿Cuál era la información oficial de embarque y cuál la efectivamente comunicada al pasajero?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.veracidad",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-030-TIMING-OF-INFO",
+      "question": "¿Con cuánta anticipación se comunicó al pasajero el horario real de embarque o el retraso?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.oportunidad",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-030-PASSENGER-DUTY-TO-INFORM",
+      "question": "¿Qué información oficial estaba disponible para el pasajero y si este la consultó oportunamente?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.deber_de_informarse",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-030-CAUSAL-LINK-PREJUDICE",
+      "question": "¿El daño alegado (pérdida de vuelo, humillación) fue consecuencia de la información no veraz u oportuna?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.resultado_perjuicio",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-030-PROVIDER-DOLO-CULPA",
+      "question": "¿Existió conocimiento o negligencia del proveedor respecto de la información incorrecta entregada al pasajero?",
+      "blocks_element": "CL.LPDC.Art.3.b.elem.tipicidad_subjetiva_dolo_culpa",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-030-PROVIDER-STATUS-ART23",
+      "question": "¿Se acreditará en juicio la calidad de proveedor del demandado conforme al artículo 2° LPDC?",
+      "blocks_element": "CL.LPDC.Art.23.elem.proveedor",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-030-TRANSPORT-TITLE",
+      "question": "¿Se aportará el título de transporte que acredite la contratación del servicio?",
+      "blocks_element": "CL.LPDC.Art.23.elem.venta_o_prestacion",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-030-PROTOCOL-NEGLIGENCE-STANDARD",
+      "question": "¿Cuál es el protocolo aplicable de información al pasajero y fue incumplido?",
+      "blocks_element": "CL.LPDC.Art.23.elem.negligencia",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-030-DELAY-DISEMBARK-AUTHORITY",
+      "question": "¿La decisión de retrasar o desembarcar se ajustó a las facultades del comandante y de la aerolínea?",
+      "blocks_element": "CL.LPDC.Art.23.elem.negligencia",
+      "priority": "high"
+    },
+    {
+      "id": "OQ-030-PATRIMONIAL-LOSS-QUANTIFICATION",
+      "question": "¿Se acreditará documentalmente el monto del menoscabo patrimonial?",
+      "blocks_element": "CL.LPDC.Art.23.elem.menoscabo",
+      "priority": "medium"
+    },
+    {
+      "id": "OQ-030-INFO-INCONSISTENCY-QUALITY-FAILURE",
+      "question": "¿Las inconsistencias de información y el desembarque constituyen una falla en la calidad del servicio según la normativa sectorial?",
+      "blocks_element": "CL.LPDC.Art.23.elem.falla_calidad",
+      "priority": "critical"
+    },
+    {
+      "id": "OQ-030-SECURITY-PROTOCOL-BREACH",
+      "question": "¿Existió un protocolo de seguridad incumplido?",
       "blocks_element": "CL.LPDC.Art.23.elem.falla_calidad",
       "priority": "high"
     }

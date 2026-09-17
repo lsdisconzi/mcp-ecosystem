@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>CL-029 — Case Analysis File</title>
+<style>
+:root {
+  --bg-primary: #f8f7f4; --bg-card: #ffffff; --bg-card-hover: #f2f0ea;
+  --bg-surface: #f1efe8; --border: #e1ddd1; --border-strong: #c7c1b0;
+  --text-primary: #1b1c1e; --text-secondary: #52555c; --text-muted: #8a8b87;
+  --accent: #24405f; --accent-dim: rgba(36, 64, 95, 0.07);
+  --status-flag: #7a3733; --status-flag-dim: rgba(122, 55, 51, 0.08);
+  --status-analysis: #8a6a2c; --status-analysis-dim: rgba(138, 106, 44, 0.09);
+  --status-note: #3f6b4f; --status-note-dim: rgba(63, 107, 79, 0.08);
+  --mono: 'JetBrains Mono', 'Courier New', monospace;
+  --serif: 'Source Serif 4', Georgia, serif;
+  --sans: 'Inter', -apple-system, sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: var(--sans); background: var(--bg-primary); color: var(--text-primary); line-height:1.6; }
+a { color: var(--accent); text-decoration:none; }
+code { font-family: var(--mono); font-size:0.85em; color: var(--accent); background: var(--bg-surface); padding:1px 6px; border-radius:2px; }
+
+.masthead { border-bottom:1px solid var(--border); padding:32px 0 24px; }
+.masthead-inner { padding:0 32px; }
+.masthead-badge { display:inline-block; font-family:var(--mono); font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--status-flag); border:1px solid var(--status-flag); background:var(--status-flag-dim); padding:5px 12px; border-radius:2px; margin-bottom:16px; }
+.masthead h1 { font-family: var(--serif); font-size:1.7rem; font-weight:600; line-height:1.28; margin-bottom:10px; }
+.masthead-sub { font-size:0.9rem; color:var(--text-secondary); max-width:760px; line-height:1.7; margin-bottom:14px; }
+.masthead-caveat { font-family: var(--mono); font-size:0.66rem; color: var(--status-analysis); background: var(--status-analysis-dim); border:1px solid var(--status-analysis); display:inline-block; padding:8px 12px; border-radius:3px; max-width:760px; }
+
+.stats-bar { background: var(--bg-card); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.stats-inner { padding:0 32px; display:flex; flex-wrap:wrap; }
+.stat-item { flex:1 1 150px; padding:16px 14px; border-right:1px solid var(--border); }
+.stat-item:last-child { border-right:none; }
+.stat-val { font-family:var(--mono); font-size:0.95rem; font-weight:600; }
+.stat-label { font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; margin-top:4px; }
+
+.main { padding:0 32px; }
+.section-head { padding:30px 0 12px; border-bottom:1px solid var(--border); margin-bottom:16px; }
+.section-head h2 { font-family:var(--serif); font-size:1.2rem; font-weight:600; padding-bottom:10px; }
+.section-head p { color:var(--text-secondary); font-size:0.84rem; padding-bottom:10px; max-width:760px; }
+
+.transcript-list { display:flex; flex-direction:column; gap:6px; padding-bottom:8px; }
+.transcript-segment { background:var(--bg-card); border:1px solid var(--border); border-left:3px solid var(--border-strong); border-radius:3px; padding:11px 16px; page-break-inside:avoid; }
+.transcript-segment.seg-passenger { border-left-color: var(--accent); }
+.transcript-segment.seg-other { border-left-color: var(--status-analysis); border-left-style:dashed; }
+.seg-time { font-family:var(--mono); font-size:0.66rem; color:var(--text-muted); margin-bottom:3px; }
+.seg-speaker { font-size:0.76rem; font-weight:600; margin-bottom:5px; }
+.seg-text { font-size:0.84rem; color:var(--text-secondary); line-height:1.6; font-style:italic; }
+.seg-text-en { font-size:0.78rem; color:var(--text-muted); margin-top:3px; }
+
+.evidence-grid { display:flex; flex-direction:column; gap:10px; }
+.evidence-card { background:var(--bg-card); border:1px solid var(--border); border-left:3px solid var(--border-strong); border-radius:3px; padding:16px 20px; page-break-inside:avoid; }
+.evidence-card.status-established, .evidence-card.status-strong { border-left-color: var(--status-flag); }
+.evidence-card.status-contested { border-left-color: var(--status-analysis); }
+.evidence-card.status-missing { border-left-color: var(--border-strong); }
+.ev-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px; }
+.ev-body h3 { font-size:0.9rem; font-weight:600; }
+.ev-sub { font-family:var(--mono); font-size:0.68rem; color:var(--text-muted); margin-top:2px;}
+.ev-type { font-family:var(--mono); font-size:0.6rem; padding:3px 9px; border-radius:2px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600; white-space:nowrap; }
+.type-established, .type-strong { background:var(--status-flag-dim); color:var(--status-flag); }
+.type-contested { background:var(--status-analysis-dim); color:var(--status-analysis); }
+.type-missing, .type-unverified { background:var(--bg-surface); color:var(--text-muted); border:1px solid var(--border-strong); }
+.ev-summary { font-size:0.82rem; color:var(--text-secondary); line-height:1.65; margin-top:6px; }
+.ev-weak { font-size:0.76rem; color:var(--status-flag); margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); }
+.ev-provisions { font-family:var(--mono); font-size:0.66rem; color:var(--text-muted); margin-top:8px; }
+
+.notes-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:4px; padding:18px 22px; margin-top:10px; }
+.notes-label { font-family:var(--mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-secondary); margin-bottom:12px; }
+.oq-item { border-bottom:1px solid var(--border); padding:10px 0; font-size:0.82rem; }
+.oq-item:last-child { border-bottom:none; }
+.oq-id { font-family:var(--mono); font-size:0.66rem; color:var(--accent); margin-right:8px; }
+.oq-priority { font-family:var(--mono); font-size:0.6rem; text-transform:uppercase; padding:2px 7px; border-radius:2px; border:1px solid var(--border-strong); color:var(--text-muted); margin-left:6px; }
+
+.jurisdiction-pill { background:var(--bg-card); border:1px solid var(--border); border-radius:3px; padding:12px 16px; margin-bottom:8px; }
+.jurisdiction-name { font-family:var(--mono); font-size:0.72rem; color:var(--accent); margin-bottom:4px; }
+.jurisdiction-laws { font-size:0.8rem; color:var(--text-secondary); line-height:1.6; }
+.verified-tag { font-family:var(--mono); font-size:0.6rem; padding:2px 8px; border-radius:2px; text-transform:uppercase; }
+.verified-yes { background: var(--status-note-dim); color: var(--status-note); }
+.verified-no { background: var(--status-flag-dim); color: var(--status-flag); }
+
+.page-footer { border-top:1px solid var(--border); padding:22px 32px; margin-top:36px; }
+.page-footer p { font-size:0.72rem; color:var(--text-muted); line-height:1.8; }
+.page-footer .mono { font-family:var(--mono); }
+
+table.confidence-table { width:100%; border-collapse:collapse; font-size:0.82rem; margin-top:8px; margin-bottom: 28px;}
+table.confidence-table th, table.confidence-table td { text-align:left; padding:8px 12px; border-bottom:1px solid var(--border); }
+table.confidence-table th { font-family:var(--mono); font-size:0.64rem; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.05em; }
+
+.info-box { background:var(--bg-card); border:1px solid var(--border); border-radius:3px; padding:14px 20px; margin-bottom:24px; font-size:0.84rem; color:var(--text-secondary); }
+.info-box b { color: var(--text-primary); }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <span class="masthead-badge">CL-029 · Severity: CRITICAL — Working Case File</span>
+    <h1>LA8159 (I-002) — DGAC Oversight Failures Under Ley 16.752, Transparency Principle Under Ley 20.285, and Air-Operator Consumer Duties Under LPDC</h1>
+    <p class="masthead-sub">Santiago Airport (SCL), Chile · 2024-07-05 · LA8159 · LATAM Airlines</p>
+    <span class="masthead-caveat">⚠ Documento de trabajo analítico generado a partir del expediente de datos.
+    No constituye una determinación judicial ni una acusación formal. Los elementos marcados "contested" y las
+    autoridades no verificadas no deben presentarse como hechos probados.</span>
+  </div>
+</div>
+<div class="stats-bar"><div class="stats-inner"><div class="stat-item"><div class="stat-val">0.44 / 1.00</div><div class="stat-label">Confidence Score</div></div><div class="stat-item"><div class="stat-val">4</div><div class="stat-label">Established Articles</div></div><div class="stat-item"><div class="stat-val">4</div><div class="stat-label">Evidence Segments</div></div><div class="stat-item"><div class="stat-val">21</div><div class="stat-label">Open Questions</div></div><div class="stat-item"><div class="stat-val">0 / 10</div><div class="stat-label">Authorities Verified</div></div></div></div><div class="main">
+<div class="section-head"><h2>1. Incident</h2></div>
+<div class="info-box"><div><b>date:</b> 2024-07-05</div><div><b>location:</b> Santiago Airport (SCL), Chile</div><div><b>flight:</b> LA8159</div><div><b>operator:</b> LATAM Airlines</div><div><b>clock_time_estimate:</b> 2024-07-05T13:30:00-04:00</div><div><b>clock_time_confidence:</b> unknown</div></div>
+
+<div class="section-head">
+  <h2>2. Base normativa — artículos establecidos</h2>
+  <p>Artículos que alcanzan el estado "established" en el expediente.</p>
+</div>
+<div class="evidence-grid" style="margin-bottom:24px;">
+    <div class="evidence-card status-strong">
+      <div class="ev-head">
+        <div class="ev-body">
+          <h3>Corresponderá a la Dirección General de Aeronáutica Civil velar por la seguridad</h3>
+          <div class="ev-sub">Sujeto obligado: regulator · Framework: L16752 · Aplicabilidad: supporting</div>
+        </div>
+      </div>
+      <div class="ev-summary">j) Fiscalizar las actividades de la aviación civil, en resguardo de la seguridad de vuelo y dictar las instrucciones de general aplicación que sean necesarias para los fines señalados. m) Llevar el Registro Nacional de Aeronaves, practicar las inscripciones, subinscripciones, anotaciones y cancelaciones que procedan, y otorgar las copias y certificados que se le soliciten. n) Autorizar provisionalmente a las aeronaves que se construyan o adquieran en el extranjero para volar con distintivo chileno. ñ) Inspeccionar las aeronaves matriculadas en Chile para determinar sus condiciones y estado para el vuelo; otorgar los correspondientes certificados de aeronavegabilidad, suspenderlos y cancelarlos; y mantener el registro correspondiente. Podrá también inspeccionar, en la misma forma, las aeronaves extranjeras que operen en Chile. o) Otorgar licencias a todo el personal aeronáutico que, en conformidad a los reglamentos, requiera de ellas; convalidar, cuando proceda, las otorgadas por otros Estados; suspenderlas, cancelarlas y llevar el registro correspondiente. p) Impartir instrucción técnica aeronaútica y otorgar los títulos en las especialidades que determine el respectivo reglamento. q) Dictar normas para que la operación de aeronaves se efectúe dentro de los límites de la seguridad aérea. r) Investigar las infracciones a las leyes, reglamentos y demás disposiciones relacionadas con la navegación aérea cuya aplicación y control le corresponda y, en especial, los accidentes que ocurran a aeronaves civiles de cualquiera nacionalidad en territorio chileno. s) Cumplir y hacer cumplir los acuerdos de la Junta de Aeronáutica Civil en lo que se refiere a las operaciones aéreas que se realicen. t) Proponer la adopción o adoptar, según corresponda, las normas, métodos recomendados y procedimientos internacionales aprobados por la Organización de Aviación Civil Internacional y por la Organización Meteorológica Mundial. z) En general, fiscalizar el cumplimiento de las disposiciones legales y reglamentarias relativas a la aeronavegación.</div>
+      <div class="ev-provisions">CL.LEY16752.Art.3 · framework_cache: verified_in_bundle</div>
+    </div>
+    <div class="evidence-card status-strong">
+      <div class="ev-head">
+        <div class="ev-body">
+          <h3>Principio de Transparencia de la función pública</h3>
+          <div class="ev-sub">Sujeto obligado: state · Framework: L20285 · Aplicabilidad: supporting</div>
+        </div>
+      </div>
+      <div class="ev-summary">Artículo 3° - Principio de Transparencia. La función pública se ejerce con transparencia, de modo que permita y promueva el conocimiento de los procedimientos, contenidos y decisiones que se adopten en ejercicio de ella.</div>
+      <div class="ev-provisions">CL.L20285.T1.C1.Art.3 · framework_cache: verified_in_bundle</div>
+    </div>
+    <div class="evidence-card status-strong">
+      <div class="ev-head">
+        <div class="ev-body">
+          <h3>Son derechos y deberes basicos del consumidor: b) El derecho a una informacion v</h3>
+          <div class="ev-sub">Sujeto obligado: air_operator · Framework: LPDC · Aplicabilidad: supporting</div>
+        </div>
+      </div>
+      <div class="ev-summary">b) El derecho a una información veraz y oportuna sobre los bienes y servicios ofrecidos, su precio, condiciones de contratación y otras características relevantes de los mismos, y el deber de informarse responsablemente de ellos.</div>
+      <div class="ev-provisions">CL.LPDC.Art.3.b · framework_cache: verified_in_bundle</div>
+    </div>
+    <div class="evidence-card status-strong">
+      <div class="ev-head">
+        <div class="ev-body">
+          <h3>El proveedor de un servicio sera responsable de los danos y perjuicios que cause</h3>
+          <div class="ev-sub">Sujeto obligado: air_operator · Framework: LPDC · Aplicabilidad: supporting</div>
+        </div>
+      </div>
+      <div class="ev-summary">Artículo 23.- Comete infracción a las disposiciones de la presente ley el proveedor que, en la venta de un bien o en la prestación de un servicio, **actuando con negligencia**, causa menoscabo al consumidor debido a fallas o deficiencias en la calidad, cantidad, identidad, sustancia, procedencia, seguridad, peso o medida del respectivo bien o servicio.</div>
+      <div class="ev-provisions">CL.LPDC.Art.23 · framework_cache: verified_in_bundle</div>
+    </div></div>
+
+<div class="section-head">
+  <h2>3. Análisis elemento por elemento</h2>
+  <p>Estado de prueba por elemento típico. "Established"/"strong" indica respaldo documental directo;
+     "contested" indica que la calificación jurídica final permanece abierta.</p>
+</div>
+<div class="evidence-grid" style="margin-bottom:24px;">
+    <div class="evidence-card status-strong">
+      <div class="ev-head">
+        <h3>Sujeto activo calificado: Dirección General de Aeronáutica Civil</h3>
+        <span class="ev-type type-strong">strong</span>
+      </div>
+      <div class="ev-summary">El segmento seg-36 identifica a un funcionario de la DGAC interviniendo en el procedimiento, lo que acredita la presencia del sujeto activo institucional. La prueba es indiciaria.</div>
+      <div class="ev-weak">Debilidad señalada: No se acredita la investidura formal ni la competencia específica del funcionario interviniente.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿El funcionario de seg-36 actuaba en ejercicio de la función fiscalizadora del Art. 3 letra j?</div>
+    </div>
+    <div class="evidence-card status-strong">
+      <div class="ev-head">
+        <h3>Actividad de aviación civil sujeta a fiscalización</h3>
+        <span class="ev-type type-strong">strong</span>
+      </div>
+      <div class="ev-summary">Los segmentos describen actuaciones propias de la operación aérea (carta de contingencia, boarding gate, control policial en aeropuerto), lo que sitúa los hechos en el ámbito de la aviación civil.</div>
+      <div class="ev-weak">Debilidad señalada: No se individualiza el vuelo, la aeronave ni el operador en los segmentos aportados.</div>
+      
+    </div>
+    <div class="evidence-card status-contested">
+      <div class="ev-head">
+        <h3>Ejercicio efectivo de la facultad de fiscalizar (letra j)</h3>
+        <span class="ev-type type-contested">contested</span>
+      </div>
+      <div class="ev-summary">El segmento seg-36 muestra a la DGAC remitiendo al pasajero al conocimiento de los procedimientos, lo que puede constituir fiscalización o, por el contrario, una omisión de ella. El segmento seg-59 refiere verificación policial por cámara, sin que se acredite intervención fiscalizadora de la DGAC.</div>
+      <div class="ev-weak">Debilidad señalada: No hay acta, resolución ni registro de inspección de la DGAC en los segmentos. · La respuesta de seg-36 es ambigua entre orientación al usuario y ejercicio de fiscalización.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿Existió una instrucción de general aplicación dictada por la DGAC conforme al Art. 3 letra j?, ¿La DGAC inició un procedimiento de fiscalización por los hechos narrados?</div>
+    </div>
+    <div class="evidence-card status-missing">
+      <div class="ev-head">
+        <h3>Finalidad de resguardo de la seguridad de vuelo (letra j)</h3>
+        <span class="ev-type type-missing">weak</span>
+      </div>
+      <div class="ev-summary">El segmento seg-59 menciona acusaciones de agresión y paso indebido por boarding gate, lo que podría incidir en seguridad de vuelo, pero no hay evidencia de que la DGAC evaluara ese riesgo.</div>
+      <div class="ev-weak">Debilidad señalada: No se aporta evaluación de riesgo ni medida de seguridad de vuelo adoptada o exigida por la DGAC.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿Los hechos del caso comprometían la seguridad de vuelo en el sentido del Art. 3 letra j?</div>
+    </div>
+    <div class="evidence-card status-strong">
+      <div class="ev-head">
+        <h3>Sujeto activo calificado: Dirección General de Aeronáutica Civil (letra r)</h3>
+        <span class="ev-type type-strong">strong</span>
+      </div>
+      <div class="ev-summary">Se reitera la intervención de un funcionario de la DGAC en el procedimiento, lo que satisface el sujeto activo institucional también respecto de la letra r.</div>
+      <div class="ev-weak">Debilidad señalada: No se identifica el cargo ni la resolución que habilita la actuación del funcionario.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿Qué atribución específica de la letra r se activó en la actuación del funcionario?</div>
+    </div>
+    <div class="evidence-card status-contested">
+      <div class="ev-head">
+        <h3>Investigación efectiva de infracciones a la normativa aeronáutica (letra r)</h3>
+        <span class="ev-type type-contested">contested</span>
+      </div>
+      <div class="ev-summary">El pasajero afirma que la acusación en su contra fue desmentida por cámaras (seg-59), pero no hay evidencia de que la DGAC abriera una investigación sobre la falsa acusación ni sobre el manejo del retiro del pasajero. El segmento seg-36 sugiere que la DGAC delegó el conocimiento al pasajero sin iniciar investigación propia.</div>
+      <div class="ev-weak">Debilidad señalada: No hay resolución de apertura de investigación ni constancia de su resultado. · La prueba del incumplimiento del deber de investigar es indiciaria.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿La DGAC inició una investigación conforme a la letra r por los hechos del caso LA8159?</div>
+    </div>
+    <div class="evidence-card status-strong">
+      <div class="ev-head">
+        <h3>Sujeto activo calificado: Dirección General de Aeronáutica Civil (letra z)</h3>
+        <span class="ev-type type-strong">strong</span>
+      </div>
+      <div class="ev-summary">La intervención institucional de la DGAC consta en seg-36, satisfaciendo el sujeto activo también respecto de la letra z.</div>
+      <div class="ev-weak">Debilidad señalada: No se acredita la competencia específica del funcionario para las materias de la letra z.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿Qué atribución de la letra z resulta aplicable a los hechos?</div>
+    </div>
+    <div class="evidence-card status-contested">
+      <div class="ev-head">
+        <h3>Fiscalización residual de la normativa aeronáutica (letra z)</h3>
+        <span class="ev-type type-contested">contested</span>
+      </div>
+      <div class="ev-summary">La letra z funciona como cláusula residual de fiscalización. El segmento seg-36 podría leerse como una omisión de fiscalización, pero la ambigüedad de la respuesta del funcionario impide tener por acreditado el incumplimiento.</div>
+      <div class="ev-weak">Debilidad señalada: Un solo segmento, breve y ambiguo. · No hay evidencia de instrucciones, circulares ni protocolos aplicables.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿Cuál es el estándar de fiscalización exigible a la DGAC conforme a la letra z en un caso de reclamo de pasajero?</div>
+    </div>
+    <div class="evidence-card status-strong">
+      <div class="ev-head">
+        <h3>Resultado lesivo o perjuicio al administrado</h3>
+        <span class="ev-type type-strong">strong</span>
+      </div>
+      <div class="ev-summary">El pasajero declara haber perdido su vuelo y haber sido humillado (seg-11), y relata acusaciones falsas verificadas por cámara (seg-59). Estos dichos acreditan un perjuicio alegado.</div>
+      <div class="ev-weak">Debilidad señalada: El perjuicio se sustenta únicamente en declaraciones del propio pasajero. · No se acredita nexo causal entre el perjuicio y una actuación u omisión de la DGAC.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿El perjuicio alegado deriva de una infracción de deberes de la DGAC o de la aerolínea?</div>
+    </div>
+    <div class="evidence-card status-contested">
+      <div class="ev-head">
+        <h3>Elemento subjetivo: dolo o negligencia funcionaria</h3>
+        <span class="ev-type type-contested">contested</span>
+      </div>
+      <div class="ev-summary">La respuesta de la DGAC en seg-36 (&#x27;deve saber como son los procedimentos&#x27;) puede leerse como desidia o como simple orientación, sin que sea posible determinar dolo o negligencia. La calificación subjetiva depende de verificación adicional.</div>
+      <div class="ev-weak">Debilidad señalada: Un solo segmento, breve y ambiguo, para sostener el elemento subjetivo. · No hay resolución, informe o acta que revele el estándar de diligencia aplicado.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿La actuación de la DGAC en seg-36 constituye una omisión de fiscalización o una respuesta conforme a procedimiento?</div>
+    </div>
+    <div class="evidence-card status-missing">
+      <div class="ev-head">
+        <h3>Principio de transparencia de la función pública</h3>
+        <span class="ev-type type-missing">weak</span>
+      </div>
+      <div class="ev-summary">El único segmento que alude a procedimientos es una indicación del funcionario DGAC al pasajero sobre su deber de conocer los procedimientos, lo que no acredita ni desvirtúa la observancia del principio.</div>
+      <div class="ev-weak">Debilidad señalada: No hay segmentos que documenten publicación, acceso o conocimiento efectivo de procedimientos o decisiones.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿Existen registros de publicación o acceso a los procedimientos y decisiones de la DGAC en el caso LA8159?, ¿El principio del Art. 3 se invoca como norma autónoma o como fundamento del derecho de acceso del Art. 3 de la ley vigente?</div>
+    </div>
+    <div class="evidence-card status-missing">
+      <div class="ev-head">
+        <h3>Conocimiento y promoción de los procedimientos</h3>
+        <span class="ev-type type-missing">weak</span>
+      </div>
+      <div class="ev-summary">El segmento seg-36 muestra a un funcionario DGAC señalando al pasajero que &#x27;deve saber como son los procedimentos&#x27;, lo que sugiere una carga de conocimiento puesta en el administrado más que una promoción activa de transparencia por el órgano.</div>
+      <div class="ev-weak">Debilidad señalada: El segmento es una frase aislada sin contexto documental.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿La DGAC publicó o comunicó formalmente los procedimientos aplicables al reclamo LA8159?</div>
+    </div>
+    <div class="evidence-card status-missing">
+      <div class="ev-head">
+        <h3>Conocimiento y promoción de las decisiones</h3>
+        <span class="ev-type type-missing">weak</span>
+      </div>
+      <div class="ev-summary">No hay segmentos que documenten una decisión de la DGAC ni su comunicación o publicidad.</div>
+      <div class="ev-weak">Debilidad señalada: Ausencia de segmentos que identifiquen una decisión concreta de la DGAC en el caso LA8159.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿Existe una decisión formal de la DGAC en el procedimiento LA8159 y fue comunicada al pasajero?</div>
+    </div>
+    <div class="evidence-card status-strong">
+      <div class="ev-head">
+        <h3>Ejercicio de la función pública</h3>
+        <span class="ev-type type-strong">strong</span>
+      </div>
+      <div class="ev-summary">Los segmentos seg-36 y seg-59 muestran la intervención de un funcionario DGAC y de la policía en la tramitación del reclamo, lo que acredita el ejercicio de función pública en el caso.</div>
+      <div class="ev-weak">Debilidad señalada: No se individualiza el acto administrativo específico ni el órgano exacto dentro de la DGAC.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿Qué unidad o funcionario específico de la DGAC ejerció la función pública en el caso LA8159?</div>
+    </div>
+    <div class="evidence-card status-missing">
+      <div class="ev-head">
+        <h3>Sujeto activo: proveedor de bienes o servicios</h3>
+        <span class="ev-type type-missing">weak</span>
+      </div>
+      <div class="ev-summary">El único segmento que menciona a un proveedor es la oferta de contingencia de la aerolínea, pero no acredita que dicho proveedor haya incumplido el deber de información del artículo 3 letra b).</div>
+      <div class="ev-weak">Debilidad señalada: No se identifica formalmente al proveedor ni su vínculo con el servicio ofrecido.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿Quién es el proveedor responsable de la información en el caso concreto?, ¿Existe un contrato o relación de consumo acreditada?</div>
+    </div>
+    <div class="evidence-card status-strong">
+      <div class="ev-head">
+        <h3>Sujeto pasivo: consumidor destinatario de la información</h3>
+        <span class="ev-type type-strong">strong</span>
+      </div>
+      <div class="ev-summary">Los segmentos del pasajero lo identifican como consumidor afectado que perdió su vuelo y fue humillado, y que además fue acusado falsamente.</div>
+      <div class="ev-weak">Debilidad señalada: No hay documento que acredite formalmente la condición de consumidor.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿El pasajero adquirió el servicio directamente o a través de un tercero?</div>
+    </div>
+    <div class="evidence-card status-contested">
+      <div class="ev-head">
+        <h3>Información veraz</h3>
+        <span class="ev-type type-contested">contested</span>
+      </div>
+      <div class="ev-summary">El pasajero afirma que las acusaciones en su contra fueron desmentidas por las cámaras de seguridad, lo que sugiere que la información proporcionada por el proveedor pudo no ser veraz.</div>
+      <div class="ev-weak">Debilidad señalada: No se aporta el registro de cámaras ni resolución policial que confirme la falsedad. · La oferta de contingencia de la aerolínea no acredita por sí sola que la información fuera falsa.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿Existe un registro oficial que confirme que la acusación fue falsa?</div>
+    </div>
+    <div class="evidence-card status-missing">
+      <div class="ev-head">
+        <h3>Información oportuna</h3>
+        <span class="ev-type type-missing">weak</span>
+      </div>
+      <div class="ev-summary">El funcionario de la DGAC señala que el pasajero debía conocer los procedimientos, lo que podría indicar que la información no fue entregada de manera oportuna.</div>
+      <div class="ev-weak">Debilidad señalada: El segmento no especifica qué información debía entregarse ni cuándo. · No se acredita que el proveedor haya incumplido el deber de información oportuna.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿En qué momento debió el proveedor informar al consumidor?</div>
+    </div>
+    <div class="evidence-card status-missing">
+      <div class="ev-head">
+        <h3>Información sobre condiciones de contratación</h3>
+        <span class="ev-type type-missing">weak</span>
+      </div>
+      <div class="ev-summary">La mención a una carta de contingencia por parte del supervisor de la aerolínea podría relacionarse con condiciones de contratación, pero no se acredita que dicha carta contuviera información veraz y oportuna ni que fuera entregada al consumidor.</div>
+      <div class="ev-weak">Debilidad señalada: No se aporta el contenido de la carta de contingencia.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿La carta de contingencia fue entregada al pasajero?</div>
+    </div>
+    <div class="evidence-card status-contested">
+      <div class="ev-head">
+        <h3>Deber del consumidor de informarse responsablemente</h3>
+        <span class="ev-type type-contested">contested</span>
+      </div>
+      <div class="ev-summary">El funcionario de la DGAC afirma que el pasajero debía saber cómo funcionan los procedimientos, lo que sugiere un reproche al deber de informarse.</div>
+      <div class="ev-weak">Debilidad señalada: El segmento es una opinión del funcionario, no una prueba del incumplimiento del deber.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿Qué información estaba al alcance del consumidor?</div>
+    </div>
+    <div class="evidence-card status-strong">
+      <div class="ev-head">
+        <h3>Sujeto activo: proveedor</h3>
+        <span class="ev-type type-strong">strong</span>
+      </div>
+      <div class="ev-summary">El segmento de la supervisora de la aerolínea acredita la intervención de un proveedor de servicios de transporte aéreo en la gestión de la carta de contingencia.</div>
+      <div class="ev-weak">Debilidad señalada: No se acredita formalmente la calidad de proveedor del demandado ni el vínculo contractual con el pasajero.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿Se encuentra acreditada la relación de consumo entre el pasajero y la aerolínea?</div>
+    </div>
+    <div class="evidence-card status-strong">
+      <div class="ev-head">
+        <h3>Venta de un bien o prestación de un servicio</h3>
+        <span class="ev-type type-strong">strong</span>
+      </div>
+      <div class="ev-summary">El pasajero relata haber perdido su vuelo, lo que presupone la existencia de un servicio de transporte aéreo contratado.</div>
+      <div class="ev-weak">Debilidad señalada: No se individualiza el contrato de transporte ni las condiciones de la prestación.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿Cuáles eran las condiciones específicas del servicio contratado?</div>
+    </div>
+    <div class="evidence-card status-contested">
+      <div class="ev-head">
+        <h3>Negligencia del proveedor</h3>
+        <span class="ev-type type-contested">contested</span>
+      </div>
+      <div class="ev-summary">El funcionario de la DGAC sugiere que el pasajero debía conocer los procedimientos, lo que podría indicar una falta de diligencia del proveedor en informar adecuadamente.</div>
+      <div class="ev-weak">Debilidad señalada: No se ha establecido el protocolo o estándar de diligencia exigible al proveedor en este caso. · Los segmentos citados no evidencian directamente negligencia del proveedor.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿Cuál es el estándar de diligencia aplicable a la aerolínea en la gestión de contingencias?</div>
+    </div>
+    <div class="evidence-card status-strong">
+      <div class="ev-head">
+        <h3>Menoscabo al consumidor</h3>
+        <span class="ev-type type-strong">strong</span>
+      </div>
+      <div class="ev-summary">El pasajero declara haber perdido su vuelo y haber sido humillado, lo que constituye un menoscabo tanto patrimonial como extrapatrimonial.</div>
+      <div class="ev-weak">Debilidad señalada: No se cuantifica el menoscabo patrimonial ni se detallan las consecuencias extrapatrimoniales.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿Cuál es la magnitud del menoscabo patrimonial y extrapatrimonial sufrido por el pasajero?</div>
+    </div>
+    <div class="evidence-card status-contested">
+      <div class="ev-head">
+        <h3>Falla o deficiencia en la calidad o seguridad del servicio</h3>
+        <span class="ev-type type-contested">contested</span>
+      </div>
+      <div class="ev-summary">El pasajero alega haber sido acusado falsamente de agresión y de pasar solo en el boarding gate, lo que sugiere una falla en la seguridad y en el trato durante la prestación del servicio.</div>
+      <div class="ev-weak">Debilidad señalada: No hay evidencia documental o de video que confirme las fallas alegadas.</div>
+      <div class="ev-provisions">Preguntas abiertas: ¿Se verificaron las acusaciones falsas mediante cámaras de seguridad u otros medios?</div>
+    </div></div>
+
+<div class="section-head">
+  <h2>4. Evidencia de la transcripción</h2>
+  
+</div>
+<div class="transcript-list" style="margin-bottom:24px;">
+    <div class="transcript-segment seg-passenger">
+      <div class="seg-time">passenger · 02:16–02:22 · I-002_05_NAR-07_STG_7_post_removal_investigation.seg-11</div>
+      <div class="seg-text">"Yo estoy tranquilísimo porque estoy muy enojado porque perdí mi vuelo, fui humillado."</div>
+      <div class="seg-text-en">I am very calm because I am very angry because I missed my flight, I was humiliated.</div>
+    </div>
+    <div class="transcript-segment seg-other">
+      <div class="seg-time">dgac_official · 06:33–06:35 · I-002_05_NAR-07_STG_7_post_removal_investigation.seg-36</div>
+      <div class="seg-text">"En ese caso deve saber como son los procedimentos"</div>
+      <div class="seg-text-en">In that case, you should know what the procedures are.</div>
+    </div>
+    <div class="transcript-segment seg-other">
+      <div class="seg-time">airline_supervisor · 01:26–01:32 · I-002_17_NAR-21_STG_29.seg-24</div>
+      <div class="seg-text">"En esa cart.. en Esa carta de contigencia, podrá adecuar como para lo que digo yo?"</div>
+      <div class="seg-text-en">And in that contingency letter, will it be possible to adjust it as I&#x27;m telling you?</div>
+    </div>
+    <div class="transcript-segment seg-passenger">
+      <div class="seg-time">passenger · 04:13–04:36 · I-002_17_NAR-21_STG_29.seg-59</div>
+      <div class="seg-text">"pónete en mi lugar, pónete en mi lugar. Yo fui acusado de agresión, eso no pasó. Yo fui acusado de pasar solo en el boarding gate. La misma persona que me acusó de agresión, eso también no pasó. La policía verificó eso en la cámara, eso fue comprobado que era una mentira."</div>
+      <div class="seg-text-en">Put yourself in my place, put yourself in my place. I was accused of aggression, that didn&#x27;t happen. I was accused of going through the boarding gate alone. The same person who accused me of aggression, that also didn&#x27;t happen. The police verified that on the camera, that was proven to be a lie.</div>
+    </div></div>
+
+<div class="section-head"><h2>5. Puntaje de confianza</h2></div>
+<table class="confidence-table">
+  <tr><th>Componente</th><th>Valor</th></tr>
+  <tr><td>CL.LEY16752.Art.3</td><td>0.62</td></tr><tr><td>CL.L20285.T1.C1.Art.3</td><td>0.35</td></tr><tr><td>CL.LPDC.Art.3.b</td><td>0.4</td></tr><tr><td>CL.LPDC.Art.23</td><td>0.68</td></tr>
+  <tr><td>Authorities verification factor</td><td>0.85</td></tr>
+  <tr><td><strong>Confianza global del expediente</strong></td><td><strong>0.44</strong></td></tr>
+</table>
+
+<div class="section-head">
+  <h2>6. Preguntas abiertas (verificación pendiente)</h2>
+</div>
+<div class="notes-panel" style="margin-bottom:28px;">
+  <div class="notes-label">21 open questions</div>
+  <div class="oq-item"><span class="oq-id">OQ-029-EVIDENCE-PERIOD-ELECTION</span>¿El presente análisis debe limitarse a la conducta del 5 de julio de 2024 (que es lo que los segmentos evidencian) o debe extenderse a la tramitación del reclamo administrativo de noviembre (que es lo que el título y el resumen alegan)?<span class="oq-priority">critical</span></div><div class="oq-item"><span class="oq-id">OQ-029-DGAC-FISCALIZACION-INSTRUCCION</span>¿Existió una instrucción de general aplicación dictada por la DGAC conforme al Art. 3 letra j de la Ley 16.752, y la DGAC inició un procedimiento de fiscalización por los hechos narrados en el caso LA8159?<span class="oq-priority">high</span></div><div class="oq-item"><span class="oq-id">OQ-029-DGAC-SEGURIDAD-VUELO</span>¿Los hechos del caso comprometían la seguridad de vuelo en el sentido del Art. 3 letra j de la Ley 16.752, y la DGAC evaluó o adoptó alguna medida de resguardo de seguridad de vuelo?<span class="oq-priority">medium</span></div><div class="oq-item"><span class="oq-id">OQ-029-DGAC-INVESTIGACION-LETRA-R</span>¿La DGAC inició una investigación conforme a la letra r del Art. 3 de la Ley 16.752 por los hechos del caso LA8159 (falsa acusación, retiro del pasajero, posible incumplimiento de protocolos)?<span class="oq-priority">high</span></div><div class="oq-item"><span class="oq-id">OQ-029-DGAC-FISCALIZACION-LETRA-Z</span>¿Cuál es el estándar de fiscalización exigible a la DGAC conforme a la letra z del Art. 3 de la Ley 16.752 en un caso de reclamo de pasajero?<span class="oq-priority">medium</span></div><div class="oq-item"><span class="oq-id">OQ-029-DGAC-COMPETENCIA-FUNCIONARIO</span>¿Qué unidad, cargo y competencia específica tenía el funcionario de la DGAC que intervino en el procedimiento, y qué resolución o investidura habilita su actuación?<span class="oq-priority">high</span></div><div class="oq-item"><span class="oq-id">OQ-029-DGAC-NEXO-PERJUICIO</span>¿El perjuicio alegado por el pasajero deriva de una infracción de deberes de la DGAC o de la actuación de la aerolínea, y existe nexo causal acreditado?<span class="oq-priority">high</span></div><div class="oq-item"><span class="oq-id">OQ-029-DGAC-DOLO-NEGLIGENCIA</span>¿La actuación de la DGAC en seg-36 constituye una omisión de fiscalización o una respuesta conforme a procedimiento, y permite calificar dolo o negligencia funcionaria?<span class="oq-priority">high</span></div><div class="oq-item"><span class="oq-id">OQ-029-TRANSP-PUBLICACION-PROCEDIMIENTOS</span>¿Existen registros de publicación o acceso a los procedimientos y decisiones de la DGAC en el caso LA8159, y la DGAC publicó o comunicó formalmente los procedimientos aplicables al reclamo?<span class="oq-priority">high</span></div><div class="oq-item"><span class="oq-id">OQ-029-TRANSP-DECISION-FORMAL</span>¿Existe una decisión formal de la DGAC en el procedimiento LA8159 y fue comunicada o notificada al pasajero?<span class="oq-priority">high</span></div><div class="oq-item"><span class="oq-id">OQ-029-TRANSP-UNIDAD-FUNCIONARIO</span>¿Qué unidad o funcionario específico de la DGAC ejerció la función pública en el caso LA8159 y bajo qué acto administrativo?<span class="oq-priority">medium</span></div><div class="oq-item"><span class="oq-id">OQ-029-LPDC-RELACION-CONSUMO</span>¿Se encuentra acreditada la relación de consumo entre el pasajero y la aerolínea, y quién es el proveedor responsable de la información en el caso concreto?<span class="oq-priority">high</span></div><div class="oq-item"><span class="oq-id">OQ-029-LPDC-VERACIDAD-ACUSACION</span>¿Existe un registro oficial (cámaras de seguridad, parte policial o resolución) que confirme que la acusación contra el pasajero fue falsa, y la información falsa fue proporcionada por el proveedor o por un tercero?<span class="oq-priority">critical</span></div><div class="oq-item"><span class="oq-id">OQ-029-LPDC-OPORTUNIDAD-INFO</span>¿En qué momento debió el proveedor informar al consumidor y si el pasajero recibió información antes de la pérdida del vuelo?<span class="oq-priority">medium</span></div><div class="oq-item"><span class="oq-id">OQ-029-LPDC-CONDICIONES-CONTRATACION</span>¿La carta de contingencia fue entregada al pasajero y qué condiciones de contratación eran relevantes para el vuelo perdido?<span class="oq-priority">medium</span></div><div class="oq-item"><span class="oq-id">OQ-029-LPDC-DEBER-INFORMARSE</span>¿Qué información estaba al alcance del consumidor y si tuvo acceso a los procedimientos de la aerolínea?<span class="oq-priority">low</span></div><div class="oq-item"><span class="oq-id">OQ-029-LPDC-ESTANDAR-DILIGENCIA</span>¿Cuál es el estándar de diligencia aplicable a la aerolínea en la gestión de contingencias y si su actuación se ajustó a dicho estándar?<span class="oq-priority">high</span></div><div class="oq-item"><span class="oq-id">OQ-029-LPDC-FALLA-SERVICIO</span>¿Se verificaron las acusaciones falsas mediante cámaras de seguridad u otros medios, y existió una falla o deficiencia en la calidad o seguridad del servicio?<span class="oq-priority">critical</span></div><div class="oq-item"><span class="oq-id">OQ-029-LPDC-MENOSCABO-CUANTIA</span>¿Cuál es la magnitud del menoscabo patrimonial y extrapatrimonial sufrido por el pasajero y su cuantificación?<span class="oq-priority">medium</span></div><div class="oq-item"><span class="oq-id">OQ-029-LPDC-DISCRIMINACION</span>¿El retiro y la acusación descritos en seg-59 involucraron un trato diferencial arbitrario basado en características protegidas del pasajero?<span class="oq-priority">medium</span></div><div class="oq-item"><span class="oq-id">OQ-029-LPDC-REPARACION</span>¿Existió oferta o negativa de reparación al pasajero tras la pérdida del vuelo?<span class="oq-priority">medium</span></div>
+</div>
+
+<div class="section-head">
+  <h2>7. Autoridades citadas</h2>
+  <p><strong>0 de 10</strong> autoridades listadas están verificadas. Las autoridades
+     no verificadas no deben citarse como texto confirmado.</p>
+</div>
+<div style="margin-bottom:16px;">
+    <div class="jurisdiction-pill">
+      <div class="jurisdiction-name">AUTH-DGAC-FISCALIZACION <span class="verified-tag verified-no">no verificado</span></div>
+      <div class="jurisdiction-laws">La facultad de fiscalizar de la DGAC es un deber exigible que se traduce en actuaciones concretas de control cuando existe una denuncia que afecta la seguridad de vuelo.</div>
+    </div>
+    <div class="jurisdiction-pill">
+      <div class="jurisdiction-name">AUTH-DGAC-INVESTIGACION <span class="verified-tag verified-no">no verificado</span></div>
+      <div class="jurisdiction-laws">La letra r del artículo 3 de la Ley 16.752 impone a la DGAC un deber de investigar las infracciones a la normativa aeronáutica que le sean denunciadas, y su omisión puede configurar incumplimiento de deberes funcionarios.</div>
+    </div>
+    <div class="jurisdiction-pill">
+      <div class="jurisdiction-name">AUTH-DGAC-REGLADA <span class="verified-tag verified-no">no verificado</span></div>
+      <div class="jurisdiction-laws">La letra z del artículo 3 de la Ley 16.752 opera como cláusula residual de fiscalización y su incumplimiento puede generar responsabilidad administrativa de la DGAC.</div>
+    </div>
+    <div class="jurisdiction-pill">
+      <div class="jurisdiction-name">AUTH-DGAC-DOLO-NEGLIGENCIA <span class="verified-tag verified-no">no verificado</span></div>
+      <div class="jurisdiction-laws">La negligencia funcionaria en el cumplimiento de deberes de fiscalización o información puede configurar responsabilidad administrativa de la DGAC.</div>
+    </div>
+    <div class="jurisdiction-pill">
+      <div class="jurisdiction-name">AUTH-TRANSPARENCIA-PRINCIPIO <span class="verified-tag verified-no">no verificado</span></div>
+      <div class="jurisdiction-laws">El principio de transparencia de la función pública exige que los órganos del Estado publiquen y faciliten el conocimiento de sus procedimientos, contenidos y decisiones, y su incumplimiento vulnera la Ley 20.285.</div>
+    </div>
+    <div class="jurisdiction-pill">
+      <div class="jurisdiction-name">AUTH-LPDC-INFO-VERAZ <span class="verified-tag verified-no">no verificado</span></div>
+      <div class="jurisdiction-laws">El proveedor de servicios de transporte aéreo debe proporcionar información veraz y oportuna sobre las condiciones de contratación, y su incumplimiento vulnera el artículo 3 letra b de la Ley 19.496.</div>
+    </div>
+    <div class="jurisdiction-pill">
+      <div class="jurisdiction-name">AUTH-LPDC-RESPONSABILIDAD <span class="verified-tag verified-no">no verificado</span></div>
+      <div class="jurisdiction-laws">El proveedor de servicios aéreos es responsable de los daños causados por su negligencia o por fallas en la calidad o seguridad del servicio, conforme al artículo 23 de la Ley 19.496.</div>
+    </div>
+    <div class="jurisdiction-pill">
+      <div class="jurisdiction-name">AUTH-LPDC-DEBER-INFO <span class="verified-tag verified-no">no verificado</span></div>
+      <div class="jurisdiction-laws">El deber del consumidor de informarse responsablemente no exime al proveedor de su obligación de entregar información veraz y oportuna, conforme al artículo 3 letra b de la Ley 19.496.</div>
+    </div>
+    <div class="jurisdiction-pill">
+      <div class="jurisdiction-name">AUTH-LPDC-DISCRIMINACION <span class="verified-tag verified-no">no verificado</span></div>
+      <div class="jurisdiction-laws">El derecho a no ser discriminado arbitrariamente por parte de proveedores comprende tratos diferenciales basados en características protegidas y su incumplimiento es sancionable bajo la Ley 19.496.</div>
+    </div>
+    <div class="jurisdiction-pill">
+      <div class="jurisdiction-name">AUTH-LPDC-REPARACION <span class="verified-tag verified-no">no verificado</span></div>
+      <div class="jurisdiction-laws">El derecho a la reparación e indemnización del consumidor comprende tanto daños materiales como morales y su negativa u omisión configura infracción a la Ley 19.496.</div>
+    </div></div>
+</div>
+<div class="page-footer">
+  <p><span class="mono">CL-029 · schema_version 3.0</span> — Documento generado automáticamente a partir del
+  expediente de análisis de cumplimiento. Este archivo organiza evidencia y calificaciones jurídicas preliminares
+  con fines de trabajo interno; los elementos "contested" y las autoridades "no verificadas" no deben presentarse
+  como hechos probados o citas confirmadas. Referencias cruzadas: CL-003, CL-008, CL-022, CL-030, CL-032, CL-004, CL-005, CL-007, CL-011, CL-016, CL-017, CL-018, CL-023, CL-036, CL-038, CL-039, CL-041, BR-013, BR-014, BR-015, BR-017, BR-019, INT-001, INT-002, INT-003, INT-012, INT-013, INT-017, INT-018, INT-019.</p>
+</div>
+
+</body>
+</html>
