@@ -789,6 +789,130 @@ def build_server(include_ui: bool = True):
         )
         return report.as_dict()
 
+    # ---------------------------------------------------------------
+    # Candidate review tools (Layer 2 norms: are the unverified
+    # citations fit for this agent?)
+    # ---------------------------------------------------------------
+
+    @mcp.tool()
+    def review_candidate_articles_tool(
+        violation: dict,
+        violation_id: str | None = None,
+        reviews_dir: str | None = None,
+        regenerate: bool = False,
+        llm_override: dict | None = None,
+    ) -> dict:
+        """Review the violation's candidate (unverified) articles and return
+        per-candidate *proposals* for a human to confirm. Writes nothing.
+
+        The review is taken from the ready-made file
+        `data/candidate-reviews/<violation_id>.candidates.review.md` when one
+        exists and carries a validation table; only when no such review is there
+        is one generated with the configured LLM (`regenerate=True` forces
+        generation even if a file exists). `reviews_dir` overrides the search
+        root, which otherwise follows VR_CANDIDATE_REVIEWS.
+
+        Returns `{ok, violation_id, source, review_path, review_markdown, rows,
+        proposals, counts, notes}`. A candidate the review does not cover is
+        reported as `not_reviewed` rather than dropped, and a row naming an
+        article the bundle holds as *established* is ignored — the real reviews
+        confirm the established articles too, and those are not candidates.
+
+        This tool never promotes a candidate to `established_articles` and never
+        writes to a bundle: apply the proposals with
+        `apply_candidate_review_tool`, then persist through
+        `write_violation_json_tool`.
+        """
+        from . import progress
+        from .candidate_review import (
+            describe_path,
+            generate_review,
+            parse_review_table,
+            propose_changes,
+            read_review,
+            render_review_markdown,
+            review_path,
+            summarize,
+        )
+        v = _v_load(violation)
+        vid = (violation_id or v.violation_id or "").strip()
+        if not vid:
+            raise ValueError("a violation_id is required to locate a candidate review")
+        notes: list[str] = []
+        markdown: str | None = None
+        intro = ""
+        source = "generated"
+        path = review_path(vid, reviews_dir)
+        if not regenerate:
+            markdown = read_review(vid, reviews_dir)
+        if markdown is not None:
+            rows = parse_review_table(markdown)
+            source = "ready_made"
+            if not rows:
+                notes.append(
+                    f"{describe_path(path) if path is not None else vid} exists but "
+                    "carries no validation table; a review was generated instead"
+                )
+                markdown = None
+        if markdown is None:
+            progress.begin("review_candidate_articles_tool", total=1)
+            try:
+                rows, intro = generate_review(v, _build_llm_client(llm_override))
+            except Exception as exc:  # noqa: BLE001 - report, then surface unchanged
+                progress.end(
+                    "review_candidate_articles_tool",
+                    error=f"{type(exc).__name__}: {exc}",
+                )
+                raise
+            progress.end("review_candidate_articles_tool")
+            markdown = render_review_markdown(rows, intro=intro)
+        proposals = propose_changes(v.candidate_articles, rows)
+        return {
+            "ok": True,
+            "violation_id": vid,
+            "source": source,
+            "review_path": describe_path(path) if path is not None else None,
+            "review_markdown": markdown,
+            "rows": [row.as_dict() for row in rows],
+            "proposals": [p.as_dict() for p in proposals],
+            "counts": summarize(proposals),
+            "notes": notes,
+        }
+
+    @mcp.tool()
+    def apply_candidate_review_tool(
+        violation: dict,
+        decisions: list[dict],
+        actor: str | None = None,
+    ) -> dict:
+        """Apply a reviewer's *confirmed* candidate-review decisions and return
+        the updated violation. Writes nothing — persist the returned violation
+        with `write_violation_json_tool`.
+
+        Each decision is `{candidate_article_id, action, validation?, note?,
+        link?}` with `action` one of `keep`, `annotate`, `withdraw`:
+
+        * `keep`     — leave the candidate untouched;
+        * `annotate` — append the review's finding to `history_note` and add a
+          verification step to `verification_required`;
+        * `withdraw` — drop the candidate from `candidate_articles`.
+
+        Both edits are idempotent, so re-confirming the same review does not
+        duplicate a note or a step. An unknown candidate id, an unknown action,
+        or the same id twice raises `ValueError` and changes nothing. One
+        `apply_candidate_review` provenance entry (layer 2) is appended when at
+        least one candidate changed. Promotion to `established_articles` is not
+        supported: an established article must carry a byte-exact excerpt, which
+        is a separate, separately verified operation.
+        """
+        from .candidate_review import apply_decisions, with_provenance
+        v = _v_load(violation)
+        candidates, entry, _counts = apply_decisions(
+            v.candidate_articles, decisions, actor=actor or "legal_audit_human"
+        )
+        updated = v.model_copy(update={"candidate_articles": candidates})
+        return _v_dump(with_provenance(updated, entry))
+
     @mcp.tool()
     def llm_provider_info_tool() -> dict:
         """Report the currently-configured LLM provider, model, and base URL

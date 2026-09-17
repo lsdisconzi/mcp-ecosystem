@@ -150,6 +150,10 @@ code {
 
 .block { margin-bottom: 30px; }
 .block-title { font-family: var(--serif); font-size: 1.02rem; font-weight: 600; margin-bottom: 4px; }
+/* A block whose title carries a control on the same line. The title keeps its own
+   margin everywhere else, so it is zeroed only inside this row. */
+.block-title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+.block-title-row .block-title { margin-bottom: 0; }
 .block-sub { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px; }
 
 /* forms */
@@ -794,7 +798,11 @@ code {
   </div>
 
   <div class="block">
-    <div class="block-title">Established articles</div>
+    <div class="block-title-row">
+      <div class="block-title">Established articles</div>
+      <button class="btn btn-sm" data-action="review-candidates" data-tool="review_candidate_articles_tool" title="Check every candidate below against the official text and propose a change per candidate — nothing is written until you confirm it">Review candidates</button>
+    </div>
+    <div class="block-sub">What the bundle has established, with the excerpt each was verified from. The candidates below are the ones it invokes but has not established.</div>
     <div class="record-list" id="s3Established"><div class="field-hint">No established articles in this bundle.</div></div>
   </div>
 
@@ -1309,6 +1317,13 @@ let state = {
   // for an article staged into the bundle afterwards — which is the case this
   // check exists to settle.
   candidateChecks: {},
+  // The candidate review on screen: the payload `review_candidate_articles_tool`
+  // returned, plus the reviewer's own per-candidate `decisions`. `null` until a
+  // review has been asked for. Kept whole rather than reduced to the proposals
+  // because the modal shows the review text it was built from — and cleared as
+  // soon as it is applied or the bundle changes, because a proposal describes the
+  // candidate list as it was *before* the confirm.
+  candidateReview: null,
   settings: {},
 };
 
@@ -1644,6 +1659,37 @@ function modalMetaGrid(pairs) {
     + `</div>`;
 }
 
+/** Close the generic modal and put its footer back to the shared default.
+ *
+ *  The footer note describes what the *current* dialog does and the staging
+ *  picker changes it, so restoring it here is what keeps that claim from
+ *  outliving the dialog it was written for. The footer also carries the staging
+ *  confirm, which belongs to the picker alone: dropping the picker state is what
+ *  keeps a selected file from re-arming that button in the next modal that
+ *  happens to reuse this footer. */
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+  document.getElementById('modalFooterNote').textContent = MODAL_FOOTER_NOTE;
+  state.picker = null;
+  syncStageAction();
+}
+
+/** Show a failed call in the modal, in one shape wherever it happens.
+ *
+ *  Two callers: `invokeTool`'s failure path, and the candidate review, which
+ *  runs its own request because its result is a proposal list rather than a
+ *  violation. Both need the same thing — the server's own message, verbatim. */
+function showErrorModal(name, statusText, message) {
+  const body = document.getElementById('modalBody');
+  if (!body) return;
+  document.getElementById('modalBadge').textContent = 'Error';
+  document.getElementById('modalTitle').textContent = name;
+  document.getElementById('modalSub').textContent = statusText;
+  body.innerHTML = `<pre class="result-json">${escapeHtml(message)}</pre>
+        <div class="btn-row" style="margin-top:14px;"><button class="btn" data-action="close-modal">Close</button></div>`;
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
 /** Modals read the record the row pointed at. The templates are only the empty
  *  state for a bundle that does not hold that record. */
 function openModal(key) {
@@ -1658,6 +1704,11 @@ function openModal(key) {
   // part of it. Explicit here as well as on close, so no future caller that
   // opens a record modal without closing the last one can inherit the button.
   syncStageAction();
+  // The footer note is a claim about the dialog that is open. A modal that
+  // overrides it (the staging picker, the candidate review) sets its own after
+  // this; every other one has to find the default here rather than whatever the
+  // last dialog left behind — `openModal()` is reachable without a close.
+  document.getElementById('modalFooterNote').textContent = MODAL_FOOTER_NOTE;
 
   const emptyState = (name) => {
     const tpl = document.getElementById('tpl-modal-' + name);
@@ -1666,7 +1717,11 @@ function openModal(key) {
   };
   const metaGrid = modalMetaGrid;
 
-  if (key === 'match') {
+  if (key === 'candidates') {
+    // Rendered by the function that owns the review payload, so the modal and
+    // the panel behind it read the same object.
+    renderCandidateReviewModal();
+  } else if (key === 'match') {
     badge.textContent = 'S7 · Verification';
     const authority = ((v && v.authorities) || []).find(a => a.verification_provenance);
     if (!authority) {
@@ -2119,20 +2174,7 @@ document.addEventListener('DOMContentLoaded', () => {
         () => pushLog('Clipboard blocked by the browser', 'S10', 'warn'));
     }
 
-    if (action === 'close-modal') {
-      document.getElementById('modalOverlay').classList.remove('active');
-      // The footer note describes what the *current* dialog does, and the
-      // staging picker changes it. Restoring the default on close is what keeps
-      // that claim from outliving the dialog it was written for — every other
-      // modal reuses this footer untouched.
-      document.getElementById('modalFooterNote').textContent = MODAL_FOOTER_NOTE;
-      // The footer also carries the staging confirm, which belongs to the
-      // picker alone. Dropping the picker state here is what keeps a selected
-      // file from outliving the dialog and re-arming the button in the next
-      // modal that happens to reuse this footer.
-      state.picker = null;
-      syncStageAction();
-    }
+    if (action === 'close-modal') closeModal();
 
     if (action === 'pick-article') {
       e.preventDefault();
@@ -2146,6 +2188,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (action === 'check-candidate') {
       e.preventDefault();
       checkCandidateArticle(t.dataset.candidate || '');
+    }
+
+    // S3: review every candidate against the official text and propose a change
+    // per candidate. The review proposes and writes nothing; the confirm inside
+    // the modal it opens is what changes the bundle.
+    if (action === 'review-candidates') {
+      e.preventDefault();
+      reviewCandidates();
+    }
+    if (action === 'candidate-review-apply') {
+      e.preventDefault();
+      applyCandidateReview();
     }
 
     // The element grid's two ways in: a dot names a segment and the element it
@@ -2285,6 +2339,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // submit that the reviewer cannot see coming.
   document.addEventListener('input', (e) => {
     if (e.target.id === 'proofQuote') renderProofSource(state.proofAuthority);
+  });
+
+  // Candidate-review decisions. `change`, not `click`: the decision is a select,
+  // and a keyboard pick has to count the same as a mouse one. Only the tally is
+  // repainted — see `renderCandidateTally`.
+  document.getElementById('modalBody').addEventListener('change', (e) => {
+    const select = e.target.closest('[data-candidate-decision]');
+    if (!select) return;
+    setCandidateDecision(select.dataset.candidateDecision, select.value);
   });
 
   // remove record rows
@@ -2495,6 +2558,9 @@ function switchBundle(bundleId) {
   // The candidate check answers a question about files in that directory too,
   // so its answers do not survive the switch either.
   state.candidateChecks = {};
+  // The review's proposals name candidates of the *old* bundle — applying them
+  // here would edit this one.
+  state.candidateReview = null;
   localStorage.removeItem('vp.violation');
   resetStats();
   syncStepCompletion(null);
@@ -3645,7 +3711,7 @@ function runHeadline() {
  *  the typed-confirmation buttons are opened by an explicit consent step, and
  *  re-enabling them here would hand out a button the reviewer never unlocked. */
 function setRunControlsBusy(busy) {
-  document.querySelectorAll('[data-action="run"], #argRun').forEach(btn => {
+  document.querySelectorAll('[data-action="run"], #argRun, [data-action="review-candidates"], [data-action="candidate-review-apply"]').forEach(btn => {
     if (busy) {
       if (btn.dataset.freeDisabled === undefined) {
         btn.dataset.freeDisabled = btn.disabled ? '1' : '0';
@@ -3752,7 +3818,7 @@ async function invokeTool(name, args, opts = {}) {
     // Reachable when a second click slips through before the controls lock, or
     // from a keyboard activation on a form control.
     pushLog(`${name} not started — ${run.tool} is still running`, step, 'warn');
-    return;
+    return false;
   }
   const n = Object.keys(args).length;
   pushLog(`→ ${name}(${n} arg${n === 1 ? '' : 's'})`, step);
@@ -3788,29 +3854,24 @@ async function invokeTool(name, args, opts = {}) {
         pushLog(`Persist failed (non-blocking) — ${e.message}`, step, 'warn');
       }
     }
-    return;
+    // Reported to the caller as well as to the log: a caller that has a dialog
+    // open over this run needs to know it must not close it, and the failure
+    // path below opens its own error modal.
+    return true;
   } catch (e) {
     if (e.status === 409 && e.body && e.body.busy) {
       // The server refused because it is already running something. Reported,
       // not shown as a failure: nothing is wrong with the click, it just lost a
       // race with a run that is still going.
       pushLog(`${name} not started — ${e.message}`, step, 'warn');
-      return;
+      return false;
     }
     if (e.status === 409 && e.body && e.body.requires_confirmation) {
       confirmRequired = true;
       pushLog(`${name} blocked — confirmation required`, step, 'warn');
     }
     pushLog(`← ${name} failed — ${e.message}`, step, 'err');
-    const b = document.getElementById('modalBody');
-    if (b) {
-      document.getElementById('modalBadge').textContent = 'Error';
-      document.getElementById('modalTitle').textContent = name;
-      document.getElementById('modalSub').textContent = `HTTP ${e.status || '?'}`;
-      b.innerHTML = `<pre class="result-json">${escapeHtml(e.message)}</pre>
-        <div class="btn-row" style="margin-top:14px;"><button class="btn" data-action="close-modal">Close</button></div>`;
-      document.getElementById('modalOverlay').classList.add('active');
-    }
+    showErrorModal(name, `HTTP ${e.status || '?'}`, e.message);
   } finally {
     endRun();
   }
@@ -4705,6 +4766,259 @@ async function checkCandidateArticle(reference) {
     pushLog(`Could not check ${id} in the bundle — ${err.message}`, 'S3', 'err');
   }
   if (state.activeStep === 's3') hydrateS3();
+}
+
+/* ------------------------------------------------- S3 candidate review panel */
+
+/** The three things a decision can do. Closed set, and the server enforces the
+ *  same one: a decision it does not recognise is an error rather than a skip,
+ *  because a typo that applied nothing looks exactly like a decision already in
+ *  place. */
+const CANDIDATE_ACTIONS = [
+  ['keep', 'Keep as recorded'],
+  ['annotate', 'Annotate — note + verification step'],
+  ['withdraw', 'Withdraw from candidates'],
+];
+
+/** What confirming would do to one candidate: the reviewer's pick if they made
+ *  one, else the action the review itself recommends. */
+function candidateActionFor(id, proposal) {
+  const rev = state.candidateReview || {};
+  const chosen = (rev.decisions || {})[id];
+  return chosen || (proposal ? proposal.action : 'keep');
+}
+
+/** What confirming this proposal writes, in the tool's own terms.
+ *
+ *  Read off the proposal's own `changes` — the payload the server computed with
+ *  the same helper the apply uses — so the preview cannot promise an edit that
+ *  confirming will not make. A withdrawal carries no `changes`: dropping the
+ *  record *is* the edit. */
+function candidateChangeHtml(proposal) {
+  const parts = [];
+  if (proposal.action === 'withdraw') parts.push('removed from candidate_articles');
+  const changes = proposal.changes || {};
+  if (changes.history_note) parts.push(`history_note += “${changes.history_note}”`);
+  (changes.verification_required || []).forEach(step => parts.push(`verification_required += “${step}”`));
+  if (!parts.length) return '<div class="rr-detail field-hint">The review proposes nothing here — the candidate stays as recorded, with no field changes.</div>';
+  return `<div class="rr-detail"><b>Proposed:</b> ${escapeHtml(parts.join(' · '))}</div>`;
+}
+
+/** One candidate in the review modal: what the review found, what confirming
+ *  would write, and the reviewer's own decision as a select.
+ *
+ *  A `select` rather than buttons: the three actions are exclusive, and a row of
+ *  buttons would need a "which one is chosen" affordance this page has no
+ *  pattern for. The choice is wired to `change`, so a keyboard pick counts the
+ *  same as a mouse one. */
+function candidateProposalRow(proposal) {
+  const id = proposal.candidate_article_id;
+  const chosen = candidateActionFor(id, proposal);
+  const options = CANDIDATE_ACTIONS
+    .map(([value, label]) => `<option value="${value}"${value === chosen ? ' selected' : ''}>${escapeHtml(label)}</option>`)
+    .join('');
+  return `<div class="record-row${proposal.action === 'withdraw' ? ' legacy' : ''}">
+    <div class="rr-main">
+      <div class="rr-id">${escapeHtml(id)}</div>
+      ${proposal.candidate_name ? `<div class="rr-detail">${escapeHtml(proposal.candidate_name)}</div>` : ''}
+      <div class="rr-detail"><b>${escapeHtml(proposal.verdict)}</b> — ${escapeHtml(proposal.reason)}</div>
+      ${proposal.validation ? `<div class="rr-detail quote">&ldquo;${escapeHtml(proposal.validation)}&rdquo;</div>` : ''}
+      ${candidateChangeHtml(proposal)}
+    </div>
+    <div class="rr-meta">
+      <select data-candidate-decision="${escapeHtml(id)}" aria-label="Decision for ${escapeHtml(id)}">${options}</select>
+    </div>
+  </div>`;
+}
+
+/** How many candidates each action would apply, from the decisions on screen. */
+function candidateTally() {
+  const rev = state.candidateReview || {};
+  const counts = { keep: 0, annotate: 0, withdraw: 0 };
+  (rev.proposals || []).forEach(proposal => {
+    const action = candidateActionFor(proposal.candidate_article_id, proposal);
+    counts[action] = (counts[action] || 0) + 1;
+  });
+  return counts;
+}
+
+/** Repaint only the tally line after a decision changes.
+ *
+ *  Deliberately not a re-render of the modal body: the select the reviewer is
+ *  using lives in that body, and rebuilding it would drop the focus they just
+ *  put there. The per-row preview above stays as the *review's* proposal, which
+ *  is what it is labelled as — the tally is what says what confirming will do. */
+function renderCandidateTally() {
+  const el = document.getElementById('candidateReviewTally');
+  if (!el) return;
+  const t = candidateTally();
+  const parts = [];
+  if (t.withdraw) parts.push(`${t.withdraw} withdrawn`);
+  if (t.annotate) parts.push(`${t.annotate} annotated`);
+  if (t.keep) parts.push(`${t.keep} kept`);
+  const nothing = !t.withdraw && !t.annotate;
+  el.textContent = `Confirming will: ${parts.join(', ') || 'change nothing'}.`
+    + (nothing ? ' Nothing in this bundle would change.' : '');
+}
+
+/** Record the reviewer's decision for one candidate. */
+function setCandidateDecision(id, action) {
+  const rev = state.candidateReview;
+  if (!rev || !id) return;
+  rev.decisions[id] = action;
+  renderCandidateTally();
+}
+
+/** The review modal: every candidate, the verdict on it, what confirming writes,
+ *  and the decision per candidate.
+ *
+ *  Built from `state.candidateReview` — the same payload the log lines were made
+ *  from — so the proposals on screen cannot drift from the decisions that will be
+ *  sent back. `openModal('candidates')` calls this, which is why it also sets the
+ *  header: that branch has no record to describe. */
+function renderCandidateReviewModal() {
+  const badge = document.getElementById('modalBadge');
+  const title = document.getElementById('modalTitle');
+  const sub = document.getElementById('modalSub');
+  const body = document.getElementById('modalBody');
+  const rev = state.candidateReview;
+  if (!rev) {
+    badge.textContent = 'S3 · Candidates';
+    title.textContent = 'No review loaded';
+    sub.textContent = '';
+    body.innerHTML = hintRow('Ask for a review first — nothing has been proposed in this session.');
+    return;
+  }
+  const proposals = rev.proposals || [];
+  const counts = rev.counts || {};
+  badge.textContent = 'S3 · Candidate review';
+  title.textContent = `${proposals.length} candidate article(s) reviewed`;
+  sub.textContent = [
+    rev.violation_id,
+    rev.source === 'ready_made'
+      ? `review file: ${rev.review_path || 'a ready-made review'}`
+      : 'review generated — no ready-made file for this violation',
+  ].filter(Boolean).join(' · ');
+
+  body.innerHTML = [
+    `<div class="note-card"><div class="note-body">`
+      + `The review found <b>${counts.incorrect || 0} inapplicable</b>, <b>${counts.uncertain || 0} open</b>`
+      + ` and <b>${counts.correct || 0} correct</b> of ${proposals.length}.`
+      + ` Confirming writes only what the decisions below say: an annotated candidate keeps its record with the`
+      + ` finding appended to <code>history_note</code> and a step in <code>verification_required</code>; a withdrawn`
+      + ` one leaves <code>candidate_articles</code>. Nothing here promotes a candidate to`
+      + ` <code>established_articles</code> — an established article has to carry a byte-exact excerpt, which is a`
+      + ` separate, separately verified operation.</div></div>`,
+    ...proposals.map(candidateProposalRow),
+    proposals.length ? '' : hintRow('This bundle records no candidate articles, so there is nothing to confirm.'),
+    `<div class="modal-section"><div class="modal-section-label">The review itself</div>`
+      + `<details><summary class="field-hint">Show the review text as it was written</summary>`
+      + `<pre class="result-json">${escapeHtml(rev.review_markdown || '(empty)')}</pre></details></div>`,
+    `<div class="btn-row">
+      <button class="btn btn-primary" id="candidateReviewApply" data-action="candidate-review-apply" data-tool="apply_candidate_review_tool">Confirm and write to the bundle</button>
+      <button class="btn" data-action="close-modal">Cancel</button>
+      <span class="field-hint" id="candidateReviewTally"></span>
+    </div>`,
+    `<div class="field-hint">Confirming calls <code>apply_candidate_review_tool</code>, then persists through`
+      + ` <code>write_violation_json_tool</code> — the bundle's only writer. Cancel writes nothing.</div>`,
+  ].join('');
+  renderCandidateTally();
+}
+
+/** Review every candidate article, then let the reviewer confirm the proposals.
+ *
+ *  Runs on the server's background path rather than through `invokeTool`, for two
+ *  reasons: a bundle with no ready-made review has one generated by the LLM,
+ *  which is minutes — the same reason the enrichment stages do — and the result
+ *  is a proposal list, not a violation. `invokeTool` adopts any result carrying a
+ *  `violation_id` as the new violation and persists it, which for this payload
+ *  would replace the bundle's record with a review.
+ *
+ *  Writes nothing itself: the proposals land in state and the modal collects the
+ *  decision. Only `applyCandidateReview()` changes the bundle. */
+async function reviewCandidates() {
+  if (run) {
+    pushLog(`Candidate review not started — ${run.tool} is still running`, 'S3', 'warn');
+    return;
+  }
+  if (!state.violation || !state.bundleId) {
+    pushLog('No bundle loaded — there is nothing to review', 'S3', 'warn');
+    return;
+  }
+  const button = document.querySelector('[data-action="review-candidates"]');
+  pushLog('→ review_candidate_articles_tool(violation)', 'S3');
+  beginRun('review_candidate_articles_tool', button);
+  try {
+    const started = await API.toolStart({
+      name: 'review_candidate_articles_tool',
+      args: { violation: state.violation, violation_id: state.bundleId },
+      confirm: true,
+    });
+    const body = await awaitJob(started.job_id);
+    if (body.status === 'error') throw new Error(body.error || 'the review did not complete');
+    const result = body.result || {};
+    const proposals = result.proposals || [];
+    // Seeded with the review's own recommendation: the reviewer is confirming or
+    // overriding a proposal, and an empty default would turn every confirm into a
+    // fresh decision about every candidate.
+    const decisions = {};
+    proposals.forEach(p => { decisions[p.candidate_article_id] = p.action; });
+    state.candidateReview = { ...result, decisions };
+    pushLog(`← review_candidate_articles_tool ok · ${fmtElapsed(body.seconds)}`
+      + ` — ${result.source === 'ready_made' ? `ready-made review ${result.review_path || ''}` : 'review generated'}`
+      + ` · ${proposals.length} candidate(s)`, 'S3', 'ok');
+    (result.notes || []).forEach(note => pushLog(`   ${note}`, 'S3', 'warn'));
+    if (!proposals.length) {
+      pushLog('   this bundle records no candidate articles — nothing to confirm', 'S3', 'warn');
+      return;
+    }
+    openModal('candidates');
+  } catch (e) {
+    pushLog(`← review_candidate_articles_tool failed — ${e.message}`, 'S3', 'err');
+    showErrorModal('review_candidate_articles_tool', 'the review did not complete', e.message);
+  } finally {
+    endRun();
+  }
+}
+
+/** Send the confirmed decisions back, and persist what comes back.
+ *
+ *  Through `invokeTool`, not a hand-rolled request: this is the one candidate
+ *  step that changes the record, it returns the updated violation, and
+ *  `invokeTool` is what puts that violation through `write_violation_json_tool`.
+ *  Persisting is not a second step the reviewer has to remember — the review is
+ *  applied to the bundle the panel is reading, or it has not been applied. */
+async function applyCandidateReview() {
+  const rev = state.candidateReview;
+  if (!rev) {
+    pushLog('No candidate review to apply', 'S3', 'warn');
+    return;
+  }
+  const decisions = (rev.proposals || []).map(proposal => {
+    const action = candidateActionFor(proposal.candidate_article_id, proposal);
+    const decision = { candidate_article_id: proposal.candidate_article_id, action };
+    if (action !== 'keep') {
+      // The review's own wording travels back with the decision: it is what the
+      // note quotes, and the server re-derives the verdict from this text. A
+      // classification alone would lose the sentence the reviewer approved.
+      decision.validation = proposal.validation;
+      decision.note = proposal.correction;
+      decision.link = proposal.link;
+    }
+    return decision;
+  });
+  const button = document.getElementById('candidateReviewApply');
+  const ok = await invokeTool('apply_candidate_review_tool', {
+    violation: state.violation,
+    decisions,
+    actor: 'legal_audit_human',
+  }, { button });
+  if (!ok) return;  // invokeTool reported it, and may have opened the error modal
+  // The proposals describe the candidate list as it was *before* this confirm, so
+  // a modal left open over the refreshed panel would offer a second confirm of a
+  // review that has already landed. `invokeTool` repainted S3 behind it.
+  state.candidateReview = null;
+  closeModal();
 }
 
 function hydrateS3() {

@@ -29,7 +29,7 @@ PKG_DIR = Path(__file__).parent.parent / "violation_pack"
 SERVER_PATH = PKG_DIR / "mcp_server.py"
 CONFIG_PATH = PKG_DIR / "config.py"
 
-EXPECTED_TOOL_COUNT = 39
+EXPECTED_TOOL_COUNT = 41
 
 # Read by `mcp_server.main()` rather than by `Settings.from_env()`.
 TRANSPORT_ENV = {"MCP_TRANSPORT", "MCP_HOST", "MCP_PORT"}

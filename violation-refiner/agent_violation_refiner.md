@@ -12,7 +12,7 @@ You are the dedicated development agent for **ViolationRefiner** (`violation_pac
 **Location**: `/Users/leandrodisconzi/repos/mcp-ecosystem/violation-refiner`
 **Package**: `violation_pack` (installable via `pip install -e .`)
 **Language**: Python 3.10+ (`requires-python = ">=3.10"`); local dev interpreter 3.14
-**Primary interface**: Python library + MCP server (39 tools) + CLI catalog
+**Primary interface**: Python library + MCP server (41 tools) + CLI catalog
 
 **What it does**: Turns violation narratives into 5 enriched layers (evidence anchoring, norm anchoring, element grid, nexus matrix, authority stubs), computes confidence scores, runs a 17-check validation pipeline (V01-V17), and packages everything into signed zip bundles.
 
@@ -71,7 +71,8 @@ violation_pack/
 | `violation_pack/verifier.py` | 376 | Enrichment integrity checks (V11) |
 | `violation_pack/validation.py` | 784 | V01-V17 pipeline |
 | `violation_pack/refine_batch_core.py` | 662 | Importable batch-refiner core |
-| `violation_pack/mcp_server.py` | 790 | MCP server with 39 tools |
+| `violation_pack/mcp_server.py` | 999 | MCP server with 41 tools |
+| `violation_pack/candidate_review.py` | 909 | Candidate-article review: parse, propose, apply |
 | `violation_pack/qdrant_index.py` | 370 | Qdrant VectorIndex impl |
 | `violation_pack/neo4j_graph.py` | 331 | Neo4j KnowledgeGraph impl |
 | `violation_pack/ingesters.py` | 651 | Bulk corpus ingestion |

@@ -265,7 +265,7 @@ def test_js_function_rejects_a_duplicate_declaration(tmp_path, monkeypatch):
 def test_describe_tools_covers_every_registered_tool(server):
     described = describe_tools(server._tool_manager)
     assert {t["name"] for t in described} == _server_tool_names(server)
-    assert len(described) == 39
+    assert len(described) == 41
 
 
 def test_describe_tools_exposes_json_schema(server):
@@ -286,6 +286,11 @@ def test_only_the_reset_tools_are_marked_destructive(server):
 # ---------------------------------------------------------------------------
 
 def test_probe_runtime_reports_python_and_pydantic():
+    # `tool_count` is a *parameter* of probe_runtime, not the server's count:
+    # this asserts that whatever number is passed is echoed back. Do not
+    # "fix" this 39 when the tool count changes — it is deliberately arbitrary,
+    # and the real count is pinned in test_catalog_sync.EXPECTED_TOOL_COUNT and
+    # by test_describe_tools_covers_every_registered_tool.
     probe = probe_runtime(tool_count=39)
     assert probe["status"] == "ok"
     assert probe["python"]["ok"] is True
@@ -327,8 +332,8 @@ def test_get_root_serves_the_ui(client):
 
 def test_get_api_tools_matches_the_server(client):
     payload = client.get("/api/tools").json()
-    assert payload["count"] == 39
-    assert len(payload["tools"]) == 39
+    assert payload["count"] == 41
+    assert len(payload["tools"]) == 41
     assert {t["name"] for t in payload["tools"]} == _server_tool_names(build_server())
 
 
@@ -3001,7 +3006,7 @@ def test_tool_manager_list_tools_is_synchronous(server):
         "ToolManager.list_tools() no longer returns a plain list — "
         "update ui_server.py (do NOT await it)."
     )
-    assert len(result) == 39
+    assert len(result) == 41
 
 
 def test_tool_manager_call_tool_returns_a_plain_value(server):

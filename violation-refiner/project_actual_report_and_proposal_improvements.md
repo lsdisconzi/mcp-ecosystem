@@ -16,7 +16,7 @@
 > | 5.2-4 | `docs/mcp_mapping.md` missing | ✅ FIXED | created — 13 sections mapping every MCP tool → library function → `file:line` → UI step |
 > | 5.2-5 | `.env.example` incomplete | ✅ FIXED | created — documents all **31** `Settings.from_env()` vars plus the 3 `MCP_*` transport vars, grouped by provider |
 > | 5.2-6 | phantom `neo4j_query_tool` in catalog | ✅ FIXED | catalog lists the four real `neo4j_*_tool` entries |
-> | 5.2-7 | catalog lists 15 vs 30 tools | ✅ FIXED | catalog lists all **39** registered tools |
+> | 5.2-7 | catalog lists 15 vs 30 tools | ✅ FIXED | catalog lists all **41** registered tools |
 > | 5.2-8 | `generate_map.py` dead code | ✅ FIXED (removed) | file no longer present |
 > | 5.2-9 | authority-verification floor hardcoded | ✅ FIXED | `derive_confidence(..., authority_verification_floor=0.85)` + `AUTHORITY_VERIFICATION_FLOOR` env var |
 > | 5.2-10 | no non-filesystem `FrameworkSource` | ⚠️ OPEN | only `HtmlTranscriptSource` / `MarkdownFrameworkSource` ship |
@@ -48,6 +48,30 @@
 > pre-rewrite 42-bundle snapshot) stays local-only. Only the transient per-run
 > files inside `build/` remain ignored: `refine_batch_summary.json`, `*.bak`,
 > `.DS_Store`, `__pycache__/`.
+>
+> **Amendment — candidate-article review (2026-09-14):** two tools were added, so
+> the registered tool count is now **41**, not 39. `candidate_articles` had a
+> schema and a UI list but no way to *check* the citations in it: the analyst could
+> see that `CL.CPCL.T4.Art.223` was unverified and could not find out whether it
+> was even the right article. Now:
+>
+> - `review_candidate_articles_tool` reads
+>   `data/candidate-reviews/<violation_id>.candidates.review.md` when it exists and
+>   calls an LLM only when it does not, then returns one *proposal* per candidate.
+>   It writes nothing.
+> - `apply_candidate_review_tool` applies the reviewer's confirmed decisions
+>   (`keep` / `annotate` / `withdraw`) to `candidate_articles` and returns the
+>   updated `Violation`. It writes nothing either — persistence stays with
+>   `write_violation_json_tool`, so confirm and write are separate steps.
+> - The UI entry point is **Review candidates** in the *Established articles*
+>   block of S3, which opens a modal where each proposal is shown with its change
+>   and a pre-selected action the reviewer can override.
+>
+> Verified end-to-end in a browser against `build/CL-030/CL-030.json` (3 candidates;
+> 2 withdrawn, 1 annotated, `established_articles` untouched) and covered by
+> `tests/test_candidate_review.py` (55 tests). Fixed along the way: a re-apply of a
+> review that had already landed reported an annotation and appended a provenance
+> entry for an edit that did not happen.
 >
 > **Current metrics (verified 2026-09-11):** 39 MCP tools (was 30); V01–V11
 > (11 checks, not 10); `python examples/refine_cl005.py` →
@@ -113,7 +137,7 @@ Extracted from README.md, docstrings, pyproject.toml, and source comments:
 
 **Interface/API surface**:
 - Python library (`from violation_pack import ...`) — 20+ public symbols
-- MCP server (`violation-pack-mcp` / `python -m violation_pack.mcp_server`) — 39 tools
+- MCP server (`violation-pack-mcp` / `python -m violation_pack.mcp_server`) — 41 tools
 - CLI: `violation-pack-catalog` for MCP catalog/config snippet generation
 - Scripts: `examples/refine_cl005.py`, `examples/refine_batch.py`, `examples/wire_extensions.py`
 
@@ -620,7 +644,7 @@ violation_pack/
 ├── llm.py             [Infra]     Multi-provider LLM client
 ├── config.py          [Infra]     Environment-driven Settings
 ├── refine_batch_core.py [Transform] Importable batch-refiner core
-├── mcp_server.py      [API]       MCP server with 39 tools
+├── mcp_server.py      [API]       MCP server with 41 tools
 ├── mcp_catalog.py     [API]       MCP catalog CLI + snippet generator
 └── __init__.py        [API]       Public surface + factory functions
 ```

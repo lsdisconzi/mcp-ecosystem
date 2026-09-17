@@ -91,6 +91,8 @@ def _violation_pack_server(python: str | None = None) -> ServerEntry:
             ToolEntry("enrich_violation_tool", "Run full LLM enrichment.", ["llm", "enrichment"]),
             ToolEntry("enrich_stage_tool", "Run one enrichment stage.", ["llm", "enrichment"]),
             ToolEntry("verify_enrichment_tool", "Run the LLM-output verifier.", ["verifier"]),
+            ToolEntry("review_candidate_articles_tool", "Review the unverified candidate citations against the official text.", ["layer-2", "review"]),
+            ToolEntry("apply_candidate_review_tool", "Apply a reviewer's confirmed decisions to the candidate articles.", ["layer-2", "review"]),
             ToolEntry("llm_provider_info_tool", "Report the active LLM provider.", ["llm"]),
             ToolEntry("qdrant_index_violation_tool", "Index a full Violation into Qdrant.", ["qdrant"]),
             ToolEntry("qdrant_search_segments_tool", "Vector search over transcript segments.", ["qdrant"]),

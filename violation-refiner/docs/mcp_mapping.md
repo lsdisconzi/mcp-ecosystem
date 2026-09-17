@@ -1,7 +1,7 @@
 # MCP Tool → Implementation Map
 
 **Generated from source, verified against `violation_pack/` on 2026-09-11.**
-Server implementation: `violation_pack/mcp_server.py` (39 tools).
+Server implementation: `violation_pack/mcp_server.py` (41 tools).
 Machine-readable equivalent: `violation-pack-catalog --format catalog`.
 
 The MCP layer is deliberately thin: each tool validates/coerces its arguments, calls a
@@ -169,6 +169,27 @@ All return `IngestStats` (`ingesters.py:87`, `as_dict` at `:96`).
 Embedder implementations: `HashEmbedder` (`:85`, name `hash-384`),
 `OllamaEmbedder` (`:111`), `VoyageEmbedder` (`:164`), `OpenAIEmbedder` (`:213`),
 `CohereEmbedder` (`:259`).
+
+## 14. Candidate review
+
+Layer 2 records two kinds of citation: `established_articles` (byte-exact excerpt,
+verified in S7) and `candidate_articles` (`models.py`), which are plausible but
+unverified. These two tools work only on the candidates.
+
+| MCP tool | Implementation | Module | Step |
+| --- | --- | --- | --- |
+| `review_candidate_articles_tool` | `read_review` + `parse_review_table` + `propose_changes` (+ `generate_review` when there is no file) | `candidate_review.py:168`, `:303`, `:529`, `:819` | S3 |
+| `apply_candidate_review_tool` | `apply_decisions` + `with_provenance` | `candidate_review.py:622`, `:725` | S3 |
+
+`review_candidate_articles_tool` is the only tool here that may call an LLM, and
+only when `data/candidate-reviews/<violation_id>.candidates.review.md` is missing
+or empty. A ready-made review is parsed, not regenerated. Neither tool writes:
+`apply_candidate_review_tool` returns the updated `Violation` and the caller
+persists it with `write_violation_json_tool`, so the human confirmation and the
+write are separate steps by construction.
+
+Review files live outside the bundle (they are *about* a bundle, not part of it),
+so `review_path` (`:136`) refuses any id outside `[A-Za-z0-9][A-Za-z0-9._-]*`.
 
 ---
 

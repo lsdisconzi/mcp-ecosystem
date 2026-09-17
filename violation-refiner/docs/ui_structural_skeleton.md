@@ -35,7 +35,7 @@ Two conventions used throughout:
 | Surface | Entry point | Used by the UI as |
 | --- | --- | --- |
 | Python library | `violation_pack/__init__.py` (20+ exported symbols) | Direct in-process calls (fastest, richest errors) |
-| MCP server | `violation-pack-mcp` → `violation_pack.mcp_server:main` (39 tools) | Tool-call backend when the UI is a client (stdio / sse / streamable-http) |
+| MCP server | `violation-pack-mcp` → `violation_pack.mcp_server:main` (41 tools) | Tool-call backend when the UI is a client (stdio / sse / streamable-http) |
 | Catalog CLI | `violation-pack-catalog --format catalog\|vscode\|claude` | Client-config generator ("add this to another project") |
 | Batch CLI | `python3 examples/refine_batch.py` | Batch screen S11 (thin wrapper over `refine_batch_core.run`) |
 
@@ -460,6 +460,7 @@ scope, so sending another transcript's id composes an id that anchors nothing.
 **Purpose.** Attach the legal articles that the violation invokes, with verbatim excerpts verified against the framework Markdown, plus candidate (unverified) articles.
 
 **→** `build_norms_layer` / MCP `build_norms_layer_tool`
+**→** candidates: MCP `review_candidate_articles_tool`, then `apply_candidate_review_tool` (both read-only — the write is S11's `write_violation_json_tool`)
 **Signature:** `build_norms_layer_tool(violation, framework_path, framework_code, framework_bundle_uri, article_specs, candidate_specs=None)`
 
 **User inputs**
@@ -510,6 +511,52 @@ scope, so sending another transcript's id composes an id that anchors nothing.
 **Failure modes.** `framework_path` unreadable; no `### Art.` headers found → "cache format not recognised"; excerpt present but article body missing.
 
 **Gate.** ≥1 established article verified in-bundle.
+
+#### Candidate review (secondary, on the established block)
+
+A candidate is a citation the bundle *invokes* but has not *established*: the
+excerpt is missing, the text may not say what the model assumed, and nothing
+verifies it. The **Review candidates** button sits in the `block-title-row` of the
+**Established articles** block, which is where the candidate list is rendered, so
+the two record sets are read together.
+
+**Data source, decided before any model call.** `GET /api/candidate-reviews`
+looks for `data/candidate-reviews/<violation_id>.candidates.review.md` and parses
+it if present (`source: ready_made`). It calls an LLM only when that file is
+missing or empty (`source: generated`), and the generated markdown is rendered in
+the same shape so it can be saved as a review file and re-read later. Review files
+live **outside** the bundle: they are *about* a bundle, not part of it.
+
+**The three decisions.** Each reviewed candidate becomes one proposal, and only
+three actions exist (`candidate_review.py`, closed set):
+
+| Action | Effect on the candidate |
+| --- | --- |
+| `keep` | untouched — the default for a `correct` verdict or an unreviewed candidate |
+| `annotate` | appends a `Candidate review:` line to `history_note` and one verification step |
+| `withdraw` | removes it from `candidate_articles` |
+
+The review's own recommendation pre-selects the select (`incorrect`/`withdrawn` →
+`withdraw`, `uncertain` → `annotate`, `correct` → `keep`), and **the reviewer can
+override every one of them**: the review advises, the human decides.
+
+**Two rules the UI must keep.**
+
+- **The candidates, not the table, are the subject.** The proposal list is built
+  by iterating `candidate_articles`. A row naming an article the bundle holds as
+  *established* is ignored (the real CL-030 review lists three of them), and a
+  candidate no row covers is shown as `not reviewed` rather than dropped — "the
+  review did not mention it" and "the review cleared it" are different facts.
+- **Confirm never writes.** `apply_candidate_review_tool` returns the updated
+  `Violation` and nothing else; the UI hands that result to the same persistence
+  path as every other S3 edit. So a reviewer who closes the modal instead of
+  confirming has changed nothing on disk, and the confirm-twice case re-applies to
+  an identical record: it reports a keep and appends no provenance entry.
+
+The three candidate fields an annotation may touch are `history_note`,
+`verification_required` and `preliminary_view`; `candidate_name` is the display
+name. Nothing promotes a candidate to `established_articles` — that requires a
+byte-exact excerpt verified in S7 and is deliberately not offered here.
 
 ---
 
@@ -1273,7 +1320,7 @@ For `qdrant_reset_collections_tool` and `neo4j_reset_database_tool` the UI must:
 | --- | --- | --- |
 | Embedder info | `embedder_info_tool` | active embedder name (e.g. `hash-384`, `ollama-bge-m3`) + dimension |
 | LLM provider info | `llm_provider_info_tool` | resolved provider + model |
-| MCP catalog | `violation-pack-catalog --format catalog` | server entry: name, transport, command, env, optional env, 39 tools with tags |
+| MCP catalog | `violation-pack-catalog --format catalog` | server entry: name, transport, command, env, optional env, 41 tools with tags |
 | VS Code snippet | `--format vscode` | JSON under `mcp.servers` with `type`/`command`/`args`/`env` |
 | Claude Desktop snippet | `--format claude` | JSON under `mcpServers` |
 

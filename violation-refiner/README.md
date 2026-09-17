@@ -134,7 +134,7 @@ violation-pack/
 │   ├── llm.py                # multi-provider LLM client       [llm]   extra
 │   ├── config.py             # env-driven Settings
 │   ├── refine_batch_core.py  # importable batch-refiner core
-│   ├── mcp_server.py         # MCP server (39 tools)           [mcp]   extra
+│   ├── mcp_server.py         # MCP server (41 tools)           [mcp]   extra
 │   └── mcp_catalog.py        # MCP catalog CLI + snippet generator
 ├── examples/
 │   ├── cl005_source/         # the real CL-005 source files as fixtures
@@ -493,7 +493,7 @@ When running over HTTP a `GET /health` endpoint returns
 `{"status": "ok"}`. `start.sh` sources `.env`, boots the server, and waits
 for `/health`; `stop.sh` shuts it down.
 
-**39 tools** are registered. They fall into these groups:
+**41 tools** are registered. They fall into these groups:
 
 | Group | Tools |
 | --- | --- |
@@ -501,6 +501,7 @@ for `/health`; `stop.sh` shuts it down.
 | Layers 1–5 | `build_evidence_layer_tool`, `build_norms_layer_tool`, `add_element_grid_tool`, `build_nexus_layer_tool`, `add_authority_stub_tool` |
 | Confidence | `derive_confidence_tool`, `attach_confidence_tool` |
 | Validation | `run_pipeline_tool` (V01–V17), `verify_enrichment_tool` |
+| Candidate review | `review_candidate_articles_tool`, `apply_candidate_review_tool` |
 | Authority verification | `verify_statute_in_bundle_tool`, `verify_statute_external_fetch_tool`, `verify_human_attested_tool` |
 | Packaging | `write_violation_json_tool`, `build_manifest_tool`, `zip_bundle_tool`, `copy_source_into_bundle_tool` |
 | Batch | `refine_batch_tool` |
