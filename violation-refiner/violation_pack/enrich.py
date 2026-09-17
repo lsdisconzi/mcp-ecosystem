@@ -357,10 +357,7 @@ def propose_article_subsections(
         reader = frameworks.get(art.framework_code)
         if not reader:
             continue
-        art_num = art.article_id.rsplit(".Art.", 1)[-1]
-        body = reader.get_article_body(art_num) or reader.get_article_body(
-            art_num.split(".")[0]
-        )
+        body = reader.get_article_body(art.article_id)
         if body:
             bodies[art.article_id] = body
 

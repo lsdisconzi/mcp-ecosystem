@@ -167,14 +167,13 @@ def verify_enrichment(
                 message=f"no FrameworkSource registered for {art.framework_code}",
             ))
             continue
-        art_num = art.article_id.rsplit(".Art.", 1)[-1]
-        body = fw.get_article_body(art_num) or fw.get_article_body(art_num.split(".")[0])
+        body = fw.get_article_body(art.article_id)
         if body is None:
             issues.append(VerificationIssue(
                 code="E_ARTICLE_BODY_MISSING",
                 severity="error",
                 where=art.article_id,
-                message=f"framework {art.framework_code} returned no body for {art_num!r}",
+                message=f"framework {art.framework_code} returned no body for {art.article_id!r}",
             ))
             continue
         if art.verbatim_excerpt not in body:

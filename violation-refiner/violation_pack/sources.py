@@ -73,9 +73,15 @@ class FrameworkSource(Protocol):
         """SHA the cache file declares about itself in its header, if any.
         V03 in the validator uses this to surface header/content mismatches."""
 
-    def get_article_body(self, article_number: str) -> str | None:
-        """Return the full body of an article (e.g. for article_number='193'),
-        or None if not in the cache."""
+    def get_article_body(self, article_id: str) -> str | None:
+        """Return an article body by canonical ELI id or by identifier
+        (e.g. article_id='CL.LPDC.Art.3.b'), or None if not in the cache.
+
+        Implementations must prefer the id: a cache can hold two articles with
+        the same number — an earlier edition of a law cached beside the current
+        one, or two letras of one article — and only the id tells them apart.
+        A citation that matches nothing must still fall back to the identifier
+        lookup, because callers holding a bare number are supported."""
 
     def articles_cached(self) -> list[str]:
         """All article numbers present in the cache."""
@@ -196,6 +202,23 @@ def _normalize_article_key(identifier: str) -> str:
     return re.sub(r"[\s_]+", "", identifier).casefold()
 
 
+def _eli_article_tail(article_id: str) -> str:
+    """The article a canonical ELI id names, sub-token included.
+
+    ``CL.L20285.T1.C1.Art.3`` -> ``'3'`` and ``CL.LPDC.T1.Art.3.b`` ->
+    ``'3.b'``. A value that is not a canonical id — a bare header identifier
+    like ``'19.4'`` or ``'3 letra b)'`` — is returned unchanged, because the
+    legacy lookup understands those forms and must keep receiving them
+    verbatim."""
+    _, sep, tail = article_id.partition(".Art.")
+    return tail if sep else article_id
+
+
+def _eli_article_number(article_id: str) -> str:
+    """The bare article number the legacy (identifier-keyed) lookup uses."""
+    return _eli_article_tail(article_id).split(".")[0]
+
+
 def _strip_metadata_block(body: str) -> str:
     """Drop leading metadata lines (Theme/ELI ID/Tags/...), trailing '---'
     separators, and surrounding blank lines so the returned string is the
@@ -234,6 +257,17 @@ class MarkdownFrameworkSource:
         # bodies (same keys) so a caller can label an article without a second
         # parse of the cache.
         self._article_meta: dict[str, dict[str, str]] = {}
+        # Articles in file order, plus an index from the canonical id each one
+        # declares. `_articles` is keyed by header identifier, so two articles
+        # sharing a number overwrite one another there and only the last
+        # survives: `CL/L20285_Transparencia.md` caches the current
+        # transparency law beside an earlier edition of it, and
+        # `CL/L19496_LPDC.md` caches Art. 3 letra b) beside letra e). Those ids
+        # are distinct, so indexing by them is what lets a citation say which
+        # article it means instead of being answered with whichever header came
+        # last in the file.
+        self._ordered: list[tuple[str, str, dict[str, str]]] = []
+        self._declared_eli: dict[str, int] = {}
         headers = list(_ARTICLE_HEADER_PATTERN.finditer(self._md))
         for idx, am in enumerate(headers):
             identifier = am.group(1).strip()
@@ -242,11 +276,19 @@ class MarkdownFrameworkSource:
             raw = self._md[start:end]
             body = _strip_metadata_block(raw)
             if body:
-                self._articles[identifier] = body
                 meta = {"title": am.group(2).strip()}
                 eli = _ELI_ID_PATTERN.search(raw)
                 if eli:
                     meta["eli_id"] = eli.group(1).strip()
+                    # First declaration wins: a corpus file that declares the
+                    # same id twice is malformed, and keeping the earlier
+                    # article makes that visible rather than silently letting
+                    # the later duplicate take the citation over.
+                    self._declared_eli.setdefault(
+                        _normalize_article_key(meta["eli_id"]), len(self._ordered)
+                    )
+                self._ordered.append((identifier, body, meta))
+                self._articles[identifier] = body
                 self._article_meta[identifier] = meta
 
     # Protocol methods --------------------------------------------------------
@@ -277,6 +319,10 @@ class MarkdownFrameworkSource:
 
         Every accessor goes through this, so a body, its declared ELI id and
         its title can never resolve to different articles.
+
+        This maps a *string* to one header key, so it cannot tell apart two
+        articles that share a number — see :meth:`_resolve_citation`, which
+        consults the declared ids before falling back here.
         """
         if article_number in self._articles:
             return article_number
@@ -291,20 +337,60 @@ class MarkdownFrameworkSource:
                 return key
         return None
 
-    def get_article_body(self, article_number: str) -> str | None:
-        """Look up an article body by identifier.
+    def _resolve_citation(self, article_id: str) -> int | None:
+        """Index into ``self._ordered`` for a citation naming a canonical ELI id.
 
-        Accepts the exact header identifier ('19.1', '133 A', '3 letra b)')
-        as well as a bare numeric form: if no exact match, returns the body of
-        the cached article whose identifier starts with ``article_number``
-        followed by a non-digit boundary (so '133' matches '133 A' only if
-        '133' itself is not cached).
+        Two attempts, in order:
 
-        The canonical ELI id is accepted too even when it spells the
-        identifier differently from the header, because ELI ids drop the
-        spaces the headers keep ('269_ter' vs '269 ter', '23bis' vs '23 bis').
+        1. the id exactly as some article declares it in its ``**ELI ID:**``
+           line — this is what lets ``CL.L20285.T1.Art.3`` (the current
+           transparency law) and ``CL.L20285.T1.C1.Art.3`` (an earlier edition
+           cached in the same file) be told apart, and likewise
+           ``CL.LPDC.Art.3.b`` from ``CL.LPDC.Art.3.e``;
+        2. the same article *and* sub-token with the hierarchy segments the
+           citation omits, so ``CL.LPDC.Art.3.b`` finds the declared
+           ``CL.LPDC.T1.Art.3.b``. Accepted only when exactly one article
+           matches: an omitted segment is resolved, never guessed.
+
+        ``None`` means the citation names no declared id, and the caller should
+        fall back to the identifier lookup — which is also what happens for the
+        bare numbers and header identifiers the older callers still pass.
         """
-        key = self._resolve_article_key(article_number)
+        exact = self._declared_eli.get(_normalize_article_key(article_id))
+        if exact is not None:
+            return exact
+        if ".Art." not in article_id:
+            return None
+        wanted = _eli_article_tail(article_id)
+        matches = [
+            index
+            for index, (_, _, meta) in enumerate(self._ordered)
+            if meta.get("eli_id") and _eli_article_tail(meta["eli_id"]) == wanted
+        ]
+        return matches[0] if len(matches) == 1 else None
+
+    def get_article_body(self, article_id: str) -> str | None:
+        """Look up an article body by citation.
+
+        Accepts the exact header identifier ('19.1', '133 A', '3 letra b)'),
+        a bare numeric form (if no exact match, returns the body of the cached
+        article whose identifier starts with ``article_id`` followed by a
+        non-digit boundary, so '133' matches '133 A' only if '133' itself is
+        not cached), and a canonical ELI id.
+
+        The canonical ELI id is matched against the id each article *declares*
+        before the identifier is consulted, and it is the only form that can
+        name an article when the cache holds two with the same number — the
+        identifier-keyed lookup can only ever reach the last of them. A
+        citation that matches no declared id falls back to the identifier
+        lookup, so callers holding only a number keep working unchanged.
+        """
+        index = self._resolve_citation(article_id)
+        if index is not None:
+            return self._ordered[index][1]
+        key = self._resolve_article_key(
+            _eli_article_number(article_id) if ".Art." in article_id else article_id
+        )
         return self._articles[key] if key is not None else None
 
     def get_article_eli_id(self, article_number: str) -> str | None:

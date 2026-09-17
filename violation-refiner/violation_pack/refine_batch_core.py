@@ -212,9 +212,8 @@ def _framework_for(
     actually contains the article number."""
     if framework_code in frameworks:
         return frameworks[framework_code]
-    art_num = article_id.rsplit(".Art.", 1)[-1].split(".")[0]
     for reader in frameworks.values():
-        if reader.get_article_body(art_num) is not None:
+        if reader.get_article_body(article_id) is not None:
             return reader
     if frameworks:
         return next(iter(frameworks.values()))
@@ -357,8 +356,7 @@ def _normalize(
             )
 
             art_reader = _framework_for(fw_code, article_id, frameworks)
-            art_num = article_id.rsplit(".Art.", 1)[-1].split(".")[0]
-            body = art_reader.get_article_body(art_num) if art_reader else None
+            body = art_reader.get_article_body(article_id) if art_reader else None
 
             verified = bool(body and excerpt and excerpt in body)
             if verified:

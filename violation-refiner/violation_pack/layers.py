@@ -151,12 +151,14 @@ def build_norms_layer(
 
     new_articles: list[CachedArticle] = []
     for spec in article_specs:
-        # Article numbers in the ELI ID are after '.Art.'.
-        art_num = spec["article_id"].rsplit(".Art.", 1)[-1].split(".")[0]
-        body = framework.get_article_body(art_num)
+        # Hand the reader the whole ELI id, not the article number: when the
+        # cache holds two articles sharing a number (an earlier edition of a
+        # law, or two letras of one article) only the id says which is meant.
+        article_id = spec["article_id"]
+        body = framework.get_article_body(article_id)
         if body is None:
             raise ValueError(
-                f"Article {art_num} not found in framework {fw_code}; "
+                f"Article {article_id} not found in framework {fw_code}; "
                 "use candidate_specs instead, or fetch the framework first."
             )
         excerpt = spec["verbatim_excerpt"]

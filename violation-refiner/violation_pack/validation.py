@@ -172,8 +172,7 @@ def v03_article_text_hash(v: Violation, sources: dict) -> CheckResult:
             notes.append(f"WARN: framework {art.framework_code} not registered for {art.article_id}")
             has_warn = True
             continue
-        art_num = art.article_id.rsplit(".Art.", 1)[-1].split(".")[0]
-        body = fw.get_article_body(art_num)
+        body = fw.get_article_body(art.article_id)
         if body is None or art.verbatim_excerpt not in body:
             notes.append(f"FAIL: {art.article_id} excerpt not present in framework cache as quoted.")
             has_fail = True
@@ -195,8 +194,7 @@ def v04_article_exists_in_framework_cache(v: Violation, sources: dict) -> CheckR
     issues = []
     for art in v.established_articles:
         fw = frameworks.get(art.framework_code)
-        art_num = art.article_id.rsplit(".Art.", 1)[-1].split(".")[0]
-        if fw is None or fw.get_article_body(art_num) is None:
+        if fw is None or fw.get_article_body(art.article_id) is None:
             issues.append(f"{art.article_id}: not present in framework cache")
     for cand in v.candidate_articles:
         if cand.framework_cache_status == "not_in_bundle":
