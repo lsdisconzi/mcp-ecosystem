@@ -7,7 +7,7 @@ from violation_pack.element_templates import (
     ArticleTemplate,
     ElementSpec,
     TEMPLATES,
-    _split_article,
+    split_article_id as _split_article,
     find_template,
     parse_element_id,
     template_drift,
