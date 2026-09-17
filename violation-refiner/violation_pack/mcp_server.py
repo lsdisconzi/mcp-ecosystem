@@ -41,6 +41,7 @@ from .models import ArticleElementGrid, Incident, NexusEntry, Violation
 from .pack import (
     build_manifest as _build_manifest,
     copy_source_into_bundle as _copy_source,
+    reconcile_contract as _reconcile_contract,
     write_violation_json as _write_violation_json,
     zip_bundle as _zip_bundle,
 )
@@ -391,11 +392,21 @@ def build_server(include_ui: bool = True):
 
         This is the write gate, so it is the only place the bundle's derived
         segment artifacts can drift from the violation it stores. Nothing is
-        written when the violation cites no segments."""
+        written when the violation cites no segments.
+
+        The bundle's contract is reconciled here too: it is a flat view of the
+        same violation, and a view that only the vault converter can write goes
+        stale the moment the page edits a title, a severity or a legal basis. It
+        is projected from the violation ``pack.project_contract`` declares — the
+        same rule the batch pipeline uses — so an article the violation holds as
+        a candidate cannot stay published as established, and V08/V17 compare two
+        documents that agree by construction."""
         v = _v_load(violation)
         root = Path(bundle_root)
         out = _write_violation_json(v, root)
-        return {"path": str(out), **_sync_segment_artifacts(v, root)}
+        summary = _sync_segment_artifacts(v, root)
+        summary.update(_reconcile_contract(root, v))
+        return {"path": str(out), **summary}
 
     @mcp.tool()
     def build_manifest_tool(bundle_root: str, schema_version: str = "3.0") -> dict:

@@ -10,14 +10,10 @@
   "jurisdiction": "CL",
   "framework": {
     "codes": [
-      "CDC",
-      "CONST",
       "CPCL",
       "LPDC"
     ],
     "files": {
-      "CDC": "BR/L8078_CDC.md",
-      "CONST": "BR/CF88.md",
       "CPCL": "CL/CodigoPenal.md",
       "LPDC": "CL/L19496_LPDC.md"
     }
@@ -37,53 +33,6 @@
   "allegation_summary": "On April 4, 2024, at approximately 2:05 AM, passenger [[SPK-passenger-leandro]] encountered LATAM counter staff André BD Marinho at Guarulhos International Airport (GRU), Brazil. The encounter — the FIRST of two incidents — involved a boarding dispute (flight GRU-GYN). Marinho engaged in the following misconduct: (1) Dismissive and unprofessional conduct when passenger asked for his name — 'pode me procurar nas redes sociais' (look me up on social media); (2) Explicit institutional indifference: 'pode reclamar, não vai ser o primeiro nem o último' (complain, won't be the first nor the last) — revealing a corporate culture of dismissing passenger complaints as routine; (3) Refused to engage with the passenger's complaint, repeatedly saying 'segue o teu caminho' (go your way); (4) Accused passenger of calling him names ('careca' / bald, '24') which passenger denied; (5) Escalated to verbal abuse: 'Ah, vai tomar no cu, velho' (Ah, go fuck yourself, man) and 'André bd marinho está mandando esse imbecil tomar no cu' (André BD Marinho is telling this imbecile to go fuck himself) — both captured on recording; (6) Further aggressive language: 'eu não te mando tomar no seu cu, eu não mando no seu cuzão do caralho'; (7) The transcript's title incorrectly states '2025' but the `recordingdatetime` field proves the correct date: '2024-04-04T02:05:00.' This incident preceded the July 2024 Santiago incident by exactly 3 months and provides critical context — LATAM staff at GRU exhibited the same dismissive, unaccountable culture ('não vai ser o primeiro nem o último') that later manifested in the false accusation and forcible removal in Santiago.",
   "legal_basis": {
     "frameworks": [
-      {
-        "framework_code": "CDC",
-        "framework_name": "CDC",
-        "framework_file": "BR/L8078_CDC.md",
-        "articles": [
-          {
-            "article_id": "BR.CDC.T3.Art.6",
-            "article_name": "Art. 6. São direitos básicos do consumidor: IV - a proteção contra práticas abus",
-            "article_text": "",
-            "applicability_rationale": "",
-            "duty_bearer": "state",
-            "norm_type": "definition",
-            "applicability": "supporting",
-            "subsections_invoked": [],
-            "status": "established"
-          },
-          {
-            "article_id": "BR.CDC.T5.C4.Art.39",
-            "article_name": "Art. 39. É vedado ao fornecedor: II - recusar atendimento às demandas dos consum",
-            "article_text": "",
-            "applicability_rationale": "",
-            "duty_bearer": "state",
-            "norm_type": "definition",
-            "applicability": "supporting",
-            "subsections_invoked": [],
-            "status": "established"
-          }
-        ]
-      },
-      {
-        "framework_code": "CONST",
-        "framework_name": "CONST",
-        "framework_file": "BR/CF88.md",
-        "articles": [
-          {
-            "article_id": "BR.CONST.T2.C1.Art.5.X",
-            "article_name": "Art. 5 X: São invioláveis a intimidade, a vida privada, a honra e a imagem das p",
-            "article_text": "Sovereignty rests essentially with the Nation.",
-            "applicability_rationale": "legacy paraphrase: Art. 5 X: São invioláveis a intimidade, a vida privada, a honra e a imagem das pessoas, assegurado o direito a indenização pelo dano material ou moral decorrente de sua violação",
-            "duty_bearer": "state",
-            "norm_type": "right",
-            "applicability": "supporting",
-            "subsections_invoked": [],
-            "status": "established"
-          }
-        ]
-      },
       {
         "framework_code": "CPCL",
         "framework_name": "CPCL",
@@ -153,6 +102,16 @@
       ],
       "preliminary_view": "Art. 39. É vedado ao fornecedor: II - recusar atendimento às demandas dos consumidores; IV - prevalecer-se da fraqueza ou ignorância do consumidor; IX - recusar a venda de bens ou a prestação de serviços",
       "history_note": "legacy import"
+    },
+    {
+      "candidate_article_id": "BR.CONST.T2.C1.Art.5.X",
+      "candidate_name": "Art. 5 X: São invioláveis a intimidade, a vida privada, a honra e a imagem das p",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for BR.CONST.T2.C1.Art.5.X and confirm the excerpt: article body not in the framework cache"
+      ],
+      "preliminary_view": "Sovereignty rests essentially with the Nation.",
+      "history_note": "legacy paraphrase: Art. 5 X: São invioláveis a intimidade, a vida privada, a honra e a imagem das pessoas, assegurado o direito a indenização pelo dano material ou moral decorrente de sua violação"
     }
   ],
   "cross_references": [],
@@ -188,5 +147,22 @@
     ],
     "validated": false,
     "note": ""
-  }
+  },
+  "confidence": {
+    "value": 0.72,
+    "components": {
+      "CL.CPCL.T1.C1.Art.416": 0.733,
+      "CL.LPDC.Art.3.b": 0.9,
+      "CL.LPDC.Art.23": 0.9
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-09-13T15:40:47.701202Z",
+    "history": []
+  },
+  "established_article_ids": [
+    "CL.CPCL.T1.C1.Art.416",
+    "CL.LPDC.Art.23",
+    "CL.LPDC.Art.3.b"
+  ]
 }

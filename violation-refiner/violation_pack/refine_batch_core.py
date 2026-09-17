@@ -27,7 +27,7 @@ from .models import (
     OpenQuestion,
     Violation,
 )
-from .pack import build_manifest, zip_bundle
+from .pack import build_manifest, project_contract, reconcile_contract, zip_bundle
 from .segment_sync import sync_segment_artifacts
 from .sources import HtmlTranscriptSource, MarkdownFrameworkSource, TranscriptSource
 from .sources_json import JsonTranscriptSchemaError, JsonTranscriptSource
@@ -530,68 +530,6 @@ def _write_validation_markdown(bundle_dir: Path, violation_id: str, checks: list
 # Per-bundle processing
 # ---------------------------------------------------------------------------
 
-def _reconcile_contract_after_enrichment(
-    bundle_dir: Path, violation: Violation, contract: dict
-) -> dict:
-    """Rewrite the contract fields enrichment is allowed to change.
-
-    ``vault_to_bundle`` writes the contract at bundle-creation time, from the
-    vault's snapshot of the violation. Enrichment then re-derives confidence
-    from the enriched element grid, and expands ``cross_references`` and
-    ``open_questions``. V08 and V17 compare those fields between the bundle
-    and the contract, so a stale contract is a guaranteed V08/V17 failure that
-    no amount of enrichment quality can fix.
-
-    Only the fields V08 and V17 actually compare are rewritten:
-
-    - ``confidence`` — V08 compares ``.value``
-    - ``established_article_ids`` — V08 compares the set
-    - ``cross_references`` — V17 compares ref + relation
-    - ``open_questions`` — V17 compares id, question, blocks_element, priority
-
-    Everything else — ``legal_basis``, ``candidate_articles``, the incident
-    metadata, the provenance block — is left as the vault converter wrote it,
-    on purpose: those fields are the *record of what the vault said* and are
-    not supposed to reflect enrichment. A future migration can widen this
-    reconciler; today it stays minimal so the diff is auditable.
-
-    A missing or unreadable ``contract.json`` is not an error: ``--inputs-only``
-    runs skip the contract entirely, and a bundle whose contract was removed by
-    hand should not fail the pipeline here. The reconciler is a fixup, not a
-    gate.
-    """
-    # Update the in-memory contract (passed by caller) with the fields
-    # enrichment is allowed to change, then persist to disk.
-    if violation.confidence is not None:
-        contract["confidence"] = json.loads(violation.confidence.model_dump_json())
-    else:
-        contract.pop("confidence", None)
-    contract["established_article_ids"] = sorted(
-        a.article_id for a in violation.established_articles
-    )
-    contract["cross_references"] = [
-        {"ref": x.ref, "relation": x.relation} for x in violation.cross_references
-    ]
-    contract["open_questions"] = [
-        {
-            "id": q.id,
-            "question": q.question,
-            "blocks_element": q.blocks_element or "",
-            "priority": q.priority,
-        }
-        for q in violation.open_questions
-    ]
-    contract_path = bundle_dir / "contract.json"
-    if contract_path.exists():
-        try:
-            contract_path.write_text(
-                json.dumps(contract, indent=2, ensure_ascii=False), encoding="utf-8"
-            )
-        except (OSError, TypeError):
-            pass
-    return contract
-
-
 def _process_one(
     bundle_dir: Path,
     known_ids: set[str],
@@ -667,11 +605,15 @@ def _process_one(
             notes.append(f"enrichment_failed: {exc}")
             enrich_info = {"ok": False, "error": str(exc)}
 
-    # Reconcile the contract with the enriched violation BEFORE the pipeline
-    # runs, so V08 and V17 evaluate the reconciled state. The reconciler
-    # returns the updated dict; the pipeline must receive *that*, not the
-    # pre-enrichment copy read at the top of this function.
-    contract = _reconcile_contract_after_enrichment(bundle_dir, v, contract or {})
+    # Project the contract from the enriched violation BEFORE the pipeline runs,
+    # so V08 and V17 evaluate the reconciled state. The rule for what the
+    # contract says lives in one place — ``pack.project_contract`` — and both
+    # writers of a violation (this pipeline and ``write_violation_json_tool``)
+    # call it: a second, narrower rule here is how the two writers drifted apart
+    # in the first place, leaving ``legal_basis`` asserting articles the violation
+    # held as candidates. The file is landed below, beside the other derived
+    # artifacts, so it is judged against what is on disk.
+    contract = project_contract(contract or {}, v)
 
     report = run_pipeline(
         v,
@@ -701,6 +643,15 @@ def _process_one(
     # ``build_manifest`` so MANIFEST.txt records the transcripts as they end up.
     sync = sync_segment_artifacts(v, bundle_dir)
     notes.extend(f"segment_sync: {w}" for w in sync["warnings"])
+
+    # ...and the contract, which describes the violation for a reader that wants
+    # one flat document. Landed here rather than at the point of projection so
+    # the write is judged against what is on disk, exactly like the violation
+    # JSON it sits beside. A bundle with no contract reports ``None`` and is left
+    # without one.
+    contract_sync = reconcile_contract(bundle_dir, v)
+    if contract_sync["contract_path"] is None:
+        notes.append("contract_sync: no contract.json in this bundle")
 
     checks_path = bundle_dir / "Validation" / "checks.json"
     checks_path.parent.mkdir(parents=True, exist_ok=True)

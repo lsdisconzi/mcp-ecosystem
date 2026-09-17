@@ -3800,15 +3800,25 @@ function endRun() {
  *  per cited transcript holding just the cited segments. Staying silent about
  *  those would leave the reviewer reading a manifest that the page has already
  *  replaced on disk — and the drift it displays as "not in manifest" is exactly
- *  what the sync removes. Returns null for a result that carries no summary at
+ *  what the sync removes. It also rewrites `contract.json`, the flat view of the
+ *  same violation, which is the only place a reviewer can see the legal basis the
+ *  bundle stands behind. Returns null for a result that carries no summary at
  *  all, so an older server cannot make the log claim something it did not do. */
 function describeSync(result) {
   if (!result || typeof result !== 'object') return null;
+  // A server that predates the contract reconciliation says nothing about it, so
+  // the "already in step" arm must not describe it as checked.
+  const knowsContract = 'contract_changed' in result;
   const parts = [];
   if (result.manifest_changed) parts.push(`manifest (${result.manifest_segments} segment(s))`);
   const files = (result.transcripts || []).filter(t => t && t.changed);
   if (files.length) parts.push(`${files.length} transcript file(s)`);
-  if (!parts.length) return 'manifest and Transcripts/ already in step';
+  if (result.contract_changed) parts.push('contract.json');
+  if (!parts.length) {
+    return knowsContract
+      ? 'manifest, Transcripts/ and contract.json already in step'
+      : 'manifest and Transcripts/ already in step';
+  }
   return `rewrote ${parts.join(' + ')}`;
 }
 

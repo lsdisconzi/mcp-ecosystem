@@ -10,15 +10,9 @@
   "jurisdiction": "CL",
   "framework": {
     "codes": [
-      "CBA",
-      "CDC",
-      "CONST",
       "LPDC"
     ],
     "files": {
-      "CBA": "BR/L7565_CBA.md",
-      "CDC": "BR/L8078_CDC.md",
-      "CONST": "BR/CF88.md",
       "LPDC": "CL/L19496_LPDC.md"
     }
   },
@@ -37,82 +31,6 @@
   "allegation_summary": "LATAM Airlines systematically fragmented a single incident (the LA8159 false accusation, forcible removal, and lifetime ban) across 8 distinct case numbers, artificially inflating 'casos resueltos' (resolved cases) metrics while making it difficult for the passenger to track his complaint and for regulators to audit the paper trail. Each case addressed only a narrow financial aspect (refunds) while systematically ignoring substantive issues (false accusation, forcible removal, ban). The pattern is: Case #61648642 opened → auto-closed claiming insufficient info → Case #61815719 auto-created claiming 'no response received' → Case #61833637 processes refund only → multiple additional cases (#61820331, #65525465, #65764906, #66530377) fragment the trail further. The total refund of BRL ~3,500 across all cases represents a fraction of documented damages ($16.27M). This practice artificially inflates LATAM's customer service metrics (8 'resolved' cases vs 1 unresolved incident) and constitutes consumer deception.",
   "legal_basis": {
     "frameworks": [
-      {
-        "framework_code": "CDC",
-        "framework_name": "CDC",
-        "framework_file": "BR/L8078_CDC.md",
-        "articles": [
-          {
-            "article_id": "BR.CDC.T3.Art.6",
-            "article_name": "Art. 6. São direitos básicos do consumidor: III - a informação adequada e clara;",
-            "article_text": "",
-            "applicability_rationale": "",
-            "duty_bearer": "state",
-            "norm_type": "definition",
-            "applicability": "supporting",
-            "subsections_invoked": [],
-            "status": "established"
-          },
-          {
-            "article_id": "BR.CDC.T4.C2.Art.14",
-            "article_name": "Art. 14. O fornecedor de serviços responde, independentemente da existência de c",
-            "article_text": "",
-            "applicability_rationale": "",
-            "duty_bearer": "state",
-            "norm_type": "definition",
-            "applicability": "supporting",
-            "subsections_invoked": [],
-            "status": "established"
-          },
-          {
-            "article_id": "BR.CDC.T5.C4.Art.39",
-            "article_name": "Art. 39. É vedado ao fornecedor: II - recusar atendimento às demandas dos consum",
-            "article_text": "",
-            "applicability_rationale": "",
-            "duty_bearer": "state",
-            "norm_type": "definition",
-            "applicability": "supporting",
-            "subsections_invoked": [],
-            "status": "established"
-          }
-        ]
-      },
-      {
-        "framework_code": "CBA",
-        "framework_name": "CBA",
-        "framework_file": "BR/L7565_CBA.md",
-        "articles": [
-          {
-            "article_id": "BR.CBA.T7.C1.Art.233",
-            "article_name": "Art. 233. A execução do contrato de transporte aéreo de passageiro compreende as",
-            "article_text": "",
-            "applicability_rationale": "",
-            "duty_bearer": "state",
-            "norm_type": "definition",
-            "applicability": "supporting",
-            "subsections_invoked": [],
-            "status": "established"
-          }
-        ]
-      },
-      {
-        "framework_code": "CONST",
-        "framework_name": "CONST",
-        "framework_file": "BR/CF88.md",
-        "articles": [
-          {
-            "article_id": "BR.CONST.T2.C1.Art.5.XXXV",
-            "article_name": "Art. 5 XXXV: A lei não excluirá da apreciação do Poder Judiciário lesão ou ameaç",
-            "article_text": "Sovereignty rests essentially with the Nation.",
-            "applicability_rationale": "legacy paraphrase: Art. 5 XXXV: A lei não excluirá da apreciação do Poder Judiciário lesão ou ameaça a direito",
-            "duty_bearer": "state",
-            "norm_type": "right",
-            "applicability": "supporting",
-            "subsections_invoked": [],
-            "status": "established"
-          }
-        ]
-      },
       {
         "framework_code": "LPDC",
         "framework_name": "LPDC",
@@ -319,6 +237,16 @@
       ],
       "preliminary_view": "Art. 3 letra c) LPDC protects against arbitrary discrimination. The passenger's description of being left 'como un idiota' and subjected to a runaround while others presumably received normal service may engage this provision, though further factual development is needed.",
       "history_note": "Not in established_articles. Requires factual assessment of whether differential treatment occurred."
+    },
+    {
+      "candidate_article_id": "BR.CONST.T2.C1.Art.5.XXXV",
+      "candidate_name": "Art. 5 XXXV: A lei não excluirá da apreciação do Poder Judiciário lesão ou ameaç",
+      "framework_cache_status": "not_in_bundle",
+      "verification_required": [
+        "Fetch verbatim text for BR.CONST.T2.C1.Art.5.XXXV and confirm the excerpt: article body not in the framework cache"
+      ],
+      "preliminary_view": "Sovereignty rests essentially with the Nation.",
+      "history_note": "legacy paraphrase: Art. 5 XXXV: A lei não excluirá da apreciação do Poder Judiciário lesão ou ameaça a direito"
     }
   ],
   "cross_references": [
@@ -500,5 +428,20 @@
     ],
     "validated": false,
     "note": ""
-  }
+  },
+  "confidence": {
+    "value": 0.7,
+    "components": {
+      "CL.LPDC.Art.3.b": 0.814,
+      "CL.LPDC.Art.23": 0.843
+    },
+    "authorities_verification_factor": 0.85,
+    "derivation_formula": "value = round( sum_per_article( applicability_weight × element_grid.weighted_score ) / sum_of_weights × authorities_verification_factor, 2 ); authorities_verification_factor = 0.85 + 0.15 × verified_ratio = 0.850",
+    "derived_at": "2026-09-13T15:40:47.688002Z",
+    "history": []
+  },
+  "established_article_ids": [
+    "CL.LPDC.Art.23",
+    "CL.LPDC.Art.3.b"
+  ]
 }
