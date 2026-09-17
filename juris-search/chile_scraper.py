@@ -109,8 +109,8 @@ CHILE_CATEGORIES: Dict[str, Dict[str, Any]] = {
         "description": "Jurisprudencia de cobranza",
     },
     "compendio_extranjeria": {
-        # NOTE: id_buscador UNVERIFIED — F5 blocked recon (§11.1). When a clean
-        # session is available, load the section and read
+        # NOTE: id_buscador UNVERIFIED — F5 blocked recon (§11 item 1). When a
+        # clean session is available, load the section and read
         # `window.id_buscador_activo` to fill this in.
         "slug": "Compendio_Extranjería",
         "name": "Compendio Extranjería",
@@ -216,7 +216,7 @@ class ChileJurisprudenciaScraper:
         if cat_info["id_buscador"] is None:
             raise ValueError(
                 f"Categoría '{categoria}' has no verified id_buscador. "
-                f"See docs/pjud-source.md §11.1."
+                f"See docs/pjud-source.md §11 item 1."
             )
 
         expected_id = str(cat_info["id_buscador"])
