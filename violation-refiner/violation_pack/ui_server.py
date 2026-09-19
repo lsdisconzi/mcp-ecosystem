@@ -432,6 +432,7 @@ def describe_schema() -> dict[str, Any]:
     """
     from . import models
     from .enrich import ENRICHMENT_STAGES
+    from .open_questions import EVIDENCE_VERDICTS
     from .pack import BUNDLE_LAYOUT, SOURCE_DIRECTORY_KINDS
     from .validation import DEFAULT_PIPELINE
 
@@ -463,6 +464,12 @@ def describe_schema() -> dict[str, Any]:
         "authority_type": literal("Authority", "type"),
         "authority_protocol": literal("VerificationProvenance", "protocol"),
         "open_question_priority": literal("OpenQuestion", "priority"),
+        # The evidence verdicts are a module tuple rather than a ``Literal``, but
+        # they are published for the same reason the rest are: the select that
+        # offers them must equal what ``make_evidence_record`` validates against,
+        # and a spelling that drifted from the store would make every write fail
+        # with the server's own message while nothing on the page said why.
+        "evidence_verdicts": list(EVIDENCE_VERDICTS),
         "check_status": literal("CheckResult", "status"),
         # Layer-0 staging destinations come from the bundle layout itself, so the
         # ``kind`` a user picks always matches a key pack.py can resolve.
@@ -1491,6 +1498,446 @@ def _job_snapshot(job_id: str) -> dict[str, Any] | None:
 
 
 # ---------------------------------------------------------------------------
+# Open questions (the catalog + the evidence other projects attach to it)
+# ---------------------------------------------------------------------------
+
+def open_questions_store() -> Path | None:
+    """The open-question store, resolved **by its owner**.
+
+    ``open_questions.default_paths()`` walks up to the workspace root exactly the
+    way :func:`find_data_root` does, but it is the store's own answer to where the
+    store lives — and the path the watcher writes to. Re-deriving it here from
+    ``find_data_root()`` would let the API and the watcher disagree about which
+    directory is "the" store, and the failure mode of that disagreement is a page
+    showing a catalog that nobody is updating.
+
+    ``None`` when the workspace root cannot be found; the routes answer 503 with
+    the reason rather than inventing a path.
+    """
+    from . import open_questions as oq
+
+    try:
+        _, store = oq.default_paths()
+    except RuntimeError:
+        return None
+    return store
+
+
+def _open_question_priorities() -> list[str]:
+    """The ``priority`` Literal from ``models.OpenQuestion``.
+
+    Same source as ``/api/schema``'s ``open_question_priority``, so a filter the UI
+    offers is always a filter the catalog can match. Validating against it also
+    stops a typo'd ``?priority=hgih`` from returning "0 matches", which reads as
+    "this bundle has no high-priority questions" rather than "you misspelled it".
+    """
+    from . import models
+
+    annotation = models.OpenQuestion.model_fields["priority"].annotation
+    return [str(item) for item in get_args(annotation)]
+
+
+def _lean_bundle_summary(violation_id: str, summary: dict[str, Any], evidence: int) -> dict[str, Any]:
+    """One bundle's index entry, minus everything that is not worth shipping.
+
+    The index's per-bundle map also carries ``fingerprint`` (a stat signature and a
+    sha256 per artifact) and, twice, the whole ``open_question_ids`` /
+    ``evidence_keys`` lists. None of that is useful to a page listing bundles, and
+    together they are most of the payload.
+    """
+    return {
+        "violation_id": violation_id,
+        "title": summary.get("title"),
+        "severity": summary.get("severity"),
+        "jurisdiction": summary.get("jurisdiction"),
+        "question_count": summary.get("question_count", 0),
+        "searchable_question_count": summary.get("searchable_question_count", 0),
+        "stub_count": summary.get("stub_count", 0),
+        "declared_undocumented_count": summary.get("declared_undocumented_count", 0),
+        "contract_only_count": summary.get("contract_only_count", 0),
+        "bundle_only_count": summary.get("bundle_only_count", 0),
+        "warning_count": len(summary.get("warnings") or []),
+        "evidence_count": evidence,
+    }
+
+
+def _unbuilt_payload(store: Path) -> dict[str, Any]:
+    """The honest answer when the catalog has never been built.
+
+    Not an error: on a fresh clone the store is legitimately empty, and the caller
+    needs the path in order to run the one command that fixes it. The shape stays
+    the same as a built payload so the UI has one branch to write, not two.
+    """
+    return {
+        "ok": True,
+        "built": False,
+        "store": str(store),
+        "generated_at": None,
+        "digest": None,
+        "totals": {"bundles": 0, "questions": 0, "matched": 0},
+        "bundles": [],
+        "questions": [],
+        "hint": (
+            "no open-question catalog at this path yet — build it with "
+            "`violation-pack-open-questions` or `scripts/watch_open_questions.py --once`"
+        ),
+    }
+
+
+def describe_open_questions(
+    store: Path,
+    violation_id: str = "",
+    priority: str = "",
+    health: bool = False,
+) -> tuple[dict[str, Any], int]:
+    """The catalog, filtered, with a live evidence count on every question.
+
+    The counts are read from the evidence directory rather than from anything
+    stored, because the catalog is rebuilt on a 15-second poll while evidence is
+    written by other projects at any moment: a count baked into the index would go
+    stale the instant seeking recorded an answer.
+    """
+    from . import open_questions as oq
+
+    index = oq.load_index(store)
+    if index is None:
+        return _unbuilt_payload(store), 200
+
+    known_bundles = set(index.get("violations") or {})
+    if violation_id and not oq.is_safe_component(violation_id):
+        return {"ok": False, "error": f"unsafe violation_id: {violation_id!r}"}, 400
+    if violation_id and violation_id not in known_bundles:
+        return {
+            "ok": False,
+            "error": (
+                f"{violation_id!r} is not in the catalog — the store holds "
+                f"{len(known_bundles)} bundle(s). Run the watcher if the bundle is new."
+            ),
+        }, 400
+    if priority and priority not in _open_question_priorities():
+        return {
+            "ok": False,
+            "error": (
+                f"unknown priority {priority!r} — expected one of "
+                f"{_open_question_priorities()}"
+            ),
+        }, 400
+
+    counts = oq.evidence_counts(store, violation_id=violation_id or None)
+    questions = oq.load_catalog_questions(
+        store, violation_id=violation_id or None, priority=priority or None
+    )
+    # Derived per request, never stored in the record. The record lives in the
+    # index; a count inside it would be a second copy of a fact owned by the
+    # evidence directory.
+    for entry in questions:
+        entry["evidence_count"] = counts.get(entry.get("evidence_key"), 0)
+
+    # Every catalogued bundle is listed, including the 41 that declare no questions
+    # at all. Omitting them would make the UI's bundle picker show only bundles that
+    # already have questions, so an empty bundle would read as a bundle that does
+    # not exist — and "this bundle has no open questions" is itself an answer a
+    # reviewer needs. The `priority` filter is deliberately not applied here: this
+    # is a bundle-level summary, not a filtered question list.
+    bundles = [
+        _lean_bundle_summary(
+            vid, summary, sum(counts.get(key, 0) for key in (summary.get("evidence_keys") or []))
+        )
+        for vid, summary in (index.get("violations") or {}).items()
+        if not violation_id or vid == violation_id
+    ]
+    bundles.sort(key=lambda item: item["violation_id"])
+
+    totals = dict(index.get("totals") or {})
+    totals["matched"] = len(questions)
+    payload: dict[str, Any] = {
+        "ok": True,
+        "built": True,
+        "store": str(store),
+        "generated_at": index.get("generated_at"),
+        "digest": index.get("digest"),
+        "filter": {"violation_id": violation_id or None, "priority": priority or None},
+        "totals": totals,
+        "bundles": bundles,
+        "questions": questions,
+        "evidence_totals": {
+            "records": sum(counts.values()),
+            "questions_with_evidence": len(counts),
+        },
+    }
+    if health:
+        # Opt-in: `evidence_issues` parses every record on disk, and a page that
+        # just lists questions should not pay for a full-file sweep per request.
+        orphans = oq.orphaned_evidence(store)
+        unreadable = oq.evidence_issues(store)
+        payload["health"] = {
+            "orphaned": orphans,
+            "orphaned_records": sum(item["records"] for item in orphans),
+            "unreadable": unreadable,
+            "missing_detail_files": oq.missing_detail_files(store, index),
+        }
+    return payload, 200
+
+
+def describe_question_evidence(
+    store: Path,
+    violation_id: str = "",
+    evidence_key: str = "",
+    health: bool = False,
+) -> tuple[dict[str, Any], int]:
+    """Evidence records grouped by question, plus the catalog entry they answer.
+
+    Reads the same directory ``describe_open_questions`` counts, so a badge saying
+    "3" and this route saying "3 records" can never disagree.
+    """
+    from . import open_questions as oq
+
+    index = oq.load_index(store)
+    if index is None:
+        payload = _unbuilt_payload(store)
+        payload["evidence"] = {}
+        payload["summary"] = oq.summarise_evidence([])
+        return payload, 200
+
+    for value, label in ((violation_id, "violation_id"), (evidence_key, "evidence_key")):
+        if value and not oq.is_safe_component(value):
+            return {"ok": False, "error": f"unsafe {label}: {value!r}"}, 400
+
+    if evidence_key:
+        records = list(oq.iter_evidence(store, violation_id=violation_id or None,
+                                        evidence_key_filter=evidence_key))
+        grouped = {evidence_key: records} if records else {}
+        question = oq.lookup_by_evidence_key(store, evidence_key)
+    else:
+        grouped = oq.evidence_for_violation(store, violation_id) if violation_id else {}
+        if not violation_id:
+            for record in oq.iter_evidence(store):
+                grouped.setdefault(record.get("evidence_key") or "", []).append(record)
+        question = None
+
+    for records in grouped.values():
+        records.sort(key=lambda item: str(item.get("created_at") or ""))
+
+    keys = sorted(grouped)
+    payload = {
+        "ok": True,
+        "built": True,
+        "store": str(store),
+        "filter": {"violation_id": violation_id or None, "evidence_key": evidence_key or None},
+        "evidence": grouped,
+        "counts": {key: len(grouped[key]) for key in keys},
+        "summary": oq.summarise_evidence([r for records in grouped.values() for r in records]),
+        "questions": [question] if question else [],
+    }
+    if evidence_key:
+        # Whether this key is still catalogued at all. Evidence outlives its
+        # question by design (``orphaned_evidence``), so "no catalog entry" is a
+        # fact to report, not a 404.
+        payload["catalogued"] = question is not None
+    if health:
+        payload["health"] = {
+            "orphaned": oq.orphaned_evidence(store),
+            "unreadable": oq.evidence_issues(store),
+        }
+    return payload, 200
+
+
+def _coerce_occurrence(value: Any) -> int | None:
+    """``None`` for absent; an int for a digit string or an int; raise otherwise.
+
+    The value arrives from JSON, where ``"2"`` and ``2`` are both reasonable and
+    ``2.0`` is not. Returning ``None`` means "not given", which the resolver treats
+    as "pick it for me, or refuse if ambiguous".
+    """
+    if value is None or value == "":
+        return None
+    if isinstance(value, bool):
+        raise ValueError("occurrence must be an integer, not a boolean")
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str) and value.strip().lstrip("-").isdigit():
+        return int(value.strip())
+    raise ValueError(f"occurrence must be an integer, got {value!r}")
+
+
+def resolve_open_question(
+    store: Path,
+    violation_id: str,
+    open_question_id: str,
+    occurrence: Any = None,
+) -> tuple[dict[str, Any] | None, str | None]:
+    """Find the one catalog record a caller means. ``(record, error)``.
+
+    Deliberately refuses to guess. ``lookup_question`` returns a *list* because raw
+    ids are not unique — ``CL-016`` alone declares eight of its ids twice, and 10
+    ids appear in more than one bundle — so an ambiguous id with no ``occurrence``
+    is a 400 listing what it could have meant, not a silent pick of the first.
+    Evidence filed against the wrong declaration is still written, still readable,
+    and still wrong, and nothing downstream would report it.
+    """
+    from . import open_questions as oq
+
+    matches = oq.lookup_question(store, open_question_id, violation_id=violation_id)
+    if not matches:
+        return None, (
+            f"{violation_id} declares no open question with id {open_question_id!r} — "
+            "evidence may only be attached to a question that is in the catalog"
+        )
+    try:
+        wanted = _coerce_occurrence(occurrence)
+    except ValueError as exc:
+        return None, str(exc)
+    if wanted is None:
+        if len(matches) > 1:
+            options = ", ".join(str(entry.get("occurrence")) for entry in matches)
+            return None, (
+                f"{open_question_id!r} is declared {len(matches)} times in {violation_id} "
+                f"(occurrences {options}) — pass occurrence to say which one"
+            )
+        return matches[0], None
+    for entry in matches:
+        if entry.get("occurrence") == wanted:
+            return entry, None
+    return None, (
+        f"{violation_id} declares {open_question_id!r} {len(matches)} time(s); "
+        f"there is no occurrence {wanted}"
+    )
+
+
+def record_question_evidence(
+    store: Path,
+    body: dict[str, Any],
+) -> tuple[dict[str, Any], int]:
+    """Attach one evidence record to one catalogued question.
+
+    The caller names a **question**; it never names storage. ``evidence_key`` and
+    ``catalog_id`` are taken from the catalog record that matched, so a client
+    cannot file a record under a key of its own choosing — which is what keeps
+    ``evidence/<VID>/<key>/`` aligned with ``index.json`` forever, rather than
+    until the first client bug.
+
+    ``verdict`` is required here even though the model defaults it. A record
+    created with no verdict at all reads as "a reviewer looked and it says
+    nothing", and the module raises on a *typo* for exactly that reason; accepting
+    silence would reintroduce the thing it guards against.
+    """
+    from . import open_questions as oq
+
+    if oq.load_index(store) is None:
+        return {
+            "ok": False,
+            "error": f"no open-question catalog at {store} — nothing to attach evidence to",
+        }, 409
+
+    violation_id = body.get("violation_id")
+    open_question_id = body.get("open_question_id")
+    for value, label in ((violation_id, "violation_id"), (open_question_id, "open_question_id")):
+        if not isinstance(value, str) or not value.strip():
+            return {"ok": False, "error": f"'{label}' is required"}, 400
+    violation_id = violation_id.strip()
+    open_question_id = open_question_id.strip()
+
+    # Checked here rather than left to `evidence_dir`, which would also raise: the
+    # lookup below runs *first*, and an unsafe id matches no catalog entry, so the
+    # caller would be told "there is no such open question" when what actually
+    # happened is that their id was rejected as a path component. Nothing is
+    # written either way, but a security refusal that reads as a missing record is
+    # the wrong sentence to hand someone.
+    if not oq.is_safe_component(violation_id):
+        return {"ok": False, "error": f"unsafe violation_id: {violation_id!r}"}, 400
+
+    if not isinstance(body.get("verdict"), str) or not body["verdict"].strip():
+        return {
+            "ok": False,
+            "error": (
+                "'verdict' is required and must be one of "
+                f"{list(oq.EVIDENCE_VERDICTS)} — a record with no verdict reads as "
+                "'nothing to say', which is a claim the caller has to make on purpose"
+            ),
+        }, 400
+    source = body.get("source")
+    if source is not None and not isinstance(source, dict):
+        return {"ok": False, "error": "'source' must be a JSON object"}, 400
+
+    question, error = resolve_open_question(
+        store, violation_id, open_question_id, body.get("occurrence")
+    )
+    if error:
+        return {"ok": False, "error": error}, 400
+
+    try:
+        record = oq.make_evidence_record(
+            open_question_id=open_question_id,
+            violation_id=violation_id,
+            evidence_key=question["evidence_key"],
+            occurrence=question["occurrence"],
+            catalog_id=question["catalog_id"],
+            verdict=body["verdict"].strip(),
+            note=body.get("note"),
+            excerpt=body.get("excerpt"),
+            source=source,
+            author=body.get("author"),
+            record_id=body.get("record_id") or body.get("id"),
+        )
+        stored, created = oq.add_evidence(store, record)
+    except ValueError as exc:
+        return {"ok": False, "error": str(exc)}, 400
+
+    counts = oq.evidence_counts(store, violation_id=violation_id)
+    return {
+        "ok": True,
+        "created": created,
+        "record": stored,
+        "question": {
+            key: question.get(key)
+            for key in ("catalog_id", "open_question_id", "violation_id", "occurrence",
+                        "evidence_key", "question", "priority", "blocks_element", "question_text_missing")
+        },
+        "evidence_count": counts.get(question["evidence_key"], 0),
+    }, 200
+
+
+def remove_question_evidence(
+    store: Path,
+    body: dict[str, Any],
+) -> tuple[dict[str, Any], int]:
+    """Delete one evidence record by its three keys.
+
+    All three are required and all three are validated, so a client cannot delete
+    by partial information. There is no confirmation flag, matching
+    ``POST /api/authority-source/delete``: the safety on both routes comes from the
+    server deciding which files a name refers to, and a second, differently-shaped
+    gate on the less dangerous of the two would just be a convention with an
+    exception in it.
+    """
+    from . import open_questions as oq
+
+    violation_id = body.get("violation_id")
+    evidence_key = body.get("evidence_key")
+    record_id = body.get("record_id")
+    for value, label in ((violation_id, "violation_id"), (evidence_key, "evidence_key"),
+                         (record_id, "record_id")):
+        if not isinstance(value, str) or not value.strip():
+            return {"ok": False, "error": f"'{label}' is required"}, 400
+
+    try:
+        deleted = oq.delete_evidence(
+            store, violation_id.strip(), evidence_key.strip(), record_id.strip()
+        )
+    except ValueError as exc:
+        return {"ok": False, "error": str(exc)}, 400
+
+    counts = oq.evidence_counts(store, violation_id=violation_id.strip())
+    return {
+        "ok": True,
+        "deleted": deleted,
+        "evidence_key": evidence_key.strip(),
+        "record_id": record_id.strip(),
+        "evidence_count": counts.get(evidence_key.strip(), 0),
+    }, 200
+
+
+# ---------------------------------------------------------------------------
 # Route handlers
 # ---------------------------------------------------------------------------
 
@@ -2114,6 +2561,116 @@ def build_ui_routes(mcp):
             return json_response({"ok": False, "error": str(exc)}, status_code=400)
 
         return json_response(result)
+
+    # -- open questions -----------------------------------------------------
+
+    @mcp.custom_route("/api/open-questions", methods=["GET", "OPTIONS"])
+    async def api_open_questions(request) -> Response:
+        """One bundle's open questions, or every bundle's — with evidence counts.
+
+        A read model over ``violation_pack.open_questions``, whose store is written
+        by ``scripts/watch_open_questions.py`` polling ``build/``. This route never
+        rescans the bundles itself: a page load must not be the thing that decides
+        which corpus generation is "current", and a scan here would race the
+        watcher's atomic writes.
+
+        ``?violation_id=`` narrows to one bundle and ``?priority=`` to one priority;
+        ``?health=1`` adds the store-integrity sweep (orphaned evidence, unreadable
+        records, missing detail files) that ``--check`` reports, which costs a walk
+        of the whole evidence directory and is therefore opt-in.
+        """
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+        store = open_questions_store()
+        if store is None:
+            return json_response(
+                {"ok": False, "error": "could not locate the workspace root (no pyproject.toml found)"},
+                status_code=503,
+            )
+        payload, status_code = describe_open_questions(
+            store,
+            violation_id=request.query_params.get("violation_id", "").strip(),
+            priority=request.query_params.get("priority", "").strip(),
+            health=request.query_params.get("health", "") not in ("", "0", "false"),
+        )
+        return json_response(payload, status_code=status_code)
+
+    @mcp.custom_route("/api/open-question-evidence", methods=["GET", "OPTIONS"])
+    async def api_open_question_evidence(request) -> Response:
+        """The evidence recorded against open questions, grouped by question.
+
+        ``?violation_id=`` scopes it to one bundle, ``?evidence_key=`` to one
+        question (and then names the catalog entry it answers). Keys that have no
+        records are simply absent from ``evidence``; keys that have records but no
+        catalog entry are reported through ``catalogued: false`` and the optional
+        health sweep, because evidence is allowed to outlive its question.
+        """
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+        store = open_questions_store()
+        if store is None:
+            return json_response(
+                {"ok": False, "error": "could not locate the workspace root (no pyproject.toml found)"},
+                status_code=503,
+            )
+        payload, status_code = describe_question_evidence(
+            store,
+            violation_id=request.query_params.get("violation_id", "").strip(),
+            evidence_key=request.query_params.get("evidence_key", "").strip(),
+            health=request.query_params.get("health", "") not in ("", "0", "false"),
+        )
+        return json_response(payload, status_code=status_code)
+
+    @mcp.custom_route("/api/open-question-evidence", methods=["POST", "OPTIONS"])
+    async def api_open_question_evidence_add(request) -> Response:
+        """Attach one piece of evidence to one open question.
+
+        The body names the question (``violation_id`` + ``open_question_id``, plus
+        ``occurrence`` when the id is declared more than once); it never names
+        storage. ``evidence_key`` and ``catalog_id`` come from the catalog record
+        that matched, so a client cannot file a record under a key of its own and
+        the store stays internally consistent regardless of what the caller sends.
+
+        This is the write end of the loop the whole feature exists for: seeking
+        finds a chunk that bears on a question, and clicking "add" posts it here so
+        the ViolationRefiner UI can show who said what, and when.
+        """
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+        store = open_questions_store()
+        if store is None:
+            return json_response(
+                {"ok": False, "error": "could not locate the workspace root (no pyproject.toml found)"},
+                status_code=503,
+            )
+        body, refusal = await read_json_object(request)
+        if refusal is not None:
+            return refusal
+        payload, status_code = record_question_evidence(store, body)
+        return json_response(payload, status_code=status_code)
+
+    @mcp.custom_route("/api/open-question-evidence/delete", methods=["POST", "OPTIONS"])
+    async def api_open_question_evidence_delete(request) -> Response:
+        """Remove one evidence record.
+
+        Separate from the store route rather than a verb inside it, for the same
+        reason ``/api/authority-source/delete`` is separate: only one of the two
+        can destroy anything, and a route that reads as a store should not be able
+        to unlink because of a field it did not expect.
+        """
+        if request.method == "OPTIONS":
+            return Response(status_code=204, headers=CORS)
+        store = open_questions_store()
+        if store is None:
+            return json_response(
+                {"ok": False, "error": "could not locate the workspace root (no pyproject.toml found)"},
+                status_code=503,
+            )
+        body, refusal = await read_json_object(request)
+        if refusal is not None:
+            return refusal
+        payload, status_code = remove_question_evidence(store, body)
+        return json_response(payload, status_code=status_code)
 
     # -- catalog ------------------------------------------------------------
 

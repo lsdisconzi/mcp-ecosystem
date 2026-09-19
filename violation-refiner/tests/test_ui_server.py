@@ -1698,6 +1698,12 @@ def test_describe_schema_derives_every_option_list_from_the_models():
     assert schema["check_status"] == args("CheckResult", "status")
     assert schema["nexus_strength"] == args("NexusEntry", "strength")
     assert schema["norm_type"] == args("CachedArticle", "norm_type")
+    # The evidence verdicts live in `open_questions` as the tuple a write is
+    # validated against, not as a models.py Literal, so this compares against the
+    # store itself: the select must offer exactly what the store will accept.
+    from violation_pack.open_questions import EVIDENCE_VERDICTS
+
+    assert schema["evidence_verdicts"] == list(EVIDENCE_VERDICTS)
     # The staging destinations are the layout keys pack.copy_source_into_bundle
     # accepts, not a parallel hand-written list.
     assert schema["bundle_layout"] == dict(BUNDLE_LAYOUT)
@@ -1745,7 +1751,7 @@ def test_get_api_schema_and_settings(client):
     )
     # ...but a bare echo is worthless, so pin the code defaults that hold when
     # nothing overrides them.
-    assert settings.qdrant_collection_prefix == "violationrefiner_v1"
+    assert settings.qdrant_collection_prefix == "violationrefiner"
     # Secrets never round-trip; only their configured-ness does.
     assert set(body["secrets"]) == {"qdrant_api_key", "neo4j_password", "llm_api_key"}
     assert all(isinstance(v, bool) for v in body["secrets"].values())
@@ -2186,7 +2192,7 @@ def test_ui_hydrates_from_the_server_instead_of_a_baked_in_bundle():
         # invented infrastructure names
         "violation-pack-mcp", "rulings_index.json", "violation-pack-dev",
         # a confirm-token literal the UI must read off Settings instead
-        "agent.violation.refiner", "violationrefiner_v1",
+        "agent.violation.refiner", "violationrefiner",
     }
     # Only the document body is scanned: the design system legitimately uses
     # values like ``font-size: 0.74rem`` in <style>, which say nothing about

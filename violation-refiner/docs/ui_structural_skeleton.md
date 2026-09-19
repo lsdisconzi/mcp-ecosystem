@@ -111,7 +111,7 @@ Repeatedly needed paths. Proposed: a single collapsible **Settings drawer** with
 | --- | --- | --- | --- |
 | Qdrant | `QDRANT_URL` | *(empty)* | text |
 | | `QDRANT_API_KEY` | *(empty)* | password (masked) |
-| | `QDRANT_COLLECTION_PREFIX` | `violationrefiner_v1` | text |
+| | `QDRANT_COLLECTION_PREFIX` | `violationrefiner` | text |
 | Neo4j | `NEO4J_URI` | *(empty)* | text |
 | | `NEO4J_USER` | *(empty)* | text |
 | | `NEO4J_PASSWORD` | *(empty)* | password |

@@ -58,6 +58,9 @@ start_project "$ROOT/comfyui" "comfyui" "start.sh"
 # ── ops (starts dashboard on 9000) ──
 start_project "$ROOT/ops" "ops" "start.sh"
 
+# ── seeking (starts 4 Flask UIs on 8007-8010; reads cloud Qdrant via .env) ──
+start_project "$ROOT/seeking" "seeking" "start.sh"
+
 echo ""
 ok "All projects start commands issued."
 
@@ -130,6 +133,7 @@ generate_report() {
     local t_api=8049 t_mcp1=8121 t_mcp2=8122 t_mcp3=8123
     local c_mcp1=8130 c_mcp2=8131 c_mcp3=8132 c_mcp4=8133
     local ops_port=9000
+    local s_search=8007 s_conv=8008 s_mail=8009 s_trans=8010
 
     # ── Check port statuses ──
     local d_api_s=$(port_up $d_api && echo "UP" || echo "DOWN")
@@ -156,6 +160,10 @@ generate_report() {
     local c_mcp3_s=$(port_up $c_mcp3 && echo "UP" || echo "DOWN")
     local c_mcp4_s=$(port_up $c_mcp4 && echo "UP" || echo "DOWN")
     local ops_s=$(port_up $ops_port && echo "UP" || echo "DOWN")
+    local s_search_s=$(port_up $s_search && echo "UP" || echo "DOWN")
+    local s_conv_s=$(port_up $s_conv && echo "UP" || echo "DOWN")
+    local s_mail_s=$(port_up $s_mail && echo "UP" || echo "DOWN")
+    local s_trans_s=$(port_up $s_trans && echo "UP" || echo "DOWN")
 
     # ── Tool inventory counts from the declared MCP inventory ──
     local tools_j=33
@@ -204,12 +212,13 @@ generate_report() {
              "$g_ingest_s" "$g_prompt_s" "$g_qdrant_s" "$v_mcp_s" "$a_api_s" \
              "$a_mcp_s" "$o_api_s" "$o_core_s" "$o_pdf_s" "$t_api_s" \
              "$t_mcp1_s" "$t_mcp2_s" "$t_mcp3_s" "$c_mcp1_s" "$c_mcp2_s" \
-             "$c_mcp3_s" "$c_mcp4_s" "$ops_s"; do
+             "$c_mcp3_s" "$c_mcp4_s" "$ops_s" \
+             "$s_search_s" "$s_conv_s" "$s_mail_s" "$s_trans_s"; do
         [[ "$s" == "UP" ]] && total_up=$((total_up + 1))
     done
 
-    local total_services=24
-    local t_up=0 j_up=0 g_up=0 v_up=0 o_up=0 d_up=0 a_up=0 c_up=0
+    local total_services=28
+    local t_up=0 j_up=0 g_up=0 v_up=0 o_up=0 d_up=0 a_up=0 c_up=0 sv_up=0
     [[ "$t_api_s" == "UP" ]] && t_up=$((t_up + 1))
     [[ "$t_mcp1_s" == "UP" ]] && t_up=$((t_up + 1))
     [[ "$t_mcp2_s" == "UP" ]] && t_up=$((t_up + 1))
@@ -228,6 +237,9 @@ generate_report() {
     [[ "$a_mcp_s" == "UP" ]] && a_up=$((a_up + 1))
     for s in "$c_mcp1_s" "$c_mcp2_s" "$c_mcp3_s" "$c_mcp4_s"; do
         [[ "$s" == "UP" ]] && c_up=$((c_up + 1))
+    done
+    for s in "$s_search_s" "$s_conv_s" "$s_mail_s" "$s_trans_s"; do
+        [[ "$s" == "UP" ]] && sv_up=$((sv_up + 1))
     done
 
     # ── Build report ──
@@ -250,15 +262,16 @@ generate_report() {
 | audio              | $([ "$a_up" -eq 2 ] && echo "UP" || echo "DEGRADED")     | ${a_up}/2 | $tools_a | Torchaudio-based audio processing (FastAPI + MCP) |
 | comfyui            | $([ "$c_up" -eq 4 ] && echo "UP" || echo "DEGRADED")     | ${c_up}/4 | $comfyui_tools | ComfyUI workflow/model/node/system MCP servers (4) |
 | ops-dashboard      | $([ "$ops_s" == "UP" ] && echo "UP" || echo "DOWN")     | port 9000 | — | Ops dashboard |
+| seeking            | $([ "$sv_up" -eq 4 ] && echo "UP" || echo "DEGRADED")     | ${sv_up}/4 | — | Knowledge search & question-match review UIs (Flask; cloud Qdrant) |
 | **TOTAL**          | **${total_up} UP / $((total_services - total_up)) DOWN** | **${total_up}/${total_services}** | $total_tools | |
 
 ## Ecosystem Summary
 
-- **Projects:** 9
+- **Projects:** 10
 - **Defined Agents (LLM-facing):** 19
 - **Total MCP Tools:** $total_tools
-- **Human Interfaces (UIs & APIs):** 18
-- **Configurable Parameters:** 15
+- **Human Interfaces (UIs & APIs):** 22
+- **Configurable Parameters:** 18
 
 ## Agent & Human Interface Overview
 
@@ -272,6 +285,7 @@ generate_report() {
 | discovery          | discovery_agent,intelligence_analyst | Discovery UI,REST API,Case API | start_path |
 | audio              | audio_processor,asr_manager | Audio Processing Unit UI,REST API | sample_rate,asr_bundle |
 | comfyui            | workflow_manager,model_manager,node_inspector,system_ops | ComfyUI UI (localhost:8188) | COMFYUI_BASE_URL |
+| seeking            | —                             | Search UI,Review UI (conversations/emails/transcripts) | corpus,top_k |
 
 ## Detailed MCP Server Inventory
 
@@ -361,6 +375,12 @@ generate_report() {
 - Audio Processing Unit UI: http://localhost:8777/
 - REST API: /api/v1/audio/upload
 
+**seeking**
+- Search UI: http://localhost:8007
+- Review UI (conversations): http://localhost:8008
+- Review UI (emails): http://localhost:8009
+- Review UI (transcripts): http://localhost:8010
+
 ## Configuration Parameters Reference
 
 ### transcription
@@ -406,6 +426,13 @@ generate_report() {
 | sample_rate | int | default: 16000 | Target sample rate for audio processing |
 | asr_bundle | string | default: default | ASR model bundle to use for transcription |
 
+### seeking
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| corpus | string | default: conversations | Review UI corpus (conversations, emails, transcripts) |
+| port | int | default: 8008 | Review UI port (one process per corpus) |
+| top_k | int | default: 10 | Default top-K for question matching |
+
 ## Agent Quick-Start Guide
 
 1. **Check overall status:** read the Service Status table above.
@@ -445,7 +472,11 @@ REPORT
         "comfyui:$c_mcp1" \
         "comfyui:$c_mcp2" \
         "comfyui:$c_mcp3" \
-        "comfyui:$c_mcp4"; do
+        "comfyui:$c_mcp4" \
+        "seeking:$s_search" \
+        "seeking:$s_conv" \
+        "seeking:$s_mail" \
+        "seeking:$s_trans"; do
 
         local proj="${entry%%:*}"
         local p="${entry##*:}"

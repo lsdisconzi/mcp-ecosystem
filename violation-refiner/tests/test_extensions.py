@@ -106,9 +106,11 @@ def test_qdrant_vector_index_upserts_and_searches(minimal_violation):
     hits = idx.search_segments("reconozco la falta", top_k=5)
     assert hits and hits[0]["payload"]["segment_id"] == "STG-1.seg-1"
 
-    # Idempotence: second upsert does not duplicate.
+    # Idempotence: second upsert does not duplicate. Indexed under the
+    # constructor's default namespace rather than a passed-in prefix, so this
+    # also pins that default to the shared constant in `config`.
     idx.upsert_violation(minimal_violation)
-    assert len(fake.points["violationrefiner_v1_segments"]) == 1
+    assert len(fake.points["violationrefiner_segments"]) == 1
 
 
 def test_jurisprudence_provider_returns_unverified_stubs(minimal_violation):

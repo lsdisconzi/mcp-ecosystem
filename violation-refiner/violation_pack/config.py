@@ -10,6 +10,14 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
+#: The Qdrant namespace this project owns, used when ``QDRANT_COLLECTION_PREFIX``
+#: is unset. It lives here, beside the variable it defaults, because two callers
+#: need the same value: ``Settings.from_env`` for the env fallback and
+#: ``QdrantVectorIndex.__init__`` for its constructor default. Two independent
+#: literals would let a directly-constructed index and the configured one
+#: address different collections while both looked correct.
+DEFAULT_COLLECTION_PREFIX = "violationrefiner"
+
 
 def _infer_llm_provider(explicit: str | None, base_url: str | None) -> str:
     """Resolve provider from explicit env first, then from base_url hint."""
@@ -156,7 +164,7 @@ class Settings:
             qdrant_url=os.environ.get("QDRANT_URL") or None,
             qdrant_api_key=os.environ.get("QDRANT_API_KEY") or None,
             qdrant_collection_prefix=os.environ.get(
-                "QDRANT_COLLECTION_PREFIX", "violationrefiner_v1"
+                "QDRANT_COLLECTION_PREFIX", DEFAULT_COLLECTION_PREFIX
             ),
             neo4j_uri=os.environ.get("NEO4J_LOCAL_URI")
             or os.environ.get("NEO4J_URI")

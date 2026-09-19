@@ -33,6 +33,8 @@ info "Stopping all mcp-ecosystem projects..."
 
 # ── Stop in reverse order (ops first, discovery last) ──
 stop_project "$ROOT/ops" "ops" "stop.sh"
+# seeking reads transcription's `reviewed_transcripts`, so stop it before transcription
+stop_project "$ROOT/seeking" "seeking" "stop.sh"
 stop_project "$ROOT/transcription" "transcription" "stop.sh"
 stop_project "$ROOT/ocr" "ocr" "stop.sh"
 stop_project "$ROOT/audio" "audio" "stop.sh"
@@ -44,7 +46,7 @@ stop_project "$ROOT/discovery" "discovery" "stop.sh"
 
 # ── Belt-and-braces: kill any remaining processes on known ports ──
 info "Clearing any remaining processes on known ports..."
-PORTS=(3010 8000 8116 8066 8110 8111 8112 8113 8114 8124 8777 8765 8098 8049 8121 8122 8123 8130 8131 8132 8133 9000)
+PORTS=(3010 8000 8116 8066 8110 8111 8112 8113 8114 8124 8777 8765 8098 8049 8121 8122 8123 8130 8131 8132 8133 9000 8007 8008 8009 8010)
 for port in "${PORTS[@]}"; do
     pids=$(lsof -ti :"$port" 2>/dev/null || true)
     if [[ -n "$pids" ]]; then
@@ -64,6 +66,8 @@ pkill -f "ocr_server" 2>/dev/null || true
 pkill -f "transcription.*src.main" 2>/dev/null || true
 pkill -f "transcription.*src.mcp.servers" 2>/dev/null || true
 pkill -f "ops-dashboard" 2>/dev/null || true
+pkill -f "seeking/scripts/review_ui.py" 2>/dev/null || true
+pkill -f "seeking/scripts/search_conversations.py" 2>/dev/null || true
 pkill -f "app.py" 2>/dev/null || true
 
 ok "All projects stopped."

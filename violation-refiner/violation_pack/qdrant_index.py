@@ -16,6 +16,7 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
+from .config import DEFAULT_COLLECTION_PREFIX
 from .embeddings import Embedder, default_embedder
 from .models import Authority, CachedArticle, EvidenceSegment, Violation
 
@@ -35,7 +36,7 @@ class QdrantVectorIndex:
         self,
         url: str,
         api_key: str | None = None,
-        collection_prefix: str = "violationrefiner_v1",
+        collection_prefix: str = DEFAULT_COLLECTION_PREFIX,
         embedder: Embedder | None = None,
         client: Any | None = None,
     ) -> None:

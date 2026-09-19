@@ -621,6 +621,10 @@ code {
       <h3>Runtime health</h3>
       <p class="sec-desc">Checked on launch. Amber items disable their panel rather than failing the app.</p>
       <div id="settingsHealth"><div class="field-hint">Probing runtime…</div></div>
+      <div class="btn-row">
+        <button class="btn" data-action="shared-live">Check shared collections against live Qdrant</button>
+      </div>
+      <div id="sharedLiveReport" class="field-hint"></div>
     </div>
   </div>
 </div>
@@ -1087,6 +1091,16 @@ code {
       <div class="field"><label>Top K</label><input value="5"></div>
     </div>
     <div class="btn-row"><button class="btn" data-action="run" data-tool="qdrant_search_segments_tool" data-step="S12">Search</button></div>
+
+    <div class="block">
+      <div class="block-title">Index this bundle</div>
+      <div class="block-sub">Upserts every segment, article and authority of the loaded violation into the configured collections. Batched: one embed call for the whole bundle.</div>
+      <div class="btn-row">
+        <button class="btn btn-primary" data-action="s12-index-qdrant">Index into Qdrant</button>
+        <button class="btn" data-action="s12-upsert-juris">Upsert one jurisprudence record</button>
+      </div>
+    </div>
+
     <div class="block" style="margin-top:18px;">
       <button class="btn btn-danger" data-action="show-danger" data-target="#danger-qdrant">Reset collections</button>
       <div class="danger-box" id="danger-qdrant" style="display:none;">
@@ -1103,6 +1117,37 @@ code {
       <div class="field"><label>Violations citing article</label><input placeholder="article id"></div>
       <div class="field"><label>&nbsp;</label><button class="btn" data-action="run" data-tool="neo4j_find_violations_citing_tool" data-step="S12">Run</button></div>
     </div>
+
+    <div class="block">
+      <div class="block-title">Write this bundle</div>
+      <div class="block-sub">Upserts the loaded violation — its segments, articles, elements, authorities, open questions and cross-references — into the graph. Idempotent (MERGE-based): re-running replaces, never duplicates.</div>
+      <div class="btn-row">
+        <button class="btn btn-primary" data-action="s12-upsert-neo4j">Upsert into Neo4j</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-title">Walk implications</div>
+      <div class="block-sub">Two reads the graph is built for: which violations have a contested element matching a glob, and what would re-derive if a given open question resolved.</div>
+      <div class="field-row">
+        <div class="field"><label>Element id glob</label>
+          <input id="s12ContestedGlob" placeholder="*documento_oficial*">
+          <div class="field-hint">Use <code>*</code> as a wildcard. The graph matches the element id, not the label.</div>
+        </div>
+        <div class="field"><label>&nbsp;</label>
+          <button class="btn" data-action="s12-find-contested">Find violations with this element contested</button>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Open question id</label>
+          <input id="s12WalkOqId" placeholder="the question's catalog id">
+        </div>
+        <div class="field"><label>&nbsp;</label>
+          <button class="btn" data-action="s12-walk-impl">Walk the implications of this question</button>
+        </div>
+      </div>
+    </div>
+
     <div class="block">
       <button class="btn btn-danger" data-action="show-danger" data-target="#danger-neo4j">Reset database</button>
       <div class="danger-box" id="danger-neo4j" style="display:none;">
@@ -1367,6 +1412,12 @@ const API = {
     body: JSON.stringify(payload),
   }),
   catalog: () => fetchJson('/api/catalog'),
+  // The offline contract above is a description; `live=1` runs the same declared
+  // checks against the configured Qdrant. It needs QDRANT_URL at request time
+  // and reports its own refusal when the URL is unset — that comes back as a 200
+  // with `live: false` and a `reason`, so an unconfigured server is rendered as
+  // the reason rather than mistaken for a failed request.
+  sharedCollectionsLive: () => fetchJson('/api/shared-collections?live=1'),
   // Tool calls run in the background. `ToolManager` calls a *synchronous* tool
   // inline on the event loop, so while one ran the server answered nothing at
   // all — measured: a health poll sent 0.02s into an 8.96s enrichment call came
@@ -2058,7 +2109,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // generic delegated actions
-  document.addEventListener('click', (e) => {
+  //
+  // One `async` listener for every handler in here. The Settings live check and
+  // (later) the S15 health sweep both await a fetch, and `await` inside a
+  // non-async function is a SyntaxError that takes this whole <script> down with
+  // it — not just the one handler. The handlers below contain no `await`, so
+  // nothing changes for them: a synchronous throw still aborts the remainder of
+  // this body exactly as before, and every `preventDefault()` is called before
+  // any await would suspend.
+  document.addEventListener('click', async (e) => {
     const t = e.target.closest('[data-action]');
     if (!t) return;
     const action = t.dataset.action;
@@ -2275,6 +2334,73 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       renderSelectedSegments();
+    }
+
+    /* ---------------- S12 · store writes and graph walks ----------------
+       All five go through `invokeTool`, so the tool catalog is still the only
+       place that decides what runs, and a tool the server has not registered is
+       named by `reportToolDrift` at load — every one of these names is already
+       in `STEP_TOOLS.s12`, which is the list that scan reads. */
+
+    if (action === 's12-index-qdrant') {
+      e.preventDefault();
+      if (!state.violation) { pushLog('No violation loaded', 'S12', 'warn'); return; }
+      invokeTool('qdrant_index_violation_tool', { violation: state.violation }, { button: t });
+    }
+
+    if (action === 's12-upsert-juris') {
+      e.preventDefault();
+      // The upsert takes a record id, a text and a payload; the payload is the
+      // part that must carry court/rol/decision_date/primary_source_url, and
+      // there is no way to invent it here. Open the argument form instead of
+      // guessing at a payload — the form is generated from the tool's own
+      // schema, so its fields *are* the tool's fields.
+      //
+      // The allow-list check is not redundant with `reportToolDrift`: that pass
+      // only disables `[data-tool]` elements, and this button carries a
+      // `data-action`. `openToolPanel` returns silently for an unknown name, so
+      // without this the click would do nothing and say nothing.
+      if (!TOOLS.byName.has('qdrant_upsert_jurisprudence_tool')) {
+        pushLog('qdrant_upsert_jurisprudence_tool is not exposed by this server', 'S12', 'warn');
+        return;
+      }
+      openToolPanel('qdrant_upsert_jurisprudence_tool');
+    }
+
+    if (action === 's12-upsert-neo4j') {
+      e.preventDefault();
+      if (!state.violation) { pushLog('No violation loaded', 'S12', 'warn'); return; }
+      invokeTool('neo4j_upsert_violation_tool', { violation: state.violation }, { button: t });
+    }
+
+    if (action === 's12-find-contested') {
+      e.preventDefault();
+      const glob = inputValue('s12ContestedGlob');
+      if (!glob) { pushLog('An element id glob is required — use * for a wildcard', 'S12', 'warn'); return; }
+      invokeTool('neo4j_find_violations_with_contested_element_tool',
+        { element_id_glob: glob }, { button: t });
+    }
+
+    if (action === 's12-walk-impl') {
+      e.preventDefault();
+      const oq = inputValue('s12WalkOqId');
+      if (!oq) { pushLog('An open-question id is required', 'S12', 'warn'); return; }
+      invokeTool('neo4j_walk_implications_tool',
+        { open_question_id: oq }, { button: t });
+    }
+
+    /* ---------------- Settings · live shared-collections check ---------------- */
+
+    if (action === 'shared-live') {
+      e.preventDefault();
+      const host = document.getElementById('sharedLiveReport');
+      if (host) host.textContent = 'Checking…';
+      try {
+        const out = await API.sharedCollectionsLive();
+        renderSharedLive(out);
+      } catch (err) {
+        if (host) host.innerHTML = `<span style="color:var(--status-flag)">Check failed — ${escapeHtml(err.message)}</span>`;
+      }
     }
   });
 
@@ -4203,6 +4329,41 @@ function hydrateSettingsEnv(cfg) {
   }).join('');
 }
 
+/** Paint the live drift report from `GET /api/shared-collections?live=1`.
+ *
+ *  Each collection is one row carrying its declared dimension and the check's
+ *  own problems. The dimension is the row's most important field: querying a
+ *  384-d collection with a 1024-d embedder returns meaningless neighbours, and a
+ *  page that showed the collection without its dimension would leave the
+ *  reviewer to wonder why their search returned nonsense. */
+function renderSharedLive(payload) {
+  const host = document.getElementById('sharedLiveReport');
+  if (!host) return;
+  if (!payload || payload.live !== true) {
+    host.innerHTML = `<span style="color:var(--status-analysis)">${escapeHtml(
+      (payload && payload.reason) || 'Live check did not run.')}</span>`;
+    return;
+  }
+  const check = payload.check || {};
+  const rows = (check.collections || []).map(c => {
+    const problems = (c.problems || []).length
+      ? `<div class="rr-detail" style="color:var(--status-flag)">${escapeHtml(c.problems.join('; '))}</div>`
+      : '<div class="rr-detail" style="color:var(--status-note)">contract ok</div>';
+    return `<div class="record-row${c.ok ? ' verified' : ' legacy'}">
+      <div class="rr-main">
+        <div class="rr-id">${escapeHtml(c.name)} <span class="weight-note">owner ${escapeHtml(c.owner || '—')}</span></div>
+        <div class="rr-detail">dim ${escapeHtml(String(c.dim ?? '?'))} · ${c.points ?? '?'} points</div>
+        ${problems}
+      </div>
+      <div class="rr-meta">${tag(c.ok ? 'pass' : 'fail')}</div>
+    </div>`;
+  });
+  const head = check.ok
+    ? '<div class="field-hint" style="color:var(--status-note)">All declared contracts match the live collections.</div>'
+    : '<div class="field-hint" style="color:var(--status-flag)">One or more contracts do not match the live collections.</div>';
+  host.innerHTML = head + rows.join('');
+}
+
 /* --------------------------------------------------------------------- S0 */
 
 /** Destinations are the keys pack.copy_source_into_bundle can resolve, so the
@@ -4700,6 +4861,14 @@ function candidateCheckButton(c) {
  *  set beside it (as the badge in the meta column). Saying *both* is the point:
  *  the recorded value is the stale one, and a reviewer who can see them disagree
  *  can see why the check exists.
+ *
+ *  The file list is shown under every verdict, not only a miss. On the reference
+ *  decree the same article is cached in two files, so a check that named only
+ *  the first match would be describing a bundle other than the one on disk —
+ *  and the reviewer who later quotes the second copy would be quoting a file the
+ *  verdict never mentioned. It is a `<details>` because it is context, not the
+ *  verdict: the summary line answers the question, the list lets the answer be
+ *  checked.
  */
 function candidateCheckDetail(c) {
   const id = c.candidate_article_id || '';
@@ -4710,24 +4879,45 @@ function candidateCheckDetail(c) {
   }
   const p = check.payload || {};
   const matches = p.matches || [];
+  const files = p.files || [];
+
+  // Every framework file the check read, with its own declaration of itself.
+  // The `|| []` guards are not defensive padding: a cache that declares no
+  // `**ELI ID:**` line at all is a real shape in the corpus, and it comes back
+  // with no `eli_ids` key.
+  const fileList = files.length
+    ? `<details style="margin-top:6px;"><summary class="field-hint">Show the ${files.length} framework file(s) the check read</summary>
+         ${files.map(f => `<div class="rr-detail"><b>${escapeHtml(f.rel)}</b>
+           <span class="field-hint">codes ${escapeHtml((f.codes || []).join(', '))} · ${(f.articles || []).length} article(s)</span>
+           ${(f.eli_ids || []).length ? `<div class="field-hint">declares ${f.eli_ids.slice(0, 4).map(escapeHtml).join(' · ')}${f.eli_ids.length > 4 ? ' …' : ''}</div>` : ''}
+         </div>`).join('')}
+       </details>`
+    : '';
+
   if (p.verdict === 'in_bundle') {
     const hits = matches.map(m => `${m.rel}${m.article_id ? ` (declares ${m.article_id})` : ''}`);
     const recorded = c.framework_cache_status;
     const stale = recorded && recorded !== 'verified_in_bundle'
       ? ` · the recorded status still says ${recorded}`
       : '';
-    return `<div class="rr-detail rr-check-ok">✓ in this bundle: ${escapeHtml(hits.join(' · '))}${escapeHtml(stale)}</div>`;
+    // The full match list, not just the first: two files can hold the same
+    // article, and hiding the second would leave a reviewer who later quotes the
+    // second one wondering which copy the check spoke about.
+    const more = matches.length > 1
+      ? `<div class="field-hint">This article is cached in ${matches.length} files. All ${matches.length} are listed above; the excerpt the norms layer will accept is the one from the file whose article number matches.</div>`
+      : '';
+    return `<div class="rr-detail rr-check-ok">✓ in this bundle: ${escapeHtml(hits.join(' · '))}${escapeHtml(stale)}</div>${more}${fileList}`;
   }
   if (p.verdict === 'in_bundle_other_code') {
     const hits = matches.map(m => `${m.rel} [${m.article_id || 'no declared id'}]`);
     return `<div class="rr-detail rr-check-warn">⚠ found only in ${escapeHtml(hits.join(' · '))}, which is not`
-      + ` ${escapeHtml(p.framework_code || 'the named code')} — another statute's article of the same number</div>`;
+      + ` ${escapeHtml(p.framework_code || 'the named code')} — another statute's article of the same number</div>${fileList}`;
   }
-  const searched = (p.files || []).map(f => `${f.name} (${(f.articles || []).length})`).join(', ');
+  const searched = files.map(f => `${f.name} (${(f.articles || []).length})`).join(', ');
   return `<div class="rr-detail rr-check-warn">✗ not in this bundle`
     + (p.article_tail ? ` — no cache there declares Art. ${escapeHtml(p.article_tail)}` : ' — the reference names no article number')
     + (searched ? ` · searched: ${escapeHtml(searched)}` : ' · this bundle carries no framework file')
-    + '</div>';
+    + `</div>${fileList}`;
 }
 
 /** One log line for a check, from the same payload the row renders.
